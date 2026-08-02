@@ -1,0 +1,68 @@
+# QuantLab 全局配置
+
+# 项目信息
+project:
+  name: "QuantLab"
+  version: "1.0.0"
+  root: "E:\\QuantLab"
+
+# 数据配置
+data:
+  source: "astock"
+  astock:
+    daily_path: "E:/astock/daily/stock_daily.parquet"
+    finance_path: "E:/astock/finance"
+    basic_path: "E:/astock/basic"
+  cache:
+    enabled: true
+    dir: "E:/QuantLab/data/cache"
+    expire_days: 1
+
+# 回测配置
+backtest:
+  start_date: "2018-07-01"
+  end_date: "2026-06-30"
+  initial_capital: 500000
+  commission: 0.00025
+  slippage: 0.002
+  benchmark: "000300.SH"  # 沪深300
+
+# 日志配置
+logging:
+  level: "INFO"
+  dir: "E:/QuantLab/logs"
+  max_file_size: 10MB
+  backup_count: 10
+
+# 因子配置
+factors:
+  # 预处理
+  neutralize: true
+  standardize: true
+  winsorize: true
+  winsorize_limit: 0.05
+  
+  # 中性化
+  neutralize_method: "industry"  # industry / market / none
+  
+  # 标准化
+  standardize_method: "zscore"   # zscore / rank / none
+
+# 策略配置
+strategy:
+  default_universe: "small_cap"
+  universes:
+    small_cap:
+      min_mv: 0
+      max_mv: 30e8  # 30亿
+    mid_cap:
+      min_mv: 30e8
+      max_mv: 200e8
+    large_cap:
+      min_mv: 200e8
+      max_mv: null
+
+# 实盘配置（指向trading_config.yaml）
+trading:
+  config: "config/trading_config.yaml"
+  enabled: false  # 默认关闭，手动开启

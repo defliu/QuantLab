@@ -1,0 +1,58 @@
+# QuantLab 实盘配置 - 账号 67014907
+# 生成时间: 2026-07-26
+
+account:
+  id: "67014907"
+  # QMT路径（根据实际安装位置调整）
+  path: "E:\\国金QMT交易端模拟\\userdata_mini"
+  session_id: 670149
+
+trading:
+  initial_capital: 500000        # 初始资金（根据实际调整）
+  max_single_position: 0.05      # 单股最大仓位 5%
+  max_total_position: 0.80       # 总仓位上限 80%
+  commission_rate: 0.00025       # 佣金万2.5
+  stamp_tax: 0.001               # 印花税千1（卖出）
+  slippage: 0.002                # 滑点 0.2%
+
+risk:
+  stop_loss_pct: 0.08            # 个股止损 8%
+  max_drawdown: 0.15             # 组合最大回撤 15%
+  max_holding_days: 60           # 最长持有天数
+  max_daily_turnover: 0.30       # 单日最大换手
+
+order:
+  timeout_seconds: 300           # 委托超时（5分钟）
+  max_retry: 3                   # 最大重试次数
+  price_tolerance: 0.005         # 价格容差（0.5%）
+  cancel_unfilled: true          # 超时未成交自动撤单
+
+schedule:
+  pre_market: "09:15"            # 盘前准备
+  morning_open: "09:35"          # 开盘执行（避开集合竞价）
+  afternoon_check: "13:05"       # 午后检查
+  risk_check_interval: 30        # 风控检查间隔（分钟）
+  end_of_day: "14:50"            # 尾盘处理
+
+notification:
+  enabled: false                 # 暂时关闭，配置webhook后开启
+  method: "wechat"               # wechat / dingtalk / email
+  webhook_url: ""                # 企业微信/钉钉 webhook（需配置）
+
+# 数据源配置
+data:
+  source: "astock"               # 主数据源
+  astock_path: "E:/astock"       # astock数据路径
+  cache_dir: "E:/QuantLab/data/cache"
+  
+# 策略配置（示例）
+strategy:
+  name: "multi_factor_ic"
+  universe: "small_cap"          # 小市值股票池
+  top_n: 80                      # 选股数量
+  rebalance_freq: "2M"           # 双月调仓
+  factors:
+    BP: 0.30                     # 市净率倒数
+    reversal_1m: 0.25            # 1月反转
+    volatility_60d: 0.25         # 60日波动率
+    ROE: 0.20                    # ROE

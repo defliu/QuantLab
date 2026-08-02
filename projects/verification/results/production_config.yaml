@@ -1,0 +1,99 @@
+# 六大策略实盘配置
+# 生成时间: 2026-07-26
+
+# ==================== 推荐组合 ====================
+portfolio:
+  name: "红利低波+质量小市值组合"
+  description: "70%防御+30%增强，预期年化3-4%"
+  
+  strategies:
+    - name: "红利低波"
+      weight: 0.70
+      config_file: "config/dividend_config.yaml"
+    
+    - name: "质量小市值"
+      weight: 0.30
+      config_file: "config/smallcap_config.yaml"
+
+# ==================== 红利低波配置 ====================
+dividend_lowvol:
+  # 选股条件
+  min_roe: 8.0              # ROE > 8%
+  max_debt_ratio: 60.0      # 负债率 < 60%
+  min_ocf_ratio: 0.80       # 现金流/利润 > 80%
+  
+  # 打分权重
+  score_weights:
+    dividend_yield: 0.40
+    low_volatility: 0.30
+    roe: 0.30
+  
+  # 组合
+  max_stocks: 30
+  rebalance_freq: "monthly"
+  weight_method: "equal"
+  
+  # 风控
+  stop_loss: -0.12
+  max_industry_pct: 0.25
+  
+  # 交易成本
+  commission: 0.00025       # 万2.5
+  stamp_tax: 0.001          # 千1
+  slippage: 0.001           # 千1
+
+# ==================== 质量小市值配置 ====================
+quality_smallcap:
+  # 选股条件
+  min_roe: 5.0              # ROE > 5%
+  max_debt_ratio: 70.0      # 负债率 < 70%
+  min_ocf: 0                # 现金流 > 0
+  
+  # 市值过滤
+  universe_pct: 0.30        # 市值后30%
+  
+  # 因子
+  reversal_window: 20       # 20日反转
+  turnover_pct: 0.50        # 低换手率过滤
+  
+  # 组合
+  max_stocks: 40
+  rebalance_freq: "weekly"
+  weight_method: "equal"
+  
+  # 风控
+  stop_loss: -0.10
+  max_industry_pct: 0.15
+  
+  # 交易成本
+  commission: 0.00025
+  stamp_tax: 0.001
+  slippage: 0.002
+
+# ==================== 风控参数 ====================
+risk_control:
+  # 组合级
+  max_drawdown: -0.20       # 组合回撤-20%减仓50%
+  max_drawdown_hard: -0.30  # 组合回撤-30%清仓
+  
+  # 个股级
+  individual_stop_loss: -0.15  # 个股止损-15%
+  
+  # 监控
+  daily_check: true
+  alert_threshold: -0.10    # 回撤-10%预警
+
+# ==================== QMT配置 ====================
+qmt:
+  account_id: "67014907"
+  strategy_key: "MULTI_FACTOR"
+  strategy_name: "红利低波+质量小市值"
+  
+  # 文件路径
+  positions_file: "D:/QMT_POOL/positions.json"
+  nav_file: "D:/QMT_POOL/nav.txt"
+  log_file: "D:/QMT_POOL/strategy_log.txt"
+  
+  # 交易时段
+  buy_window: "10:00-10:10"
+  sell_window: "14:50-14:57"

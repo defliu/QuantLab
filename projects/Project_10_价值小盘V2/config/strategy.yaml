@@ -1,0 +1,46 @@
+# Project 10: 价值小盘 V2（微调版）
+# 审计基线: audit14-17 (2026-08-01~02)
+# 状态机口径全期超额 +241.6%, 年化 17.9%, 2026超额 +0.1%
+
+project:
+  name: "价值小盘V2_微调版"
+  version: "2.1"
+  description: "行业中性BP + 历史分位BP, 权重0.8/0.2, 质量排雷"
+
+universe:
+  market_cap_max: 300000    # 万元 (30亿)
+  market_cap_min: 0
+  pe_ttm_min: 0
+  pb_min: 0
+  exclude_st: true
+  exclude_suspended: true
+
+scoring:
+  method: "bp_industry_neutral_hp"
+  weights:
+    z_score: 0.8            # 行业中性BP z-score
+    hist_pct: 0.2           # BP 36月历史分位
+  bp_min: 0                 # PB > 0 → BP 有效
+  hp_window_months: 36      # 历史分位回看窗口
+  hp_min_months: 12         # 最少12月数据
+
+portfolio:
+  n_stocks: 80              # 持仓数量
+  weight_method: "equal"    # 等权
+  rebalance_freq: "2M"      # 双月换仓
+
+risk_control:
+  stop_loss_pct: 0.08       # 个股止损 8%
+  max_drawdown_pct: 0.15    # 组合最大回撤 15%
+  max_holding_days: 60      # 最长持有 60 天
+  max_daily_turnover: 0.30  # 单日最大换手 30%
+
+quality_screen:
+  enabled: true
+  bps_min: 0                # 每股净资产 > 0
+  roe_min: 0                # ROE > 0
+  profit_dedt_min: 0        # 扣非净利润 > 0
+
+transaction:
+  cost_rate: 0.001          # 单边千一
+  limit_handling: true      # 涨跌停保护

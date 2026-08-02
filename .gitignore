@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+
+# opencode / omo 内部
+.omo/
+
+# 数据缓存与日志
+data/cache/
+*.log
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 本地临时
+.tmp/
+*.tmp

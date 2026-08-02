@@ -1,0 +1,61 @@
+# Project_01 多因子IC小盘Alpha — 策略配置
+
+# 最优参数（已验证 15.5% 年化 / 0.50 夏普 / -20.5% 回撤）
+# 验证日期: 2026-07-22
+# 验证方: Hermes + MiMoCode
+
+strategy:
+  name: "多因子IC小盘Alpha"
+  version: "1.0.0"
+
+# 因子配置
+factors:
+  weights:
+    BP: 0.30           # 账面市值比 (价值因子)
+    reversal_1m: 0.25  # 1月反转 (动量因子)
+    volatility_60d: 0.25  # 60日波动率 (低波因子)
+    ROE: 0.20          # 净资产收益率 (质量因子)
+
+  # 市值过滤 (filter_func)
+  market_cap:
+    enabled: true
+    min: 0        # 万元
+    max: 300000   # 30亿 = 300000万元
+
+  # 成交额过滤
+  amount:
+    min: 20000    # 2000万（千元单位）
+
+# 回测参数
+backtest:
+  top_n: 80           # 持仓数量
+  rebalance_freq: "2M"  # 双月调仓
+  stop_loss: -0.12    # 止损线 -12%
+  tx_cost: 0.002      # 单边交易成本
+  dynamic_universe: true  # 动态滚动universe
+
+# 回测结果
+results:
+  annual_return: 0.155   # 15.5%
+  sharpe_ratio: 0.50
+  max_drawdown: -0.205   # -20.5%
+  total_return: 1.371    # 137.1%
+  win_rate: 0.55         # 55%
+  rebalance_count: 29
+  stop_loss_count: 559
+
+# 实盘参数
+live:
+  initial_capital: 100000
+  max_position_pct: 0.02  # 单票最大仓位 2%
+  max_total_positions: 80
+  stop_loss_pct: -0.12
+  rebalance_freq: "2M"
+  order_timeout_seconds: 60
+  max_retry: 2
+
+# QMT配置
+qmt:
+  account_id: "67014907"
+  target_code: "000001.SZ"  # 测试股票
+  target_volume: 100        # 测试数量
