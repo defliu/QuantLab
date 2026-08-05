@@ -46,13 +46,16 @@ data:
   cache_dir: "E:/QuantLab/data/cache"
   
 # 策略配置（示例）
+# 注意: 权重与 Project_01/strategy/scoring.py 的 FACTOR_WEIGHTS 保持一致
+# (2026-08-04 口径统一: 旧 4 因子配置已废弃, 实际为 5 因子)
 strategy:
   name: "multi_factor_ic"
   universe: "small_cap"          # 小市值股票池
   top_n: 80                      # 选股数量
   rebalance_freq: "2M"           # 双月调仓
   factors:
-    BP: 0.30                     # 市净率倒数
-    reversal_1m: 0.25            # 1月反转
-    volatility_60d: 0.25         # 60日波动率
-    ROE: 0.20                    # ROE
+    BP: 0.27                     # 市净率倒数
+    reversal_1m: 0.225           # 1月反转
+    volatility_60d: 0.225        # 60日波动率
+    ROE: 0.18                    # ROE
+    vwap_volume_corr: 0.10       # VWAP-成交量相关 (GTJA191)

@@ -1,0 +1,32 @@
+# ============================================================
+# 资金分配总表 —— 单一事实源（机器可校验）
+# ------------------------------------------------------------
+# 硬规则：所有策略 capital_base 之和 必须 <= account.total_capital
+# 任何策略新增 / 调整本金，改这里 + 跑：
+#   python scripts/check_capital_allocation.py
+# 校验器会同时核对每个策略独立 config 里的 capital_base 是否与此表一致。
+# ============================================================
+
+account:
+  id: "67014907"
+  broker: "国金QMT模拟端"
+  # 账户实际总资产（元）。
+  # 在国金QMT客户端「查询 -> 资金股份」查“总资产”填入。
+  # 未填(null)时校验脚本只警告、不报硬错；但生产环境必须填真实值！
+  total_capital: 10000000  # 1000万（国金QMT模拟端，2026-08-05 由大诚填报）
+  note: "共享账户资金上限；各策略虚拟子账户之和不得超此值（硬约束）"
+
+strategies:
+  - key: atr_lowvol_equalweight
+    name: "ATR低波等权不杠杆"
+    capital_base: 100000
+    max_hold: 100
+    config_file: "config/atr_lowvol_equalweight_config.yaml"
+    note: "满仓等权100只；NAV含浮盈滚动；虚拟子账户，绝不抢占他人资金/持仓"
+
+  # ---- 新增策略在此追加（取消注释并填值）----
+  # - key: xxx
+  #   name: "新策略名"
+  #   capital_base: 100000
+  #   config_file: "config/xxx.yaml"
+  #   note: "..."

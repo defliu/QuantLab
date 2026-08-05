@@ -4,7 +4,7 @@ import os
 import re
 
 # Check alpha101
-alpha101_dir = 'D:/QMT_STRATEGIES/backtest/factors/zoo/alpha101'
+alpha101_dir = 'E:/QuantLab/backtest/factors/zoo/alpha101'
 files = [f for f in os.listdir(alpha101_dir) if f.endswith('.py') and not f.startswith('__')]
 print("alpha101: %d files" % len(files))
 
@@ -24,7 +24,7 @@ if alpha_id:
     print("  ALPHA_ID:", alpha_id.group(1))
 
 # Check gtja191
-gtja_dir = 'D:/QMT_STRATEGIES/backtest/factors/zoo/gtja191'
+gtja_dir = 'E:/QuantLab/backtest/factors/zoo/gtja191'
 if os.path.isdir(gtja_dir):
     gtja_files = [f for f in os.listdir(gtja_dir) if f.endswith('.py') and not f.startswith('__')]
     print("\ngtja191: %d files" % len(gtja_files))
@@ -38,7 +38,7 @@ else:
 
 # Check registry
 print("\nChecking registry...")
-registry_path = 'D:/QMT_STRATEGIES/backtest/factors/registry.py'
+registry_path = 'E:/QuantLab/backtest/factors/registry.py'
 if os.path.exists(registry_path):
     print("registry.py: EXISTS")
 else:

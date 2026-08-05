@@ -7,7 +7,7 @@
 
 | 文件 | 路径 | 说明 |
 |------|------|------|
-| **生产版(部署用)** | `D:\QMT_STRATEGIES\strategy_mfic.py` | GBK编码, QMT直接加载, 13.7KB |
+| **生产版(部署用)** | `projects\Project_01_多因子IC小盘Alpha\build\strategy_mfic.py` | GBK编码, QMT直接加载, 13.7KB |
 | 已部署位置 | `E:\国金QMT交易端模拟\python\strategy_mfic.py` | 复制过去的生产版 |
 | 开发版(源码) | `research\multi_factor_ic\mfic_strategy\strategy_mfic_dev.py` | UTF-8, 含debug打印 |
 | 构建脚本 | `research\multi_factor_ic\mfic_strategy\build_prod.py` | dev(UTF-8)→GBK转换 |

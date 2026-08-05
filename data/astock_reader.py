@@ -50,7 +50,7 @@ class AstockParquetReader(object):
         _need_cols = [
             "trade_date", "ts_code", "open", "high", "low", "close",
             "vol", "amount", "adj_factor", "circ_mv", "pe_ttm", "pb",
-            "ps_ttm", "dv_ttm", "turnover_rate",
+            "ps_ttm", "dv_ttm", "turnover_rate", "is_st",
         ]
         _read_cols = [c for c in _need_cols if c in _present]
         self._df = pd.read_parquet(db_path, columns=_read_cols)
@@ -109,7 +109,7 @@ class AstockParquetReader(object):
                             rows[col] = rows[col] * (adj_factor / latest_adj)
             
             available = ["date", "open", "high", "low", "close", "vol", "amount", "circ_mv",
-                         "pe_ttm", "pb", "ps_ttm", "dv_ttm", "turnover_rate"]
+                         "pe_ttm", "pb", "ps_ttm", "dv_ttm", "turnover_rate", "is_st"]
             keep = [c for c in available if c in rows.columns]
             rows = rows[keep]
             out[code] = rows

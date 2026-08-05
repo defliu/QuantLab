@@ -1,0 +1,15 @@
+{
+  "phase": "phase1",
+  "completed_at": "2026-07-19T10:10:36.928892",
+  "metrics": {
+    "行业数": 94,
+    "HHI": 0.0267,
+    "Top10占比": 39.9,
+    "Top1行业": "汽车配件",
+    "行业覆盖率": "100.0%",
+    "前瞻偏差标注": "静态行业映射（已知局限）"
+  },
+  "deliverables": {
+    "D:/QMT_STRATEGIES/research/multi_factor_ic/reports/v3_optimize/industry_exposure.csv": "234bcff0db5ffb81"
+  }
+}

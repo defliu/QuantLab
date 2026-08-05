@@ -1,0 +1,9 @@
+﻿{
+  "mcpServers": {
+    "metasearch": {
+      "type": "stdio",
+      "command": "mcp-server-metasearch",
+      "args": []
+    }
+  }
+}

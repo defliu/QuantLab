@@ -1,0 +1,322 @@
+               A
+
+                                          17  · 
+
+                                                                2026-05-15 12:40
+                                                           Python 3.8+
+                                                   KAPI + HTTP
+                                                    WebFlask Web  localhost:5001
+
+                                                             
+
+
+ strategy_ma_cross -- 1/
+ strategy_momentum -- 2
+ strategy_mean_reversion -- 3
+ strategy_bollinger_bands -- 4
+ strategy_equal_weight -- 5
+ strategy_buy_and_hold -- 6
+ yangjia_longtou_jieli -- 1
+ yangjia_shouban -- 2
+ yangjia_fenqi_yizhi -- 3
+ yangjia_bingdian_fantan -- 4
+ yangjia_sentiment_position -- 5
+ beijing_shouban -- 
+ livermore_keypoint -- 
+ gmma_trend_follow -- GMMA
+ limit_up_chain -- 
+ ultrashort_nomadic -- AC
+ laochen_shortterm_momentum -- 
+
+                                                                                                     --1--
+                                                                                       A | 
+
+
+
+A v2.0
+ 17 
+
+
+
+ AT+1
+ 1 | 0.25
+ +0.1%-0.1%
+ 
+
+
+
+ /
+ 
+ 
+ 
+  + 
+ 
+
+
+
+Webcd backtest_system && python3 backtest_web.py  localhost:5001
+CLIpython3 run_backtest.py --strategy  --tickers 000001 --start 2023-01-01
+
+                                                                                                       --2--
+  A | 
+
+
+
+  --3--
+                    A | 
+
+ strategy_ma_cross
+
+ 1/
+
+
+
+
+520
+
+                    --4--
+                    A | 
+
+ strategy_momentum
+
+ 2
+
+
+
+20
+
+                    --5--
+                         A | 
+
+strategy_mean_reversion
+
+3
+
+
+
+RSI < 30RSI > 70
+
+                         --6--
+                           A | 
+
+ strategy_bollinger_bands
+
+ 4
+
+
+
+
+
+                           --7--
+                       A | 
+
+strategy_equal_weight
+
+5
+
+
+
+
+
+                       --8--
+                        A | 
+
+ strategy_buy_and_hold
+
+ 6
+
+
+
+
+
+                        --9--
+                       A | 
+
+yangjia_longtou_jieli
+
+1
+
+
+
+
+
+
+
+
+                       -- 10 --
+                 A | 
+
+yangjia_shouban
+
+2
+
+
+
+
+10:00
+
+++
+
+                 -- 11 --
+                     A | 
+
+yangjia_fenqi_yizhi
+
+3
+
+
+
+
+(-3%~-7%)
+
+V+N+
+
+                     -- 12 --
+                          A | 
+
+ yangjia_bingdian_fantan
+
+ 4
+
+
+
+
+
+
+++
+
+                          -- 13 --
+                            A | 
+
+yangjia_sentiment_position
+
+5
+
+
+
+
+
+
+
+
+                            -- 14 --
+                 A | 
+
+beijing_shouban
+
+
+
+
+
+
+
+
+10:30+30-100+3+3
+
+                 -- 15 --
+                    A | 
+
+livermore_keypoint
+
+
+
+
+
+
+/+ 
+
+
+
+                    -- 16 --
+                   A | 
+
+gmma_trend_follow
+
+GMMA
+
+
+
+
+12EMA3/5/8/10/12/15 + 30/35/40/45/50/60
+
+
+
+                   -- 17 --
+                 A | 
+
+ limit_up_chain
+
+ 
+
+
+
+
+
+
+++
+
+                 -- 18 --
+                    A | 
+
+ultrashort_nomadic
+
+AC
+
+
+
+
+++1-2T+1
+
+50-300+5-15%+3
+
+                    -- 19 --
+                                                                                       A | 
+
+ laochen_shortterm_momentum
+
+ 
+
+
+++
+3020%
+
+                                                                                                      -- 20 --
+                                                                                       A | 
+
+
+
+
+
+def strategy_name(df_dict, portfolio) -> dict[code  target_weight]
+· df_dict: dict[  DataFrame] open/high/low/close/volume
+· portfolio:  (.positions = set[code], .trades = list)
+·  dict: code   (0.0=, 0.3=30%)
+· : code in portfolio.positions
+
+
+
+1.  strategy_demo.py  def strategy_xxx(df_dict, portfolio)
+2. 
+3.  backtest_web.py 
+
+
+
+def strategy_my_rule(df_dict, portfolio):
+   """
+   
+   XXX XXX
+   20%80%
+   """
+   target = {}
+   for code, df in df_dict.items():
+      if df is None or len(df) < 30:
+         continue
+      closes = df['close'].values
+      # ...
+   return target
+
+                   
+                                                        ·  · 
+
+                                                                                                      -- 21 --
+

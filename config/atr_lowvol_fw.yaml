@@ -1,0 +1,48 @@
+# ATR 低波动策略 —— 框架原生移植验证配置（QuantLab）
+# 验证目标：任何策略(target_weights) 拿过来即跑，且自动带真实约束。
+backtest:
+  name: atr_lowvol_fw
+  start_date: "2023-01-03"
+  end_date: "2026-07-31"
+  initial_cash: 1000000.0
+  benchmark_code: "000300.SH"      # 沪深300 作基准（若 duckdb 无数据会自动禁用）
+  benchmark_db_path: "F:/backtest_workspace/data/duckdb/benchmark_index.duckdb"
+
+data:
+  source: astock                   # 第一数据源 E:/astock
+  path: "E:/astock/daily/stock_daily.parquet"
+  adjustment: hfq                  # 后复权
+  fundamentals: false              # ROE 走 factors/roe.py 自带 asof，不依赖此
+
+universe:
+  csv: "D:/QuantLab/config/full_a_sh_sz.csv"
+
+execution:
+  price: next_open
+  slippage: 0.001
+  commission_rate: 0.00025
+  tax_rate: 0.0001
+
+strategy: atr_lowvol     # 框架原生策略（target_weights 模式，扁平注册名）
+trading_model: next_open
+
+# ===== 策略参数（同时驱动框架通用组合层 overlays）=====
+strategy_params:
+  rebalance_freq: quarterly        # weekly|monthly|quarterly
+  n_hold: 100
+  atr_win: 14
+  atr_pct_max: 0.06
+  turnover_min: 1.0
+  turnover_max: 8.0
+  quality_gate: 1                  # ROE>0
+  momentum_gate: 1                 # 12-1月动量>0（剔除近期输家）
+  stop_loss: -0.08
+  # --- 框架通用组合层（backtest/rebalance.py）---
+  position_sizing: equal           # equal|vol_parity|custom
+  target_leverage: 1.0             # >1 启用两融（自动计提利息）
+  vol_target: 0.0                  # >0 启用波动率目标
+  industry_cap: 0.0                # >0 启用行业上限
+  max_positions: 0                 # 0=不限制（用 n_hold 控）
+  min_position_value: 0.0          # 0=不限制
+  vol_window: 60
+  margin_interest_rate: 0.06

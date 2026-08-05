@@ -12,7 +12,6 @@ import time
 import traceback
 
 # Add paths
-sys.path.insert(0, 'D:/QMT_STRATEGIES')
 sys.path.insert(0, 'E:/QuantLab')
 
 import numpy as np

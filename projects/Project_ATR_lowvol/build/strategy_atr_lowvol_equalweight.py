@@ -1,0 +1,953 @@
+# coding=gbk
+"""
+ATR 低波动策略 - 等权 不杠杆 部署版（QMT 全闭环，零外部依赖）
+
+对应回测框架配置 atr_lowvol_fw.yaml（等权 不杠杆，年化 +18.69% 验证版）：
+  选股: ATR% 最低分位(top N) + 换手率[1,8]% + 非ST + 上市>=252日
+        + 质量门控(ROE>0) + 动量门控(12-1月收益>0，剔除近期输家)
+  调仓: 季频（每季度的首个交易日）
+  仓位: 等权（每票目标市值 = 总资产 / N_HOLD），不杠杆
+  风控: 整数手(100股) / ST+-5% / 停牌(QMT成交层天然处理)
+        持仓间际止损 -8%（可关，对应框架 stop_loss）
+
+与旧版 deploy/strategy_atr_lowvol.py 的区别：
+  旧版 = max_hold=3 + 止损止盈 + 条件失效退出（即回测 -5.85% 那套）。
+  本版 = 框架真实约束版：分散100只等权 + 季频再平衡（回测 +18.69% 那套）。
+
+数据来源：QMT 行情上下文 C（get_market_data_ex / get_turnover_rate / get_stock_list_in_sector）。
+ROE 质量门控走 xtdata.get_financial_data，若接口不可用则自动跳过该门控（不崩溃）。
+"""
+import json
+import os
+import time
+import math
+from datetime import datetime, timedelta
+
+# ============================================================
+# 配置（内置默认值，可被 config/atr_lowvol_equalweight_config.yaml 覆盖）
+# ============================================================
+CONFIG = {
+    'strategy': {
+        'name': 'ATR_LOWVOL_EW',
+        'display_name': 'ATR低波动-等权不杠杆',
+        'capital_base': 1000000,
+        'account_id': '67014907',
+    },
+    'screening': {
+        'n_hold': 100,
+        'atr_threshold': 6.0,
+        'min_turnover': 1.0,
+        'max_turnover': 8.0,
+        'min_history': 252,
+        'quality_gate': 1,
+        'momentum_gate': 1,
+    },
+    'rebalance': {
+        'freq': 'quarterly',
+        'stop_loss': -0.08,
+    },
+    'pool': {
+        'holdings_file': 'D:/QMT_POOL/atr_ew_holdings.json',
+        'nav_file': 'D:/QMT_POOL/atr_ew_nav.json',
+        'trade_log_file': 'D:/QMT_POOL/atr_ew_trade_log.csv',
+    },
+}
+
+# ============================================================
+# 全局状态
+# ============================================================
+_g_my_codes = {}            # code -> {buy_price, buy_date, shares, peak_price, ...}
+_g_cumulative_pnl = 0.0
+_g_nav_history = []
+_g_all_data = {}            # code -> DataFrame（再平衡日全市场快照）
+_g_hold_pool_cache = None   # 选股结果缓存
+_g_hold_pool_cache_date = ''
+_g_initialized = False
+_g_cooling_until = 0.0
+_g_last_rebalance_key = ''  # 上次再平衡的 季度键(如 2026Q3)
+_g_last_attempt_date = ''   # 上次再平衡尝试日期 YYYYMMDD（空仓兜底限频用）
+_g_pending_sells = {}       # code -> {shares, price, reason, time}
+_g_pending_buys = {}        # code -> {shares, price, time}
+_g_roe_cache = {}           # code -> roe（季内缓存）
+_g_roe_api_ok = None        # None=未探明 True/False
+_g_turnover_available = True
+
+# 可配置参数（被 _load_config 覆盖；config 中 capital_base 设定本策略锁定可用资金）
+_STRATEGY_CAPITAL = 100000
+_ACCOUNT_ID = '67014907'
+_N_HOLD = 100
+_ATR_THRESHOLD = 6.0
+_MIN_TURNOVER = 1.0
+_MAX_TURNOVER = 8.0
+_MIN_HISTORY = 252
+_QUALITY_GATE = 1
+_MOMENTUM_GATE = 1
+_REBALANCE_FREQ = 'quarterly'
+_STOP_LOSS = -0.08
+_REBALANCE_RETRY_DAYS = 1   # 空仓兜底：未建仓时每隔几天重试一次（1=每天）
+
+_LOOKUP_RETRIES = 4
+_LOOKUP_INTERVAL = 0.2
+_HOLDINGS_FILE = 'D:/QMT_POOL/atr_ew_holdings.json'
+_NAV_FILE = 'D:/QMT_POOL/atr_ew_nav.json'
+_TRADE_LOG_FILE = 'D:/QMT_POOL/atr_ew_trade_log.csv'
+
+
+# ============================================================
+# 配置加载（简易 YAML 解析，不依赖 pyyaml）
+# ============================================================
+def _load_config():
+    global _STRATEGY_CAPITAL, _ACCOUNT_ID, _N_HOLD, _ATR_THRESHOLD
+    global _MIN_TURNOVER, _MAX_TURNOVER, _MIN_HISTORY, _QUALITY_GATE
+    global _MOMENTUM_GATE, _REBALANCE_FREQ, _STOP_LOSS
+    global _HOLDINGS_FILE, _NAV_FILE, _TRADE_LOG_FILE
+
+    config_path = 'D:/QMT_STRATEGIES/config/atr_lowvol_equalweight_config.yaml'
+    if not os.path.exists(config_path):
+        print("[ATR_EW] 无配置文件，使用内置默认值")
+        return
+
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+        section = None
+        for line in lines:
+            stripped = line.strip()
+            if not stripped or stripped.startswith('#'):
+                continue
+            if stripped.endswith(':') and not stripped.startswith('-'):
+                key = stripped.rstrip(':')
+                if key in ('strategy', 'screening', 'rebalance', 'pool'):
+                    section = key
+                else:
+                    section = None
+                continue
+            if ':' in stripped and not stripped.startswith('-'):
+                parts = stripped.split(':', 1)
+                k = parts[0].strip()
+                v = parts[1].strip() if len(parts) > 1 else ''
+                if '#' in v:
+                    v = v[:v.index('#')].strip()
+                if section == 'strategy':
+                    if k == 'capital_base':
+                        _STRATEGY_CAPITAL = int(float(v))
+                    elif k == 'account_id':
+                        _ACCOUNT_ID = str(v).strip("'\"")
+                elif section == 'screening':
+                    if k == 'n_hold':
+                        _N_HOLD = int(float(v))
+                    elif k == 'atr_threshold':
+                        _ATR_THRESHOLD = float(v)
+                    elif k == 'min_turnover':
+                        _MIN_TURNOVER = float(v)
+                    elif k == 'max_turnover':
+                        _MAX_TURNOVER = float(v)
+                    elif k == 'min_history':
+                        _MIN_HISTORY = int(float(v))
+                    elif k == 'quality_gate':
+                        _QUALITY_GATE = int(float(v))
+                    elif k == 'momentum_gate':
+                        _MOMENTUM_GATE = int(float(v))
+                elif section == 'rebalance':
+                    if k == 'freq':
+                        _REBALANCE_FREQ = str(v).strip("'\"")
+                    elif k == 'stop_loss':
+                        _STOP_LOSS = float(v)
+                elif section == 'pool':
+                    if k == 'holdings_file':
+                        _HOLDINGS_FILE = str(v).strip("'\"")
+                    elif k == 'nav_file':
+                        _NAV_FILE = str(v).strip("'\"")
+                    elif k == 'trade_log_file':
+                        _TRADE_LOG_FILE = str(v).strip("'\"")
+        print("[ATR_EW] 配置加载完成: N_HOLD=%d ATR<%.2f%% turnover[%.1f,%.1f] freq=%s"
+              % (_N_HOLD, _ATR_THRESHOLD, _MIN_TURNOVER, _MAX_TURNOVER, _REBALANCE_FREQ))
+    except Exception as e:
+        print("[ATR_EW] 配置加载失败: %s, 使用默认值" % e)
+
+
+# ============================================================
+# 辅助函数
+# ============================================================
+def _get_qmt_time(C):
+    try:
+        return C.get_current_time()
+    except Exception:
+        return datetime.now()
+
+
+def _get_stock_name_safe(C, code):
+    try:
+        info = C.get_stock_basic_info(code)
+        if info is not None:
+            return info.get('name', code)
+    except Exception:
+        pass
+    return code
+
+
+def _calc_atr_pct(df):
+    """计算 ATR(14)/close * 100（与框架 factors/atr.atr_pct 同口径）。"""
+    if df is None or len(df) < 15:
+        return 999.0
+    try:
+        h = df['high']
+        l = df['low']
+        c = df['close']
+        tr1 = (h - l).values
+        tr2 = (h - c.shift(1)).abs().values
+        tr3 = (l - c.shift(1)).abs().values
+        tr = [max(tr1[i], tr2[i], tr3[i]) if not math.isnan(tr2[i]) else tr1[i]
+              for i in range(len(tr1))]
+        atr = sum(tr[-14:]) / 14.0
+        close_price = float(c.iloc[-1])
+        if close_price <= 0:
+            return 999.0
+        return atr / close_price * 100.0
+    except Exception:
+        return 999.0
+
+
+def _get_roe_qmt(C, code):
+    """质量门控：取最新 ROE(%)。接口不可用则自动跳过门控（返回通过）。"""
+    global _g_roe_api_ok
+    if code in _g_roe_cache:
+        return _g_roe_cache[code]
+    if not _QUALITY_GATE:
+        return 1.0
+    if _g_roe_api_ok is False:
+        return 1.0
+    try:
+        import xtdata
+        val = None
+        try:
+            res = xtdata.get_financial_data(['roe'], code)
+            if isinstance(res, dict) and code in res:
+                d = res[code]
+                if isinstance(d, dict):
+                    val = d.get('roe')
+                elif d is not None:
+                    val = d
+        except Exception:
+            val = None
+        if val is None:
+            try:
+                res = xtdata.get_financial_data(['roe'], code, report_date='')
+                if isinstance(res, dict) and code in res:
+                    d = res[code]
+                    val = d.get('roe') if isinstance(d, dict) else d
+            except Exception:
+                val = None
+        if val is None:
+            _g_roe_api_ok = False
+            print("[ATR_EW] ROE 接口不可用，质量门控自动跳过")
+            return 1.0
+        try:
+            roe = float(val)
+        except Exception:
+            _g_roe_api_ok = False
+            return 1.0
+        _g_roe_cache[code] = roe
+        _g_roe_api_ok = True
+        return roe
+    except Exception:
+        _g_roe_api_ok = False
+        return 1.0
+
+
+def _load_holdings():
+    global _g_my_codes, _g_cumulative_pnl, _g_nav_history
+    if os.path.exists(_HOLDINGS_FILE):
+        try:
+            with open(_HOLDINGS_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            _g_my_codes = data.get('holdings', {})
+            _g_cumulative_pnl = data.get('cumulative_pnl', 0.0)
+            _g_nav_history = data.get('nav_history', [])
+            print("[ATR_EW] 加载持仓 %d 只, 累计盈亏 %.2f" % (len(_g_my_codes), _g_cumulative_pnl))
+        except Exception as e:
+            print("[ATR_EW] 持仓加载失败: %s" % e)
+            _g_my_codes = {}
+            _g_cumulative_pnl = 0.0
+            _g_nav_history = []
+    else:
+        _g_my_codes = {}
+        _g_cumulative_pnl = 0.0
+        _g_nav_history = []
+
+
+def _save_holdings():
+    try:
+        data = {
+            'holdings': _g_my_codes,
+            'cumulative_pnl': _g_cumulative_pnl,
+            'nav_history': _g_nav_history[-500:],
+            'updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        }
+        with open(_HOLDINGS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print("[ATR_EW] 持仓保存失败: %s" % e)
+
+
+def _log_trade(trade_type, code, price, shares, reason):
+    try:
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        line = "%s,%s,%s,%.3f,%d,%s\n" % (now, trade_type, code, price, shares, reason)
+        with open(_TRADE_LOG_FILE, 'a', encoding='utf-8') as f:
+            f.write(line)
+    except Exception:
+        pass
+
+
+def _reconcile_own_holdings(C):
+    """仅依据本策略 ledger 与账户对账：账户里已没有的(被外部卖出)就从 ledger 移除；
+    绝不清管/接管别的策略的持仓，保证多策略共存时票与资金互不干扰。"""
+    try:
+        positions = C.get_trade_detail_data(_ACCOUNT_ID, 'stock', 'position')
+        if not positions:
+            return
+        account_codes = set()
+        for pos in positions:
+            code = str(pos.m_strCode if hasattr(pos, 'm_strCode') else pos.get('code', ''))
+            if not code:
+                continue
+            if not code.endswith('.SH') and not code.endswith('.SZ'):
+                continue
+            account_codes.add(code)
+        # 只移除本策略 ledger 中、账户已不存在的票（如被手动/外部卖出）
+        to_remove = [c for c in _g_my_codes if c not in account_codes]
+        for c in to_remove:
+            print("[ATR_EW 对账] %s 账户已无此持仓(或已外部卖出), 移除本策略记录" % c)
+            del _g_my_codes[c]
+    except Exception as e:
+        print("[ATR_EW 对账] 异常: %s" % e)
+
+
+# ============================================================
+# 订单反查与执行（复用旧版成熟脚手架）
+# ============================================================
+def _lookup_order(C, code, volume, direction, retries=None, interval=None):
+    if retries is None:
+        retries = _LOOKUP_RETRIES
+    if interval is None:
+        interval = _LOOKUP_INTERVAL
+    # miniQMT(本地极简端) 的 ContextInfo 没有 get_trade_detail_data 方法，反查必然失败。
+    # QMT passorder 是异步接口，返回0/None不代表下单失败；因此做"乐观确认"：
+    # 反查方法不存在时直接按成功处理，调用方写/删 ledger、不进 pending 死循环。
+    # （参考6+2策略的乐观确认修复2）
+    if getattr(C, 'get_trade_detail_data', None) is None:
+        return ('OPTIMISTIC', None)
+    dir_cn = '买入' if direction == 'buy' else '卖出'
+    for retry in range(retries):
+        time.sleep(interval)
+        try:
+            deals = C.get_trade_detail_data(_ACCOUNT_ID, 'stock', 'order')
+            if not deals:
+                continue
+            candidates = []
+            for d in deals:
+                try:
+                    oid = str(d.m_strOrderID if hasattr(d, 'm_strOrderID') else '')
+                    d_code = str(d.m_strInstrumentID if hasattr(d, 'm_strInstrumentID') else '')
+                    d_vol = int(d.m_nOrderVolume if hasattr(d, 'm_nOrderVolume') else 0)
+                    d_opt = str(d.m_strOptName if hasattr(d, 'm_strOptName') else '')
+                    d_status = int(d.m_nOrderStatus if hasattr(d, 'm_nOrderStatus') else 0)
+                except Exception:
+                    continue
+                if d_code != code:
+                    continue
+                if dir_cn not in d_opt:
+                    continue
+                if volume > 0 and d_vol > 0:
+                    vol_diff = abs(d_vol - volume) / max(d_vol, volume)
+                    if vol_diff > 0.10:
+                        continue
+                if d_status in (54, 55, 57):
+                    continue
+                candidates.append((oid, d))
+            if candidates:
+                candidates.sort(key=lambda x: getattr(x[1], 'm_strInsertTime', ''), reverse=True)
+                return candidates[0][0], candidates[0][1]
+        except Exception:
+            continue
+    return None, None
+
+
+def _check_pending_orders(C):
+    global _g_my_codes, _g_cumulative_pnl
+    now = time.time()
+    for code in list(_g_pending_sells.keys()):
+        pending = _g_pending_sells[code]
+        if now - pending['time'] > 30:
+            print("[ATR_EW pending超时] %s 卖出未确认超时, 放弃" % code)
+            del _g_pending_sells[code]
+            continue
+        oid, matched = _lookup_order(C, code, pending['shares'], 'sell')
+        if oid:
+            print("[ATR_EW pending确认] %s 卖出订单%s已确认" % (code, oid))
+            pnl = (pending['price'] - pending.get('buy_price', pending['price'])) * pending['shares']
+            _g_cumulative_pnl += pnl
+            _log_trade('卖出(迟确认)', code, pending['price'], pending['shares'], pending.get('reason', ''))
+            del _g_pending_sells[code]
+    for code in list(_g_pending_buys.keys()):
+        pending = _g_pending_buys[code]
+        if now - pending['time'] > 30:
+            # 乐观模式：委托可能已成交，保留 ledger 不回滚（避免误删已持仓）
+            print("[ATR_EW pending超时] %s 买入未确认超时, 保留持仓记录(乐观)" % code)
+            del _g_pending_buys[code]
+            continue
+        oid, matched = _lookup_order(C, code, pending['shares'], 'buy')
+        if oid:
+            print("[ATR_EW pending确认] %s 买入订单%s已确认" % (code, oid))
+            del _g_pending_buys[code]
+
+
+def _execute_sells(C, to_sell, current_prices):
+    """卖出列表（全部卖出）。"""
+    for code, reason in to_sell:
+        info = _g_my_codes.get(code)
+        if info is None:
+            continue
+        shares = info.get('shares', 0)
+        price = current_prices.get(code, 0)
+        if shares <= 0 or price <= 0:
+            continue
+        try:
+            # 只卖本策略 ledger 记录的量（不用 -1=全部），多策略重叠时不会误卖别人的仓位
+            order_id = C.passorder(
+                24,  # 24=卖出
+                1101 if price >= 1.0 else 1102,
+                _ACCOUNT_ID,
+                code,
+                5,   # 卖5价类型
+                price,
+                shares,  # 仅本策略持仓量
+                code,
+                1,
+            )
+            print("[ATR_EW 卖出] %s %d股 @ %.3f 原因:%s 返回值:%s" % (code, shares, price, reason, order_id))
+            oid, matched = _lookup_order(C, code, shares, 'sell')
+            if oid:
+                print("[ATR_EW 卖出确认] %s 订单%s已确认" % (code, oid))
+                pnl = (price - info.get('buy_price', price)) * shares
+                _g_cumulative_pnl += pnl
+                _log_trade('卖出', code, price, shares, reason)
+                del _g_my_codes[code]
+            else:
+                print("[ATR_EW 卖出反查失败] %s 登记pending" % code)
+                _g_pending_sells[code] = {
+                    'shares': shares, 'price': price, 'reason': reason, 'time': time.time(),
+                }
+                del _g_my_codes[code]
+        except Exception as e:
+            print("[ATR_EW 卖出失败] %s: %s" % (code, e))
+
+
+def _get_account_cash(C):
+    """取账户可用现金（仅作共享账户透支上限，不参与本策略规模预算）。"""
+    try:
+        info = C.get_account_info()
+        if isinstance(info, dict):
+            c = info.get('cash')
+            if c is None:
+                c = info.get('available_cash')
+            if c is not None:
+                return float(c)
+        c = getattr(info, 'cash', None)
+        if c is None:
+            c = getattr(info, 'available_cash', None)
+        if c is not None:
+            return float(c)
+    except Exception as e:
+        print("[ATR_EW] 取账户现金失败(降级:不做硬上限): %s" % e)
+    # 取不到则不对账户现金做硬上限（本策略虚拟额度已限制不会抢占别人资金）
+    return 1e18
+
+
+def _partial_sell(C, code, shares, price, reason):
+    """卖出本策略持有的部分份额（调仓缩减），不影响别的策略的同票持仓。"""
+    global _g_my_codes, _g_cumulative_pnl
+    info = _g_my_codes.get(code)
+    if info is None or shares <= 0 or price <= 0:
+        return
+    try:
+        order_id = C.passorder(
+            24,  # 24=卖出
+            1101 if price >= 1.0 else 1102,
+            _ACCOUNT_ID,
+            code,
+            5,   # 卖5价类型
+            shares,  # 仅本策略持仓量
+            price,
+            code,
+            1,
+        )
+        print("[ATR_EW 调仓卖出] %s %d股 @ %.3f 原因:%s 返回值:%s" % (code, shares, price, reason, order_id))
+        oid, matched = _lookup_order(C, code, shares, 'sell')
+        if oid:
+            pnl = (price - info.get('buy_price', price)) * shares
+            _g_cumulative_pnl += pnl
+            _log_trade('卖出', code, price, shares, reason)
+            info['shares'] -= shares
+            if info['shares'] <= 0:
+                del _g_my_codes[code]
+        else:
+            print("[ATR_EW 调仓卖出反查失败] %s 登记pending" % code)
+            _g_pending_sells[code] = {'shares': shares, 'price': price, 'reason': reason, 'time': time.time()}
+            info['shares'] -= shares
+            if info['shares'] <= 0:
+                del _g_my_codes[code]
+    except Exception as e:
+        print("[ATR_EW 调仓卖出失败] %s: %s" % (code, e))
+
+
+def _execute_buys_equalweight(C, target_codes, prices):
+    """等权再平衡（滚动 NAV）：对目标内每只票按 NAV/n_target 计算目标市值，
+    只调整本策略自己的 delta（买增量 / 卖溢出），绝不碰别人的票。
+    NAV = 本策略持仓当前市值(含未实现浮盈)，收益滚动加仓；账户现金仅作透支上限。"""
+    global _g_my_codes, _g_cumulative_pnl
+    # 本策略滚动 NAV：自有持仓当前市值（用实时价，含未实现），至少不低于本金基准
+    holdings_value = sum(info.get('shares', 0) * prices.get(code, info.get('buy_price', 0))
+                         for code, info in _g_my_codes.items())
+    nav = max(holdings_value, _STRATEGY_CAPITAL)
+    n_target = max(len(target_codes), 1)
+    target_value = nav / n_target
+    # 可动用资金 = min(本策略虚拟可用, 账户实际可用)；
+    # 既不超过本策略额度（不抢占别人的资金），也不透支共享账户（不影响别的策略）
+    virtual_cash = nav - holdings_value
+    acct_cash = _get_account_cash(C)
+    spendable = min(virtual_cash, acct_cash)
+
+    for code in target_codes:
+        price = prices.get(code)
+        if price is None or price <= 0:
+            continue
+        # 停牌检查：最新成交量为 0 则不交易
+        df = _g_all_data.get(code)
+        if df is not None and len(df) > 0:
+            try:
+                if float(df['volume'].iloc[-1]) <= 0:
+                    continue
+            except Exception:
+                pass
+        held = _g_my_codes.get(code, {}).get('shares', 0)
+        desired = int(target_value / price / 100) * 100
+        delta = desired - held
+        if delta > 0:
+            # 买增量，受 spendable 约束
+            if delta * price > spendable + 1:
+                delta = int(spendable / price / 100) * 100
+                if delta <= 0:
+                    continue
+            try:
+                order_id = C.passorder(
+                    23,  # 23=买入
+                    1101,
+                    _ACCOUNT_ID,
+                    code,
+                    5,   # 买1价类型
+                    price,
+                    delta,
+                    code,
+                    1,
+                )
+                print("[ATR_EW 买入] %s %d股 @ %.3f 目标市值=%.0f 返回值:%s"
+                      % (code, delta, price, target_value, order_id))
+                oid, matched = _lookup_order(C, code, delta, 'buy')
+                if oid:
+                    print("[ATR_EW 买入确认] %s 订单%s已确认" % (code, oid))
+                else:
+                    print("[ATR_EW 买入反查失败] %s 登记pending" % code)
+                    _g_pending_buys[code] = {'shares': delta, 'price': price, 'time': time.time()}
+                if held > 0:
+                    # 加仓：更新加权成本
+                    info = _g_my_codes[code]
+                    new_shares = held + delta
+                    info['buy_price'] = (info.get('buy_price', price) * held + price * delta) / new_shares
+                    info['shares'] = new_shares
+                    info['peak_price'] = max(info.get('peak_price', price), price)
+                else:
+                    _g_my_codes[code] = {
+                        'buy_price': price,
+                        'buy_date': datetime.now().strftime('%Y%m%d'),
+                        'shares': delta,
+                        'peak_price': price,
+                    }
+                _log_trade('买入', code, price, delta, 'ATR低波等权调仓')
+                spendable -= delta * price
+            except Exception as e:
+                print("[ATR_EW 买入失败] %s: %s" % (code, e))
+        elif delta < 0:
+            # 卖自己多出的量（仅本策略 ledger 记录的量）
+            _partial_sell(C, code, -delta, price, '调仓缩减(等权再平衡)')
+
+
+# ============================================================
+# 选股引擎（低 ATR% 前 N + 全套过滤）
+# ============================================================
+def _batch_get_roe(codes):
+    """批量取 ROE(%)，一次 IPC 调用替代逐股调用（关键性能优化）。返回 {code: roe}。"""
+    global _g_roe_api_ok, _g_roe_cache
+    if _g_roe_api_ok is False:
+        return {}
+    if not codes:
+        return {}
+    result = {}
+    # 分批（每批 200），兼顾单次调用上限与 IPC 次数（几十次 vs 逐股上千次）
+    import xtdata
+    step = 200
+    for i in range(0, len(codes), step):
+        batch = codes[i:i + step]
+        try:
+            res = xtdata.get_financial_data(['roe'], batch)
+        except Exception as e:
+            print("[ATR_EW] 批量ROE获取失败(批次%d): %s" % (i // step, e))
+            _g_roe_api_ok = False
+            continue
+        if isinstance(res, dict):
+            for code in batch:
+                d = res.get(code)
+                if isinstance(d, dict):
+                    v = d.get('roe')
+                else:
+                    v = d
+                if v is not None:
+                    try:
+                        result[code] = float(v)
+                        _g_roe_cache[code] = result[code]
+                    except Exception:
+                        pass
+    if result:
+        _g_roe_api_ok = True
+    return result
+
+
+def _run_screening(C):
+    """全市场 ATR 低波动筛选：返回入选代码列表（低 ATR% 前 N_HOLD）。"""
+    global _g_hold_pool_cache, _g_hold_pool_cache_date, _g_all_data, _g_turnover_available
+
+    today_str = datetime.now().strftime('%Y%m%d')
+    if _g_hold_pool_cache is not None and _g_hold_pool_cache_date == today_str:
+        print("[ATR_EW] 选股缓存命中: %d 只" % len(_g_hold_pool_cache))
+        return _g_hold_pool_cache
+
+    try:
+        all_codes = C.get_stock_list_in_sector('沪深A股')
+        codes = [c for c in all_codes if c.endswith('.SH') or c.endswith('.SZ')]
+        print("[ATR_EW] 全市场 %d 只, 开始筛选..." % len(codes))
+    except Exception as e:
+        print("[ATR_EW] get_stock_list_in_sector失败: %s" % e)
+        return []
+
+    # 一次性拉取全市场日线（含动量所需的 252 根）
+    try:
+        data = C.get_market_data_ex(stock_code=codes, period='1d', count=_MIN_HISTORY + 10)
+        if not data:
+            return []
+        _g_all_data = data
+    except Exception as e:
+        print("[ATR_EW] 行情拉取失败: %s" % e)
+        return []
+
+    # 换手率：优先从日线取，缺失再试接口
+    turnover_map = {}
+    for code, df in data.items():
+        try:
+            if 'turnover_rate' in df.columns:
+                s = df['turnover_rate'].dropna()
+                if len(s) > 0:
+                    turnover_map[code] = float(s.iloc[-1]) * 100.0
+        except Exception:
+            pass
+    if not turnover_map:
+        try:
+            start = (datetime.now() - timedelta(days=120)).strftime('%Y%m%d')
+            end = today_str
+            td = C.get_turnover_rate(codes, start, end)
+            if td is not None:
+                for code in codes:
+                    if code in td.columns:
+                        s = td[code].dropna()
+                        if len(s) > 0:
+                            turnover_map[code] = float(s.iloc[-1]) * 100.0
+        except AttributeError:
+            _g_turnover_available = False
+        except Exception:
+            _g_turnover_available = False
+
+    # ST 名单一次性拉取（避免对每只股票单独查名称，季频全市场会触发数千次 API）
+    st_set = set()
+    try:
+        lst = C.get_stock_list_in_sector('风险警示板')
+        if lst:
+            st_set = set(lst)
+    except Exception:
+        pass
+    if not st_set:
+        try:
+            lst = C.get_stock_list_in_sector('ST')
+            if lst:
+                st_set = set(lst)
+        except Exception:
+            pass
+    if not st_set:
+        print("[ATR_EW] 警告: ST板块名单获取失败，ST过滤本次跳过（保守降级）")
+
+    eligible = []
+    for code, df in data.items():
+        if df is None or len(df) < _MIN_HISTORY:
+            continue
+        try:
+            cl = float(df['close'].iloc[-1])
+            if cl <= 0:
+                continue
+            # ATR% 过滤（低波动）
+            atr_pct = _calc_atr_pct(df)
+            if atr_pct <= 0 or atr_pct >= _ATR_THRESHOLD:
+                continue
+            # 换手率过滤
+            if _g_turnover_available:
+                to = turnover_map.get(code, -1.0)
+                if to < 0:
+                    # 该票无换手数据，跳过（保守）
+                    continue
+                if to < _MIN_TURNOVER or to > _MAX_TURNOVER:
+                    continue
+            # 非 ST（板块集合判断，O(1)）
+            if code in st_set:
+                continue
+            # 动量门控：12-1 月收益 > 0（剔除近期输家，来自已拉取日线，零额外API）
+            if _MOMENTUM_GATE:
+                close = df['close'].astype(float).values
+                if len(close) >= 252:
+                    ret_12_1 = close[-21] / close[-252] - 1.0 if close[-252] > 0 else 0.0
+                    if ret_12_1 <= 0:
+                        continue
+            eligible.append((code, atr_pct))
+        except Exception:
+            continue
+
+    # 质量门控：ROE > 0（一次性批量取，替代逐股调用，避免上千次 IPC）
+    if _QUALITY_GATE and eligible:
+        print("[ATR_EW] 初筛通过 %d 只，批量取ROE..." % len(eligible))
+        roe_map = _batch_get_roe([c for c, _ in eligible])
+        if _g_roe_api_ok is False:
+            print("[ATR_EW] 警告: ROE接口不可用，本次跳过ROE门控（保守降级，少一道质量过滤）")
+        else:
+            filtered = []
+            for code, atr_pct in eligible:
+                roe = roe_map.get(code)
+                if roe is None or roe <= 0:
+                    continue
+                filtered.append((code, atr_pct))
+            eligible = filtered
+
+    # 按 ATR% 升序取前 N_HOLD（低波动优先）
+    eligible.sort(key=lambda x: x[1])
+    selected = [c for c, _ in eligible[:_N_HOLD]]
+
+    _g_hold_pool_cache = selected
+    _g_hold_pool_cache_date = today_str
+
+    print("[ATR_EW] 筛选完成: 候选%d -> 入选%d只" % (len(eligible), len(selected)))
+    for c in selected[:15]:
+        name = _get_stock_name_safe(C, c)
+        print("    [ATR_EW 选股] %s %s ATR%%=%.2f" % (c, name, dict(eligible).get(c, 0)))
+    if len(selected) > 15:
+        print("    ... 其余 %d 只省略" % (len(selected) - 15))
+
+    return selected
+
+
+# ============================================================
+# 再平衡 + 间际止损
+# ============================================================
+def _current_prices(C, codes):
+    prices = {}
+    if not codes:
+        return prices
+    try:
+        data = C.get_market_data_ex(stock_code=list(codes), period='1d', count=2)
+        if data:
+            for code, df in data.items():
+                if df is not None and len(df) > 0:
+                    prices[code] = float(df['close'].iloc[-1])
+    except Exception:
+        pass
+    return prices
+
+
+def _quarter_key(now):
+    q = (now.month - 1) // 3 + 1
+    return "%dQ%d" % (now.year, q)
+
+
+def _rebalance_to_target(C, target_codes):
+    """卖出不在目标里的持仓（停牌跳过），等权买入目标里未持仓的。"""
+    prices = _current_prices(C, list(set(list(_g_my_codes.keys()) + list(target_codes))))
+
+    held_codes = list(_g_my_codes.keys())
+    to_sell = [(c, '调出(不在目标)') for c in held_codes if c not in target_codes]
+    if to_sell:
+        print("[ATR_EW 再平衡] 卖出 %d 只调出标的" % len(to_sell))
+        _execute_sells(C, to_sell, prices)
+        _save_holdings()
+
+    # 再平衡买入（卖出释放现金后重算）
+    _execute_buys_equalweight(C, target_codes, prices)
+    _save_holdings()
+
+    nav = max(sum(info.get('shares', 0) * prices.get(code, info.get('buy_price', 0))
+                   for code, info in _g_my_codes.items()), _STRATEGY_CAPITAL)
+    print("[ATR_EW 再平衡完成] 目标%d只 当前持仓%d只 本策略NAV=%.0f"
+          % (len(target_codes), len(_g_my_codes), nav))
+
+
+def _evaluate_interim_stops(C, prices):
+    """间际止损：持仓回撤超过 stop_loss 则卖出。"""
+    if _STOP_LOSS is None or _STOP_LOSS >= 0:
+        return []
+    to_sell = []
+    for code, info in _g_my_codes.items():
+        price = prices.get(code)
+        if price is None or price <= 0:
+            continue
+        bp = info.get('buy_price', 0)
+        if bp > 0 and (price - bp) / bp <= _STOP_LOSS:
+            to_sell.append((code, '间际止损 %.1f%%' % ((price - bp) / bp * 100)))
+    return to_sell
+
+
+# ============================================================
+# 主循环
+# ============================================================
+def _main_loop(C):
+    global _g_last_rebalance_key, _g_cooling_until, _g_last_attempt_date
+
+    now = _get_qmt_time(C)
+    now_str = now.strftime('%H%M') if hasattr(now, 'strftime') else str(now)
+    weekday = now.weekday() if hasattr(now, 'weekday') else datetime.now().weekday()
+    skip_weekday = False
+    try:
+        if C.do_back_test or C.do_backtest:
+            skip_weekday = True
+    except Exception:
+        pass
+    if not skip_weekday and weekday >= 5:
+        return
+
+    print("[ATR_EW] %s 心跳 持仓%d只[%s]" % (
+        now_str, len(_g_my_codes), ','.join(_g_my_codes.keys()) if _g_my_codes else '空'))
+
+    # cooling-off
+    if _g_cooling_until > 0 and time.time() < _g_cooling_until:
+        remaining = int(_g_cooling_until - time.time())
+        print("[ATR_EW] cooling-off 中(%ds)" % remaining)
+        return
+
+    _check_pending_orders(C)
+
+    # 再平衡触发：季度键变化 = 季度首个交易日；或 空仓兜底（中途部署/建仓失败重试）
+    key = _quarter_key(now)
+    today_y = now.strftime('%Y%m%d') if hasattr(now, 'strftime') else datetime.now().strftime('%Y%m%d')
+    is_rebalance_day = (key != _g_last_rebalance_key)
+    # 空仓兜底：尚未建仓时，每天允许重试一次（不卡季频首日），
+    # 避免"中途部署错过Q3首日 + 首次选股失败"导致永久空仓到下一季度。
+    force_retry = (len(_g_my_codes) == 0) and (_g_last_attempt_date != today_y)
+
+    if is_rebalance_day or force_retry:
+        print("[ATR_EW] 再平衡触发(%s, 季频=%s, 空仓兜底=%s)" % (key, is_rebalance_day, force_retry))
+        selected = _run_screening(C)
+        if selected:
+            _rebalance_to_target(C, selected)
+            # 仅在建仓成功后刷新季度键（失败则留待重试，避免永久空仓）
+            if _g_my_codes:
+                _g_last_rebalance_key = key
+        else:
+            print("[ATR_EW] 选股池无候选，跳过本次再平衡（不刷新季度键，留待重试）")
+        _g_last_attempt_date = today_y
+    else:
+        # 非再平衡日：仅做间际止损（轻量，只取持仓价）
+        if _STOP_LOSS is not None and _STOP_LOSS < 0:
+            prices = _current_prices(C, list(_g_my_codes.keys()))
+            to_sell = _evaluate_interim_stops(C, prices)
+            if to_sell:
+                print("[ATR_EW 间际止损] %d只需卖出" % len(to_sell))
+                _execute_sells(C, to_sell, prices)
+                _save_holdings()
+            else:
+                print("[ATR_EW] 间际止损评估: 无")
+
+
+# ============================================================
+# QMT 生命周期
+# ============================================================
+class StrategyRunner(object):
+    def __init__(self):
+        self.initialized = False
+
+    def init(self, C):
+        global _g_initialized, _g_cooling_until, _g_last_rebalance_key
+        print("[ATR_EW] =============================================")
+        print("[ATR_EW] ATR低波动-等权不杠杆 初始化...")
+        print("[ATR_EW] =============================================")
+
+        _load_config()
+        _load_holdings()
+        _reconcile_own_holdings(C)
+
+        print("[ATR_EW] 初始化完成 账号=%s" % _ACCOUNT_ID)
+        print("[ATR_EW] 本金=%d N_HOLD=%d 季频=%s ROE门控=%d 动量门控=%d 止损=%.2f"
+              % (_STRATEGY_CAPITAL, _N_HOLD, _REBALANCE_FREQ, _QUALITY_GATE,
+                 _MOMENTUM_GATE, _STOP_LOSS))
+
+        try:
+            if C.do_back_test or C.do_backtest:
+                _g_cooling_until = 0
+                print("[ATR_EW] 回测模式，跳过 cooling-off")
+            else:
+                _g_cooling_until = time.time() + 60
+                print("[ATR_EW] 启动 cooling-off 中(60s)")
+        except Exception:
+            _g_cooling_until = time.time() + 60
+
+        _g_initialized = True
+        self.initialized = True
+
+    def handlebar(self, C):
+        if not self.initialized:
+            return
+        try:
+            _main_loop(C)
+        except Exception as e:
+            print("[ATR_EW 异常] %s" % e)
+
+    def exit(self, C):
+        _save_holdings()
+        print("[ATR_EW] 策略退出，持仓已保存")
+
+
+def init(C):
+    C.runner = StrategyRunner()
+    C.runner.init(C)
+
+
+def after_init(C):
+    pass
+
+
+def handlebar(C):
+    runner = getattr(C, 'runner', None)
+    if runner is not None:
+        try:
+            runner.handlebar(C)
+        except KeyboardInterrupt:
+            print("[停止] 手动中断策略，正常退出...")
+            raise
+
+
+def exit(C):
+    runner = getattr(C, 'runner', None)
+    if runner is not None:
+        runner.exit(C)

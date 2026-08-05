@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>多因子选股回测报告</title>
+<style>
+body { font-family: 'Microsoft YaHei', sans-serif; margin: 20px; }
+table { border-collapse: collapse; font-size: 14px; }
+th, td { border: 1px solid #ccc; padding: 6px 12px; text-align: center; }
+th { background: #f0f0f0; }
+.positive { color: green; }
+.negative { color: red; }
+</style>
+</head>
+<body>
+<h1>多因子选股回测报告</h1>
+<p>生成时间: 2026-07-17 18:22</p>
+<p>策略: BP(30%) + 反转(25%) + 低波(25%) + ROE(20%)</p>
+<p>调仓频率: 月度 | 持仓方式: 等权</p>
+
+<h2>多组参数对比</h2>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>top_n</th>
+      <th>总收益</th>
+      <th>年化收益</th>
+      <th>最大回撤</th>
+      <th>夏普比率</th>
+      <th>胜率</th>
+      <th>月均换手</th>
+      <th>平均持仓数</th>
+      <th>调仓次数</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>10</td>
+      <td>-14.9%</td>
+      <td>-2.0%</td>
+      <td>-32.1%</td>
+      <td>-0.05</td>
+      <td>47%</td>
+      <td>100%</td>
+      <td>10</td>
+      <td>95</td>
+    </tr>
+    <tr>
+      <td>20</td>
+      <td>3.4%</td>
+      <td>0.4%</td>
+      <td>-34.5%</td>
+      <td>0.03</td>
+      <td>49%</td>
+      <td>100%</td>
+      <td>20</td>
+      <td>95</td>
+    </tr>
+    <tr>
+      <td>30</td>
+      <td>5.5%</td>
+      <td>0.7%</td>
+      <td>-35.4%</td>
+      <td>0.04</td>
+      <td>48%</td>
+      <td>100%</td>
+      <td>30</td>
+      <td>95</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>持仓明细</h2>
+<p>详见各子目录:</p>
+<ul>
+<li><a href="backtest_top10/trades.csv">TOP 10</a></li><li><a href="backtest_top20/trades.csv">TOP 20</a></li><li><a href="backtest_top30/trades.csv">TOP 30</a></li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,144 @@
+# 知识卡导出索引文件
+schema_version: 1
+locale: zh-CN
+branch: master
+nodes_managed: true
+exported_at: "2026-08-04T12:59:19Z"
+modules:
+    "":
+        dir_name: QuantLab A股量化研究框架（根项目）
+        title: QuantLab A股量化研究框架（根项目）
+        scope:
+            - main.py
+            - setup.py
+            - requirements.txt
+            - .gitignore
+            - .mcp.json
+            - AGENTS.md
+            - start_trading.bat
+            - start_trading_qmt.bat
+            - test_connection.py
+            - test_connection_qmt.py
+            - test_in_qmt.py
+            - 全局复利与踩坑日志.md
+            - 快速启动.md
+            - A股量化框架_五大扩展模块.md
+            - miniQMT实盘对接_生产级完善方案.md
+            - README.md
+            - _tavily_extract.py
+            - _tavily_search.py
+            - 全局控制台.md
+            - 实盘配置指南.md
+            - 配置完成.md
+        source_files: []
+        children:
+            - backtest_engine
+            - config_bundle
+            - data_layer
+            - factors_lib
+            - projects
+            - reports_output
+            - research_audit
+            - scripts_tooling
+            - strategy_core
+        depends_on: []
+        related_to: []
+    backtest_engine:
+        dir_name: 量化回测引擎核心（Backtest Engine）
+        title: 量化回测引擎核心（Backtest Engine）
+        scope:
+            - backtest/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: config_bundle
+            - path: data_layer
+            - path: projects
+            - path: scripts_tooling
+            - path: strategy_core
+    config_bundle:
+        dir_name: 量化策略配置与回测参数集
+        title: 量化策略配置与回测参数集
+        scope:
+            - config/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: backtest_engine
+    data_layer:
+        dir_name: A股数据源统一接入层
+        title: A股数据源统一接入层
+        scope:
+            - data/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: backtest_engine
+            - path: research_audit
+    factors_lib:
+        dir_name: 量化因子库（ATR_ROE_波动率_VWAP量价相关）
+        title: 量化因子库（ATR/ROE/波动率/VWAP量价相关）
+        scope:
+            - factors/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: strategy_core
+    projects:
+        dir_name: 量化策略项目集与引擎验证
+        title: 量化策略项目集与引擎验证
+        scope:
+            - projects/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: backtest_engine
+            - path: research_audit
+    reports_output:
+        dir_name: 回测报告输出目录
+        title: 回测报告输出目录
+        scope:
+            - reports/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: scripts_tooling
+    research_audit:
+        dir_name: 多因子策略审计与归因分析脚本集
+        title: 多因子策略审计与归因分析脚本集
+        scope:
+            - research_audit/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: data_layer
+            - path: projects
+    scripts_tooling:
+        dir_name: 量化回测与QMT实盘脚本工具集
+        title: 量化回测与QMT实盘脚本工具集
+        scope:
+            - scripts/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: backtest_engine
+            - path: reports_output
+    strategy_core:
+        dir_name: 策略库与注册调度（Strategy Core）
+        title: 策略库与注册调度（Strategy Core）
+        scope:
+            - strategy/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: backtest_engine
+            - path: factors_lib

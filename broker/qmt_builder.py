@@ -3,7 +3,7 @@
 
 用法:
   python broker/qmt_builder.py
-  输出: D:/QMT_STRATEGIES/strategy_mfic.py (生产版)
+  输出: E:/QuantLab/projects/Project_01_多因子IC小盘Alpha/build/strategy_mfic.py (生产版)
 
 流程:
   1. 读取配置和策略参数
@@ -382,4 +382,4 @@ def save_strategy(source_code, output_path):
 if __name__ == "__main__":
     config = load_config()
     code = build_qmt_strategy(config)
-    save_strategy(code, 'D:/QMT_STRATEGIES/strategy_mfic.py')
+    save_strategy(code, 'E:/QuantLab/projects/Project_01_多因子IC小盘Alpha/build/strategy_mfic.py')

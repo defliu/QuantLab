@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: factors_lib
+title: 量化因子库（ATR/ROE/波动率/VWAP量价相关）
+scope:
+    - factors/
+source_files: []
+depends_on: []
+related_to:
+    - path: strategy_core

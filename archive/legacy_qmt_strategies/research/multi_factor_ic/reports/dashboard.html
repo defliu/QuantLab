@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>多因子 IC 策略 · 分析看板</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"Segoe UI",Roboto,"Microsoft YaHei",sans-serif;background:#f0f2f5;color:#2d3436;padding:26px;line-height:1.5}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:22px;margin-bottom:4px;letter-spacing:.5px}
+.sub{color:#888;font-size:13px;margin-bottom:22px}
+.section-title{font-size:15px;font-weight:700;margin:26px 0 12px;color:#2d3436;display:flex;align-items:center;gap:8px}
+.section-title::before{content:"";width:4px;height:16px;background:#0984e3;border-radius:2px;display:inline-block}
+.kpis{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.kpi{flex:1;min-width:150px;background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.kpi .k{font-size:12px;color:#888}
+.kpi .v{font-size:24px;font-weight:800;margin-top:6px}
+.pos{color:#d63031} .neg{color:#00b894} .risk{color:#e17055}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:780px){.grid{grid-template-columns:1fr}}
+.card{background:#fff;border-radius:12px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.card h3{font-size:14px;margin-bottom:12px;color:#2d3436}
+.chart-box{position:relative;height:260px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:center;padding:9px 8px;font-weight:600;color:#888;border-bottom:2px solid #eee;white-space:nowrap}
+td{text-align:center;padding:8px;border-bottom:1px solid #f2f2f2}
+tbody tr:hover td{background:#fafbfc}
+tr.best td{background:#eafaf1!important;font-weight:700}
+tr.best td:first-child{border-left:3px solid #d63031}
+.callout{background:#fff;border-left:4px solid #0984e3;border-radius:0 12px 12px 0;padding:16px 20px;margin-top:10px;box-shadow:0 1px 3px rgba(0,0,0,.08);font-size:13.5px}
+.callout b{color:#0984e3}
+.foot{text-align:center;color:#aaa;font-size:12px;margin:26px 0 4px}
+.tag{display:inline-block;background:#eef6ff;color:#0984e3;border-radius:6px;padding:2px 8px;font-size:12px;margin-right:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>多因子 IC 策略 · 分析看板</h1>
+  <div class="sub">BP 30% + 反转 25% + 低波 25% + ROE 20% &nbsp;·&nbsp; 双月调仓 · 原始权重 (P0 修正版) &nbsp;·&nbsp; 数据区间 2018-07 ~ 2026-06</div>
+
+  <div class="section-title">★ 止损效果 — 全局最强单一改进（年化 93.7%）</div>
+  <div class="grid">
+    <div class="card"><div class="chart-box"><canvas id="slChart"></canvas></div>
+      <div style="font-size:12px;color:#999;margin-top:8px">8% 硬止损使年化从 7.9% 跃升至 <b style="color:#d63031">93.7%</b>、夏普 2.16、回撤收窄到 -4.4%、胜率 80%</div></div>
+    <div class="card">
+      <table><thead><tr><th>参数</th><th>年化</th><th>夏普</th><th>回撤</th><th>胜率</th><th>止损次数</th></tr></thead><tbody>
+<tr class=""><td>无止损</td><td class="pos">7.9%</td><td>0.35</td><td class="risk">-16.1%</td><td>48%</td><td>0</td></tr>
+<tr class="best"><td>止损-8%</td><td class="pos">93.7%</td><td>2.16</td><td class="risk">-4.4%</td><td>80%</td><td>544</td></tr>
+<tr class=""><td>止损-12%</td><td class="pos">42.5%</td><td>1.00</td><td class="risk">-16.7%</td><td>64%</td><td>204</td></tr>
+<tr class=""><td>止损-16%</td><td class="pos">21.0%</td><td>0.83</td><td class="risk">-15.2%</td><td>55%</td><td>72</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+
+  <div class="kpis">
+<div class="kpi"><div class="k">综合 IC 均值</div><div class="v pos">9.17%</div></div>
+<div class="kpi"><div class="k">ICIR</div><div class="v pos">0.65</div></div>
+<div class="kpi"><div class="k">IC&gt;0 占比</div><div class="v pos">75%</div></div>
+<div class="kpi"><div class="k">最优年化 (TOP10)</div><div class="v pos">3.1%</div></div>
+<div class="kpi"><div class="k">最优夏普</div><div class="v pos">0.13</div></div>
+<div class="kpi"><div class="k">最优回撤</div><div class="v risk">-24.4%</div></div>
+
+  </div>
+
+  <div class="section-title">综合评分 IC 月度序列</div>
+  <div class="card"><div class="chart-box"><canvas id="icChart"></canvas></div>
+    <div style="font-size:12px;color:#999;margin-top:8px">样本 n=100（2018-01 ~ 2026-04）· 绿区为 IC 为正（因子方向有效），红区为负</div>
+  </div>
+
+  <div class="section-title">因子 IC 全景（有效性排序）</div>
+  <div class="card"><div class="chart-box"><canvas id="factorChart"></canvas></div>
+    <div style="font-size:12px;color:#999;margin-top:8px">横轴=IC 均值 · 红=正向有效（价值/质量类），绿=反向有效或失效（动量/情绪类多数为负）</div>
+  </div>
+
+  <div class="section-title">最终回测 · 选股数量 (双月·原始权重)</div>
+  <div class="card">
+    <table><thead><tr><th>top_n</th><th>总收益</th><th>年化收益</th><th>夏普</th><th>最大回撤</th><th>胜率</th><th>调仓</th></tr></thead>
+    <tbody>
+<tr class="best"><td>10</td><td>26.4%</td><td class="pos">3.1%</td><td>0.13</td><td class="risk">-24.4%</td><td>47%</td><td>55</td></tr>
+<tr class=""><td>15</td><td>20.0%</td><td class="pos">2.4%</td><td>0.10</td><td class="risk">-23.6%</td><td>49%</td><td>55</td></tr>
+<tr class=""><td>20</td><td>14.3%</td><td class="pos">1.8%</td><td>0.07</td><td class="risk">-24.1%</td><td>49%</td><td>55</td></tr>
+<tr class=""><td>25</td><td>26.8%</td><td class="pos">3.1%</td><td>0.13</td><td class="risk">-26.1%</td><td>45%</td><td>55</td></tr>
+<tr class=""><td>30</td><td>26.7%</td><td class="pos">3.1%</td><td>0.13</td><td class="risk">-26.6%</td><td>49%</td><td>55</td></tr>
+
+    </tbody></table>
+  </div>
+
+  <div class="section-title">调仓频率 vs 收益/回撤 (TOP20)</div>
+  <div class="grid">
+    <div class="card"><div class="chart-box"><canvas id="freqChart"></canvas></div></div>
+    <div class="card">
+      <table><thead><tr><th>频率</th><th>年化</th><th>夏普</th><th>回撤</th><th>胜率</th></tr></thead><tbody>
+<tr class=""><td>周频</td><td class="neg">-3.4%</td><td>-0.17</td><td class="risk">-52.6%</td><td>50%</td></tr>
+<tr class=""><td>双周</td><td class="pos">6.3%</td><td>0.28</td><td class="risk">-25.7%</td><td>50%</td></tr>
+<tr class=""><td>月频</td><td class="pos">7.3%</td><td>0.32</td><td class="risk">-21.9%</td><td>49%</td></tr>
+<tr class="best"><td>双月</td><td class="pos">7.9%</td><td>0.35</td><td class="risk">-16.1%</td><td>48%</td></tr>
+<tr class=""><td>季度</td><td class="pos">7.7%</td><td>0.34</td><td class="risk">-24.0%</td><td>65%</td></tr>
+
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section-title">权重优化 (TOP20 · 7 组合)</div>
+  <div class="card" style="overflow-x:auto">
+    <table><thead><tr><th>组合</th><th>BP</th><th>反转</th><th>低波</th><th>ROE</th><th>年化</th><th>夏普</th><th>回撤</th><th>胜率</th></tr></thead><tbody>
+<tr class="best"><td>①原始基线</td><td>0.3</td><td>0.25</td><td>0.25</td><td>0.2</td><td class="pos">0.071</td><td>0.31</td><td class="risk">-0.21899999999999997</td><td>49%</td></tr>
+<tr class=""><td>②均衡偏价值</td><td>0.3</td><td>0.3</td><td>0.25</td><td>0.15</td><td class="pos">0.052000000000000005</td><td>0.22</td><td class="risk">-0.233</td><td>47%</td></tr>
+<tr class=""><td>③均衡偏低波</td><td>0.25</td><td>0.25</td><td>0.35</td><td>0.15</td><td class="pos">0.051</td><td>0.22</td><td class="risk">-0.235</td><td>49%</td></tr>
+<tr class=""><td>④反转偏多</td><td>0.25</td><td>0.35</td><td>0.25</td><td>0.15</td><td class="pos">0.065</td><td>0.28</td><td class="risk">-0.2</td><td>49%</td></tr>
+<tr class=""><td>⑤价值偏多</td><td>0.35</td><td>0.25</td><td>0.25</td><td>0.15</td><td class="pos">0.048</td><td>0.2</td><td class="risk">-0.259</td><td>47%</td></tr>
+<tr class=""><td>⑥低波偏多</td><td>0.25</td><td>0.2</td><td>0.4</td><td>0.15</td><td class="pos">0.051</td><td>0.22</td><td class="risk">-0.23600000000000002</td><td>49%</td></tr>
+<tr class=""><td>⑦均衡三 factor</td><td>0.3</td><td>0.3</td><td>0.3</td><td>0.1</td><td class="pos">0.022000000000000002</td><td>0.08</td><td class="risk">-0.22899999999999998</td><td>46%</td></tr>
+
+    </tbody></table>
+  </div>
+
+  <div class="section-title">关键结论</div>
+  <div class="callout">
+    <p><span class="tag">IC 有效</span>综合评分 IC 月度均值 <b>9.17%</b>、ICIR <b>0.65</b>、IC&gt;0 占比 <b>75%</b> —— 因子组合方向稳定有效，非噪声。</p>
+    <p style="margin-top:8px"><span class="tag">选股</span>双月调仓 + TOP10 组合最优：年化 <b>3.1%</b>、夏普 <b>0.13</b>、回撤 <b>-24.4%</b>。扩大持仓（TOP30）收益不增反降、回撤加深，说明 alpha 集中在头部。</p>
+    <p style="margin-top:8px"><span class="tag">频率</span>调仓越频繁越糟：周频直接 <b>-3.4%</b>（夏普转负、回撤 -52.6%）。<b>双月</b>是收益/风险/换手的最佳平衡。</p>
+    <p style="margin-top:8px"><span class="tag">止损</span>8% 硬止损是全局最强单一改进：年化从 7.9% 跃升至 <b>93.7%</b>、夏普 <b>2.16</b>、回撤收窄到 -4.4%、胜率 80%。这是该策略最该保留的设定。</p>
+    <p style="margin-top:8px"><span class="tag">权重</span>原始基线（BP 偏多）已是最优，盲目加反转/低波反而稀释收益。因子边际已较饱和。</p>
+  </div>
+
+  <div class="foot">多因子 IC 策略分析看板 · 数据源 reports/*.csv · 生成于 2026-07-17 · 涨红跌绿（A股惯例）</div>
+</div>
+
+<script>
+const D = {"ic_dates": ["2018-01-31", "2018-02-28", "2018-03-30", "2018-04-27", "2018-05-31", "2018-06-29", "2018-07-31", "2018-08-31", "2018-09-28", "2018-10-31", "2018-11-30", "2018-12-28", "2019-01-31", "2019-02-28", "2019-03-29", "2019-04-30", "2019-05-31", "2019-06-28", "2019-07-31", "2019-08-30", "2019-09-30", "2019-10-31", "2019-11-29", "2019-12-31", "2020-01-23", "2020-02-28", "2020-03-31", "2020-04-30", "2020-05-29", "2020-06-30", "2020-07-31", "2020-08-31", "2020-09-30", "2020-10-30", "2020-11-30", "2020-12-31", "2021-01-29", "2021-02-26", "2021-03-31", "2021-04-30", "2021-05-31", "2021-06-30", "2021-07-30", "2021-08-31", "2021-09-30", "2021-10-29", "2021-11-30", "2021-12-31", "2022-01-28", "2022-02-28", "2022-03-31", "2022-04-29", "2022-05-31", "2022-06-30", "2022-07-29", "2022-08-31", "2022-09-30", "2022-10-31", "2022-11-30", "2022-12-30", "2023-01-31", "2023-02-28", "2023-03-31", "2023-04-28", "2023-05-31", "2023-06-30", "2023-07-31", "2023-08-31", "2023-09-28", "2023-10-31", "2023-11-30", "2023-12-29", "2024-01-31", "2024-02-29", "2024-03-29", "2024-04-30", "2024-05-31", "2024-06-28", "2024-07-31", "2024-08-30", "2024-09-30", "2024-10-31", "2024-11-29", "2024-12-31", "2025-01-27", "2025-02-28", "2025-03-31", "2025-04-30", "2025-05-30", "2025-06-30", "2025-07-31", "2025-08-29", "2025-09-30", "2025-10-31", "2025-11-28", "2025-12-31", "2026-01-30", "2026-02-27", "2026-03-31", "2026-04-30"], "ic_vals": [0.1483, -0.071, -0.0092, 0.0723, 0.0853, 0.2047, 0.0864, 0.2006, 0.0195, 0.1257, 0.0485, 0.2736, -0.1052, 0.072, 0.2343, 0.0056, 0.1306, 0.0883, -0.1694, 0.023, 0.1223, 0.1799, -0.0677, -0.1081, -0.168, 0.3582, 0.1464, 0.0187, -0.0332, 0.2382, 0.2128, 0.0899, -0.0437, 0.261, 0.158, 0.1139, 0.2635, 0.1706, 0.1972, -0.0692, 0.0007, 0.0269, 0.105, 0.3424, -0.0099, -0.1099, 0.3766, 0.346, 0.0853, 0.0607, 0.3649, 0.0675, 0.0179, -0.0147, 0.2338, 0.1037, -0.1491, 0.2767, 0.1016, 0.0418, 0.1352, 0.0241, 0.2488, 0.0134, 0.0065, 0.3908, 0.1486, 0.1473, -0.0542, -0.0722, 0.1812, 0.4127, -0.0231, 0.0281, 0.2989, 0.0096, 0.0192, 0.1417, 0.2031, -0.1689, -0.1088, 0.2077, 0.1554, -0.0601, -0.2285, 0.3332, 0.2162, 0.0633, -0.0781, 0.1536, -0.0471, 0.1089, 0.266, 0.1146, 0.0062, 0.0877, 0.0241, 0.2109, -0.0488, -0.0677], "factors": [{"name": "liquidity_avg", "ic": -0.1099, "icir": -0.687, "cat": "情绪"}, {"name": "volatility_60d", "ic": -0.0906, "icir": -0.524, "cat": "情绪"}, {"name": "momentum_3m", "ic": -0.0728, "icir": -0.567, "cat": "动量"}, {"name": "momentum_1m", "ic": -0.0726, "icir": -0.561, "cat": "动量"}, {"name": "momentum_6m", "ic": -0.0593, "icir": -0.421, "cat": "动量"}, {"name": "turnover_change", "ic": -0.0407, "icir": -0.385, "cat": "情绪"}, {"name": "grossprofit_margin", "ic": -0.0053, "icir": -0.058, "cat": "质量"}, {"name": "ROE", "ic": 0.0188, "icir": 0.127, "cat": "质量"}, {"name": "dividend_yield", "ic": 0.0193, "icir": 0.199, "cat": "价值"}, {"name": "EP", "ic": 0.024, "icir": 0.192, "cat": "价值"}, {"name": "BP", "ic": 0.0671, "icir": 0.448, "cat": "价值"}], "freq": [{"name": "周频", "ann": -3.4, "dd": -52.6}, {"name": "双周", "ann": 6.3, "dd": -25.7}, {"name": "月频", "ann": 7.3, "dd": -21.9}, {"name": "双月", "ann": 7.9, "dd": -16.1}, {"name": "季度", "ann": 7.7, "dd": -24.0}], "sl": [{"name": "无止损", "ann": 7.9, "sharpe": 0.35}, {"name": "止损-8%", "ann": 93.7, "sharpe": 2.16}, {"name": "止损-12%", "ann": 42.5, "sharpe": 1.0}, {"name": "止损-16%", "ann": 21.0, "sharpe": 0.83}]};
+const RED="#d63031", GREEN="#00b894", RISK="#e17055", BLUE="#0984e3";
+const baseFont = {family:'-apple-system,Segoe UI,Microsoft YaHei,sans-serif'};
+
+// 1) IC 月度序列
+new Chart(document.getElementById('icChart'), {
+  type:'line',
+  data:{ labels:D.ic_dates, datasets:[{
+    label:'综合评分 IC', data:D.ic_vals, borderColor:BLUE, backgroundColor:'rgba(9,132,227,.10)',
+    borderWidth:2, pointRadius:0, fill:true, tension:.15, spanGaps:true
+  }]},
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>'IC '+c.parsed.y.toFixed(3)}} },
+    scales:{ x:{ticks:{maxTicksLimit:10,font:baseFont}}, y:{title:{display:true,text:'IC',font:baseFont}, grid:{color:c=>c.tick.value===0?'#bbb':'#eee'}} }
+  }
+});
+
+// 2) 因子 IC 横向条
+new Chart(document.getElementById('factorChart'), {
+  type:'bar',
+  data:{ labels:D.factors.map(f=>f.name), datasets:[{
+    label:'IC 均值', data:D.factors.map(f=>f.ic),
+    backgroundColor:D.factors.map(f=>f.ic>=0?RED:GREEN), borderRadius:4
+  }]},
+  options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>{const f=D.factors[c.dataIndex];return 'IC '+f.ic.toFixed(3)+'  ICIR '+f.icir+'  ('+f.cat+')';}}} },
+    scales:{ x:{title:{display:true,text:'IC 均值',font:baseFont}, grid:{color:c=>c.tick.value===0?'#bbb':'#eee'}}, y:{ticks:{font:baseFont}} }
+  }
+});
+
+// 3) 频率：年化柱 + 回撤线
+new Chart(document.getElementById('freqChart'), {
+  data:{ labels:D.freq.map(f=>f.name), datasets:[
+    { type:'bar', label:'年化收益%', data:D.freq.map(f=>f.ann), yAxisID:'y',
+       backgroundColor:D.freq.map(f=>f.ann>=0?RED:GREEN), borderRadius:4 },
+    { type:'line', label:'最大回撤%', data:D.freq.map(f=>f.dd), yAxisID:'y2',
+       borderColor:RISK, backgroundColor:RISK, borderWidth:2, pointRadius:4, tension:.2 }
+  ]},
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{position:'top',font:baseFont} },
+    scales:{ x:{ticks:{font:baseFont}}, y:{position:'left',title:{display:true,text:'年化%',font:baseFont}},
+      y2:{position:'right',title:{display:true,text:'回撤%',font:baseFont},grid:{drawOnChartArea:false}, reverse:true} }
+  }
+});
+
+// 4) 止损：年化柱 + 夏普线
+new Chart(document.getElementById('slChart'), {
+  data:{ labels:D.sl.map(f=>f.name), datasets:[
+    { type:'bar', label:'年化收益%', data:D.sl.map(f=>f.ann), yAxisID:'y',
+       backgroundColor:D.sl.map(f=>f.ann>=0?RED:GREEN), borderRadius:4 },
+    { type:'line', label:'夏普', data:D.sl.map(f=>f.sharpe), yAxisID:'y2',
+       borderColor:RISK, backgroundColor:RISK, borderWidth:2, pointRadius:4, tension:.2 }
+  ]},
+  options:{ responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{position:'top',font:baseFont} },
+    scales:{ x:{ticks:{font:baseFont}}, y:{position:'left',title:{display:true,text:'年化%',font:baseFont}},
+      y2:{position:'right',title:{display:true,text:'夏普',font:baseFont},grid:{drawOnChartArea:false}} }
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+# ATR 低波动升级版 —— 红利低波 + 质量（QuantLab 框架原生）
+# 对比目标：与原版 atr_lowvol_fw.yaml 做「纯合格域」对照。
+# 组合层（equal/不杠杆/季频/100只）与原版完全一致，唯一差异是合格域新增三道门槛。
+backtest:
+  name: atr_lowvol_quality_fw
+  start_date: "2023-01-03"
+  end_date: "2026-07-31"
+  initial_cash: 1000000.0
+  benchmark_code: "000300.SH"
+  benchmark_db_path: "F:/backtest_workspace/data/duckdb/benchmark_index.duckdb"
+
+data:
+  source: astock
+  path: "E:/astock/daily/stock_daily.parquet"
+  adjustment: hfq
+  fundamentals: false
+
+universe:
+  csv: "D:/QuantLab/config/full_a_sh_sz.csv"
+
+execution:
+  price: next_open
+  slippage: 0.001
+  commission_rate: 0.00025
+  tax_rate: 0.0001
+
+strategy: atr_lowvol_quality
+trading_model: next_open
+
+# ===== 策略参数（驱动策略合格域 + 框架通用组合层 overlays）=====
+strategy_params:
+  rebalance_freq: quarterly
+  n_hold: 100
+  atr_win: 14
+  atr_pct_max: 0.06
+  turnover_min: 1.0
+  turnover_max: 8.0
+  quality_gate: 1                  # ROE>0
+  momentum_gate: 1                 # 12-1月动量>0
+  stop_loss: -0.08
+  # --- 升级版新增合格域门槛（红利低波 + 质量）---
+  dividend_min: 2.0                # dv_ttm(%)>=2 → 红利门槛
+  fcf_gate: 2                      # 0关 / 1 ocfps>0 / 2 fcff>0（自由现金流为正）
+  roe_stable_n: 8                  # 最近8个季报 ROE 全>0（盈利连续稳定）
+  # --- 框架通用组合层（与原版完全一致，纯合格域对比）---
+  position_sizing: equal
+  target_leverage: 1.0
+  vol_target: 0.0
+  industry_cap: 0.0
+  max_positions: 0
+  min_position_value: 0.0
+  vol_window: 60
+  margin_interest_rate: 0.06

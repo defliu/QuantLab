@@ -11,6 +11,7 @@ __pycache__/
 # 数据缓存与日志
 data/cache/
 *.log
+*.parquet
 
 # 系统
 .DS_Store

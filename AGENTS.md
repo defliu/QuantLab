@@ -1,6 +1,6 @@
 # QuantLab Agent 开发指南
 
-本文件适用于 `E:\QuantLab` 下的全部文件。参与本项目开发时，必须优先遵守以下规则。
+本文件适用于 `D:\QuantLab` 下的全部文件。参与本项目开发时，必须优先遵守以下规则。
 
 ## 项目定位
 
@@ -11,7 +11,20 @@
 - `broker/` 是券商接口层，含 QMT 单文件策略生成器（`qmt_builder.py`），桥接模块化研究代码与 QMT 单文件需求。
 - `projects/` 是策略项目隔离目录，每个策略独立回测、独立配置、独立结果。
 - `specs/` 是需求与设计文档目录，可作为需求、设计和验收依据。
-- 兄弟项目 `D:/QMT_STRATEGIES` 是实盘策略工程（评分买入 + 分层卖出风控 + QMT 单文件构建）；QuantLab 的 `Project_01\research\multi_factor_ic\` 是其 vendored 副本（自包含），`D:/QMT_STRATEGIES/strategy_mfic.py` 仍是 QMT 生产部署位。
+- 实盘策略工程资产已收拢至本仓库（评分买入 + 分层卖出风控 + QMT 单文件构建）；`Project_01\research\multi_factor_ic\` 是其 vendored 副本（自包含），QMT 生产部署位为各项目 `build/` 子目录（如 `Project_10\build\strategy_v2.py`、`Project_01\build\strategy_mfic.py`）。
+
+## 知识中心（Knowledge Center）
+
+> 接手本项目或开展任何新任务前，**先查知识中心**：`.qoder/repowiki/` 是本项目的知识沉淀，任何人都可以通过它快速建立全局认知，再进入代码细节。
+
+- **位置**：`.qoder/repowiki/`（Qoder repowiki 自动生成与维护，内容随代码演化）
+- **知识卡**：`knowledge/zh/` 为模块级知识卡，`knowledge/zh/_index.yaml` 是索引，覆盖根项目、QMT 券商接口与实盘执行、DuckDB、LightGBM、Tushare、YAML 配置系统、业务术语表、日志/错误处理/构建部署等主题
+- **内容文档**：`zh/content/` 为体系化文档，包括快速开始、项目概述、API 参考（数据/因子/回测/策略/配置/券商接口）、回测引擎核心、因子研究系统、实盘交易系统（QMT 接口集成/风控/部署）、数据层架构、最佳实践与案例、测试与验证框架、部署与运维、项目管理
+- **使用方式**：人工可直接阅读 Markdown；AI agent 可通过知识检索能力按主题检索，或直接读 `_index.yaml` + `快速开始.md` 起步
+- **优先级**：本文件（AGENTS.md）与代码是权威源；知识中心若与代码/本文件冲突，以代码和本文件为准，并更新知识中心或标注差异
+- **维护**：开发中如需补充知识，直接在对应模块知识卡或内容文档下编辑；索引文件由 repowiki 自动导出
+- **全局研究视图**：`研究总览与路线图.md` 一眼看清"以前研究过什么 / 踩过什么坑 / 现在研究什么 / 未来研究什么"；旧项目史料在 `archive/legacy_qmt_strategies/`。
+- **QMT 实盘下单**：一律复用 `broker/qmt_order.py`（防坑版），禁止裸调 `passorder`；规范与踩坑见 `broker/QMT委托买卖防坑指南.md`。
 
 ## 核心模块认知
 
@@ -66,7 +79,7 @@
 - 生产版不得混入 mock 或测试代码。
 - 涉及真实下单、卖出重试、跌停暂缓队列的改动必须格外保守。
 
-### 实盘执行红线（自 QMT_STRATEGIES 实盘教训迁移）
+### 实盘执行红线（自实盘工程教训迁移）
 
 - `passorder()` 是异步接口，**正常返回 0/None，不是订单号**；拿真实订单号必须反查 `get_trade_detail_data(acct, 'STOCK', 'order')`。
 - 委托后即时反查会撞 QMT 约 100ms 的 order_id 分配延迟 → 必须短轮询（`*_LOOKUP_RETRIES`/`INTERVAL`）等待，反查失败会静默断链：不登记 pending → 成交回写/撤单/市价重试全不触发。
@@ -79,6 +92,15 @@
 - QMT 内置 Python 不保证有第三方包（如 pyyaml），import 必须 try/except fallback；重装/换设备后必看 `XtClient_FormulaOutput_*.log` 确认初始化完成。
 - 策略必须自包含：config 读取不得依赖 `__file__`，读不到要有完整 `_DEFAULT_CONFIG` fallback。
 - 详细清单见 `全局复利与踩坑日志.md` 的 QMT 相关章节。
+
+### 资金分配红线
+
+- 国金模拟账号 `67014907` 多策略共存，每个策略锁定独立「虚拟子账户」本金（`capital_base`），只能动自己 ledger 的票和自己的额度，**绝不抢占他人资金、绝不纳管/卖出他人持仓**。
+- **账户总额约束（硬）**：`Σ 各策略 capital_base ≤ 账户实际总资产`。唯一事实源 `D:/QuantLab/config/capital_allocation.yaml`（已从 QMT_STRATEGIES 迁移并删副本）；改后必须跑 `D:/QuantLab/scripts/check_capital_allocation.py`（退出码 0 才许部署）。
+- 账户 `total_capital` 必须在国金QMT客户端查「总资产」填入；未填只警告不报错，但生产环境必填。
+- 当前已锁：**仅 `atr_lowvol_equalweight`（ATR低波等权不杠杆）10 万**。`dual_band_6plus2`（主升浪6+2）已于 2026-08-05 淘汰，不再占用额度。新增/调额先改分配表再校验。
+- 共享账户无法物理阻止别策略花掉你的额度，真隔离需开子账户/多模拟账号；当前靠约定保证不超额。
+- **人读总表（与校验器同源，已同步至 QuantLab 枢纽）**：`D:/QMT_STRATEGIES/资金分配总表与约束.md`（镜像副本：`D:/QuantLab/资金分配总表与约束.md`）。
 
 ## 风控优先级
 
@@ -95,7 +117,7 @@
 
 ## 文件通信
 
-- 策略运行时主要通过 `D:/QMT_POOL/` 交换文件（与 QMT_STRATEGIES 共用）。
+- 策略运行时主要通过 `D:/QMT_POOL/` 交换文件（实盘与 QMT 共用）。
 - 常见文件包括：
   - `selected.txt` / `QMTselected.txt`：外部股票池
   - `*_holdings*.txt`：持仓跟踪
@@ -164,13 +186,13 @@
 14:50  日终处理：对账、保存状态、发送日报
 ```
 
-## 与 QMT_STRATEGIES 的关系
+## 与实盘策略工程的关系
 
-- `D:/QMT_STRATEGIES` 是兄弟项目，侧重实盘策略构建与分层卖出风控。
+- 实盘策略工程资产已收拢至 `D:\QuantLab`（原 `D:/QMT_STRATEGIES`，注意真身在 **D:** 不在 E:），侧重实盘策略构建与分层卖出风控。
 - **QMT 部署文件不再拷贝到公共目录**：每个项目的 `build/` 子目录自包含 QMT 部署文件（GBK 单文件），QMT 直接从项目目录加载。
-- 两个项目共享 `D:/QMT_POOL/` 文件交换目录（预生成 CSV 数据）。
-- QMT_STRATEGIES 的 `SellStrategyEngine` 是核心风控模块，如需复用应通过明确接口调用，不得绕过。
-- 修改 QMT_STRATEGIES 中的模块前，需遵守其 AGENTS.md 规则。
+- 实盘与 QMT 共用 `D:/QMT_POOL/` 文件交换目录（预生成 CSV 数据）。
+- `SellStrategyEngine` 是核心风控模块，如需复用应通过明确接口调用，不得绕过。
+- 修改收拢后的实盘模块前，需遵守本仓库 AGENTS.md 规则。
 
 ## 开发原则
 

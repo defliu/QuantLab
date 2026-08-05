@@ -1,0 +1,27 @@
+# ATR 低波动策略 - 等权 不杠杆 部署配置
+# 对应回测框架 atr_lowvol_fw.yaml（等权 不杠杆，年化 +18.69% 验证版）
+# 部署文件: deploy/strategy_atr_lowvol_equalweight.py
+
+strategy:
+  name: ATR_LOWVOL_EW
+  display_name: ATR低波动-等权不杠杆
+  capital_base: 100000           # 策略锁定可用资金（10万，虚拟子账户基准，收益滚动不再回吐本金）
+  account_id: '67014907'         # 国金QMT模拟端账号
+
+screening:
+  n_hold: 100                   # 等权持仓数（低ATR%前100）
+  atr_threshold: 6.0            # ATR% 上限（百分比）
+  min_turnover: 1.0             # 换手率下限(%)
+  max_turnover: 8.0             # 换手率上限(%)
+  min_history: 252              # 最小上市交易日(≈1年)
+  quality_gate: 1               # ROE>0 质量门控(1开/0关)
+  momentum_gate: 1              # 12-1月动量>0 门控(1开/0关)
+
+rebalance:
+  freq: quarterly               # weekly|monthly|quarterly（季频=每季度首个交易日）
+  stop_loss: -0.08              # 间际止损(持仓回撤阈值)；>=0 表示关闭
+
+pool:
+  holdings_file: D:/QMT_POOL/atr_ew_holdings.json
+  nav_file: D:/QMT_POOL/atr_ew_nav.json
+  trade_log_file: D:/QMT_POOL/atr_ew_trade_log.csv

@@ -5,6 +5,7 @@
 用法: python build.py"""
 import os
 import re
+import time
 
 PROJ_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(PROJ_DIR, "strategy_v2.py")
@@ -40,17 +41,24 @@ def build():
             print("FAIL", iss)
         return False
 
-    # 4. 转 GBK 写入 build/
+    # 4. 注入构建版本标记（BUILD_TAG 源码为 "dev"，构建时替换为时间戳）
+    tag = time.strftime("%Y%m%d-%H%M%S")
+    code = code.replace('BUILD_TAG = "dev"', 'BUILD_TAG = "%s"' % tag)
+    if 'BUILD_TAG = "dev"' in code:
+        print("FAIL BUILD_TAG injection: placeholder not replaced")
+        return False
+
+    # 5. 转 GBK 写入 build/
     os.makedirs(BUILD_DIR, exist_ok=True)
     with open(DST, "wb") as f:
         f.write(code.encode("gbk"))
 
-    # 5. 验证
+    # 6. 验证
     with open(DST, "rb") as f:
         raw = f.read()
     assert raw[:12] == HEADER, "header mismatch"
 
-    print("OK build/strategy_v2.py (%d bytes, GBK)" % len(raw))
+    print("OK build/strategy_v2.py (%d bytes, GBK, tag=%s)" % (len(raw), tag))
     print("   部署文件: projects/Project_10_价值小盘V2/build/strategy_v2.py")
     return True
 

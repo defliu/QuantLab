@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hermes Desktop 主题预览</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; padding: 20px; background: #0e0e0e; color: #eaeaea; }
+  h1 { font-size: 22px; margin-bottom: 20px; color: #ccc; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px; }
+  .card { border-radius: 12px; padding: 32px; display: flex; flex-direction: column; gap: 12px; border: 1px solid rgba(255,255,255,0.08); }
+  .card h2 { font-size: 18px; font-weight: 600; }
+  .card p { font-size: 13px; opacity: 0.7; margin-bottom: 4px; }
+  .swatches { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+  .row { display: flex; align-items: center; gap: 10px; }
+  .row .box { width: 28px; height: 28px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
+  .row .label { font-size: 11px; opacity: 0.6; width: 80px; flex-shrink: 0; }
+  .row .hex { font-size: 11px; opacity: 0.5; font-family: monospace; }
+  .chat-mock { margin-top: 12px; padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.5; }
+  .user-msg { display: inline-block; padding: 6px 12px; border-radius: 12px; margin-bottom: 6px; font-size: 13px; }
+  .bot-msg { display: inline-block; padding: 6px 12px; border-radius: 12px; margin-bottom: 6px; font-size: 13px; }
+  .sidebar-mock { padding: 8px 12px; border-radius: 6px; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<h1>🎨 Hermes Desktop 主题预览</h1>
+
+<div class="grid">
+  <!-- Slate -->
+  <div class="card" style="background:#0d1117;color:#c9d1d9;border-color:#30363d">
+    <h2>Slate</h2>
+    <p>GitHub 风格暗色 · 冷静蓝灰</p>
+    <div class="chat-mock" style="background:#161b22">
+      <div class="user-msg" style="background:#1e2a38;border:1px solid #2e4060;color:#c9d1d9">帮我写一个选股策略</div>
+      <div class="bot-msg" style="background:#161b22;border:1px solid #30363d;color:#c9d1d9">好的，我来设计一个双带主升浪策略</div>
+    </div>
+    <div class="sidebar-mock" style="background:#090d13">
+      <span style="color:#8b949e">📁 会话列表</span>
+    </div>
+    <div class="swatches">
+      <div class="row"><div class="box" style="background:#0d1117"></div><span class="label">背景</span><span class="hex">#0d1117</span></div>
+      <div class="row"><div class="box" style="background:#58a6ff"></div><span class="label">强调色</span><span class="hex">#58a6ff</span></div>
+      <div class="row"><div class="box" style="background:#30363d"></div><span class="label">边框</span><span class="hex">#30363d</span></div>
+    </div>
+  </div>
+
+  <!-- Midnight -->
+  <div class="card" style="background:#08081c;color:#ddd6ff;border-color:#1e1e52">
+    <h2>Midnight</h2>
+    <p>深蓝紫 · 冷色调 · 神秘感</p>
+    <div class="chat-mock" style="background:#0d0d28">
+      <div class="user-msg" style="background:#14143a;border:1px solid #242466;color:#ddd6ff">帮我写一个选股策略</div>
+      <div class="bot-msg" style="background:#0d0d28;border:1px solid #1e1e52;color:#ddd6ff">好的，我来设计一个双带主升浪策略</div>
+    </div>
+    <div class="sidebar-mock" style="background:#06061a">
+      <span style="color:#7c7ab0">📁 会话列表</span>
+    </div>
+    <div class="swatches">
+      <div class="row"><div class="box" style="background:#08081c"></div><span class="label">背景</span><span class="hex">#08081c</span></div>
+      <div class="row"><div class="box" style="background:#8b80e8"></div><span class="label">强调色</span><span class="hex">#8b80e8</span></div>
+      <div class="row"><div class="box" style="background:#1e1e52"></div><span class="label">边框</span><span class="hex">#1e1e52</span></div>
+    </div>
+  </div>
+
+  <!-- Mono -->
+  <div class="card" style="background:#0e0e0e;color:#eaeaea;border-color:#2a2a2a">
+    <h2>Mono</h2>
+    <p>纯灰阶 · 极简 · 无彩色干扰</p>
+    <div class="chat-mock" style="background:#141414">
+      <div class="user-msg" style="background:#1a1a1a;border:1px solid #363636;color:#eaeaea">帮我写一个选股策略</div>
+      <div class="bot-msg" style="background:#141414;border:1px solid #2a2a2a;color:#eaeaea">好的，我来设计一个双带主升浪策略</div>
+    </div>
+    <div class="sidebar-mock" style="background:#0a0a0a">
+      <span style="color:#808080">📁 会话列表</span>
+    </div>
+    <div class="swatches">
+      <div class="row"><div class="box" style="background:#0e0e0e"></div><span class="label">背景</span><span class="hex">#0e0e0e</span></div>
+      <div class="row"><div class="box" style="background:#9a9a9a"></div><span class="label">强调色</span><span class="hex">#9a9a9a</span></div>
+      <div class="row"><div class="box" style="background:#2a2a2a"></div><span class="label">边框</span><span class="hex">#2a2a2a</span></div>
+    </div>
+  </div>
+
+  <!-- Ember -->
+  <div class="card" style="background:#160800;color:#ffd8b0;border-color:#3a1c08">
+    <h2>Ember</h2>
+    <p>暖棕红 · 熔炉风 · 琥珀光</p>
+    <div class="chat-mock" style="background:#1e0e04">
+      <div class="user-msg" style="background:#2a1000;border:1px solid #4a2010;color:#ffd8b0">帮我写一个选股策略</div>
+      <div class="bot-msg" style="background:#1e0e04;border:1px solid #3a1c08;color:#ffd8b0">好的，我来设计一个双带主升浪策略</div>
+    </div>
+    <div class="sidebar-mock" style="background:#100600">
+      <span style="color:#aa7a56">📁 会话列表</span>
+    </div>
+    <div class="swatches">
+      <div class="row"><div class="box" style="background:#160800"></div><span class="label">背景</span><span class="hex">#160800</span></div>
+      <div class="row"><div class="box" style="background:#d97316"></div><span class="label">强调色</span><span class="hex">#d97316</span></div>
+      <div class="row"><div class="box" style="background:#3a1c08"></div><span class="label">边框</span><span class="hex">#3a1c08</span></div>
+    </div>
+  </div>
+
+  <!-- Cyberpunk -->
+  <div class="card" style="background:#000a00;color:#00ff41;border-color:#003000">
+    <h2>Cyberpunk</h2>
+    <p>黑客帝国 · 绿字黑底 · 矩阵</p>
+    <div class="chat-mock" style="background:#001200">
+      <div class="user-msg" style="background:#001400;border:1px solid #004800;color:#00ff41">帮我写一个选股策略</div>
+      <div class="bot-msg" style="background:#001200;border:1px solid #003000;color:#00ff41">好的，我来设计一个双带主升浪策略</div>
+    </div>
+    <div class="sidebar-mock" style="background:#000600">
+      <span style="color:#1a8a30">📁 会话列表</span>
+    </div>
+    <div class="swatches">
+      <div class="row"><div class="box" style="background:#000a00"></div><span class="label">背景</span><span class="hex">#000a00</span></div>
+      <div class="row"><div class="box" style="background:#00ff41"></div><span class="label">强调色</span><span class="hex">#00ff41</span></div>
+      <div class="row"><div class="box" style="background:#003000"></div><span class="label">边框</span><span class="hex">#003000</span></div>
+    </div>
+  </div>
+
+  <!-- Nous (当前默认) -->
+  <div class="card" style="background:#F8FAFF;color:#17171A;border-color:#9bb4f5">
+    <h2>Nous（当前默认）</h2>
+    <p>浅色 · 玻璃中性色 · 蓝色强调</p>
+    <div class="chat-mock" style="background:#FFFFFF">
+      <div class="user-msg" style="background:#eef2ff;border:1px solid #d0dbfa;color:#17171A">帮我写一个选股策略</div>
+      <div class="bot-msg" style="background:#FFFFFF;border:1px solid #d4daf2;color:#17171A">好的，我来设计一个双带主升浪策略</div>
+    </div>
+    <div class="sidebar-mock" style="background:#F3F7FF">
+      <span style="color:#666678">📁 会话列表</span>
+    </div>
+    <div class="swatches">
+      <div class="row"><div class="box" style="background:#F8FAFF"></div><span class="label">背景</span><span class="hex">#F8FAFF</span></div>
+      <div class="row"><div class="box" style="background:#0053FD"></div><span class="label">强调色</span><span class="hex">#0053FD</span></div>
+      <div class="row"><div class="box" style="background:#9bb4f5"></div><span class="label">边框</span><span class="hex">#9bb4f5</span></div>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top:24px;font-size:13px;opacity:0.5;text-align:center">
+  在 Hermes Desktop 输入框输入 <code style="background:#222;padding:2px 8px;border-radius:4px">/skin</code> 选择主题 · Shift+X 切换浅色/深色模式
+</p>
+</body>
+</html>

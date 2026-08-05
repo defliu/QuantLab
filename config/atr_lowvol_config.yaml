@@ -1,0 +1,23 @@
+# ATR低波动策略配置
+strategy:
+  name: "ATR_LOWVOL"
+  display_name: "ATR低波动策略"
+  capital_base: 100000         # 本金10万
+  max_hold: 3                  # 最多3只
+  target_ratio: 0.30           # 单只目标仓位30%
+  max_total_ratio: 0.90        # 总仓位上限90%
+
+screening:
+  atr_threshold: 6.0      # ATR%% < 6%%（低波动）
+  min_turnover: 1.0       # 换手率 >= 1%%
+  max_turnover: 8.0       # 换手率 <= 8%%
+  min_bars: 60            # 最少K线数
+
+sell:
+  stop_loss_pct: -0.08     # 止损 -8%%
+  take_profit_pct: 0.20    # 止盈 +20%%
+  trailing_stop_pct: -0.10 # 移动止盈 -10%% from peak
+  condition_exit: true     # 条件失效退出
+
+account:
+  id: "67014907"

@@ -1,11 +1,15 @@
 # Project 10: 价值小盘 V2（微调版）
 # 审计基线: audit14-17 (2026-08-01~02)
 # 状态机口径全期超额 +241.6%, 年化 17.9%, 2026超额 +0.1%
+# 2026-08-04 P0-1/P0-2/P1-1 网格验证 (run_grid_validation.py):
+#   - hp 因子去除 (V2a 纯BP z 1.0): 年化16.2%/超额+200.9%/2026+0.4%, 全面优于 hp0.2 基线
+#   - EP 替代无效 (V2b 超额-13.8%), 不采用
+#   - P1-1 分层降仓/ATR止损 回撤与收益均不达标, 保持基线风控 (enabled=false)
 
 project:
   name: "价值小盘V2_微调版"
-  version: "2.1"
-  description: "行业中性BP + 历史分位BP, 权重0.8/0.2, 质量排雷"
+  version: "2.2"
+  description: "纯行业中性BP z-score(1.0), 质量排雷; hp已去除(2026-08-04网格验证)"
 
 universe:
   market_cap_max: 300000    # 万元 (30亿)
@@ -16,24 +20,39 @@ universe:
   exclude_suspended: true
 
 scoring:
-  method: "bp_industry_neutral_hp"
+  method: "bp"             # bp(原始V2) / ep / bp_ep / multi (P0-1, 2026-08-04)
   weights:
-    z_score: 0.8            # 行业中性BP z-score
-    hist_pct: 0.2           # BP 36月历史分位
+    z_score: 1.0            # 行业中性BP z-score (V2a, 网格验证最优)
+    hist_pct: 0.0           # hp 已去除: 2024+失效/2026反向(audit16), V2a 全窗口优于 V1
+    ep_score: 0.0           # EP 验证无效(超额-13.8%), 不采用
   bp_min: 0                 # PB > 0 → BP 有效
+  ep_min: 0                 # PE > 0 → EP 有效 (P0-1)
   hp_window_months: 36      # 历史分位回看窗口
   hp_min_months: 12         # 最少12月数据
+  factors: {}               # P0-2 附加因子权重, 如 {atr_rank: 0.3, turnover_rank: 0.1}
 
 portfolio:
   n_stocks: 80              # 持仓数量
   weight_method: "equal"    # 等权
   rebalance_freq: "2M"      # 双月换仓
 
+rebalance:
+  mode: "full"              # full(双月全量重建) / signal(持仓<阈值触发补仓) (P1-1)
+  signal_threshold: 0.6     # signal 模式触发阈值 (持仓完整度)
+
 risk_control:
   stop_loss_pct: 0.08       # 个股止损 8%
   max_drawdown_pct: 0.15    # 组合最大回撤 15%
   max_holding_days: 60      # 最长持有 60 天
   max_daily_turnover: 0.30  # 单日最大换手 30%
+  atr_stop:                 # P1-1: ATR 自适应止损
+    enabled: false
+    multiplier: 2.0         # 止损阈值 = min(2×ATR%, stop_cap)
+    stop_cap: 0.10          # 保底不超过 -10%
+  tiered_drawdown:          # P1-1: 分层降仓 (替代 15% 一刀切清仓)
+    enabled: false
+    thresholds: [0.10, 0.15, 0.20]
+    targets: [0.70, 0.40, 0.0]   # 回撤 10%→降70%仓, 15%→降40%仓, 20%→清仓
 
 quality_screen:
   enabled: true

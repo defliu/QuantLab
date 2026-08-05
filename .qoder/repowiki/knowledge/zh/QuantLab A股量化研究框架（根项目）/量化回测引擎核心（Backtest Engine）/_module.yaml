@@ -1,0 +1,13 @@
+schema_version: 1
+module_path: backtest_engine
+title: 量化回测引擎核心（Backtest Engine）
+scope:
+    - backtest/
+source_files: []
+depends_on: []
+related_to:
+    - path: config_bundle
+    - path: data_layer
+    - path: projects
+    - path: scripts_tooling
+    - path: strategy_core

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>多因子IC策略分析看板</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei",-apple-system,sans-serif;background:#f5f6fa;color:#2c3e50;padding:30px}
+h1{font-size:26px;margin-bottom:6px}
+.subtitle{color:#7f8c8d;font-size:14px;margin-bottom:24px}
+.card{background:#fff;border-radius:12px;padding:20px 24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.card h2{font-size:16px;color:#2c3e50;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #3498db;display:inline-block}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:center;padding:8px 10px;font-weight:600;color:#555;border-bottom:2px solid #ddd}
+td{text-align:center;padding:7px 10px;border-bottom:1px solid #eee}
+tr:hover td{background:#f8f9fa}
+tr.best-row td{background:#e8f8f5!important;font-weight:600}
+tr.best-row td:first-child{border-left:3px solid #27ae60}
+.metric-grid{display:flex;gap:12px;margin-top:12px}
+.metric-box{flex:1;text-align:center;padding:14px 8px;background:#f8f9fa;border-radius:8px}
+.metric-box .val{font-size:22px;font-weight:700}
+.metric-box .label{font-size:11px;color:#7f8c8d;margin-top:2px}
+</style></head>
+<body>
+<h1>IC策略分析看板</h1>
+<p class="subtitle">2026-07-17 23:47 | P0修正版 · 双月 · 原始权重</p>
+<div class="card"><h2>IC表现</h2>
+<div class="metric-grid">
+<div class="metric-box"><div class="val" style="color:#3498db">0.0917</div><div class="label">IC均值</div></div>
+<div class="metric-box"><div class="val" style="color:#9b59b6">0.6466</div><div class="label">ICIR</div></div>
+<div class="metric-box"><div class="val" style="color:#27ae60">75%</div><div class="label">IC>0占比</div></div>
+<div class="metric-box"><div class="val">100</div><div class="label">样本数</div></div>
+</div></div>
+<div class="card"><h2>最终回测 (双月·原始权重)</h2>
+<table><tr><th>top_n</th><th>年化</th><th>夏普</th><th>回撤</th><th>胜率</th><th>调仓</th></tr><tr class="best-row"><td>10.00</td><td>310.0%</td><td>13.0%</td><td>-24.40</td><td>47.00</td><td>55.00</td></tr>
+<tr><td>25.00</td><td>310.0%</td><td>13.0%</td><td>-26.10</td><td>45.00</td><td>55.00</td></tr>
+<tr><td>30.00</td><td>310.0%</td><td>13.0%</td><td>-26.60</td><td>49.00</td><td>55.00</td></tr>
+<tr><td>15.00</td><td>240.0%</td><td>10.0%</td><td>-23.60</td><td>49.00</td><td>55.00</td></tr>
+<tr><td>20.00</td><td>180.0%</td><td>7.0%</td><td>-24.10</td><td>49.00</td><td>55.00</td></tr>
+</table></div>
+<div class="card"><h2>止损效果 (双月·TOP20)</h2>
+<table><tr><th>参数</th><th>年化</th><th>夏普</th><th>回撤</th><th>胜率</th><th>止损次数</th><th>平均幅度</th></tr><tr class="best-row"><td>无止损</td><td>1.8%</td><td>0.07</td><td>-24.1%</td><td>49%</td><td>0</td><td>-</td></tr>
+<tr><td>止损-16%</td><td>3.5%</td><td>0.01</td><td>-22.5%</td><td>47%</td><td>61</td><td>-17.5%</td></tr>
+<tr><td>止损-12%</td><td>3.6%</td><td>0.00</td><td>-22.4%</td><td>47%</td><td>156</td><td>-13.2%</td></tr>
+<tr><td>止损-8%</td><td>3.5%</td><td>-0.03</td><td>-23.0%</td><td>47%</td><td>379</td><td>-9.2%</td></tr>
+</table></div>
+<div style="text-align:center;color:#95a5a6;font-size:12px;margin-top:10px">
+P0修正: 动态universe+财报滞后45d+次日收盘成交+交易成本0.2% | 数据: 2018-07 ~ 2026-06
+</div></body></html>

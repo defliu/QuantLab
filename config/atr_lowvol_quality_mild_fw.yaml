@@ -1,0 +1,52 @@
+# ATR 低波动升级版 —— 温和质量变体（诊断用）
+# 目的：隔离"红利硬门槛 vs 质量门槛"谁在拖后腿。
+# 与原版组合层完全一致，仅合格域：关掉 dividend_min、FCF 用宽松 ocfps>0、ROE 稳定降到 4 季。
+backtest:
+  name: atr_lowvol_quality_mild_fw
+  start_date: "2023-01-03"
+  end_date: "2026-07-31"
+  initial_cash: 1000000.0
+  benchmark_code: "000300.SH"
+  benchmark_db_path: "F:/backtest_workspace/data/duckdb/benchmark_index.duckdb"
+
+data:
+  source: astock
+  path: "E:/astock/daily/stock_daily.parquet"
+  adjustment: hfq
+  fundamentals: false
+
+universe:
+  csv: "D:/QuantLab/config/full_a_sh_sz.csv"
+
+execution:
+  price: next_open
+  slippage: 0.001
+  commission_rate: 0.00025
+  tax_rate: 0.0001
+
+strategy: atr_lowvol_quality
+trading_model: next_open
+
+strategy_params:
+  rebalance_freq: quarterly
+  n_hold: 100
+  atr_win: 14
+  atr_pct_max: 0.06
+  turnover_min: 1.0
+  turnover_max: 8.0
+  quality_gate: 1
+  momentum_gate: 1
+  stop_loss: -0.08
+  # --- 温和质量变体：关红利硬门槛，FCF 宽松，ROE 稳定 4 季 ---
+  dividend_min: 0.0
+  fcf_gate: 1                      # ocfps>0（宽松现金流质量）
+  roe_stable_n: 4
+  # --- 组合层（与原版一致）---
+  position_sizing: equal
+  target_leverage: 1.0
+  vol_target: 0.0
+  industry_cap: 0.0
+  max_positions: 0
+  min_position_value: 0.0
+  vol_window: 60
+  margin_interest_rate: 0.06
