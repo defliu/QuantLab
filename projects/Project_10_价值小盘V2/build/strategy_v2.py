@@ -27,6 +27,16 @@ HP_MIN = 12
 CAPITAL_INIT = 100000.0   # ×¨Êô×Ê½ğ³Ø³õÊ¼×Ê½ğ£¨Ğ¡×Ê½ğ²âÊÔ£¬ÊÕÒæ¹ö¶¯£©
 MIN_POSITION_PCT = 0.6    # ³Ö²ÖµÍÓÚ60%´¥·¢²¹²Ö
 
+# v2.3 (2026-08-06 ÌÖÂÛÊÒÅú×¼): buffer ½µ»»ÊÖ + ÍËÊĞÅÅÀ×
+# buffer: »»²ÖÊ±Âô³öÅÅÃû > BUFFER_KEEP_MAX µÄ³Ö²Ö (ÅÅÃû=µ±ÆÚºòÑ¡ÆÀ·Ö½µĞò)¡£
+#   0 = ¹Ø±Õ(±£³Ö¾ÉĞĞÎª: »»²Ö²»Âô³ö, ½ö¿¿Ö¹Ëğ/³ÖÓĞÆÚ/»Ø³·Âô)¡£
+#   160 = ÒÑÑéÖ¤µµÎ» (ÑĞ¾¿»Ø²â: Äê»¯+1.7pp / ³¬¶îÈ«ÆÚ+43pp / »»ÊÖ0.91->0.80, 2024+²»ÁÓ»¯)¡£
+BUFFER_KEEP_MAX = 160
+# ÍËÊĞÅÅÀ×: ÊĞÖµºìÏß»º³åÇø + ÍËÊĞÁÙ½üÌŞ³ı (Êı¾İÔ´ delist_info.csv / financial_total_mv.csv)
+DELIST_MV_MAIN = 75000.0     # Ö÷°å×ÜÊĞÖµºìÏß»º³å: 5ÒÚ x 1.5 (ÍòÔª)
+DELIST_MV_GEMSTAR = 45000.0  # ´´Òµ°å/¿Æ´´°å: 3ÒÚ x 1.5 (ÍòÔª)
+DELIST_NEAR_DAYS = 30        # ¾àÍËÊĞÈÕ <= 30 ÌìÌŞ³ı (±±½»Ëù²»ÊÊÓÃÊĞÖµºìÏß)
+
 DATA_DIR = "D:/QMT_POOL"
 STATE_FILE = os.path.join(DATA_DIR, "v2_holdings_state.json")
 LOG_FILE = os.path.join(DATA_DIR, "strategy_log_v2.txt")
@@ -37,7 +47,7 @@ PENDING_MAX_RETRIES = 3      # µ¥Ö»×î¶àÖØÏÂ´ÎÊı£¨º¬Ê×´Î£©£¬³¬¹ıÔò·ÅÆú£¨µÈÊÕÅÌ¶ÔÕ
 RETRY_COOLDOWN_MIN = 1       # ³·µ¥ÖØÏÂµÄ×îĞ¡ÀäÈ´¼ä¸ô£¨·ÖÖÓ£©£¬·ÀÖ¹Í¬Ò»·ÖÖÓ·´¸´ÖØÏÂ
 
 # ¹¹½¨°æ±¾±ê¼Ç£ºbuild.py Ã¿´Î¹¹½¨Ê±×Ô¶¯Ìæ»»ÎªÊ±¼ä´Á£¨YYYYmmdd-HHMMSS£©
-BUILD_TAG = "20260804-215630"
+BUILD_TAG = "20260806-154904"
 
 # ============ È«¾Ö×´Ì¬ ============
 _cash = CAPITAL_INIT       # ×¨Êô×Ê½ğ³ØÏÖ½ğ£¨ÓëÕË»§ÆäËû²ßÂÔ×Ê½ğÍêÈ«¸ôÀë£©
@@ -113,7 +123,7 @@ def _load_pool(C):
 def _load_financial():
     """´ÓCSV¼ÓÔØPE/PB/circ_mv/ĞĞÒµ"""
     result = {}
-    for name in ["pe_ttm", "pb", "circ_mv", "industry"]:
+    for name in ["pe_ttm", "pb", "circ_mv", "industry", "total_mv"]:
         path = os.path.join(DATA_DIR, "financial_%s.csv" % name)
         if not os.path.exists(path):
             continue
@@ -175,6 +185,52 @@ def _load_industry_map():
     except Exception:
         pass
     return result
+
+def _load_delist_info():
+    """´ÓCSV¼ÓÔØÍËÊĞĞÅÏ¢ (v2.3 ÍËÊĞÅÅÀ×): code -> (list_status, delist_date 'YYYY-MM-DD')"""
+    path = os.path.join(DATA_DIR, "delist_info.csv")
+    result = {}
+    if not os.path.exists(path):
+        return result
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                code = row.get("ts_code", "")
+                if code:
+                    result[code] = (row.get("list_status", "") or "",
+                                    row.get("delist_date", "") or "")
+    except Exception:
+        pass
+    return result
+
+def _delist_hit_qmt(code, fin_data, delist_info, today_str):
+    """v2.3 ÍËÊĞÅÅÀ×ÅĞ¶Ï: True = ÌŞ³ı (ÊĞÖµºìÏß»º³åÇø + ÍËÊĞÁÙ½ü)"""
+    try:
+        # ÍËÊĞÁÙ½ü: ¾àÍËÊĞÈÕ <= DELIST_NEAR_DAYS Ìì
+        info = delist_info.get(code)
+        if info:
+            list_status, delist_date = info[0], info[1]
+            if list_status == "D":
+                return True  # ÒÑÍËÊĞ
+            if delist_date:
+                try:
+                    t0 = datetime.strptime(today_str, "%Y-%m-%d")
+                    t1 = datetime.strptime(delist_date, "%Y-%m-%d")
+                    if (t1 - t0).days <= DELIST_NEAR_DAYS:
+                        return True
+                except Exception:
+                    pass
+        # ÊĞÖµºìÏß (±±½»Ëù²»ÊÊÓÃ)
+        if code.endswith(".BJ"):
+            return False
+        total_mv = fin_data.get(code, {}).get("total_mv", 0) or 0
+        if total_mv <= 0:
+            return False
+        thr = DELIST_MV_GEMSTAR if (code.startswith("30") or code.startswith("688")) else DELIST_MV_MAIN
+        return total_mv < thr
+    except Exception:
+        return False
 
 def _limit_pct(code):
     """ÕÇµøÍ£·ù¶È"""
@@ -600,10 +656,48 @@ def handlebar(C):
         fin_data = _load_financial()
         bp_hist = _load_bp_history()
         ind_map = _load_industry_map()
+        delist_info = _load_delist_info()   # v2.3 ÍËÊĞÅÅÀ×
 
         scores = _score_stocks(C, pool, fin_data, bp_hist, ind_map, today_str)
         if not scores:
             return
+
+        # v2.3 ÍËÊĞÅÅÀ×: ÌŞ³ıÍËÊĞ·çÏÕ¹É (ÒÑÍËÊĞ/ÍËÊĞÁÙ½ü/ÊĞÖµºìÏß)
+        n_before = len(scores)
+        scores = dict((c, s) for c, s in scores.items()
+                      if not _delist_hit_qmt(c, fin_data, delist_info, today_str))
+        n_screened = n_before - len(scores)
+        if not scores:
+            return
+
+        # ÏÈ³·¾Éµ¥£¨±ÜÃâ¹Òµ¥³åÍ»£©¡ª¡ª±ØĞëÔÚ buffer Âô³öÖ®Ç°£¬·ñÔòĞÂÏÂÂôµ¥»á±»³·
+        _cancel_pending_orders(C)
+
+        # v2.3 buffer: »»²ÖÂô³öÅÅÃû³¬³ö BUFFER_KEEP_MAX µÄ³Ö²Ö (½µ»»ÊÖ; 0=¹Ø±Õ±£³Ö¾ÉĞĞÎª)
+        if BUFFER_KEEP_MAX > 0:
+            ranked_codes = [c for c, s in sorted(scores.items(), key=lambda x: -x[1])]
+            rank_map = {}
+            for i, c in enumerate(ranked_codes):
+                rank_map[c] = i + 1
+            buf_sells = 0
+            buf_defer = 0
+            for code in list(_holdings.keys()):
+                rk = rank_map.get(code)
+                if rk is not None and rk <= BUFFER_KEEP_MAX:
+                    continue  # ±£Áô: ÅÅÃûÔÚ±£Áô½çÄÚ
+                # ÅÅÃû³¬½ç / Âä³öºòÑ¡³Ø: Âô³ö (µøÍ£/Í£ÅÆÔİ»º, ¸´ÓÃÔİ»º¶ÓÁĞ)
+                if _is_limit_down(C, code) or _is_suspended(C, code):
+                    if code not in _suspended_sells:
+                        _suspended_sells.append(code)
+                    buf_defer += 1
+                    continue
+                if code in _suspended_sells:
+                    _suspended_sells.remove(code)
+                _execute_sell(C, code)
+                buf_sells += 1
+            if buf_sells or buf_defer or n_screened:
+                _log("[buffer] ÅÅÀ×ÌŞ³ı%dÖ» | Âô³ö³¬½ç(>%d)³Ö²Ö%dÖ» | Ôİ»º%dÖ»(µøÍ£/Í£ÅÆ)"
+                     % (n_screened, BUFFER_KEEP_MAX, buf_sells, buf_defer), C)
 
         # ÅÅ³ıÒÑ³Ö²Ö£¬È¡top N
         target = []
@@ -612,9 +706,6 @@ def handlebar(C):
                 break
             if code not in _holdings:
                 target.append(code)
-
-        # ÏÈ³·¾Éµ¥£¨±ÜÃâ¹Òµ¥³åÍ»£©
-        _cancel_pending_orders(C)
 
         # ÂòÈë
         for code in target:

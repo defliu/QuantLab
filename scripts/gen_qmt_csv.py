@@ -54,6 +54,7 @@ def gen_valuation():
         ("financial_pb.csv", "pb", "PB"),
         ("financial_pe_ttm.csv", "pe_ttm", "PE_TTM"),
         ("financial_circ_mv.csv", "circ_mv", "流通市值(万元)"),
+        ("financial_total_mv.csv", "total_mv", "总市值(万元)"),
     ]
     for fname, col, label in specs:
         if col not in last.columns:
@@ -137,12 +138,48 @@ def gen_selected():
     log("  [OK] selected.txt: %d 只 (%ds)" % (len(codes), time.time() - t0))
 
 
+def gen_delist_info():
+    """delist_info.csv: ts_code,list_status,delist_date (退市排雷用)
+    v2.3 讨论室组件A: 纯BP会把濒临退市深度折价股排到前列(长生退等BP第1),
+    QMT 端需 delist_date 做"退市临近"剔除。list_status: L上市/D退市/P暂停。"""
+    t0 = time.time()
+    b = pd.read_parquet(BASIC)
+    need = ["ts_code", "list_status", "delist_date"]
+    missing = [c for c in need if c not in b.columns]
+    if missing:
+        log("  [SKIP] delist_info: stock_basic 缺列 %s" % missing)
+        return
+    sub = b[need].copy()
+    # delist_date 规范化为 YYYY-MM-DD 字符串 (空则留空)
+    def _fmt(v):
+        if v is None:
+            return ""
+        s = str(v).strip()
+        if s in ("", "nan", "None", "NaT"):
+            return ""
+        s = s.replace("-", "").split(" ")[0][:8]
+        if len(s) == 8 and s.isdigit():
+            return "%s-%s-%s" % (s[0:4], s[4:6], s[6:8])
+        return ""
+    sub["delist_date"] = sub["delist_date"].map(_fmt)
+    sub["list_status"] = sub["list_status"].fillna("").astype(str)
+    path = os.path.join(OUT_DIR, "delist_info.csv")
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["ts_code", "list_status", "delist_date"])
+        for code, st, dd in sub[["ts_code", "list_status", "delist_date"]].itertuples(index=False):
+            w.writerow([code, st, dd])
+    n_d = int((sub["delist_date"] != "").sum())
+    log("  [OK] delist_info.csv: %d 只 (含退市日 %d) (%ds)" % (len(sub), n_d, time.time() - t0))
+
+
 def main():
     log("=== 生成 V2 策略 QMT CSV ===")
     gen_valuation()
     gen_industry()
     gen_bp_hist()
     gen_selected()
+    gen_delist_info()
     log("=== 完成 ===")
 
 

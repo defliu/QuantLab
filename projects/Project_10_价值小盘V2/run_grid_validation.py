@@ -20,10 +20,10 @@
 用法: python run_grid_validation.py [--quick 只跑V1/R0]
 """
 import sys, os, time
-# 插入顺序注意: Project_01 必须在 Project_10 之前插入,
-# 保证 sys.path[0]=Project_10, `strategy.*` 解析到本项目模块
-sys.path.insert(0, r"E:\QuantLab\projects\Project_01_多因子IC小盘Alpha")
-sys.path.insert(0, r"E:\QuantLab")
+# 插入顺序注意: Project_10 最后插入 => sys.path[0]=Project_10, `strategy.*` 解析到本项目模块
+# 2026-08-06 迁移修正: E:\QuantLab -> D:\QuantLab
+sys.path.insert(0, r"D:\QuantLab\projects\Project_01_多因子IC小盘Alpha")
+sys.path.insert(0, r"D:\QuantLab")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import yaml

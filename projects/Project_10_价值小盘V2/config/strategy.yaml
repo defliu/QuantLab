@@ -8,8 +8,8 @@
 
 project:
   name: "价值小盘V2_微调版"
-  version: "2.2"
-  description: "纯行业中性BP z-score(1.0), 质量排雷; hp已去除(2026-08-04网格验证)"
+  version: "2.3"
+  description: "纯行业中性BP z-score(1.0), 质量排雷; hp已去除(2026-08-04网格验证); v2.3加退市排雷+buffer降换手(2026-08-06讨论室批准)"
 
 universe:
   market_cap_max: 300000    # 万元 (30亿)
@@ -18,6 +18,7 @@ universe:
   pb_min: 0
   exclude_st: true
   exclude_suspended: true
+  delist_screen: true       # v2.3 退市排雷(组件A): 市值红线缓冲(主板7.5亿/创业科创4.5亿)+退市临近30天剔除; 北交所不适用红线
 
 scoring:
   method: "bp"             # bp(原始V2) / ep / bp_ep / multi (P0-1, 2026-08-04)
@@ -39,6 +40,7 @@ portfolio:
 rebalance:
   mode: "full"              # full(双月全量重建) / signal(持仓<阈值触发补仓) (P1-1)
   signal_threshold: 0.6     # signal 模式触发阈值 (持仓完整度)
+  buffer_keep: 160          # v2.3 buffer(组件B): 持仓rank<=160保留降换手; =80等价全量重建; 0=全量重建(复现存档)
 
 risk_control:
   stop_loss_pct: 0.08       # 个股止损 8%

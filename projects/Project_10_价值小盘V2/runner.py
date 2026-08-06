@@ -3,9 +3,12 @@
 状态机口径回测，含风控模块
 用法: python runner.py"""
 import sys, os, time
-sys.path.insert(0, os.path.dirname(__file__))  # Project_10 优先
-sys.path.insert(0, r"E:\QuantLab")
-sys.path.insert(0, r"E:\QuantLab\projects\Project_01_多因子IC小盘Alpha")
+# 2026-08-06 迁移修正: E:\QuantLab -> D:\QuantLab。
+# 注意: D:\QuantLab\strategy 是空占位包, 会抢占 `strategy.*` 解析,
+# 故 Project_10 目录必须最后插入以保持 sys.path[0] 最高优先。
+sys.path.insert(0, r"D:\QuantLab")
+sys.path.insert(0, r"D:\QuantLab\projects\Project_01_多因子IC小盘Alpha")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # Project_10 优先
 
 import yaml
 import pandas as pd
@@ -26,7 +29,8 @@ t0 = time.time()
 
 daily = pd.read_parquet(DAILY_PATH)
 idx = daily.index
-start_ts = pd.Timestamp(START_DATE).date()
+# 注意: trade_date 层为 datetime64[ns], 必须用 Timestamp 比较 (新版 pandas 不支持 date 对象)
+start_ts = pd.Timestamp(START_DATE)
 codes_all = set(
     idx.get_level_values("ts_code")[idx.get_level_values("trade_date") >= start_ts].unique()
 )
@@ -34,7 +38,7 @@ daily = daily.loc[idx.get_level_values("ts_code").isin(codes_all)].copy()
 idx = daily.index
 daily = daily.loc[
     (idx.get_level_values("trade_date") >= start_ts)
-    & (idx.get_level_values("trade_date") <= pd.Timestamp(END_DATE).date())
+    & (idx.get_level_values("trade_date") <= pd.Timestamp(END_DATE))
 ].copy()
 idx = daily.index
 
@@ -44,6 +48,7 @@ panel = pd.DataFrame({
     "high": daily["high"].values, "low": daily["low"].values,
     "pe_ttm": daily["pe_ttm"].values, "pb": daily["pb"].values,
     "circ_mv": daily["circ_mv"].values, "amount": daily["amount"].values,
+    "total_mv": daily["total_mv"].values,
     "prev_close": prev_close.values,
 }, index=idx)
 
@@ -55,6 +60,41 @@ panel = panel.loc[~is_st & ~suspend.isin(["S", "R", "R&S"])]
 # 行业映射
 basic = pd.read_parquet(r"E:/astock/basic/stock_basic.parquet")
 ind_map = dict(zip(basic["ts_code"], basic["industry"].fillna("其他")))
+
+# 退市日期映射 (v2.3 退市排雷, 讨论室组件A)
+_delist_map = {}
+if "delist_date" in basic.columns:
+    for _c, _v in zip(basic["ts_code"], basic["delist_date"]):
+        if _v is None or (isinstance(_v, float) and np.isnan(_v)):
+            continue
+        _s = str(_v).strip().split(" ")[0]
+        if _s in ("", "nan", "None", "NaT"):
+            continue
+        try:
+            _delist_map[_c] = pd.to_datetime(_s, format="%Y%m%d")
+        except Exception:
+            pass
+
+# v2.3 退市排雷参数 (讨论室组件A: 市值红线缓冲区 + 退市临近)
+DELIST_MV_MAIN = 75000.0     # 主板总市值红线缓冲: 5亿 x 1.5 (万元)
+DELIST_MV_GEMSTAR = 45000.0  # 创业板/科创板: 3亿 x 1.5 (万元)
+DELIST_NEAR_DAYS = 30        # 距退市日 <= 30 天剔除 (北交所不适用市值红线)
+
+def _delist_hit(code, d, total_mv):
+    """退市排雷判断: True = 剔除"""
+    dd = _delist_map.get(code)
+    if dd is not None:
+        try:
+            if pd.Timestamp(d) >= dd - pd.Timedelta(days=DELIST_NEAR_DAYS):
+                return True
+        except Exception:
+            pass
+    if code.endswith(".BJ"):
+        return False  # 北交所无对应市值退市标准, 不适用红线
+    if total_mv is None or (isinstance(total_mv, float) and np.isnan(total_mv)) or total_mv <= 0:
+        return False
+    thr = DELIST_MV_GEMSTAR if (code.startswith("30") or code.startswith("688")) else DELIST_MV_MAIN
+    return total_mv < thr
 
 # 财务数据
 fin = pd.read_parquet(r"E:/astock/finance/fina_indicator.parquet")
@@ -70,7 +110,8 @@ print("panel:", panel.shape, " 用时: %.1fs" % (time.time() - t0))
 # --------------- 工具函数 ---------------
 trade_dates = sorted(panel.index.get_level_values("trade_date").unique())
 ti = {pd.Timestamp(x): k for k, x in enumerate(trade_dates)}
-rebal = get_rebalance_dates(panel, freq=CFG["portfolio"]["rebalance_freq"])
+# 统一转 Timestamp, 避免 date 对象与 datetime64 索引不兼容 (新版 pandas)
+rebal = [pd.Timestamp(x) for x in get_rebalance_dates(panel, freq=CFG["portfolio"]["rebalance_freq"])]
 
 pb_wide = panel["pb"].unstack("ts_code")
 pb_wide.index = pd.DatetimeIndex(pb_wide.index)
@@ -125,6 +166,17 @@ def get_candidates(d, dd):
         for c in mq.index:
             r = fs.get(c)
             if r is None or not (r[0] > 0 and r[2] > 0 and r[1] > 0):
+                mq[c] = False
+        m = mq
+    # v2.3 退市排雷 (讨论室组件A): 市值红线缓冲区 + 退市临近
+    if ucfg.get("delist_screen", False):
+        tmv = dd["total_mv"] if "total_mv" in dd else None
+        mq = m.copy()
+        for c in mq.index:
+            if not mq[c]:
+                continue
+            v = tmv.get(c) if tmv is not None else None
+            if _delist_hit(c, d, v):
                 mq[c] = False
         m = mq
     r = m[m].index
@@ -212,19 +264,24 @@ def run_backtest(force_full_turn=False):
             prev_holdings, prev_cost, prev_turnover, prev_sells, prev_buys = {}, 0.0, 0.0, 0, 0
             continue
 
-        # 5. 目标组合（排除禁入股）
-        target = set()
-        for code in score.sort_values(ascending=False).index:
-            if len(target) >= n_stocks:
-                break
-            if not risk.is_banned(code, e_date):
-                target.add(code)
+        # 5. buffer 排名（v2.3 讨论室组件B）
+        #    排名按"剔除当期禁入股"后的候选计算（与 V2a target 构造一致）
+        #    buffer_keep=0/缺省 => 全量重建（保留 rank<=n_stocks，即原行为，可复现存档）
+        #    buffer_keep=160    => 保留 rank<=160 的持仓，降换手（已验证 +1.7pp 年化）
+        order = score.sort_values(ascending=False)
+        order_nb = [c for c in order.index if not risk.is_banned(c, e_date)]
+        rank_nb = {c: r + 1 for r, c in enumerate(order_nb)}
+        buffer_keep = int((CFG.get("rebalance", {}) or {}).get("buffer_keep", 0) or 0)
+        keep_max = buffer_keep if buffer_keep > 0 else n_stocks
+        buy_zone = order_nb[:n_stocks]
 
-        # 6. 卖出不在目标中的 + 涨跌停保护
+        # 6. 卖出超出 buffer 保留界的 + 涨跌停保护
         sells, buys = 0, 0
         new_holdings = {}
         for code, base in prev_holdings.items():
-            if code in target and not force_full_turn:
+            rk = rank_nb.get(code)
+            keep = (rk is not None and rk <= keep_max)
+            if keep and not force_full_turn:
                 new_holdings[code] = e_row["open"].get(code, base)
                 risk.register_entry(code, new_holdings[code], e_date) if code not in risk.holdings else None
                 continue
@@ -239,8 +296,10 @@ def run_backtest(force_full_turn=False):
                 sells += 1
                 risk.register_exit(code)
 
-        # 7. 买入新标的
-        for code in target:
+        # 7. 买入新标的（买入区 = top-n 非禁入，补到 n_stocks；涨停买不进留空位）
+        for code in buy_zone:
+            if len(new_holdings) >= n_stocks:
+                break
             if code in new_holdings:
                 continue
             eo, epc = e_row["open"].get(code), e_row["prev_close"].get(code)

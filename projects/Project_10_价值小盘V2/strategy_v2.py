@@ -27,6 +27,16 @@ HP_MIN = 12
 CAPITAL_INIT = 100000.0   # 专属资金池初始资金（小资金测试，收益滚动）
 MIN_POSITION_PCT = 0.6    # 持仓低于60%触发补仓
 
+# v2.3 (2026-08-06 讨论室批准): buffer 降换手 + 退市排雷
+# buffer: 换仓时卖出排名 > BUFFER_KEEP_MAX 的持仓 (排名=当期候选评分降序)。
+#   0 = 关闭(保持旧行为: 换仓不卖出, 仅靠止损/持有期/回撤卖)。
+#   160 = 已验证档位 (研究回测: 年化+1.7pp / 超额全期+43pp / 换手0.91->0.80, 2024+不劣化)。
+BUFFER_KEEP_MAX = 160
+# 退市排雷: 市值红线缓冲区 + 退市临近剔除 (数据源 delist_info.csv / financial_total_mv.csv)
+DELIST_MV_MAIN = 75000.0     # 主板总市值红线缓冲: 5亿 x 1.5 (万元)
+DELIST_MV_GEMSTAR = 45000.0  # 创业板/科创板: 3亿 x 1.5 (万元)
+DELIST_NEAR_DAYS = 30        # 距退市日 <= 30 天剔除 (北交所不适用市值红线)
+
 DATA_DIR = "D:/QMT_POOL"
 STATE_FILE = os.path.join(DATA_DIR, "v2_holdings_state.json")
 LOG_FILE = os.path.join(DATA_DIR, "strategy_log_v2.txt")
@@ -113,7 +123,7 @@ def _load_pool(C):
 def _load_financial():
     """从CSV加载PE/PB/circ_mv/行业"""
     result = {}
-    for name in ["pe_ttm", "pb", "circ_mv", "industry"]:
+    for name in ["pe_ttm", "pb", "circ_mv", "industry", "total_mv"]:
         path = os.path.join(DATA_DIR, "financial_%s.csv" % name)
         if not os.path.exists(path):
             continue
@@ -175,6 +185,52 @@ def _load_industry_map():
     except Exception:
         pass
     return result
+
+def _load_delist_info():
+    """从CSV加载退市信息 (v2.3 退市排雷): code -> (list_status, delist_date 'YYYY-MM-DD')"""
+    path = os.path.join(DATA_DIR, "delist_info.csv")
+    result = {}
+    if not os.path.exists(path):
+        return result
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                code = row.get("ts_code", "")
+                if code:
+                    result[code] = (row.get("list_status", "") or "",
+                                    row.get("delist_date", "") or "")
+    except Exception:
+        pass
+    return result
+
+def _delist_hit_qmt(code, fin_data, delist_info, today_str):
+    """v2.3 退市排雷判断: True = 剔除 (市值红线缓冲区 + 退市临近)"""
+    try:
+        # 退市临近: 距退市日 <= DELIST_NEAR_DAYS 天
+        info = delist_info.get(code)
+        if info:
+            list_status, delist_date = info[0], info[1]
+            if list_status == "D":
+                return True  # 已退市
+            if delist_date:
+                try:
+                    t0 = datetime.strptime(today_str, "%Y-%m-%d")
+                    t1 = datetime.strptime(delist_date, "%Y-%m-%d")
+                    if (t1 - t0).days <= DELIST_NEAR_DAYS:
+                        return True
+                except Exception:
+                    pass
+        # 市值红线 (北交所不适用)
+        if code.endswith(".BJ"):
+            return False
+        total_mv = fin_data.get(code, {}).get("total_mv", 0) or 0
+        if total_mv <= 0:
+            return False
+        thr = DELIST_MV_GEMSTAR if (code.startswith("30") or code.startswith("688")) else DELIST_MV_MAIN
+        return total_mv < thr
+    except Exception:
+        return False
 
 def _limit_pct(code):
     """涨跌停幅度"""
@@ -600,10 +656,48 @@ def handlebar(C):
         fin_data = _load_financial()
         bp_hist = _load_bp_history()
         ind_map = _load_industry_map()
+        delist_info = _load_delist_info()   # v2.3 退市排雷
 
         scores = _score_stocks(C, pool, fin_data, bp_hist, ind_map, today_str)
         if not scores:
             return
+
+        # v2.3 退市排雷: 剔除退市风险股 (已退市/退市临近/市值红线)
+        n_before = len(scores)
+        scores = dict((c, s) for c, s in scores.items()
+                      if not _delist_hit_qmt(c, fin_data, delist_info, today_str))
+        n_screened = n_before - len(scores)
+        if not scores:
+            return
+
+        # 先撤旧单（避免挂单冲突）——必须在 buffer 卖出之前，否则新下卖单会被撤
+        _cancel_pending_orders(C)
+
+        # v2.3 buffer: 换仓卖出排名超出 BUFFER_KEEP_MAX 的持仓 (降换手; 0=关闭保持旧行为)
+        if BUFFER_KEEP_MAX > 0:
+            ranked_codes = [c for c, s in sorted(scores.items(), key=lambda x: -x[1])]
+            rank_map = {}
+            for i, c in enumerate(ranked_codes):
+                rank_map[c] = i + 1
+            buf_sells = 0
+            buf_defer = 0
+            for code in list(_holdings.keys()):
+                rk = rank_map.get(code)
+                if rk is not None and rk <= BUFFER_KEEP_MAX:
+                    continue  # 保留: 排名在保留界内
+                # 排名超界 / 落出候选池: 卖出 (跌停/停牌暂缓, 复用暂缓队列)
+                if _is_limit_down(C, code) or _is_suspended(C, code):
+                    if code not in _suspended_sells:
+                        _suspended_sells.append(code)
+                    buf_defer += 1
+                    continue
+                if code in _suspended_sells:
+                    _suspended_sells.remove(code)
+                _execute_sell(C, code)
+                buf_sells += 1
+            if buf_sells or buf_defer or n_screened:
+                _log("[buffer] 排雷剔除%d只 | 卖出超界(>%d)持仓%d只 | 暂缓%d只(跌停/停牌)"
+                     % (n_screened, BUFFER_KEEP_MAX, buf_sells, buf_defer), C)
 
         # 排除已持仓，取top N
         target = []
@@ -612,9 +706,6 @@ def handlebar(C):
                 break
             if code not in _holdings:
                 target.append(code)
-
-        # 先撤旧单（避免挂单冲突）
-        _cancel_pending_orders(C)
 
         # 买入
         for code in target:

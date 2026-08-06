@@ -2,7 +2,12 @@
 
 > 立项日期：2026-08-02
 > 审计基线：audit14-17 (2026-08-01~02)
-> 状态：**待实盘验证**
+> 状态：**v2.3 已集成退市排雷+buffer，待模拟盘验证**
+> **2026-08-06 v2.3（讨论室拆解吸收，诚哥批准）**：并入小市值策略 v2.3 两个已验证组件——
+> ① 退市排雷（市值红线缓冲+退市临近剔除，config `universe.delist_screen`，QMT 端 `_delist_hit_qmt`）
+> ② buffer 降换手（config `rebalance.buffer_keep=160`，QMT 端 `BUFFER_KEEP_MAX=160`）。
+> 研究回测 v2.3 口径：年化 18.0% / 超额全期 +244.9% / 换手 0.80 / 2024+ +50.1%；buffer=0 精确复现存档 +16.2%/+200.9%。
+> QMT 单文件已重建（build/strategy_v2.py, GBK, 3.6 兼容），本地验证通过（research/local_validate_v23.py：退市排雷5例+buffer边界6例全过）。
 > **2026-08-04 更新（P0-1/P0-2/P1-1 网格验证，run_grid_validation.py）**：
 > - hp 因子已去除：纯BP z 1.0（V2a）年化 16.2%/超额+200.9%/2026超额+0.4%，全窗口优于 0.8/0.2 基线
 > - EP 替代验证无效（超额-13.8%），Wharton 结论在 A 股小盘不成立
@@ -89,12 +94,37 @@ python build.py
 1. 确保 `D:/QMT_POOL/` 下有预生成CSV：
    - `selected.txt` — 股票池
    - `financial_pe_ttm.csv` / `financial_pb.csv` / `financial_circ_mv.csv` / `financial_industry.csv`
+   - `financial_total_mv.csv` — 总市值(退市排雷市值红线, v2.3 新增)
+   - `delist_info.csv` — 退市信息 list_status/delist_date(退市排雷, v2.3 新增)
    - `bp_hist_pct.csv` — BP历史分位
 3. 账号：67014907
 
 ## 七、待办
 
-- [x] 预生成CSV数据管道（`scripts/update_p10_csv.bat`，已注册计划任务 QuantLab_P10_CSV_Pipeline，工作日 18:30）
-- [ ] 模拟盘跑1个交易日验证日志（需 QMT 模拟端在线，人工执行）
-- [ ] 与SellStrategyEngine对接（分层卖出风控模块，E:/QuantLab 内集成）
+- [x] 预生成CSV数据管道（`scripts/update_p10_csv.bat`，已注册计划任务 QuantLab_P10_CSV_Pipeline，工作日 18:30；v2.3 起 gen_qmt_csv.py 额外产出 financial_total_mv.csv + delist_info.csv）
+- [x] v2.3 退市排雷 + buffer 集成（研究回测+QMT单文件+本地验证，2026-08-06）
+- [ ] 模拟盘跑1个交易日验证日志（需 QMT 模拟端在线，人工执行；v2.3 需重点核对 [buffer]/[排雷] 日志行）
+- [ ] 与SellStrategyEngine对接（分层卖出风控模块，D:/QuantLab 内集成）
 - [ ] 组合层配置（与红利低波等防御策略配比）
+
+## 八、v2.3 变更与验证（2026-08-06，讨论室拆解吸收）
+
+来源：小市值策略 v2.3 SPEC（已归档冻结）拆解吸收，诚哥批准并入 V2a。
+
+**组件 A 退市排雷**（config `universe.delist_screen: true`）：
+- 规则：已退市(list_status=D)剔除；距退市日≤30天剔除；主板总市值<7.5亿/创业板·科创板<4.5亿剔除（5亿/3亿红线×1.5缓冲）；北交所不适用市值红线。
+- 命中实证：回测全期命中4只真实退市股（烯碳退/长生退/退西水/退博天，3只BP排名第1）本会进入TOP80。
+- 实现：runner.py `_delist_hit`+get_candidates；QMT `strategy_v2.py` `_delist_hit_qmt`+换仓过滤。
+
+**组件 B buffer 降换手**（config `rebalance.buffer_keep: 160`）：
+- 规则：换仓时持仓按"非禁入候选评分降序"排名，rank≤160 保留、>160 或落出候选卖出，买入区仍为 top-80。
+- 消融：年化 16.3%→18.0%、超额全期 +201.6%→+244.9%、换手 0.91→0.80、回撤不变、2024+ +35.2%→+50.1%（否决项全过）。
+- buffer_keep=0/80 等价全量重建（复现存档），便于回退对照。
+
+**验证记录**：
+- 研究回测三分区校验（research/validate_v23_integration.py）：buffer=0≡80 复现存档 +16.2%/+200.9%，v2.3 口径 +18.0%/+244.9%。
+- QMT 本地验证（research/local_validate_v23.py）：退市排雷5用例 + buffer边界6用例全过。
+- 构建：build.py 通过（GBK + Python3.6 兼容检查）。
+- 迁移修复：runner.py / run_grid_validation.py 的 E:\QuantLab→D:\QuantLab 路径 + 新版 pandas 日期兼容（date→Timestamp）。
+
+**待办**：模拟盘验证（v2.3 行为与旧版不同——换仓会卖出超界持仓，需核对日志与成交）。
