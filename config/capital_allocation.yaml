@@ -24,6 +24,13 @@ strategies:
     config_file: "config/atr_lowvol_equalweight_config.yaml"
     note: "满仓等权100只；NAV含浮盈滚动；虚拟子账户，绝不抢占他人资金/持仓"
 
+  - key: value_smallcap_v2
+    name: "价值小盘V2(退市排雷+buffer)"
+    capital_base: 100000
+    max_hold: 80
+    config_file: "config/value_smallcap_v2_config.yaml"
+    note: "纯行业中性BP+质量排雷+退市排雷+buffer160；双月调仓80只；虚拟子账户，绝不抢占他人资金/持仓"
+
   # ---- 新增策略在此追加（取消注释并填值）----
   # - key: xxx
   #   name: "新策略名"

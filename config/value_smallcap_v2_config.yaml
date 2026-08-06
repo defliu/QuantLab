@@ -1,0 +1,28 @@
+# 价值小盘 V2 微调版 - 部署配置（v2.3：退市排雷 + buffer 降换手）
+# 对应研究回测 runner.py（buffer_keep=160 / delist_screen=true 验证版：年化18.0%/超额全期+244.9%）
+# 部署文件: projects/Project_10_价值小盘V2/build/strategy_v2.py (GBK)
+# 注意: QMT 单文件内 CAPITAL_INIT 硬编码=100000，须与本文件 capital_base 保持一致（校验器交叉核对）
+
+strategy:
+  name: VALUE_SMALLCAP_V2
+  display_name: 价值小盘V2(退市排雷+buffer)
+  capital_base: 100000           # 策略锁定可用资金（10万，虚拟子账户基准，收益滚动）
+  account_id: '67014907'         # 国金QMT模拟端账号
+
+screening:
+  n_hold: 80                    # 等权持仓数
+  market_cap_max: 300000        # 流通市值上限(万元, 30亿)
+  method: bp                    # 纯行业中性BP z-score
+  quality_gate: 1               # bps/roe/扣非>0 质量排雷
+  delist_screen: 1              # v2.3 退市排雷(市值红线缓冲+退市临近30天)
+
+rebalance:
+  freq: bimonthly               # 双月换仓(1/3/5/7/9/11月首交易日) + 持仓<60%补仓
+  buffer_keep: 160              # v2.3 buffer: 保留rank<=160, 超界/出池卖出
+  stop_loss: -0.08              # 个股止损8%
+  max_holding_days: 60          # 最长持有60天
+  max_drawdown: 0.15            # 组合回撤15%断路器
+
+pool:
+  holdings_file: D:/QMT_POOL/v2_holdings_state.json
+  csv_dir: D:/QMT_POOL          # financial_*.csv + delist_info.csv + bp_hist_pct.csv
