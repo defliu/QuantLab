@@ -14,7 +14,7 @@ data:
   fundamentals: false
 
 universe:
-  csv: "E:/QuantLab/config/full_a_sh_sz.csv"
+  csv: "D:/QuantLab/config/full_a_sh_sz.csv"
 
 execution:
   price: next_open
@@ -38,7 +38,7 @@ strategy_params:
   # --- 框架通用组合层全开 ---
   position_sizing: vol_parity     # 按 1/波动率 配权
   target_leverage: 1.5            # 两融杠杆（自动计提利息）
-  vol_target: 0.10                # 波动率目标 10%
+  vol_target: 0.18                # 波动率目标 18%（2026-08-09 调参扫描定格：年化23.7%/夏普1.015/回撤-18%，综合最优）
   industry_cap: 0.15              # 单行业 ≤15%
   max_positions: 0
   min_position_value: 0.0
