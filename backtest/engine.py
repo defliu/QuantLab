@@ -508,6 +508,7 @@ def run_backtest(
         benchmark_available=benchmark_available,
         benchmark_returns=benchmark_returns,
         benchmark_total_return=benchmark_total_return,
+        open_positions=pf.position_list(),
     )
 
     is_short_sample = (n_days < 252) or (not benchmark_available)
@@ -572,7 +573,7 @@ def run_backtest(
                 "missing_count":   len([c for c in universe if c not in market_data]),
             }),
         },
-        "data_dedup_applied":           True,
+        "data_dedup_applied":           bool(cov.get("dedup_count", 0) > 0),
         "data_concurrent_sync_warning": bool(getattr(reader, "wal_detected", False)),
         "data_wal_detected":            bool(getattr(reader, "wal_detected", False)),
         "data_wal_warning_message":     getattr(reader, "wal_warning_message", ""),

@@ -46,8 +46,13 @@ def _sharpe(returns, trading_days):
 def _pair_trades(trades):
     """Pair buy -> sell per code in chronological order.
 
-    Returns list of (buy_trade, sell_trade) tuples. Unmatched buys (still
-    held at end of run) are dropped from win-rate / avg-holding calcs.
+    Returns (pairs, open_buys):
+      pairs:     list of (buy_trade, sell_trade) tuples for closed positions.
+      open_buys: list of buy_trades still held at end of run (no matching sell).
+
+    Win-rate / avg-holding derived from `pairs` alone only cover closed
+    positions; callers that also pass open_positions can fold open buys in
+    (see compute_metrics) so the metrics reflect all deployed capital.
     """
     buys_by_code = {}
     pairs = []
@@ -59,7 +64,10 @@ def _pair_trades(trades):
             queue = buys_by_code.get(code, [])
             if queue:
                 pairs.append((queue.pop(0), t))
-    return pairs
+    open_buys = []
+    for queue in buys_by_code.values():
+        open_buys.extend(queue)
+    return pairs, open_buys
 
 
 def _trading_day_diff(date_a, date_b, trading_calendar):
@@ -71,7 +79,9 @@ def _trading_day_diff(date_a, date_b, trading_calendar):
         ia = cal.index(a)
         ib = cal.index(b)
     except ValueError:
-        return max(0, len(cal) and 0 or 0)
+        # 日期不在日历中（极端边界，如 buy 日或期末日缺失）→ 无法精确计算，
+        # 按"持有整个样本期"作上限兜底，避免静默报 0 天。
+        return max(0, len(cal))
     return ib - ia
 
 
@@ -95,7 +105,8 @@ def _benchmark_metrics(daily_returns, benchmark_returns, total_return,
 
 def compute_metrics(equity_rows, trades, trading_calendar,
                     initial_cash, benchmark_available=False,
-                    benchmark_returns=None, benchmark_total_return=None):
+                    benchmark_returns=None, benchmark_total_return=None,
+                    open_positions=None):
     """Compute performance dict.
 
     Args:
@@ -107,6 +118,11 @@ def compute_metrics(equity_rows, trades, trading_calendar,
         benchmark_returns: list of float daily returns aligned with
             equity_rows[1:] (same length as the strategy daily_returns slice).
         benchmark_total_return: float, cumulative return of the benchmark.
+        open_positions: optional list of end-of-run position dicts
+            ({code, cost_price, last_price, volume, ...}). When provided,
+            buys still held at the end are valued at their last price and
+            folded into win-rate / avg-holding; otherwise (default None)
+            win-rate only covers closed positions (legacy behaviour).
     """
     n_days = len(trading_calendar) if trading_calendar else len(equity_rows)
     if n_days <= 0:
@@ -129,24 +145,54 @@ def compute_metrics(equity_rows, trades, trading_calendar,
     else:
         calmar = None
 
-    pairs = _pair_trades(trades)
+    pairs, open_buys = _pair_trades(trades)
     n_buy = sum(1 for t in trades if t["side"] == "buy")
     n_sell = sum(1 for t in trades if t["side"] == "sell")
 
-    if pairs:
-        wins = 0
-        hold_sum = 0
-        for buy, sell in pairs:
-            buy_amt = float(buy["amount"]) + float(buy["commission"])
-            sell_amt = float(sell["amount"]) - float(sell["commission"]) - float(sell["tax"])
-            if sell_amt > buy_amt:
-                wins += 1
-            hold_sum += _trading_day_diff(buy["date"], sell["date"], trading_calendar)
-        win_rate = wins / float(len(pairs))
-        avg_holding_days = hold_sum / float(len(pairs))
+    # ---- win-rate / avg-holding ----
+    # Fold end-of-run open buys into the metrics (valued at last price) when
+    # open_positions is provided, so every deployed dollar is counted.
+    open_by_code = {}
+    if open_positions:
+        for p in open_positions:
+            open_by_code.setdefault(p["code"], []).append(p)
+    end_date = trading_calendar[-1] if trading_calendar else (
+        equity_rows[-1].get("date") if equity_rows else None)
+
+    wins = 0
+    hold_sum = 0
+    count = 0
+    for buy, sell in pairs:
+        buy_amt = float(buy["amount"]) + float(buy["commission"])
+        sell_amt = float(sell["amount"]) - float(sell["commission"]) - float(sell["tax"])
+        if sell_amt > buy_amt:
+            wins += 1
+        hold_sum += _trading_day_diff(buy["date"], sell["date"], trading_calendar)
+        count += 1
+    # unmatched buys still open at end of run
+    for buy in open_buys:
+        code = buy["code"]
+        ops = open_by_code.get(code)
+        # find the open position that this buy corresponds to (last remaining)
+        if not ops:
+            continue
+        p = ops[-1]
+        buy_amt = float(buy["amount"]) + float(buy["commission"])
+        # notional value at end-of-run last price
+        end_amt = float(p["last_price"]) * float(buy["volume"])
+        if end_amt > buy_amt:
+            wins += 1
+        if end_date is not None:
+            hold_sum += _trading_day_diff(buy["date"], end_date, trading_calendar)
+        count += 1
+
+    if count > 0:
+        win_rate = wins / float(count)
+        avg_holding_days = hold_sum / float(count)
     else:
         win_rate = 0.0
         avg_holding_days = 0.0
+    n_open = len(open_buys)
 
     perf = {
         "total_return":     round(total_return, 6),
@@ -158,6 +204,7 @@ def compute_metrics(equity_rows, trades, trading_calendar,
         "n_trades":         len(trades),
         "n_buy":            n_buy,
         "n_sell":           n_sell,
+        "n_open":           n_open,
         "avg_holding_days": round(avg_holding_days, 6),
         "excess_return":     None,
         "information_ratio": None,

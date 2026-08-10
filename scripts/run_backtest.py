@@ -4,12 +4,12 @@
 Usage:
     python -m scripts.run_backtest --config config/atr_lowvol_fw.yaml
 
-Reads yaml from E:/QuantLab/config/, reads E:/astock parquet (READ-ONLY),
-writes 6 result files to E:/QuantLab/reports/<run_id>_<config>/.
+Reads yaml from D:/QuantLab/config/, reads E:/astock parquet (READ-ONLY),
+writes 6 result files to D:/QuantLab/reports/<run_id>_<config>/.
 
 Boundaries:
   - Reads E:/astock (READ-ONLY)
-  - Writes only under results dir (default E:/QuantLab/reports)
+  - Writes only under results dir (default D:/QuantLab/reports)
   - Never imports xtquant / passorder
 """
 import argparse
@@ -46,7 +46,7 @@ def main(argv=None):
     parser.add_argument("--config", required=True,
                         help="path to yaml config (e.g. config/atr_lowvol_fw.yaml)")
     parser.add_argument("--results-dir", default=None,
-                        help="override report output dir (default E:/QuantLab/reports)")
+                        help="override report output dir (default D:/QuantLab/reports)")
     args = parser.parse_args(argv)
 
     cfg, raw_text = _load_yaml(args.config)

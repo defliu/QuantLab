@@ -10,7 +10,7 @@ This module ONLY does:
   - Serialize to disk with the frozen column orders / WARN block format
 
 Boundaries:
-  - All writes go to RESULTS_DIR (E:\\QuantLab\\reports) by default; never C:/D:.
+  - All writes go to RESULTS_DIR (D:\\QuantLab\\reports) by default; never C:.
   - Never imports xtquant / passorder / strategy_main.
   - 3.6-safe: no f-strings; UTF-8 only; CSV uses csv module.
 """
@@ -18,8 +18,8 @@ import csv
 import json
 import os
 
-# 默认产物目录（E:/QuantLab/reports，已存在）。可用 set_results_dir 覆盖。
-RESULTS_DIR = "E:/QuantLab/reports"
+# 默认产物目录（D:/QuantLab/reports）。可用 set_results_dir 覆盖。
+RESULTS_DIR = "D:/QuantLab/reports"
 
 
 def set_results_dir(path):

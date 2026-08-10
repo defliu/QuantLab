@@ -9,15 +9,15 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime
 
-OUTPUT_DIR = "E:/QuantLab/projects/verification/results"
+OUTPUT_DIR = "D:/QuantLab/projects/verification/results"
 
 
 def load_all_equity():
     """加载所有策略净值"""
     equity_files = {
-        "红利低波": "E:/QuantLab/projects/Project_05_红利低波/results/dividend_equity.csv",
-        "质量小市值": "E:/QuantLab/projects/Project_06_质量小市值/results/smallcap_equity.csv",
-        "指数增强": "E:/QuantLab/projects/Project_08_指数增强/results/index_equity.csv",
+        "红利低波": "D:/QuantLab/projects/Project_05_红利低波/results/dividend_equity.csv",
+        "质量小市值": "D:/QuantLab/projects/Project_06_质量小市值/results/smallcap_equity.csv",
+        "指数增强": "D:/QuantLab/projects/Project_08_指数增强/results/index_equity.csv",
     }
     
     all_equity = {}
@@ -38,11 +38,11 @@ def e1_comparison_table():
     print("\n[E-1] 策略横向对比...")
     
     equity_files = {
-        "①质量小市值": "E:/QuantLab/projects/Project_06_质量小市值/results/smallcap_equity.csv",
+        "①质量小市值": "D:/QuantLab/projects/Project_06_质量小市值/results/smallcap_equity.csv",
         "②PEAD": None,  # 亏损策略，用指标
         "③低换手反转": None,
-        "④指数增强": "E:/QuantLab/projects/Project_08_指数增强/results/index_equity.csv",
-        "⑤红利低波": "E:/QuantLab/projects/Project_05_红利低波/results/dividend_equity.csv",
+        "④指数增强": "D:/QuantLab/projects/Project_08_指数增强/results/index_equity.csv",
+        "⑤红利低波": "D:/QuantLab/projects/Project_05_红利低波/results/dividend_equity.csv",
         "⑥ML多因子": None,
     }
     

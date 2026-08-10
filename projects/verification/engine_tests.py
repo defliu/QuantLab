@@ -9,7 +9,7 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime
 
-OUTPUT_DIR = "E:/QuantLab/projects/verification/results"
+OUTPUT_DIR = "D:/QuantLab/projects/verification/results"
 
 
 def test_1_known_result():
