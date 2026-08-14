@@ -1,0 +1,49 @@
+backtest:
+  benchmark_code: 000300.SH
+  benchmark_db_path: F:/backtest_workspace/data/duckdb/benchmark_index.duckdb
+  end_date: '2024-12-31'
+  initial_cash: 1000000
+  name: rps_momentum_v1_smoke
+  start_date: '2023-01-01'
+data:
+  adjustment: hfq
+  path: E:/astock/daily/stock_daily.parquet
+execution:
+  commission_rate: 0.00025
+  price: next_open
+  slippage: 0.002
+  tax_rate: 0.0005
+project:
+  name: RPS主升浪_SMOKE
+  version: 0.1-smoke
+strategy: rps_momentum
+strategy_params:
+  breakout_window: 20
+  entry_mode: pullback
+  keep_held: 1
+  keep_threshold: 60
+  ma_window: 60
+  market_gate: 1
+  max_holding_days: 60
+  max_positions: 20
+  min_history: 252
+  min_position_value: 10000
+  n_hold: 20
+  position_sizing: custom
+  pullback_ma_window: 20
+  pullback_max: 0.15
+  pullback_min: 0.02
+  rebalance_freq: monthly
+  rps_threshold: 90
+  rps_window_long: 120
+  rps_window_short: 20
+  sector_rps_enabled: 1
+  sector_rps_window: 20
+  sector_top_n: 5
+  stop_loss: -0.08
+  trailing_stop: -0.12
+  volume_confirm: 1
+  volume_ratio_min: 1.5
+trading_model: next_open
+universe:
+  csv: D:/QuantLab/data/universe_all_a.csv

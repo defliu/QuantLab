@@ -1,0 +1,2220 @@
+[WARN] SECTOR_HEAT_MODE_ZERO message="sector_heat_mode=zero, sector score forced to 0"
+
+[INFO]  rebalance 2019-01-02: empty target_weights -> full exit
+[INFO]  2019-01-03 hold (empty)
+[INFO]  2019-01-04 hold (empty)
+[INFO]  2019-01-07 hold (empty)
+[INFO]  2019-01-08 hold (empty)
+[INFO]  2019-01-09 hold (empty)
+[INFO]  2019-01-10 hold (empty)
+[INFO]  2019-01-11 hold (empty)
+[INFO]  2019-01-14 hold (empty)
+[INFO]  2019-01-15 hold (empty)
+[INFO]  2019-01-16 hold (empty)
+[INFO]  2019-01-17 hold (empty)
+[INFO]  2019-01-18 hold (empty)
+[INFO]  2019-01-21 hold (empty)
+[INFO]  2019-01-22 hold (empty)
+[INFO]  2019-01-23 hold (empty)
+[INFO]  2019-01-24 hold (empty)
+[INFO]  2019-01-25 hold (empty)
+[INFO]  2019-01-28 hold (empty)
+[INFO]  2019-01-29 hold (empty)
+[INFO]  2019-01-30 hold (empty)
+[INFO]  2019-01-31 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2019-02-11 fill buy 000736.SZ vol=34400 price=14.5273 amt=499738.33
+[INFO]  2019-02-11 fill buy 002304.SZ vol=1200 price=396.5345 amt=475841.35
+[INFO]  rebalance 2019-02-11: empty target_weights -> full exit
+[INFO]  2019-02-12 fill sell 000736.SZ vol=34400 price=14.6728 amt=504744.87
+[INFO]  2019-02-12 fill sell 002304.SZ vol=1200 price=414.0987 amt=496918.46
+[INFO]  2019-02-12 hold (empty)
+[INFO]  2019-02-13 hold (empty)
+[INFO]  2019-02-14 hold (empty)
+[INFO]  2019-02-15 hold (empty)
+[INFO]  2019-02-18 hold (empty)
+[INFO]  2019-02-19 hold (empty)
+[INFO]  2019-02-20 hold (empty)
+[INFO]  2019-02-21 hold (empty)
+[INFO]  2019-02-22 hold (empty)
+[INFO]  2019-02-25 hold (empty)
+[INFO]  2019-02-26 hold (empty)
+[INFO]  2019-02-27 hold (empty)
+[INFO]  2019-02-28 hold (empty)
+[INFO]  2019-03-01 no selection from 3376
+[INFO]  2019-03-04 hold (empty)
+[INFO]  2019-03-05 hold (empty)
+[INFO]  2019-03-06 hold (empty)
+[INFO]  2019-03-07 hold (empty)
+[INFO]  2019-03-08 hold (empty)
+[INFO]  2019-03-11 hold (empty)
+[INFO]  2019-03-12 hold (empty)
+[INFO]  2019-03-13 hold (empty)
+[INFO]  2019-03-14 hold (empty)
+[INFO]  2019-03-15 hold (empty)
+[INFO]  2019-03-18 hold (empty)
+[INFO]  2019-03-19 hold (empty)
+[INFO]  2019-03-20 hold (empty)
+[INFO]  2019-03-21 hold (empty)
+[INFO]  2019-03-22 hold (empty)
+[INFO]  2019-03-25 hold (empty)
+[INFO]  2019-03-26 hold (empty)
+[INFO]  2019-03-27 hold (empty)
+[INFO]  2019-03-28 hold (empty)
+[INFO]  2019-03-29 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2019-04-02 fill buy 603369.SH vol=2700 price=75.0913 amt=202746.57
+[INFO]  2019-04-02 fill buy 603363.SH vol=12600 price=16.2347 amt=204557.79
+[INFO]  2019-04-02 fill buy 603919.SH vol=9300 price=21.9724 amt=204342.92
+[INFO]  2019-04-02 fill buy 002162.SZ vol=20700 price=9.9026 amt=204984.77
+[INFO]  2019-04-02 fill buy 600559.SH vol=2000 price=97.7139 amt=195427.82
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2019-04-03 fill sell 603363.SH vol=12600 price=16.9499 amt=213569.14
+[INFO]  2019-04-03 fill sell 603919.SH vol=9300 price=21.5265 amt=200196.74
+[INFO]  2019-04-03 fill sell 002162.SZ vol=20700 price=9.4888 amt=196419.07
+[INFO]  2019-04-03 fill sell 600559.SH vol=2000 price=95.5225 amt=191044.98
+[INFO]  2019-04-03 fill buy 603369.SH vol=11200 price=73.0142 amt=817759.23
+[INFO]  2019-04-03 hold 1 positions (no change)
+[INFO]  2019-04-04 hold 1 positions (no change)
+[INFO]  2019-04-08 hold 1 positions (no change)
+[INFO]  2019-04-09 hold 1 positions (no change)
+[INFO]  2019-04-10 hold 1 positions (no change)
+[INFO]  rebalance 2019-04-11: empty target_weights -> full exit
+[INFO]  2019-04-12 fill sell 603369.SH vol=13900 price=67.4329 amt=937316.81
+[INFO]  2019-04-12 hold (empty)
+[INFO]  2019-04-15 hold (empty)
+[INFO]  2019-04-16 hold (empty)
+[INFO]  2019-04-17 hold (empty)
+[INFO]  2019-04-18 hold (empty)
+[INFO]  2019-04-19 hold (empty)
+[INFO]  2019-04-22 hold (empty)
+[INFO]  2019-04-23 hold (empty)
+[INFO]  2019-04-24 hold (empty)
+[INFO]  2019-04-25 hold (empty)
+[INFO]  2019-04-26 hold (empty)
+[INFO]  2019-04-29 hold (empty)
+[INFO]  2019-04-30 hold (empty)
+[INFO]  rebalance 2019-05-06: empty target_weights -> full exit
+[INFO]  2019-05-07 hold (empty)
+[INFO]  2019-05-08 hold (empty)
+[INFO]  2019-05-09 hold (empty)
+[INFO]  2019-05-10 hold (empty)
+[INFO]  2019-05-13 hold (empty)
+[INFO]  2019-05-14 hold (empty)
+[INFO]  2019-05-15 hold (empty)
+[INFO]  2019-05-16 hold (empty)
+[INFO]  2019-05-17 hold (empty)
+[INFO]  2019-05-20 hold (empty)
+[INFO]  2019-05-21 hold (empty)
+[INFO]  2019-05-22 hold (empty)
+[INFO]  2019-05-23 hold (empty)
+[INFO]  2019-05-24 hold (empty)
+[INFO]  2019-05-27 hold (empty)
+[INFO]  2019-05-28 hold (empty)
+[INFO]  2019-05-29 hold (empty)
+[INFO]  2019-05-30 hold (empty)
+[INFO]  2019-05-31 hold (empty)
+[INFO]  rebalance 2019-06-03: empty target_weights -> full exit
+[INFO]  2019-06-04 hold (empty)
+[INFO]  2019-06-05 hold (empty)
+[INFO]  2019-06-06 hold (empty)
+[INFO]  2019-06-10 hold (empty)
+[INFO]  2019-06-11 hold (empty)
+[INFO]  2019-06-12 hold (empty)
+[INFO]  2019-06-13 hold (empty)
+[INFO]  2019-06-14 hold (empty)
+[INFO]  2019-06-17 hold (empty)
+[INFO]  2019-06-18 hold (empty)
+[INFO]  2019-06-19 hold (empty)
+[INFO]  2019-06-20 hold (empty)
+[INFO]  2019-06-21 hold (empty)
+[INFO]  2019-06-24 hold (empty)
+[INFO]  2019-06-25 hold (empty)
+[INFO]  2019-06-26 hold (empty)
+[INFO]  2019-06-27 hold (empty)
+[INFO]  2019-06-28 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2019-07-02 fill buy 002570.SZ vol=25500 price=18.2183 amt=464567.01
+[INFO]  2019-07-02 fill buy 000885.SZ vol=19500 price=23.8636 amt=465340.82
+[INFO]  rebalance 2019-07-02: empty target_weights -> full exit
+[INFO]  2019-07-03 fill sell 002570.SZ vol=25500 price=18.1971 amt=464025.11
+[INFO]  2019-07-03 fill sell 000885.SZ vol=19500 price=21.2453 amt=414282.65
+[INFO]  2019-07-03 hold (empty)
+[INFO]  2019-07-04 hold (empty)
+[INFO]  2019-07-05 hold (empty)
+[INFO]  2019-07-08 hold (empty)
+[INFO]  2019-07-09 hold (empty)
+[INFO]  2019-07-10 hold (empty)
+[INFO]  2019-07-11 hold (empty)
+[INFO]  2019-07-12 hold (empty)
+[INFO]  2019-07-15 hold (empty)
+[INFO]  2019-07-16 hold (empty)
+[INFO]  2019-07-17 hold (empty)
+[INFO]  2019-07-18 hold (empty)
+[INFO]  2019-07-19 hold (empty)
+[INFO]  2019-07-22 hold (empty)
+[INFO]  2019-07-23 hold (empty)
+[INFO]  2019-07-24 hold (empty)
+[INFO]  2019-07-25 hold (empty)
+[INFO]  2019-07-26 hold (empty)
+[INFO]  2019-07-29 hold (empty)
+[INFO]  2019-07-30 hold (empty)
+[INFO]  2019-07-31 hold (empty)
+[INFO]  rebalance 2019-08-01: empty target_weights -> full exit
+[INFO]  2019-08-02 hold (empty)
+[INFO]  2019-08-05 hold (empty)
+[INFO]  2019-08-06 hold (empty)
+[INFO]  2019-08-07 hold (empty)
+[INFO]  2019-08-08 hold (empty)
+[INFO]  2019-08-09 hold (empty)
+[INFO]  2019-08-12 hold (empty)
+[INFO]  2019-08-13 hold (empty)
+[INFO]  2019-08-14 hold (empty)
+[INFO]  2019-08-15 hold (empty)
+[INFO]  2019-08-16 hold (empty)
+[INFO]  2019-08-19 hold (empty)
+[INFO]  2019-08-20 hold (empty)
+[INFO]  2019-08-21 hold (empty)
+[INFO]  2019-08-22 hold (empty)
+[INFO]  2019-08-23 hold (empty)
+[INFO]  2019-08-26 hold (empty)
+[INFO]  2019-08-27 hold (empty)
+[INFO]  2019-08-28 hold (empty)
+[INFO]  2019-08-29 hold (empty)
+[INFO]  2019-08-30 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2019-09-03 fill buy 000058.SZ vol=9300 price=31.4336 amt=292332.13
+[INFO]  2019-09-03 fill buy 000007.SZ vol=4400 price=65.5745 amt=288527.74
+[INFO]  2019-09-03 fill buy 002007.SZ vol=200 price=1031.2085 amt=206241.70
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2019-09-04 fill sell 000007.SZ vol=4400 price=66.5528 amt=292832.44
+[INFO]  2019-09-04 fill buy 000058.SZ vol=4300 price=32.3811 amt=139238.91
+[INFO]  2019-09-04 fill buy 002007.SZ vol=200 price=1030.2604 amt=206052.08
+[INFO]  2019-09-04 hold 2 positions (no change)
+[INFO]  2019-09-05 hold 2 positions (no change)
+[INFO]  2019-09-06 hold 2 positions (no change)
+[INFO]  2019-09-09 hold 2 positions (no change)
+[INFO]  2019-09-10 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2019-09-12 fill sell 000058.SZ vol=13600 price=32.8051 amt=446149.88
+[INFO]  2019-09-12 fill buy 002007.SZ vol=400 price=1036.5810 amt=414632.41
+[INFO]  2019-09-12 hold 1 positions (no change)
+[INFO]  2019-09-16 hold 1 positions (no change)
+[INFO]  2019-09-17 hold 1 positions (no change)
+[INFO]  2019-09-18 hold 1 positions (no change)
+[INFO]  2019-09-19 hold 1 positions (no change)
+[INFO]  2019-09-20 hold 1 positions (no change)
+[INFO]  2019-09-23 hold 1 positions (no change)
+[INFO]  2019-09-24 hold 1 positions (no change)
+[INFO]  2019-09-25 hold 1 positions (no change)
+[INFO]  2019-09-26 hold 1 positions (no change)
+[INFO]  2019-09-27 hold 1 positions (no change)
+[INFO]  2019-09-30 hold 1 positions (no change)
+[INFO]  rebalance 2019-10-08: empty target_weights -> full exit
+[INFO]  2019-10-09 fill sell 002007.SZ vol=800 price=1091.6196 amt=873295.67
+[INFO]  2019-10-09 hold (empty)
+[INFO]  2019-10-10 hold (empty)
+[INFO]  2019-10-11 hold (empty)
+[INFO]  2019-10-14 hold (empty)
+[INFO]  2019-10-15 hold (empty)
+[INFO]  2019-10-16 hold (empty)
+[INFO]  2019-10-17 hold (empty)
+[INFO]  2019-10-18 hold (empty)
+[INFO]  2019-10-21 hold (empty)
+[INFO]  2019-10-22 hold (empty)
+[INFO]  2019-10-23 hold (empty)
+[INFO]  2019-10-24 hold (empty)
+[INFO]  2019-10-25 hold (empty)
+[INFO]  2019-10-28 hold (empty)
+[INFO]  2019-10-29 hold (empty)
+[INFO]  2019-10-30 hold (empty)
+[INFO]  2019-10-31 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2019-11-04 fill buy 000031.SZ vol=2200 price=103.4728 amt=227640.10
+[INFO]  2019-11-04 fill buy 000913.SZ vol=8400 price=27.8113 amt=233614.68
+[INFO]  2019-11-04 fill buy 000797.SZ vol=10200 price=22.9017 amt=233597.56
+[INFO]  2019-11-04 fill buy 000736.SZ vol=15100 price=15.5647 amt=235027.08
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2019-11-05 fill sell 000913.SZ vol=8400 price=27.4653 amt=230708.34
+[INFO]  2019-11-05 fill sell 000797.SZ vol=10200 price=22.7449 amt=231998.38
+[INFO]  2019-11-05 fill sell 000736.SZ vol=15100 price=15.5252 amt=234431.08
+[INFO]  2019-11-05 fill buy 000031.SZ vol=6900 price=101.4774 amt=700194.27
+[INFO]  2019-11-05 hold 1 positions (no change)
+[INFO]  2019-11-06 hold 1 positions (no change)
+[INFO]  2019-11-07 hold 1 positions (no change)
+[INFO]  2019-11-08 hold 1 positions (no change)
+[INFO]  2019-11-11 hold 1 positions (no change)
+[INFO]  2019-11-12 hold 1 positions (no change)
+[INFO]  2019-11-13 hold 1 positions (no change)
+[INFO]  2019-11-14 hold 1 positions (no change)
+[INFO]  2019-11-15 hold 1 positions (no change)
+[INFO]  2019-11-18 hold 1 positions (no change)
+[INFO]  2019-11-19 hold 1 positions (no change)
+[INFO]  2019-11-20 hold 1 positions (no change)
+[INFO]  2019-11-21 hold 1 positions (no change)
+[INFO]  2019-11-22 hold 1 positions (no change)
+[INFO]  2019-11-25 hold 1 positions (no change)
+[INFO]  2019-11-26 hold 1 positions (no change)
+[INFO]  2019-11-27 hold 1 positions (no change)
+[INFO]  2019-11-28 hold 1 positions (no change)
+[INFO]  2019-11-29 hold 1 positions (no change)
+[INFO]  rebalance 2019-12-02: empty target_weights -> full exit
+[INFO]  2019-12-03 fill sell 000031.SZ vol=9100 price=98.8010 amt=899089.48
+[INFO]  2019-12-03 hold (empty)
+[INFO]  2019-12-04 hold (empty)
+[INFO]  2019-12-05 hold (empty)
+[INFO]  2019-12-06 hold (empty)
+[INFO]  2019-12-09 hold (empty)
+[INFO]  2019-12-10 hold (empty)
+[INFO]  2019-12-11 hold (empty)
+[INFO]  2019-12-12 hold (empty)
+[INFO]  2019-12-13 hold (empty)
+[INFO]  2019-12-16 hold (empty)
+[INFO]  2019-12-17 hold (empty)
+[INFO]  2019-12-18 hold (empty)
+[INFO]  2019-12-19 hold (empty)
+[INFO]  2019-12-20 hold (empty)
+[INFO]  2019-12-23 hold (empty)
+[INFO]  2019-12-24 hold (empty)
+[INFO]  2019-12-25 hold (empty)
+[INFO]  2019-12-26 hold (empty)
+[INFO]  2019-12-27 hold (empty)
+[INFO]  2019-12-30 hold (empty)
+[INFO]  2019-12-31 hold (empty)
+[INFO]  2020-01-02 no selection from 3564
+[INFO]  2020-01-03 hold (empty)
+[INFO]  2020-01-06 hold (empty)
+[INFO]  2020-01-07 hold (empty)
+[INFO]  2020-01-08 hold (empty)
+[INFO]  2020-01-09 hold (empty)
+[INFO]  2020-01-10 hold (empty)
+[INFO]  2020-01-13 hold (empty)
+[INFO]  2020-01-14 hold (empty)
+[INFO]  2020-01-15 hold (empty)
+[INFO]  2020-01-16 hold (empty)
+[INFO]  2020-01-17 hold (empty)
+[INFO]  2020-01-20 hold (empty)
+[INFO]  2020-01-21 hold (empty)
+[INFO]  2020-01-22 hold (empty)
+[INFO]  2020-01-23 hold (empty)
+[INFO]  rebalance 2020-02-03: empty target_weights -> full exit
+[INFO]  2020-02-04 hold (empty)
+[INFO]  2020-02-05 hold (empty)
+[INFO]  2020-02-06 hold (empty)
+[INFO]  2020-02-07 hold (empty)
+[INFO]  2020-02-10 hold (empty)
+[INFO]  2020-02-11 hold (empty)
+[INFO]  2020-02-12 hold (empty)
+[INFO]  2020-02-13 hold (empty)
+[INFO]  2020-02-14 hold (empty)
+[INFO]  2020-02-17 hold (empty)
+[INFO]  2020-02-18 hold (empty)
+[INFO]  2020-02-19 hold (empty)
+[INFO]  2020-02-20 hold (empty)
+[INFO]  2020-02-21 hold (empty)
+[INFO]  2020-02-24 hold (empty)
+[INFO]  2020-02-25 hold (empty)
+[INFO]  2020-02-26 hold (empty)
+[INFO]  2020-02-27 hold (empty)
+[INFO]  2020-02-28 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-03-03 fill buy 300578.SZ vol=800 price=145.1714 amt=116137.09
+[INFO]  2020-03-03 fill buy 002409.SZ vol=900 price=136.4856 amt=122837.01
+[INFO]  2020-03-03 fill buy 000850.SZ vol=3500 price=36.7432 amt=128601.04
+[INFO]  2020-03-03 fill buy 002410.SZ vol=200 price=582.6037 amt=116520.75
+[INFO]  2020-03-03 fill buy 002213.SZ vol=4400 price=29.0341 amt=127750.01
+[INFO]  2020-03-03 fill buy 000801.SZ vol=1400 price=86.6282 amt=121279.43
+[INFO]  2020-03-03 fill buy 002063.SZ vol=1300 price=98.8027 amt=128443.50
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-03-04 fill sell 000850.SZ vol=3500 price=36.5160 amt=127806.15
+[INFO]  2020-03-04 fill sell 002213.SZ vol=4400 price=28.4994 amt=125397.31
+[INFO]  2020-03-04 fill sell 000801.SZ vol=1400 price=82.5309 amt=115543.31
+[INFO]  2020-03-04 fill buy 300578.SZ vol=700 price=147.8128 amt=103468.99
+[INFO]  2020-03-04 fill buy 002409.SZ vol=700 price=135.5715 amt=94900.02
+[INFO]  2020-03-04 fill buy 002410.SZ vol=100 price=606.4892 amt=60648.92
+[INFO]  2020-03-04 fill buy 002063.SZ vol=900 price=99.1932 amt=89273.90
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-03-05 fill sell 002409.SZ vol=1600 price=124.9524 amt=199923.89
+[INFO]  2020-03-05 fill buy 300578.SZ vol=600 price=141.2458 amt=84747.50
+[INFO]  2020-03-05 fill buy 002410.SZ vol=100 price=606.4892 amt=60648.92
+[INFO]  2020-03-05 fill buy 002063.SZ vol=600 price=103.9576 amt=62374.57
+[INFO]  2020-03-05 hold 3 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-03-09 fill sell 300578.SZ vol=2100 price=122.4299 amt=257102.70
+[INFO]  2020-03-09 fill buy 002410.SZ vol=300 price=539.8879 amt=161966.37
+[INFO]  2020-03-09 fill buy 002063.SZ vol=1200 price=101.5364 amt=121843.64
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-03-10 fill sell 002410.SZ vol=700 price=517.9705 amt=362579.33
+[INFO]  2020-03-10 fill buy 002063.SZ vol=3900 price=98.8808 amt=385635.12
+[INFO]  2020-03-10 hold 1 positions (no change)
+[INFO]  2020-03-11 hold 1 positions (no change)
+[INFO]  2020-03-12 hold 1 positions (no change)
+[INFO]  2020-03-13 hold 1 positions (no change)
+[INFO]  rebalance 2020-03-16: empty target_weights -> full exit
+[INFO]  2020-03-17 fill sell 002063.SZ vol=7900 price=97.7081 amt=771894.27
+[INFO]  2020-03-17 hold (empty)
+[INFO]  2020-03-18 hold (empty)
+[INFO]  2020-03-19 hold (empty)
+[INFO]  2020-03-20 hold (empty)
+[INFO]  2020-03-23 hold (empty)
+[INFO]  2020-03-24 hold (empty)
+[INFO]  2020-03-25 hold (empty)
+[INFO]  2020-03-26 hold (empty)
+[INFO]  2020-03-27 hold (empty)
+[INFO]  2020-03-30 hold (empty)
+[INFO]  2020-03-31 hold (empty)
+[INFO]  rebalance 2020-04-01: empty target_weights -> full exit
+[INFO]  2020-04-02 hold (empty)
+[INFO]  2020-04-03 hold (empty)
+[INFO]  2020-04-07 hold (empty)
+[INFO]  2020-04-08 hold (empty)
+[INFO]  2020-04-09 hold (empty)
+[INFO]  2020-04-10 hold (empty)
+[INFO]  2020-04-13 hold (empty)
+[INFO]  2020-04-14 hold (empty)
+[INFO]  2020-04-15 hold (empty)
+[INFO]  2020-04-16 hold (empty)
+[INFO]  2020-04-17 hold (empty)
+[INFO]  2020-04-20 hold (empty)
+[INFO]  2020-04-21 hold (empty)
+[INFO]  2020-04-22 hold (empty)
+[INFO]  2020-04-23 hold (empty)
+[INFO]  2020-04-24 hold (empty)
+[INFO]  2020-04-27 hold (empty)
+[INFO]  2020-04-28 hold (empty)
+[INFO]  2020-04-29 hold (empty)
+[INFO]  2020-04-30 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-05-07 fill buy 300223.SZ vol=2900 price=265.2478 amt=769218.70
+[INFO]  rebalance 2020-05-07: empty target_weights -> full exit
+[INFO]  2020-05-08 fill sell 300223.SZ vol=2900 price=255.0046 amt=739513.28
+[INFO]  2020-05-08 hold (empty)
+[INFO]  2020-05-11 hold (empty)
+[INFO]  2020-05-12 hold (empty)
+[INFO]  2020-05-13 hold (empty)
+[INFO]  2020-05-14 hold (empty)
+[INFO]  2020-05-15 hold (empty)
+[INFO]  2020-05-18 hold (empty)
+[INFO]  2020-05-19 hold (empty)
+[INFO]  2020-05-20 hold (empty)
+[INFO]  2020-05-21 hold (empty)
+[INFO]  2020-05-22 hold (empty)
+[INFO]  2020-05-25 hold (empty)
+[INFO]  2020-05-26 hold (empty)
+[INFO]  2020-05-27 hold (empty)
+[INFO]  2020-05-28 hold (empty)
+[INFO]  2020-05-29 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-06-02 fill buy 300106.SZ vol=57000 price=13.1234 amt=748031.92
+[INFO]  rebalance 2020-06-02: empty target_weights -> full exit
+[INFO]  2020-06-03 fill sell 300106.SZ vol=57000 price=13.1471 amt=749382.48
+[INFO]  2020-06-03 hold (empty)
+[INFO]  2020-06-04 hold (empty)
+[INFO]  2020-06-05 hold (empty)
+[INFO]  2020-06-08 hold (empty)
+[INFO]  2020-06-09 hold (empty)
+[INFO]  2020-06-10 hold (empty)
+[INFO]  2020-06-11 hold (empty)
+[INFO]  2020-06-12 hold (empty)
+[INFO]  2020-06-15 hold (empty)
+[INFO]  2020-06-16 hold (empty)
+[INFO]  2020-06-17 hold (empty)
+[INFO]  2020-06-18 hold (empty)
+[INFO]  2020-06-19 hold (empty)
+[INFO]  2020-06-22 hold (empty)
+[INFO]  2020-06-23 hold (empty)
+[INFO]  2020-06-24 hold (empty)
+[INFO]  2020-06-29 hold (empty)
+[INFO]  2020-06-30 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-07-02 fill buy 600812.SH vol=1800 price=50.9728 amt=91751.01
+[INFO]  2020-07-02 fill buy 601865.SH vol=4700 price=19.5244 amt=91764.78
+[INFO]  2020-07-02 fill buy 002950.SZ vol=2100 price=44.3156 amt=93062.81
+[INFO]  2020-07-02 fill buy 000513.SZ vol=200 price=396.0370 amt=79207.40
+[INFO]  2020-07-02 fill buy 002223.SZ vol=200 price=323.2607 amt=64652.13
+[INFO]  2020-07-02 fill buy 300753.SZ vol=1800 price=49.6371 amt=89346.76
+[INFO]  2020-07-02 fill buy 603658.SH vol=500 price=163.3861 amt=81693.06
+[INFO]  2020-07-02 fill buy 000931.SZ vol=6100 price=15.3278 amt=93499.33
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-07-03 fill sell 002950.SZ vol=2100 price=44.0162 amt=92434.01
+[INFO]  2020-07-03 fill sell 000931.SZ vol=6100 price=15.3742 amt=93782.56
+[INFO]  2020-07-03 fill buy 600812.SH vol=600 price=49.6985 amt=29819.08
+[INFO]  2020-07-03 fill buy 601865.SH vol=1300 price=20.0693 amt=26090.07
+[INFO]  2020-07-03 fill buy 000513.SZ vol=100 price=392.6665 amt=39266.65
+[INFO]  2020-07-03 fill buy 002223.SZ vol=100 price=324.0708 amt=32407.08
+[INFO]  2020-07-03 fill buy 300753.SZ vol=700 price=49.2919 amt=34504.35
+[INFO]  2020-07-03 fill buy 603658.SH vol=200 price=159.4859 amt=31897.19
+[INFO]  2020-07-03 hold 6 positions (no change)
+[INFO]  2020-07-06 hold 6 positions (no change)
+[INFO]  2020-07-07 hold 6 positions (no change)
+[INFO]  2020-07-08 hold 6 positions (no change)
+[INFO]  2020-07-09 hold 6 positions (no change)
+[INFO]  2020-07-10 hold 6 positions (no change)
+[INFO]  2020-07-13 hold 6 positions (no change)
+[INFO]  2020-07-14 hold 6 positions (no change)
+[INFO]  2020-07-15 hold 6 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-07-17 fill sell 600812.SH vol=2400 price=50.5313 amt=121275.16
+[INFO]  2020-07-17 fill sell 601865.SH vol=6000 price=19.4967 amt=116980.37
+[INFO]  2020-07-17 fill sell 300753.SZ vol=2500 price=48.1299 amt=120324.77
+[INFO]  2020-07-17 fill buy 000513.SZ vol=200 price=412.5526 amt=82510.52
+[INFO]  2020-07-17 fill buy 002223.SZ vol=400 price=317.9495 amt=127179.80
+[INFO]  2020-07-17 fill buy 603658.SH vol=800 price=155.1219 amt=124097.56
+[INFO]  2020-07-17 hold 3 positions (no change)
+[INFO]  2020-07-20 hold 3 positions (no change)
+[INFO]  2020-07-21 hold 3 positions (no change)
+[INFO]  2020-07-22 hold 3 positions (no change)
+[INFO]  2020-07-23 hold 3 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-07-27 fill sell 002223.SZ vol=700 price=309.5074 amt=216655.20
+[INFO]  2020-07-27 fill buy 000513.SZ vol=300 price=438.2529 amt=131475.86
+[INFO]  2020-07-27 fill buy 603658.SH vol=700 price=165.8211 amt=116074.77
+[INFO]  2020-07-27 hold 2 positions (no change)
+[INFO]  2020-07-28 hold 2 positions (no change)
+[INFO]  2020-07-29 hold 2 positions (no change)
+[INFO]  2020-07-30 hold 2 positions (no change)
+[INFO]  2020-07-31 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-08-04 fill sell 603658.SH vol=2200 price=165.8836 amt=364943.85
+[INFO]  2020-08-04 fill buy 002252.SZ vol=1500 price=252.6178 amt=378926.69
+[ERROR] 2020-08-04 unfilled_order code=000513.SZ reason=below_min_lot
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-08-05 fill sell 002252.SZ vol=1500 price=242.7007 amt=364051.02
+[INFO]  2020-08-05 fill buy 000513.SZ vol=800 price=469.7673 amt=375813.83
+[INFO]  2020-08-05 hold 1 positions (no change)
+[INFO]  2020-08-06 hold 1 positions (no change)
+[INFO]  2020-08-07 hold 1 positions (no change)
+[INFO]  2020-08-10 hold 1 positions (no change)
+[INFO]  2020-08-11 hold 1 positions (no change)
+[INFO]  rebalance 2020-08-12: empty target_weights -> full exit
+[INFO]  2020-08-13 fill sell 000513.SZ vol=1600 price=442.1264 amt=707402.30
+[INFO]  2020-08-13 hold (empty)
+[INFO]  2020-08-14 hold (empty)
+[INFO]  2020-08-17 hold (empty)
+[INFO]  2020-08-18 hold (empty)
+[INFO]  2020-08-19 hold (empty)
+[INFO]  2020-08-20 hold (empty)
+[INFO]  2020-08-21 hold (empty)
+[INFO]  2020-08-24 hold (empty)
+[INFO]  2020-08-25 hold (empty)
+[INFO]  2020-08-26 hold (empty)
+[INFO]  2020-08-27 hold (empty)
+[INFO]  2020-08-28 hold (empty)
+[INFO]  2020-08-31 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-09-02 fill buy 000910.SZ vol=6900 price=52.2028 amt=360199.47
+[INFO]  2020-09-02 fill buy 002304.SZ vol=600 price=592.0658 amt=355239.46
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-09-03 fill sell 000910.SZ vol=6900 price=52.3614 amt=361293.98
+[INFO]  2020-09-03 fill buy 002304.SZ vol=600 price=584.3689 amt=350621.35
+[INFO]  2020-09-03 hold 1 positions (no change)
+[INFO]  2020-09-04 hold 1 positions (no change)
+[INFO]  2020-09-07 hold 1 positions (no change)
+[INFO]  2020-09-08 hold 1 positions (no change)
+[INFO]  2020-09-09 hold 1 positions (no change)
+[INFO]  2020-09-10 hold 1 positions (no change)
+[INFO]  2020-09-11 hold 1 positions (no change)
+[INFO]  2020-09-14 hold 1 positions (no change)
+[INFO]  2020-09-15 hold 1 positions (no change)
+[INFO]  2020-09-16 hold 1 positions (no change)
+[INFO]  2020-09-17 hold 1 positions (no change)
+[INFO]  2020-09-18 hold 1 positions (no change)
+[INFO]  2020-09-21 hold 1 positions (no change)
+[INFO]  2020-09-22 hold 1 positions (no change)
+[INFO]  2020-09-23 hold 1 positions (no change)
+[INFO]  rebalance 2020-09-24: empty target_weights -> full exit
+[INFO]  2020-09-25 fill sell 002304.SZ vol=1200 price=527.3623 amt=632834.74
+[INFO]  2020-09-25 hold (empty)
+[INFO]  2020-09-28 hold (empty)
+[INFO]  2020-09-29 hold (empty)
+[INFO]  2020-09-30 hold (empty)
+[INFO]  rebalance 2020-10-09: empty target_weights -> full exit
+[INFO]  2020-10-12 hold (empty)
+[INFO]  2020-10-13 hold (empty)
+[INFO]  2020-10-14 hold (empty)
+[INFO]  2020-10-15 hold (empty)
+[INFO]  2020-10-16 hold (empty)
+[INFO]  2020-10-19 hold (empty)
+[INFO]  2020-10-20 hold (empty)
+[INFO]  2020-10-21 hold (empty)
+[INFO]  2020-10-22 hold (empty)
+[INFO]  2020-10-23 hold (empty)
+[INFO]  2020-10-26 hold (empty)
+[INFO]  2020-10-27 hold (empty)
+[INFO]  2020-10-28 hold (empty)
+[INFO]  2020-10-29 hold (empty)
+[INFO]  2020-10-30 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-11-03 fill buy 002594.SZ vol=200 price=175.7736 amt=35154.73
+[INFO]  2020-11-03 fill buy 300626.SZ vol=1800 price=24.2023 amt=43564.08
+[INFO]  2020-11-03 fill buy 600166.SH vol=500 price=82.2224 amt=41111.19
+[ERROR] 2020-11-03 unfilled_order code=000568.SZ reason=below_min_lot
+[INFO]  2020-11-03 fill buy 600189.SH vol=2400 price=17.9535 amt=43088.40
+[INFO]  2020-11-03 fill buy 600885.SH vol=200 price=206.4849 amt=41296.98
+[INFO]  2020-11-03 fill buy 600733.SH vol=600 price=64.6166 amt=38769.97
+[INFO]  2020-11-03 fill buy 300660.SZ vol=600 price=63.7575 amt=38254.51
+[INFO]  2020-11-03 fill buy 000768.SZ vol=200 price=211.1570 amt=42231.40
+[INFO]  2020-11-03 fill buy 603063.SH vol=3700 price=11.6606 amt=43144.04
+[INFO]  2020-11-03 fill buy 002533.SZ vol=1500 price=28.2906 amt=42435.95
+[INFO]  2020-11-03 fill buy 002209.SZ vol=3600 price=11.9336 amt=42960.92
+[INFO]  2020-11-03 fill buy 600303.SH vol=1500 price=27.5267 amt=41290.11
+[INFO]  2020-11-03 fill buy 600686.SH vol=400 price=88.6906 amt=35476.23
+[INFO]  2020-11-03 fill buy 002801.SZ vol=500 price=86.7281 amt=43364.07
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-11-04 fill sell 300626.SZ vol=1800 price=22.9664 amt=41339.47
+[INFO]  2020-11-04 fill sell 600189.SH vol=2400 price=17.4711 amt=41930.57
+[INFO]  2020-11-04 fill sell 600733.SH vol=600 price=62.3971 amt=37438.25
+[INFO]  2020-11-04 fill sell 300660.SZ vol=600 price=60.3904 amt=36234.22
+[INFO]  2020-11-04 fill sell 603063.SH vol=3700 price=11.5432 amt=42709.78
+[INFO]  2020-11-04 fill sell 002533.SZ vol=1500 price=28.0858 amt=42128.65
+[INFO]  2020-11-04 fill sell 002209.SZ vol=3600 price=11.9325 amt=42957.00
+[INFO]  2020-11-04 fill sell 600303.SH vol=1500 price=26.6954 amt=40043.03
+[INFO]  2020-11-04 fill sell 600686.SH vol=400 price=85.4786 amt=34191.43
+[INFO]  2020-11-04 fill buy 002594.SZ vol=500 price=170.6639 amt=85331.97
+[INFO]  2020-11-04 fill buy 600166.SH vol=1100 price=79.5955 amt=87555.02
+[INFO]  2020-11-04 fill buy 600885.SH vol=400 price=207.7161 amt=83086.45
+[INFO]  2020-11-04 fill buy 000768.SZ vol=300 price=217.4223 amt=65226.68
+[INFO]  2020-11-04 fill buy 002801.SZ vol=900 price=90.5213 amt=81469.19
+[INFO]  2020-11-04 hold 5 positions (no change)
+[INFO]  2020-11-05 hold 5 positions (no change)
+[INFO]  2020-11-06 hold 5 positions (no change)
+[INFO]  2020-11-09 hold 5 positions (no change)
+[INFO]  2020-11-10 hold 5 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-11-12 fill sell 002594.SZ vol=700 price=171.0005 amt=119700.36
+[INFO]  2020-11-12 fill buy 600166.SH vol=400 price=75.3924 amt=30156.97
+[INFO]  2020-11-12 fill buy 600885.SH vol=100 price=197.5885 amt=19758.85
+[INFO]  2020-11-12 fill buy 000768.SZ vol=200 price=213.9510 amt=42790.19
+[INFO]  2020-11-12 fill buy 002801.SZ vol=300 price=89.2750 amt=26782.50
+[INFO]  2020-11-12 hold 4 positions (no change)
+[INFO]  2020-11-13 hold 4 positions (no change)
+[INFO]  2020-11-16 hold 4 positions (no change)
+[INFO]  2020-11-17 hold 4 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-11-19 fill sell 600885.SH vol=700 price=185.9213 amt=130144.92
+[INFO]  2020-11-19 fill buy 600166.SH vol=300 price=95.8823 amt=28764.70
+[INFO]  2020-11-19 fill buy 000768.SZ vol=300 price=219.2003 amt=65760.08
+[INFO]  2020-11-19 fill buy 002801.SZ vol=700 price=92.7972 amt=64958.06
+[INFO]  2020-11-19 hold 3 positions (no change)
+[INFO]  2020-11-20 hold 3 positions (no change)
+[INFO]  2020-11-23 hold 3 positions (no change)
+[INFO]  2020-11-24 hold 3 positions (no change)
+[INFO]  2020-11-25 hold 3 positions (no change)
+[INFO]  2020-11-26 hold 3 positions (no change)
+[INFO]  2020-11-27 hold 3 positions (no change)
+[INFO]  2020-11-30 hold 3 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-12-02 fill sell 000768.SZ vol=300 price=270.2713 amt=81081.38
+[INFO]  2020-12-02 fill sell 002801.SZ vol=500 price=92.5347 amt=46267.36
+[INFO]  2020-12-02 fill sell 600166.SH vol=2300 price=88.1736 amt=202799.23
+[INFO]  2020-12-02 fill buy 601127.SH vol=7600 price=23.1119 amt=175650.68
+[INFO]  2020-12-02 fill buy 600257.SH vol=5500 price=32.1312 amt=176721.62
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-12-03 fill sell 600257.SH vol=5500 price=30.9579 amt=170268.68
+[INFO]  2020-12-03 fill buy 000768.SZ vol=100 price=272.6245 amt=27262.45
+[INFO]  2020-12-03 fill buy 002801.SZ vol=600 price=94.1790 amt=56507.41
+[INFO]  2020-12-03 fill buy 601127.SH vol=2200 price=24.6944 amt=54327.61
+[INFO]  min_position_value dropped 0 tiny weights
+[ERROR] 2020-12-04 unfilled_order code=601127.SH reason=limit_down_at_open
+[INFO]  2020-12-04 fill buy 000768.SZ vol=500 price=258.7393 amt=129369.64
+[INFO]  2020-12-04 fill buy 002801.SZ vol=1000 price=95.9130 amt=95913.04
+[INFO]  min_position_value dropped 0 tiny weights
+[ERROR] 2020-12-07 unfilled_order code=000768.SZ reason=below_min_lot
+[ERROR] 2020-12-07 unfilled_order code=002801.SZ reason=below_min_lot
+[INFO]  2020-12-07 fill sell 601127.SH vol=9800 price=17.6277 amt=172751.21
+[INFO]  2020-12-07 hold 2 positions (no change)
+[INFO]  2020-12-08 hold 2 positions (no change)
+[INFO]  2020-12-09 hold 2 positions (no change)
+[INFO]  2020-12-10 hold 2 positions (no change)
+[INFO]  2020-12-11 hold 2 positions (no change)
+[INFO]  2020-12-14 hold 2 positions (no change)
+[INFO]  2020-12-15 hold 2 positions (no change)
+[INFO]  2020-12-16 hold 2 positions (no change)
+[INFO]  2020-12-17 hold 2 positions (no change)
+[INFO]  2020-12-18 hold 2 positions (no change)
+[INFO]  2020-12-21 hold 2 positions (no change)
+[INFO]  2020-12-22 hold 2 positions (no change)
+[INFO]  2020-12-23 hold 2 positions (no change)
+[INFO]  2020-12-24 hold 2 positions (no change)
+[INFO]  2020-12-25 hold 2 positions (no change)
+[INFO]  2020-12-28 hold 2 positions (no change)
+[INFO]  2020-12-29 hold 2 positions (no change)
+[INFO]  2020-12-30 hold 2 positions (no change)
+[INFO]  2020-12-31 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-01-05 fill sell 000768.SZ vol=800 price=320.4464 amt=256357.14
+[INFO]  2021-01-05 fill sell 002801.SZ vol=2000 price=95.5302 amt=191060.31
+[INFO]  2021-01-05 fill buy 000767.SZ vol=3400 price=42.2714 amt=143722.81
+[INFO]  2021-01-05 fill buy 000633.SZ vol=3700 price=39.1924 amt=145011.70
+[INFO]  2021-01-05 fill buy 000831.SZ vol=2500 price=56.1507 amt=140376.69
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-01-06 fill sell 000767.SZ vol=3400 price=38.6657 amt=131463.43
+[INFO]  2021-01-06 fill sell 000633.SZ vol=3700 price=38.0656 amt=140842.71
+[INFO]  2021-01-06 fill sell 000831.SZ vol=2500 price=56.4055 amt=141013.88
+[INFO]  2021-01-06 fill buy 000768.SZ vol=600 price=317.4975 amt=190498.49
+[INFO]  2021-01-06 fill buy 002801.SZ vol=2000 price=100.0855 amt=200171.06
+[INFO]  2021-01-06 hold 2 positions (no change)
+[INFO]  2021-01-07 hold 2 positions (no change)
+[INFO]  2021-01-08 hold 2 positions (no change)
+[INFO]  2021-01-11 hold 2 positions (no change)
+[INFO]  2021-01-12 hold 2 positions (no change)
+[INFO]  2021-01-13 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-01-15 fill sell 000768.SZ vol=1100 price=287.5687 amt=316325.58
+[INFO]  2021-01-15 fill buy 002801.SZ vol=3300 price=99.5436 amt=328494.04
+[INFO]  2021-01-15 hold 1 positions (no change)
+[INFO]  2021-01-18 hold 1 positions (no change)
+[INFO]  2021-01-19 hold 1 positions (no change)
+[INFO]  2021-01-20 hold 1 positions (no change)
+[INFO]  2021-01-21 hold 1 positions (no change)
+[INFO]  2021-01-22 hold 1 positions (no change)
+[INFO]  2021-01-25 hold 1 positions (no change)
+[INFO]  2021-01-26 hold 1 positions (no change)
+[INFO]  2021-01-27 hold 1 positions (no change)
+[INFO]  2021-01-28 hold 1 positions (no change)
+[INFO]  2021-01-29 hold 1 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-02-02 fill sell 002801.SZ vol=5100 price=103.3831 amt=527253.61
+[INFO]  2021-02-02 fill buy 300731.SZ vol=4800 price=35.8885 amt=172265.01
+[INFO]  2021-02-02 fill buy 300777.SZ vol=3100 price=54.6781 amt=169501.98
+[INFO]  2021-02-02 fill buy 600897.SH vol=2100 price=81.1270 amt=170366.72
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-02-03 fill sell 300731.SZ vol=4800 price=35.3334 amt=169600.47
+[INFO]  2021-02-03 fill sell 600897.SH vol=2100 price=80.2969 amt=168623.41
+[INFO]  2021-02-03 fill buy 002801.SZ vol=1600 price=102.5511 amt=164081.75
+[INFO]  2021-02-03 fill buy 300777.SZ vol=3200 price=54.4973 amt=174391.48
+[INFO]  2021-02-03 hold 2 positions (no change)
+[INFO]  2021-02-04 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-02-08 fill sell 300777.SZ vol=6300 price=48.9798 amt=308572.77
+[INFO]  2021-02-08 fill buy 002801.SZ vol=3100 price=101.7925 amt=315556.62
+[INFO]  2021-02-08 hold 1 positions (no change)
+[INFO]  2021-02-09 hold 1 positions (no change)
+[INFO]  2021-02-10 hold 1 positions (no change)
+[INFO]  2021-02-18 hold 1 positions (no change)
+[INFO]  2021-02-19 hold 1 positions (no change)
+[INFO]  2021-02-22 hold 1 positions (no change)
+[INFO]  2021-02-23 hold 1 positions (no change)
+[INFO]  2021-02-24 hold 1 positions (no change)
+[INFO]  2021-02-25 hold 1 positions (no change)
+[INFO]  2021-02-26 hold 1 positions (no change)
+[INFO]  rebalance 2021-03-01: empty target_weights -> full exit
+[INFO]  2021-03-02 fill sell 002801.SZ vol=6400 price=94.1539 amt=602584.80
+[INFO]  2021-03-02 hold (empty)
+[INFO]  2021-03-03 hold (empty)
+[INFO]  2021-03-04 hold (empty)
+[INFO]  2021-03-05 hold (empty)
+[INFO]  2021-03-08 hold (empty)
+[INFO]  2021-03-09 hold (empty)
+[INFO]  2021-03-10 hold (empty)
+[INFO]  2021-03-11 hold (empty)
+[INFO]  2021-03-12 hold (empty)
+[INFO]  2021-03-15 hold (empty)
+[INFO]  2021-03-16 hold (empty)
+[INFO]  2021-03-17 hold (empty)
+[INFO]  2021-03-18 hold (empty)
+[INFO]  2021-03-19 hold (empty)
+[INFO]  2021-03-22 hold (empty)
+[INFO]  2021-03-23 hold (empty)
+[INFO]  2021-03-24 hold (empty)
+[INFO]  2021-03-25 hold (empty)
+[INFO]  2021-03-26 hold (empty)
+[INFO]  2021-03-29 hold (empty)
+[INFO]  2021-03-30 hold (empty)
+[INFO]  2021-03-31 hold (empty)
+[INFO]  rebalance 2021-04-01: empty target_weights -> full exit
+[INFO]  2021-04-02 hold (empty)
+[INFO]  2021-04-06 hold (empty)
+[INFO]  2021-04-07 hold (empty)
+[INFO]  2021-04-08 hold (empty)
+[INFO]  2021-04-09 hold (empty)
+[INFO]  2021-04-12 hold (empty)
+[INFO]  2021-04-13 hold (empty)
+[INFO]  2021-04-14 hold (empty)
+[INFO]  2021-04-15 hold (empty)
+[INFO]  2021-04-16 hold (empty)
+[INFO]  2021-04-19 hold (empty)
+[INFO]  2021-04-20 hold (empty)
+[INFO]  2021-04-21 hold (empty)
+[INFO]  2021-04-22 hold (empty)
+[INFO]  2021-04-23 hold (empty)
+[INFO]  2021-04-26 hold (empty)
+[INFO]  2021-04-27 hold (empty)
+[INFO]  2021-04-28 hold (empty)
+[INFO]  2021-04-29 hold (empty)
+[INFO]  2021-04-30 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-05-07 fill buy 002172.SZ vol=5800 price=17.3536 amt=100651.10
+[INFO]  2021-05-07 fill buy 000908.SZ vol=5400 price=18.3467 amt=99072.29
+[INFO]  2021-05-07 fill buy 000898.SZ vol=6200 price=16.0380 amt=99435.67
+[INFO]  2021-05-07 fill buy 002038.SZ vol=300 price=258.3010 amt=77490.29
+[INFO]  2021-05-07 fill buy 002826.SZ vol=10200 price=9.8259 amt=100224.11
+[INFO]  2021-05-07 fill buy 002176.SZ vol=900 price=110.6144 amt=99552.98
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-05-10 fill sell 002172.SZ vol=5800 price=17.7353 amt=102864.50
+[INFO]  2021-05-10 fill sell 000908.SZ vol=5400 price=17.3132 amt=93491.30
+[INFO]  2021-05-10 fill sell 002038.SZ vol=300 price=249.3042 amt=74791.25
+[INFO]  2021-05-10 fill sell 002826.SZ vol=10200 price=9.6251 amt=98175.72
+[INFO]  2021-05-10 fill sell 002176.SZ vol=900 price=105.6470 amt=95082.28
+[INFO]  2021-05-10 fill buy 000898.SZ vol=30200 price=16.2801 amt=491658.87
+[INFO]  2021-05-10 hold 1 positions (no change)
+[INFO]  2021-05-11 hold 1 positions (no change)
+[INFO]  2021-05-12 hold 1 positions (no change)
+[INFO]  rebalance 2021-05-13: empty target_weights -> full exit
+[INFO]  2021-05-14 fill sell 000898.SZ vol=36400 price=13.8341 amt=503560.37
+[INFO]  2021-05-14 hold (empty)
+[INFO]  2021-05-17 hold (empty)
+[INFO]  2021-05-18 hold (empty)
+[INFO]  2021-05-19 hold (empty)
+[INFO]  2021-05-20 hold (empty)
+[INFO]  2021-05-21 hold (empty)
+[INFO]  2021-05-24 hold (empty)
+[INFO]  2021-05-25 hold (empty)
+[INFO]  2021-05-26 hold (empty)
+[INFO]  2021-05-27 hold (empty)
+[INFO]  2021-05-28 hold (empty)
+[INFO]  2021-05-31 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-06-02 fill buy 002568.SZ vol=400 price=538.7818 amt=215512.73
+[INFO]  2021-06-02 fill buy 002698.SZ vol=7400 price=33.6032 amt=248663.77
+[INFO]  rebalance 2021-06-02: empty target_weights -> full exit
+[INFO]  2021-06-03 fill sell 002568.SZ vol=400 price=521.4770 amt=208590.78
+[INFO]  2021-06-03 fill sell 002698.SZ vol=7400 price=33.2806 amt=246276.33
+[INFO]  2021-06-03 hold (empty)
+[INFO]  2021-06-04 hold (empty)
+[INFO]  2021-06-07 hold (empty)
+[INFO]  2021-06-08 hold (empty)
+[INFO]  2021-06-09 hold (empty)
+[INFO]  2021-06-10 hold (empty)
+[INFO]  2021-06-11 hold (empty)
+[INFO]  2021-06-15 hold (empty)
+[INFO]  2021-06-16 hold (empty)
+[INFO]  2021-06-17 hold (empty)
+[INFO]  2021-06-18 hold (empty)
+[INFO]  2021-06-21 hold (empty)
+[INFO]  2021-06-22 hold (empty)
+[INFO]  2021-06-23 hold (empty)
+[INFO]  2021-06-24 hold (empty)
+[INFO]  2021-06-25 hold (empty)
+[INFO]  2021-06-28 hold (empty)
+[INFO]  2021-06-29 hold (empty)
+[INFO]  2021-06-30 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-07-02 fill buy 603098.SH vol=1300 price=45.6685 amt=59369.04
+[INFO]  2021-07-02 fill buy 300827.SZ vol=700 price=82.0112 amt=57407.82
+[INFO]  2021-07-02 fill buy 688018.SH vol=200 price=224.4157 amt=44883.13
+[INFO]  2021-07-02 fill buy 603628.SH vol=6500 price=9.4177 amt=61215.04
+[INFO]  2021-07-02 fill buy 600869.SH vol=1200 price=50.1480 amt=60177.62
+[INFO]  2021-07-02 fill buy 002309.SZ vol=2800 price=21.5812 amt=60427.35
+[INFO]  2021-07-02 fill buy 600745.SH vol=300 price=204.7503 amt=61425.08
+[INFO]  2021-07-02 fill buy 600237.SH vol=2400 price=24.8894 amt=59734.58
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-07-05 fill sell 688018.SH vol=200 price=242.0986 amt=48419.72
+[INFO]  2021-07-05 fill sell 603628.SH vol=6500 price=9.6637 amt=62814.27
+[INFO]  2021-07-05 fill sell 600869.SH vol=1200 price=50.3747 amt=60449.67
+[INFO]  2021-07-05 fill sell 002309.SZ vol=2800 price=21.7962 amt=61029.36
+[INFO]  2021-07-05 fill sell 600745.SH vol=300 price=206.2723 amt=61881.70
+[INFO]  2021-07-05 fill buy 603098.SH vol=2100 price=48.9458 amt=102786.26
+[INFO]  2021-07-05 fill buy 300827.SZ vol=1200 price=86.2229 amt=103467.48
+[INFO]  2021-07-05 fill buy 600237.SH vol=4100 price=25.7738 amt=105672.60
+[INFO]  2021-07-05 hold 3 positions (no change)
+[INFO]  2021-07-06 hold 3 positions (no change)
+[INFO]  2021-07-07 hold 3 positions (no change)
+[INFO]  2021-07-08 hold 3 positions (no change)
+[INFO]  2021-07-09 hold 3 positions (no change)
+[INFO]  2021-07-12 hold 3 positions (no change)
+[INFO]  2021-07-13 hold 3 positions (no change)
+[INFO]  2021-07-14 hold 3 positions (no change)
+[INFO]  2021-07-15 hold 3 positions (no change)
+[INFO]  2021-07-16 hold 3 positions (no change)
+[INFO]  2021-07-19 hold 3 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-07-21 fill sell 300827.SZ vol=1900 price=87.1210 amt=165529.84
+[INFO]  2021-07-21 fill buy 603098.SH vol=1000 price=61.5888 amt=61588.81
+[INFO]  2021-07-21 fill buy 600237.SH vol=4500 price=24.8894 amt=112002.34
+[INFO]  2021-07-21 hold 2 positions (no change)
+[INFO]  2021-07-22 hold 2 positions (no change)
+[INFO]  2021-07-23 hold 2 positions (no change)
+[INFO]  2021-07-26 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-07-28 fill sell 603098.SH vol=4400 price=52.1026 amt=229251.38
+[INFO]  2021-07-28 fill buy 600237.SH vol=8900 price=27.3741 amt=243629.84
+[INFO]  2021-07-28 hold 1 positions (no change)
+[INFO]  2021-07-29 hold 1 positions (no change)
+[INFO]  2021-07-30 hold 1 positions (no change)
+[INFO]  rebalance 2021-08-02: empty target_weights -> full exit
+[INFO]  2021-08-03 fill sell 600237.SH vol=19900 price=28.8169 amt=573455.53
+[INFO]  2021-08-03 hold (empty)
+[INFO]  2021-08-04 hold (empty)
+[INFO]  2021-08-05 hold (empty)
+[INFO]  2021-08-06 hold (empty)
+[INFO]  2021-08-09 hold (empty)
+[INFO]  2021-08-10 hold (empty)
+[INFO]  2021-08-11 hold (empty)
+[INFO]  2021-08-12 hold (empty)
+[INFO]  2021-08-13 hold (empty)
+[INFO]  2021-08-16 hold (empty)
+[INFO]  2021-08-17 hold (empty)
+[INFO]  2021-08-18 hold (empty)
+[INFO]  2021-08-19 hold (empty)
+[INFO]  2021-08-20 hold (empty)
+[INFO]  2021-08-23 hold (empty)
+[INFO]  2021-08-24 hold (empty)
+[INFO]  2021-08-25 hold (empty)
+[INFO]  2021-08-26 hold (empty)
+[INFO]  2021-08-27 hold (empty)
+[INFO]  2021-08-30 hold (empty)
+[INFO]  2021-08-31 hold (empty)
+[INFO]  rebalance 2021-09-01: empty target_weights -> full exit
+[INFO]  2021-09-02 hold (empty)
+[INFO]  2021-09-03 hold (empty)
+[INFO]  2021-09-06 hold (empty)
+[INFO]  2021-09-07 hold (empty)
+[INFO]  2021-09-08 hold (empty)
+[INFO]  2021-09-09 hold (empty)
+[INFO]  2021-09-10 hold (empty)
+[INFO]  2021-09-13 hold (empty)
+[INFO]  2021-09-14 hold (empty)
+[INFO]  2021-09-15 hold (empty)
+[INFO]  2021-09-16 hold (empty)
+[INFO]  2021-09-17 hold (empty)
+[INFO]  2021-09-22 hold (empty)
+[INFO]  2021-09-23 hold (empty)
+[INFO]  2021-09-24 hold (empty)
+[INFO]  2021-09-27 hold (empty)
+[INFO]  2021-09-28 hold (empty)
+[INFO]  2021-09-29 hold (empty)
+[INFO]  2021-09-30 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-10-11 fill buy 603318.SH vol=6300 price=29.4813 amt=185732.10
+[INFO]  2021-10-11 fill buy 600979.SH vol=9000 price=20.7364 amt=186627.87
+[INFO]  2021-10-11 fill buy 600965.SH vol=12900 price=14.4073 amt=185853.87
+[INFO]  rebalance 2021-10-11: empty target_weights -> full exit
+[INFO]  2021-10-12 fill sell 603318.SH vol=6300 price=27.5510 amt=173571.48
+[INFO]  2021-10-12 fill sell 600979.SH vol=9000 price=19.3353 amt=174017.99
+[INFO]  2021-10-12 fill sell 600965.SH vol=12900 price=14.4347 amt=186207.28
+[INFO]  2021-10-12 hold (empty)
+[INFO]  2021-10-13 hold (empty)
+[INFO]  2021-10-14 hold (empty)
+[INFO]  2021-10-15 hold (empty)
+[INFO]  2021-10-18 hold (empty)
+[INFO]  2021-10-19 hold (empty)
+[INFO]  2021-10-20 hold (empty)
+[INFO]  2021-10-21 hold (empty)
+[INFO]  2021-10-22 hold (empty)
+[INFO]  2021-10-25 hold (empty)
+[INFO]  2021-10-26 hold (empty)
+[INFO]  2021-10-27 hold (empty)
+[INFO]  2021-10-28 hold (empty)
+[INFO]  2021-10-29 hold (empty)
+[INFO]  rebalance 2021-11-01: empty target_weights -> full exit
+[INFO]  2021-11-02 hold (empty)
+[INFO]  2021-11-03 hold (empty)
+[INFO]  2021-11-04 hold (empty)
+[INFO]  2021-11-05 hold (empty)
+[INFO]  2021-11-08 hold (empty)
+[INFO]  2021-11-09 hold (empty)
+[INFO]  2021-11-10 hold (empty)
+[INFO]  2021-11-11 hold (empty)
+[INFO]  2021-11-12 hold (empty)
+[INFO]  2021-11-15 hold (empty)
+[INFO]  2021-11-16 hold (empty)
+[INFO]  2021-11-17 hold (empty)
+[INFO]  2021-11-18 hold (empty)
+[INFO]  2021-11-19 hold (empty)
+[INFO]  2021-11-22 hold (empty)
+[INFO]  2021-11-23 hold (empty)
+[INFO]  2021-11-24 hold (empty)
+[INFO]  2021-11-25 hold (empty)
+[INFO]  2021-11-26 hold (empty)
+[INFO]  2021-11-29 hold (empty)
+[INFO]  2021-11-30 hold (empty)
+[INFO]  rebalance 2021-12-01: empty target_weights -> full exit
+[INFO]  2021-12-02 hold (empty)
+[INFO]  2021-12-03 hold (empty)
+[INFO]  2021-12-06 hold (empty)
+[INFO]  2021-12-07 hold (empty)
+[INFO]  2021-12-08 hold (empty)
+[INFO]  2021-12-09 hold (empty)
+[INFO]  2021-12-10 hold (empty)
+[INFO]  2021-12-13 hold (empty)
+[INFO]  2021-12-14 hold (empty)
+[INFO]  2021-12-15 hold (empty)
+[INFO]  2021-12-16 hold (empty)
+[INFO]  2021-12-17 hold (empty)
+[INFO]  2021-12-20 hold (empty)
+[INFO]  2021-12-21 hold (empty)
+[INFO]  2021-12-22 hold (empty)
+[INFO]  2021-12-23 hold (empty)
+[INFO]  2021-12-24 hold (empty)
+[INFO]  2021-12-27 hold (empty)
+[INFO]  2021-12-28 hold (empty)
+[INFO]  2021-12-29 hold (empty)
+[INFO]  2021-12-30 hold (empty)
+[INFO]  2021-12-31 hold (empty)
+[INFO]  rebalance 2022-01-04: empty target_weights -> full exit
+[INFO]  2022-01-05 hold (empty)
+[INFO]  2022-01-06 hold (empty)
+[INFO]  2022-01-07 hold (empty)
+[INFO]  2022-01-10 hold (empty)
+[INFO]  2022-01-11 hold (empty)
+[INFO]  2022-01-12 hold (empty)
+[INFO]  2022-01-13 hold (empty)
+[INFO]  2022-01-14 hold (empty)
+[INFO]  2022-01-17 hold (empty)
+[INFO]  2022-01-18 hold (empty)
+[INFO]  2022-01-19 hold (empty)
+[INFO]  2022-01-20 hold (empty)
+[INFO]  2022-01-21 hold (empty)
+[INFO]  2022-01-24 hold (empty)
+[INFO]  2022-01-25 hold (empty)
+[INFO]  2022-01-26 hold (empty)
+[INFO]  2022-01-27 hold (empty)
+[INFO]  2022-01-28 hold (empty)
+[INFO]  rebalance 2022-02-07: empty target_weights -> full exit
+[INFO]  2022-02-08 hold (empty)
+[INFO]  2022-02-09 hold (empty)
+[INFO]  2022-02-10 hold (empty)
+[INFO]  2022-02-11 hold (empty)
+[INFO]  2022-02-14 hold (empty)
+[INFO]  2022-02-15 hold (empty)
+[INFO]  2022-02-16 hold (empty)
+[INFO]  2022-02-17 hold (empty)
+[INFO]  2022-02-18 hold (empty)
+[INFO]  2022-02-21 hold (empty)
+[INFO]  2022-02-22 hold (empty)
+[INFO]  2022-02-23 hold (empty)
+[INFO]  2022-02-24 hold (empty)
+[INFO]  2022-02-25 hold (empty)
+[INFO]  2022-02-28 hold (empty)
+[INFO]  rebalance 2022-03-01: empty target_weights -> full exit
+[INFO]  2022-03-02 hold (empty)
+[INFO]  2022-03-03 hold (empty)
+[INFO]  2022-03-04 hold (empty)
+[INFO]  2022-03-07 hold (empty)
+[INFO]  2022-03-08 hold (empty)
+[INFO]  2022-03-09 hold (empty)
+[INFO]  2022-03-10 hold (empty)
+[INFO]  2022-03-11 hold (empty)
+[INFO]  2022-03-14 hold (empty)
+[INFO]  2022-03-15 hold (empty)
+[INFO]  2022-03-16 hold (empty)
+[INFO]  2022-03-17 hold (empty)
+[INFO]  2022-03-18 hold (empty)
+[INFO]  2022-03-21 hold (empty)
+[INFO]  2022-03-22 hold (empty)
+[INFO]  2022-03-23 hold (empty)
+[INFO]  2022-03-24 hold (empty)
+[INFO]  2022-03-25 hold (empty)
+[INFO]  2022-03-28 hold (empty)
+[INFO]  2022-03-29 hold (empty)
+[INFO]  2022-03-30 hold (empty)
+[INFO]  2022-03-31 hold (empty)
+[INFO]  rebalance 2022-04-01: empty target_weights -> full exit
+[INFO]  2022-04-06 hold (empty)
+[INFO]  2022-04-07 hold (empty)
+[INFO]  2022-04-08 hold (empty)
+[INFO]  2022-04-11 hold (empty)
+[INFO]  2022-04-12 hold (empty)
+[INFO]  2022-04-13 hold (empty)
+[INFO]  2022-04-14 hold (empty)
+[INFO]  2022-04-15 hold (empty)
+[INFO]  2022-04-18 hold (empty)
+[INFO]  2022-04-19 hold (empty)
+[INFO]  2022-04-20 hold (empty)
+[INFO]  2022-04-21 hold (empty)
+[INFO]  2022-04-22 hold (empty)
+[INFO]  2022-04-25 hold (empty)
+[INFO]  2022-04-26 hold (empty)
+[INFO]  2022-04-27 hold (empty)
+[INFO]  2022-04-28 hold (empty)
+[INFO]  2022-04-29 hold (empty)
+[INFO]  rebalance 2022-05-05: empty target_weights -> full exit
+[INFO]  2022-05-06 hold (empty)
+[INFO]  2022-05-09 hold (empty)
+[INFO]  2022-05-10 hold (empty)
+[INFO]  2022-05-11 hold (empty)
+[INFO]  2022-05-12 hold (empty)
+[INFO]  2022-05-13 hold (empty)
+[INFO]  2022-05-16 hold (empty)
+[INFO]  2022-05-17 hold (empty)
+[INFO]  2022-05-18 hold (empty)
+[INFO]  2022-05-19 hold (empty)
+[INFO]  2022-05-20 hold (empty)
+[INFO]  2022-05-23 hold (empty)
+[INFO]  2022-05-24 hold (empty)
+[INFO]  2022-05-25 hold (empty)
+[INFO]  2022-05-26 hold (empty)
+[INFO]  2022-05-27 hold (empty)
+[INFO]  2022-05-30 hold (empty)
+[INFO]  2022-05-31 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2022-06-02 fill buy 688408.SH vol=700 price=77.4163 amt=54191.43
+[INFO]  2022-06-02 fill buy 000550.SZ vol=1000 price=57.2503 amt=57250.27
+[INFO]  2022-06-02 fill buy 002660.SZ vol=2900 price=19.9263 amt=57786.13
+[INFO]  2022-06-02 fill buy 605151.SH vol=3100 price=19.2015 amt=59524.73
+[INFO]  2022-06-02 fill buy 688663.SH vol=1900 price=29.8712 amt=56755.32
+[INFO]  2022-06-02 fill buy 000554.SZ vol=2000 price=28.9600 amt=57920.07
+[INFO]  2022-06-02 fill buy 000599.SZ vol=3100 price=19.1581 amt=59390.23
+[INFO]  2022-06-02 fill buy 002580.SZ vol=1800 price=32.6953 amt=58851.61
+[INFO]  2022-06-02 fill buy 603606.SH vol=200 price=228.5274 amt=45705.49
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2022-06-06 fill sell 688408.SH vol=700 price=86.8909 amt=60823.62
+[INFO]  2022-06-06 fill sell 000550.SZ vol=1000 price=59.4808 amt=59480.79
+[INFO]  2022-06-06 fill sell 002660.SZ vol=2900 price=20.1638 amt=58475.11
+[INFO]  2022-06-06 fill sell 605151.SH vol=3100 price=19.0641 amt=59098.69
+[INFO]  2022-06-06 fill sell 688663.SH vol=1900 price=31.3509 amt=59566.70
+[INFO]  2022-06-06 fill sell 000554.SZ vol=2000 price=28.1588 amt=56317.64
+[INFO]  2022-06-06 fill sell 000599.SZ vol=3100 price=22.3026 amt=69138.08
+[INFO]  2022-06-06 fill sell 002580.SZ vol=1800 price=33.2709 amt=59887.70
+[INFO]  2022-06-06 fill buy 603606.SH vol=2100 price=240.1365 amt=504286.60
+[INFO]  2022-06-06 hold 1 positions (no change)
+[INFO]  2022-06-07 hold 1 positions (no change)
+[INFO]  2022-06-08 hold 1 positions (no change)
+[INFO]  2022-06-09 hold 1 positions (no change)
+[INFO]  2022-06-10 hold 1 positions (no change)
+[INFO]  2022-06-13 hold 1 positions (no change)
+[INFO]  2022-06-14 hold 1 positions (no change)
+[INFO]  2022-06-15 hold 1 positions (no change)
+[INFO]  2022-06-16 hold 1 positions (no change)
+[INFO]  2022-06-17 hold 1 positions (no change)
+[INFO]  2022-06-20 hold 1 positions (no change)
+[INFO]  2022-06-21 hold 1 positions (no change)
+[INFO]  2022-06-22 hold 1 positions (no change)
+[INFO]  2022-06-23 hold 1 positions (no change)
+[INFO]  2022-06-24 hold 1 positions (no change)
+[INFO]  2022-06-27 hold 1 positions (no change)
+[INFO]  2022-06-28 hold 1 positions (no change)
+[INFO]  2022-06-29 hold 1 positions (no change)
+[INFO]  2022-06-30 hold 1 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2022-07-04 fill sell 603606.SH vol=2300 price=299.8213 amt=689589.03
+[INFO]  2022-07-04 fill buy 600732.SH vol=1000 price=165.7632 amt=165763.20
+[INFO]  2022-07-04 fill buy 002733.SZ vol=4100 price=42.4726 amt=174137.73
+[INFO]  2022-07-04 fill buy 002707.SZ vol=2100 price=81.6014 amt=171362.89
+[INFO]  2022-07-04 fill buy 600650.SH vol=3200 price=54.2336 amt=173547.56
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2022-07-05 fill sell 002733.SZ vol=4100 price=43.0619 amt=176553.64
+[INFO]  2022-07-05 fill sell 002707.SZ vol=2100 price=81.8822 amt=171952.53
+[INFO]  2022-07-05 fill sell 600650.SH vol=3200 price=54.2353 amt=173552.87
+[INFO]  2022-07-05 fill buy 600732.SH vol=3200 price=163.8511 amt=524323.55
+[INFO]  2022-07-05 hold 1 positions (no change)
+[INFO]  2022-07-06 hold 1 positions (no change)
+[INFO]  2022-07-07 hold 1 positions (no change)
+[INFO]  2022-07-08 hold 1 positions (no change)
+[INFO]  2022-07-11 hold 1 positions (no change)
+[INFO]  2022-07-12 hold 1 positions (no change)
+[INFO]  2022-07-13 hold 1 positions (no change)
+[INFO]  2022-07-14 hold 1 positions (no change)
+[INFO]  2022-07-15 hold 1 positions (no change)
+[INFO]  2022-07-18 hold 1 positions (no change)
+[INFO]  2022-07-19 hold 1 positions (no change)
+[INFO]  2022-07-20 hold 1 positions (no change)
+[INFO]  2022-07-21 hold 1 positions (no change)
+[INFO]  2022-07-22 hold 1 positions (no change)
+[INFO]  2022-07-25 hold 1 positions (no change)
+[INFO]  2022-07-26 hold 1 positions (no change)
+[INFO]  2022-07-27 hold 1 positions (no change)
+[INFO]  2022-07-28 hold 1 positions (no change)
+[INFO]  2022-07-29 hold 1 positions (no change)
+[INFO]  rebalance 2022-08-01: empty target_weights -> full exit
+[INFO]  2022-08-02 fill sell 600732.SH vol=4200 price=181.6556 amt=762953.36
+[INFO]  2022-08-02 hold (empty)
+[INFO]  2022-08-03 hold (empty)
+[INFO]  2022-08-04 hold (empty)
+[INFO]  2022-08-05 hold (empty)
+[INFO]  2022-08-08 hold (empty)
+[INFO]  2022-08-09 hold (empty)
+[INFO]  2022-08-10 hold (empty)
+[INFO]  2022-08-11 hold (empty)
+[INFO]  2022-08-12 hold (empty)
+[INFO]  2022-08-15 hold (empty)
+[INFO]  2022-08-16 hold (empty)
+[INFO]  2022-08-17 hold (empty)
+[INFO]  2022-08-18 hold (empty)
+[INFO]  2022-08-19 hold (empty)
+[INFO]  2022-08-22 hold (empty)
+[INFO]  2022-08-23 hold (empty)
+[INFO]  2022-08-24 hold (empty)
+[INFO]  2022-08-25 hold (empty)
+[INFO]  2022-08-26 hold (empty)
+[INFO]  2022-08-29 hold (empty)
+[INFO]  2022-08-30 hold (empty)
+[INFO]  2022-08-31 hold (empty)
+[INFO]  rebalance 2022-09-01: empty target_weights -> full exit
+[INFO]  2022-09-02 hold (empty)
+[INFO]  2022-09-05 hold (empty)
+[INFO]  2022-09-06 hold (empty)
+[INFO]  2022-09-07 hold (empty)
+[INFO]  2022-09-08 hold (empty)
+[INFO]  2022-09-09 hold (empty)
+[INFO]  2022-09-13 hold (empty)
+[INFO]  2022-09-14 hold (empty)
+[INFO]  2022-09-15 hold (empty)
+[INFO]  2022-09-16 hold (empty)
+[INFO]  2022-09-19 hold (empty)
+[INFO]  2022-09-20 hold (empty)
+[INFO]  2022-09-21 hold (empty)
+[INFO]  2022-09-22 hold (empty)
+[INFO]  2022-09-23 hold (empty)
+[INFO]  2022-09-26 hold (empty)
+[INFO]  2022-09-27 hold (empty)
+[INFO]  2022-09-28 hold (empty)
+[INFO]  2022-09-29 hold (empty)
+[INFO]  2022-09-30 hold (empty)
+[INFO]  rebalance 2022-10-10: empty target_weights -> full exit
+[INFO]  2022-10-11 hold (empty)
+[INFO]  2022-10-12 hold (empty)
+[INFO]  2022-10-13 hold (empty)
+[INFO]  2022-10-14 hold (empty)
+[INFO]  2022-10-17 hold (empty)
+[INFO]  2022-10-18 hold (empty)
+[INFO]  2022-10-19 hold (empty)
+[INFO]  2022-10-20 hold (empty)
+[INFO]  2022-10-21 hold (empty)
+[INFO]  2022-10-24 hold (empty)
+[INFO]  2022-10-25 hold (empty)
+[INFO]  2022-10-26 hold (empty)
+[INFO]  2022-10-27 hold (empty)
+[INFO]  2022-10-28 hold (empty)
+[INFO]  2022-10-31 hold (empty)
+[INFO]  rebalance 2022-11-01: empty target_weights -> full exit
+[INFO]  2022-11-02 hold (empty)
+[INFO]  2022-11-03 hold (empty)
+[INFO]  2022-11-04 hold (empty)
+[INFO]  2022-11-07 hold (empty)
+[INFO]  2022-11-08 hold (empty)
+[INFO]  2022-11-09 hold (empty)
+[INFO]  2022-11-10 hold (empty)
+[INFO]  2022-11-11 hold (empty)
+[INFO]  2022-11-14 hold (empty)
+[INFO]  2022-11-15 hold (empty)
+[INFO]  2022-11-16 hold (empty)
+[INFO]  2022-11-17 hold (empty)
+[INFO]  2022-11-18 hold (empty)
+[INFO]  2022-11-21 hold (empty)
+[INFO]  2022-11-22 hold (empty)
+[INFO]  2022-11-23 hold (empty)
+[INFO]  2022-11-24 hold (empty)
+[INFO]  2022-11-25 hold (empty)
+[INFO]  2022-11-28 hold (empty)
+[INFO]  2022-11-29 hold (empty)
+[INFO]  2022-11-30 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2022-12-02 fill buy 300859.SZ vol=1300 price=32.1602 amt=41808.25
+[INFO]  2022-12-02 fill buy 000517.SZ vol=900 price=46.1357 amt=41522.15
+[INFO]  2022-12-02 fill buy 000610.SZ vol=1200 price=33.7673 amt=40520.75
+[INFO]  2022-12-02 fill buy 000042.SZ vol=300 price=121.6887 amt=36506.60
+[INFO]  2022-12-02 fill buy 000573.SZ vol=1100 price=37.9060 amt=41696.56
+[INFO]  2022-12-02 fill buy 000620.SZ vol=5900 price=7.1403 amt=42127.96
+[INFO]  2022-12-02 fill buy 002162.SZ vol=4000 price=10.4774 amt=41909.41
+[INFO]  2022-12-02 fill buy 002016.SZ vol=900 price=44.7482 amt=40273.42
+[INFO]  2022-12-02 fill buy 002285.SZ vol=900 price=45.8178 amt=41236.00
+[INFO]  2022-12-02 fill buy 000029.SZ vol=1400 price=30.3525 amt=42493.47
+[INFO]  2022-12-02 fill buy 000011.SZ vol=900 price=47.5424 amt=42788.14
+[INFO]  2022-12-02 fill buy 003012.SZ vol=4700 price=8.9705 amt=42161.37
+[INFO]  2022-12-02 fill buy 000560.SZ vol=2900 price=14.6108 amt=42371.21
+[INFO]  2022-12-02 fill buy 002244.SZ vol=600 price=68.8217 amt=41293.04
+[INFO]  2022-12-02 fill buy 002208.SZ vol=1000 price=40.1953 amt=40195.29
+[INFO]  2022-12-02 fill buy 000609.SZ vol=1100 price=38.6628 amt=42529.05
+[INFO]  2022-12-02 fill buy 000524.SZ vol=800 price=51.6395 amt=41311.59
+[INFO]  2022-12-02 fill buy 000838.SZ vol=500 price=75.9058 amt=37952.92
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2022-12-05 fill sell 300859.SZ vol=1300 price=33.4632 amt=43502.20
+[INFO]  2022-12-05 fill sell 000517.SZ vol=900 price=46.0934 amt=41484.04
+[INFO]  2022-12-05 fill sell 000610.SZ vol=1200 price=36.0112 amt=43213.38
+[INFO]  2022-12-05 fill sell 000042.SZ vol=300 price=119.3196 amt=35795.88
+[INFO]  2022-12-05 fill sell 000573.SZ vol=1100 price=35.6661 amt=39232.69
+[INFO]  2022-12-05 fill sell 000620.SZ vol=5900 price=7.2030 amt=42497.73
+[INFO]  2022-12-05 fill sell 002162.SZ vol=4000 price=10.3475 amt=41389.86
+[INFO]  2022-12-05 fill sell 002016.SZ vol=900 price=44.7775 amt=40299.79
+[INFO]  2022-12-05 fill sell 002285.SZ vol=900 price=46.9555 amt=42259.95
+[INFO]  2022-12-05 fill sell 000011.SZ vol=900 price=48.1282 amt=43315.37
+[INFO]  2022-12-05 fill sell 003012.SZ vol=4700 price=9.0074 amt=42334.87
+[INFO]  2022-12-05 fill sell 000560.SZ vol=2900 price=14.4995 amt=42048.61
+[INFO]  2022-12-05 fill sell 002244.SZ vol=600 price=66.7532 amt=40051.95
+[INFO]  2022-12-05 fill sell 002208.SZ vol=1000 price=40.1442 amt=40144.22
+[INFO]  2022-12-05 fill sell 000609.SZ vol=1100 price=40.0127 amt=44013.93
+[INFO]  2022-12-05 fill sell 000524.SZ vol=800 price=52.6626 amt=42130.11
+[INFO]  2022-12-05 fill sell 000838.SZ vol=500 price=83.8575 amt=41928.77
+[INFO]  2022-12-05 fill buy 000029.SZ vol=23600 price=30.6722 amt=723864.42
+[INFO]  2022-12-05 hold 1 positions (no change)
+[INFO]  2022-12-06 hold 1 positions (no change)
+[INFO]  rebalance 2022-12-07: empty target_weights -> full exit
+[INFO]  2022-12-08 fill sell 000029.SZ vol=25000 price=26.3870 amt=659675.00
+[INFO]  2022-12-08 hold (empty)
+[INFO]  2022-12-09 hold (empty)
+[INFO]  2022-12-12 hold (empty)
+[INFO]  2022-12-13 hold (empty)
+[INFO]  2022-12-14 hold (empty)
+[INFO]  2022-12-15 hold (empty)
+[INFO]  2022-12-16 hold (empty)
+[INFO]  2022-12-19 hold (empty)
+[INFO]  2022-12-20 hold (empty)
+[INFO]  2022-12-21 hold (empty)
+[INFO]  2022-12-22 hold (empty)
+[INFO]  2022-12-23 hold (empty)
+[INFO]  2022-12-26 hold (empty)
+[INFO]  2022-12-27 hold (empty)
+[INFO]  2022-12-28 hold (empty)
+[INFO]  2022-12-29 hold (empty)
+[INFO]  2022-12-30 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2023-01-04 fill buy 000679.SZ vol=2100 price=39.0935 amt=82096.44
+[INFO]  2023-01-04 fill buy 002251.SZ vol=2400 price=34.6459 amt=83150.23
+[INFO]  2023-01-04 fill buy 002344.SZ vol=4000 price=20.5853 amt=82341.30
+[INFO]  2023-01-04 fill buy 000759.SZ vol=2000 price=41.0230 amt=82045.94
+[INFO]  2023-01-04 fill buy 000501.SZ vol=1100 price=75.7595 amt=83335.45
+[INFO]  2023-01-04 fill buy 002697.SZ vol=2000 price=40.1265 amt=80252.99
+[INFO]  2023-01-04 fill buy 002570.SZ vol=6000 price=13.7736 amt=82641.37
+[INFO]  2023-01-04 fill buy 002187.SZ vol=4000 price=20.7816 amt=83126.30
+[INFO]  rebalance 2023-01-04: empty target_weights -> full exit
+[INFO]  2023-01-05 fill sell 000679.SZ vol=2100 price=39.3976 amt=82734.95
+[INFO]  2023-01-05 fill sell 002251.SZ vol=2400 price=34.5076 amt=82818.29
+[INFO]  2023-01-05 fill sell 002344.SZ vol=4000 price=20.5917 amt=82366.86
+[INFO]  2023-01-05 fill sell 000759.SZ vol=2000 price=41.0003 amt=82000.69
+[INFO]  2023-01-05 fill sell 000501.SZ vol=1100 price=76.1443 amt=83758.71
+[INFO]  2023-01-05 fill sell 002697.SZ vol=2000 price=40.4104 amt=80820.75
+[INFO]  2023-01-05 fill sell 002570.SZ vol=6000 price=14.0532 amt=84319.06
+[INFO]  2023-01-05 fill sell 002187.SZ vol=4000 price=20.6489 amt=82595.44
+[INFO]  2023-01-05 hold (empty)
+[INFO]  2023-01-06 hold (empty)
+[INFO]  2023-01-09 hold (empty)
+[INFO]  2023-01-10 hold (empty)
+[INFO]  2023-01-11 hold (empty)
+[INFO]  2023-01-12 hold (empty)
+[INFO]  2023-01-13 hold (empty)
+[INFO]  2023-01-16 hold (empty)
+[INFO]  2023-01-17 hold (empty)
+[INFO]  2023-01-18 hold (empty)
+[INFO]  2023-01-19 hold (empty)
+[INFO]  2023-01-20 hold (empty)
+[INFO]  2023-01-30 hold (empty)
+[INFO]  2023-01-31 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2023-02-02 fill buy 300757.SZ vol=1000 price=80.3538 amt=80353.81
+[INFO]  2023-02-02 fill buy 002230.SZ vol=100 price=583.8994 amt=58389.94
+[INFO]  2023-02-02 fill buy 300624.SZ vol=1300 price=60.8640 amt=79123.18
+[INFO]  2023-02-02 fill buy 002380.SZ vol=1400 price=59.5338 amt=83347.37
+[INFO]  2023-02-02 fill buy 300451.SZ vol=500 price=163.4530 amt=81726.48
+[INFO]  2023-02-02 fill buy 002410.SZ vol=100 price=836.2449 amt=83624.49
+[INFO]  2023-02-02 fill buy 002373.SZ vol=1900 price=43.4049 amt=82469.38
+[INFO]  2023-02-02 fill buy 002613.SZ vol=4200 price=19.8542 amt=83387.51
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2023-02-03 fill sell 002230.SZ vol=100 price=585.0841 amt=58508.41
+[INFO]  2023-02-03 fill sell 300624.SZ vol=1300 price=61.6265 amt=80114.45
+[INFO]  2023-02-03 fill sell 300451.SZ vol=500 price=160.8368 amt=80418.42
+[INFO]  2023-02-03 fill sell 002410.SZ vol=100 price=828.4477 amt=82844.77
+[INFO]  2023-02-03 fill sell 002373.SZ vol=1900 price=43.3546 amt=82373.73
+[INFO]  2023-02-03 fill sell 002613.SZ vol=4200 price=19.9219 amt=83672.13
+[INFO]  2023-02-03 fill buy 300757.SZ vol=3100 price=82.3946 amt=255423.20
+[INFO]  2023-02-03 fill buy 002380.SZ vol=4200 price=60.3397 amt=253426.77
+[INFO]  2023-02-03 hold 2 positions (no change)
+[INFO]  2023-02-06 hold 2 positions (no change)
+[INFO]  2023-02-07 hold 2 positions (no change)
+[INFO]  2023-02-08 hold 2 positions (no change)
+[INFO]  2023-02-09 hold 2 positions (no change)
+[INFO]  2023-02-10 hold 2 positions (no change)
+[INFO]  2023-02-13 hold 2 positions (no change)
+[INFO]  2023-02-14 hold 2 positions (no change)
+[INFO]  2023-02-15 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2023-02-17 fill sell 002380.SZ vol=5600 price=62.0720 amt=347603.33
+[INFO]  2023-02-17 fill buy 300757.SZ vol=4500 price=76.8647 amt=345891.34
+[INFO]  2023-02-17 hold 1 positions (no change)
+[INFO]  rebalance 2023-02-20: empty target_weights -> full exit
+[INFO]  2023-02-21 fill sell 300757.SZ vol=8600 price=73.9745 amt=636180.66
+[INFO]  2023-02-21 hold (empty)
+[INFO]  2023-02-22 hold (empty)
+[INFO]  2023-02-23 hold (empty)
+[INFO]  2023-02-24 hold (empty)
+[INFO]  2023-02-27 hold (empty)
+[INFO]  2023-02-28 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2023-03-02 fill buy 300502.SZ vol=100 price=200.8730 amt=20087.30
+[INFO]  2023-03-02 fill buy 002197.SZ vol=700 price=49.7519 amt=34826.33
+[INFO]  2023-03-02 fill buy 300308.SZ vol=200 price=168.3813 amt=33676.26
+[INFO]  2023-03-02 fill buy 300546.SZ vol=500 price=70.5132 amt=35256.62
+[INFO]  2023-03-02 fill buy 300857.SZ vol=1700 price=22.9813 amt=39068.25
+[INFO]  2023-03-02 fill buy 002396.SZ vol=500 price=77.2006 amt=38600.30
+[INFO]  2023-03-02 fill buy 000938.SZ vol=200 price=188.0104 amt=37602.08
+[INFO]  2023-03-02 fill buy 300302.SZ vol=600 price=59.3978 amt=35638.67
+[INFO]  2023-03-02 fill buy 002519.SZ vol=600 price=64.4864 amt=38691.83
+[INFO]  2023-03-02 fill buy 002166.SZ vol=500 price=77.3335 amt=38666.73
+[INFO]  2023-03-02 fill buy 002583.SZ vol=1100 price=35.7282 amt=39301.02
+[INFO]  2023-03-02 fill buy 002152.SZ vol=200 price=187.5547 amt=37510.94
+[INFO]  2023-03-02 fill buy 002180.SZ vol=100 price=258.0186 amt=25801.86
+[INFO]  2023-03-02 fill buy 000586.SZ vol=1000 price=37.7580 amt=37757.99
+[INFO]  2023-03-02 fill buy 000999.SZ vol=300 price=108.3643 amt=32509.30
+[INFO]  2023-03-02 fill buy 002296.SZ vol=800 price=47.9773 amt=38381.86
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2023-03-03 fill sell 300502.SZ vol=100 price=199.3462 amt=19934.62
+[INFO]  2023-03-03 fill sell 002197.SZ vol=700 price=48.5328 amt=33972.99
+[INFO]  2023-03-03 fill sell 300308.SZ vol=200 price=167.1001 amt=33420.02
+[INFO]  2023-03-03 fill sell 300546.SZ vol=500 price=69.2613 amt=34630.64
+[INFO]  2023-03-03 fill sell 300857.SZ vol=1700 price=22.7792 amt=38724.64
+[INFO]  2023-03-03 fill sell 002396.SZ vol=500 price=76.3062 amt=38153.10
+[INFO]  2023-03-03 fill sell 000938.SZ vol=200 price=180.8319 amt=36166.37
+[INFO]  2023-03-03 fill sell 300302.SZ vol=600 price=59.2296 amt=35537.77
+[INFO]  2023-03-03 fill sell 002519.SZ vol=600 price=63.5396 amt=38123.73
+[INFO]  2023-03-03 fill sell 002166.SZ vol=500 price=74.4333 amt=37216.63
+[INFO]  2023-03-03 fill sell 002583.SZ vol=1100 price=36.5975 amt=40257.24
+[INFO]  2023-03-03 fill sell 002152.SZ vol=200 price=188.1535 amt=37630.71
+[INFO]  2023-03-03 fill sell 000586.SZ vol=1000 price=37.7180 amt=37717.97
+[INFO]  2023-03-03 fill sell 000999.SZ vol=300 price=108.1430 amt=32442.89
+[INFO]  2023-03-03 fill sell 002296.SZ vol=800 price=48.5541 amt=38843.25
+[INFO]  2023-03-03 fill buy 002180.SZ vol=2400 price=252.5021 amt=606005.01
+[INFO]  2023-03-03 hold 1 positions (no change)
+[INFO]  2023-03-06 hold 1 positions (no change)
+[INFO]  2023-03-07 hold 1 positions (no change)
+[INFO]  2023-03-08 hold 1 positions (no change)
+[INFO]  2023-03-09 hold 1 positions (no change)
+[INFO]  2023-03-10 hold 1 positions (no change)
+[INFO]  2023-03-13 hold 1 positions (no change)
+[INFO]  2023-03-14 hold 1 positions (no change)
+[INFO]  rebalance 2023-03-15: empty target_weights -> full exit
+[INFO]  2023-03-16 fill sell 002180.SZ vol=2500 price=228.6967 amt=571741.80
+[INFO]  2023-03-16 hold (empty)
+[INFO]  2023-03-17 hold (empty)
+[INFO]  2023-03-20 hold (empty)
+[INFO]  2023-03-21 hold (empty)
+[INFO]  2023-03-22 hold (empty)
+[INFO]  2023-03-23 hold (empty)
+[INFO]  2023-03-24 hold (empty)
+[INFO]  2023-03-27 hold (empty)
+[INFO]  2023-03-28 hold (empty)
+[INFO]  2023-03-29 hold (empty)
+[INFO]  2023-03-30 hold (empty)
+[INFO]  2023-03-31 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2023-04-04 fill buy 003040.SZ vol=5200 price=21.7104 amt=112894.18
+[INFO]  2023-04-04 fill buy 002251.SZ vol=3700 price=30.4208 amt=112557.02
+[INFO]  2023-04-04 fill buy 003004.SZ vol=3700 price=30.1797 amt=111665.03
+[INFO]  2023-04-04 fill buy 002213.SZ vol=3500 price=32.2363 amt=112827.20
+[INFO]  2023-04-04 fill buy 000759.SZ vol=3200 price=34.6463 amt=110868.30
+[INFO]  rebalance 2023-04-04: empty target_weights -> full exit
+[INFO]  2023-04-06 fill sell 003040.SZ vol=5200 price=20.4894 amt=106544.66
+[INFO]  2023-04-06 fill sell 002251.SZ vol=3700 price=29.7548 amt=110092.68
+[INFO]  2023-04-06 fill sell 003004.SZ vol=3700 price=29.0403 amt=107449.12
+[INFO]  2023-04-06 fill sell 002213.SZ vol=3500 price=31.4370 amt=110029.50
+[INFO]  2023-04-06 fill sell 000759.SZ vol=3200 price=33.8023 amt=108167.52
+[INFO]  2023-04-06 hold (empty)
+[INFO]  2023-04-07 hold (empty)
+[INFO]  2023-04-10 hold (empty)
+[INFO]  2023-04-11 hold (empty)
+[INFO]  2023-04-12 hold (empty)
+[INFO]  2023-04-13 hold (empty)
+[INFO]  2023-04-14 hold (empty)
+[INFO]  2023-04-17 hold (empty)
+[INFO]  2023-04-18 hold (empty)
+[INFO]  2023-04-19 hold (empty)
+[INFO]  2023-04-20 hold (empty)
+[INFO]  2023-04-21 hold (empty)
+[INFO]  2023-04-24 hold (empty)
+[INFO]  2023-04-25 hold (empty)
+[INFO]  2023-04-26 hold (empty)
+[INFO]  2023-04-27 hold (empty)
+[INFO]  2023-04-28 hold (empty)
+[INFO]  rebalance 2023-05-04: empty target_weights -> full exit
+[INFO]  2023-05-05 hold (empty)
+[INFO]  2023-05-08 hold (empty)
+[INFO]  2023-05-09 hold (empty)
+[INFO]  2023-05-10 hold (empty)
+[INFO]  2023-05-11 hold (empty)
+[INFO]  2023-05-12 hold (empty)
+[INFO]  2023-05-15 hold (empty)
+[INFO]  2023-05-16 hold (empty)
+[INFO]  2023-05-17 hold (empty)
+[INFO]  2023-05-18 hold (empty)
+[INFO]  2023-05-19 hold (empty)
+[INFO]  2023-05-22 hold (empty)
+[INFO]  2023-05-23 hold (empty)
+[INFO]  2023-05-24 hold (empty)
+[INFO]  2023-05-25 hold (empty)
+[INFO]  2023-05-26 hold (empty)
+[INFO]  2023-05-29 hold (empty)
+[INFO]  2023-05-30 hold (empty)
+[INFO]  2023-05-31 hold (empty)
+[INFO]  rebalance 2023-06-01: empty target_weights -> full exit
+[INFO]  2023-06-02 hold (empty)
+[INFO]  2023-06-05 hold (empty)
+[INFO]  2023-06-06 hold (empty)
+[INFO]  2023-06-07 hold (empty)
+[INFO]  2023-06-08 hold (empty)
+[INFO]  2023-06-09 hold (empty)
+[INFO]  2023-06-12 hold (empty)
+[INFO]  2023-06-13 hold (empty)
+[INFO]  2023-06-14 hold (empty)
+[INFO]  2023-06-15 hold (empty)
+[INFO]  2023-06-16 hold (empty)
+[INFO]  2023-06-19 hold (empty)
+[INFO]  2023-06-20 hold (empty)
+[INFO]  2023-06-21 hold (empty)
+[INFO]  2023-06-26 hold (empty)
+[INFO]  2023-06-27 hold (empty)
+[INFO]  2023-06-28 hold (empty)
+[INFO]  2023-06-29 hold (empty)
+[INFO]  2023-06-30 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2023-07-04 fill buy 002194.SZ vol=6700 price=40.8263 amt=273536.08
+[INFO]  2023-07-04 fill buy 002448.SZ vol=6500 price=41.9921 amt=272948.89
+[INFO]  rebalance 2023-07-04: empty target_weights -> full exit
+[INFO]  2023-07-05 fill sell 002194.SZ vol=6700 price=40.9311 amt=274238.20
+[INFO]  2023-07-05 fill sell 002448.SZ vol=6500 price=42.7644 amt=277968.47
+[INFO]  2023-07-05 hold (empty)
+[INFO]  2023-07-06 hold (empty)
+[INFO]  2023-07-07 hold (empty)
+[INFO]  2023-07-10 hold (empty)
+[INFO]  2023-07-11 hold (empty)
+[INFO]  2023-07-12 hold (empty)
+[INFO]  2023-07-13 hold (empty)
+[INFO]  2023-07-14 hold (empty)
+[INFO]  2023-07-17 hold (empty)
+[INFO]  2023-07-18 hold (empty)
+[INFO]  2023-07-19 hold (empty)
+[INFO]  2023-07-20 hold (empty)
+[INFO]  2023-07-21 hold (empty)
+[INFO]  2023-07-24 hold (empty)
+[INFO]  2023-07-25 hold (empty)
+[INFO]  2023-07-26 hold (empty)
+[INFO]  2023-07-27 hold (empty)
+[INFO]  2023-07-28 hold (empty)
+[INFO]  2023-07-31 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2023-08-02 fill buy 003012.SZ vol=14500 price=12.6944 amt=184069.06
+[INFO]  2023-08-02 fill buy 000517.SZ vol=3400 price=53.3187 amt=181283.67
+[INFO]  2023-08-02 fill buy 000567.SZ vol=1300 price=138.1633 amt=179612.23
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2023-08-03 fill sell 003012.SZ vol=14500 price=12.0968 amt=175402.99
+[INFO]  2023-08-03 fill sell 000517.SZ vol=3400 price=53.8938 amt=183238.91
+[INFO]  2023-08-03 fill buy 000567.SZ vol=2600 price=139.1154 amt=361699.97
+[INFO]  2023-08-03 hold 1 positions (no change)
+[INFO]  2023-08-04 hold 1 positions (no change)
+[INFO]  2023-08-07 hold 1 positions (no change)
+[INFO]  2023-08-08 hold 1 positions (no change)
+[INFO]  2023-08-09 hold 1 positions (no change)
+[INFO]  2023-08-10 hold 1 positions (no change)
+[INFO]  2023-08-11 hold 1 positions (no change)
+[INFO]  2023-08-14 hold 1 positions (no change)
+[INFO]  2023-08-15 hold 1 positions (no change)
+[INFO]  2023-08-16 hold 1 positions (no change)
+[INFO]  2023-08-17 hold 1 positions (no change)
+[INFO]  2023-08-18 hold 1 positions (no change)
+[INFO]  rebalance 2023-08-21: empty target_weights -> full exit
+[INFO]  2023-08-22 fill sell 000567.SZ vol=3900 price=123.2815 amt=480798.02
+[INFO]  2023-08-22 hold (empty)
+[INFO]  2023-08-23 hold (empty)
+[INFO]  2023-08-24 hold (empty)
+[INFO]  2023-08-25 hold (empty)
+[INFO]  2023-08-28 hold (empty)
+[INFO]  2023-08-29 hold (empty)
+[INFO]  2023-08-30 hold (empty)
+[INFO]  2023-08-31 hold (empty)
+[INFO]  rebalance 2023-09-01: empty target_weights -> full exit
+[INFO]  2023-09-04 hold (empty)
+[INFO]  2023-09-05 hold (empty)
+[INFO]  2023-09-06 hold (empty)
+[INFO]  2023-09-07 hold (empty)
+[INFO]  2023-09-08 hold (empty)
+[INFO]  2023-09-11 hold (empty)
+[INFO]  2023-09-12 hold (empty)
+[INFO]  2023-09-13 hold (empty)
+[INFO]  2023-09-14 hold (empty)
+[INFO]  2023-09-15 hold (empty)
+[INFO]  2023-09-18 hold (empty)
+[INFO]  2023-09-19 hold (empty)
+[INFO]  2023-09-20 hold (empty)
+[INFO]  2023-09-21 hold (empty)
+[INFO]  2023-09-22 hold (empty)
+[INFO]  2023-09-25 hold (empty)
+[INFO]  2023-09-26 hold (empty)
+[INFO]  2023-09-27 hold (empty)
+[INFO]  2023-09-28 hold (empty)
+[INFO]  rebalance 2023-10-09: empty target_weights -> full exit
+[INFO]  2023-10-10 hold (empty)
+[INFO]  2023-10-11 hold (empty)
+[INFO]  2023-10-12 hold (empty)
+[INFO]  2023-10-13 hold (empty)
+[INFO]  2023-10-16 hold (empty)
+[INFO]  2023-10-17 hold (empty)
+[INFO]  2023-10-18 hold (empty)
+[INFO]  2023-10-19 hold (empty)
+[INFO]  2023-10-20 hold (empty)
+[INFO]  2023-10-23 hold (empty)
+[INFO]  2023-10-24 hold (empty)
+[INFO]  2023-10-25 hold (empty)
+[INFO]  2023-10-26 hold (empty)
+[INFO]  2023-10-27 hold (empty)
+[INFO]  2023-10-30 hold (empty)
+[INFO]  2023-10-31 hold (empty)
+[INFO]  rebalance 2023-11-01: empty target_weights -> full exit
+[INFO]  2023-11-02 hold (empty)
+[INFO]  2023-11-03 hold (empty)
+[INFO]  2023-11-06 hold (empty)
+[INFO]  2023-11-07 hold (empty)
+[INFO]  2023-11-08 hold (empty)
+[INFO]  2023-11-09 hold (empty)
+[INFO]  2023-11-10 hold (empty)
+[INFO]  2023-11-13 hold (empty)
+[INFO]  2023-11-14 hold (empty)
+[INFO]  2023-11-15 hold (empty)
+[INFO]  2023-11-16 hold (empty)
+[INFO]  2023-11-17 hold (empty)
+[INFO]  2023-11-20 hold (empty)
+[INFO]  2023-11-21 hold (empty)
+[INFO]  2023-11-22 hold (empty)
+[INFO]  2023-11-23 hold (empty)
+[INFO]  2023-11-24 hold (empty)
+[INFO]  2023-11-27 hold (empty)
+[INFO]  2023-11-28 hold (empty)
+[INFO]  2023-11-29 hold (empty)
+[INFO]  2023-11-30 hold (empty)
+[INFO]  rebalance 2023-12-01: empty target_weights -> full exit
+[INFO]  2023-12-04 hold (empty)
+[INFO]  2023-12-05 hold (empty)
+[INFO]  2023-12-06 hold (empty)
+[INFO]  2023-12-07 hold (empty)
+[INFO]  2023-12-08 hold (empty)
+[INFO]  2023-12-11 hold (empty)
+[INFO]  2023-12-12 hold (empty)
+[INFO]  2023-12-13 hold (empty)
+[INFO]  2023-12-14 hold (empty)
+[INFO]  2023-12-15 hold (empty)
+[INFO]  2023-12-18 hold (empty)
+[INFO]  2023-12-19 hold (empty)
+[INFO]  2023-12-20 hold (empty)
+[INFO]  2023-12-21 hold (empty)
+[INFO]  2023-12-22 hold (empty)
+[INFO]  2023-12-25 hold (empty)
+[INFO]  2023-12-26 hold (empty)
+[INFO]  2023-12-27 hold (empty)
+[INFO]  2023-12-28 hold (empty)
+[INFO]  2023-12-29 hold (empty)
+[INFO]  rebalance 2024-01-02: empty target_weights -> full exit
+[INFO]  2024-01-03 hold (empty)
+[INFO]  2024-01-04 hold (empty)
+[INFO]  2024-01-05 hold (empty)
+[INFO]  2024-01-08 hold (empty)
+[INFO]  2024-01-09 hold (empty)
+[INFO]  2024-01-10 hold (empty)
+[INFO]  2024-01-11 hold (empty)
+[INFO]  2024-01-12 hold (empty)
+[INFO]  2024-01-15 hold (empty)
+[INFO]  2024-01-16 hold (empty)
+[INFO]  2024-01-17 hold (empty)
+[INFO]  2024-01-18 hold (empty)
+[INFO]  2024-01-19 hold (empty)
+[INFO]  2024-01-22 hold (empty)
+[INFO]  2024-01-23 hold (empty)
+[INFO]  2024-01-24 hold (empty)
+[INFO]  2024-01-25 hold (empty)
+[INFO]  2024-01-26 hold (empty)
+[INFO]  2024-01-29 hold (empty)
+[INFO]  2024-01-30 hold (empty)
+[INFO]  2024-01-31 hold (empty)
+[INFO]  rebalance 2024-02-01: empty target_weights -> full exit
+[INFO]  2024-02-02 hold (empty)
+[INFO]  2024-02-05 hold (empty)
+[INFO]  2024-02-06 hold (empty)
+[INFO]  2024-02-07 hold (empty)
+[INFO]  2024-02-08 hold (empty)
+[INFO]  2024-02-19 hold (empty)
+[INFO]  2024-02-20 hold (empty)
+[INFO]  2024-02-21 hold (empty)
+[INFO]  2024-02-22 hold (empty)
+[INFO]  2024-02-23 hold (empty)
+[INFO]  2024-02-26 hold (empty)
+[INFO]  2024-02-27 hold (empty)
+[INFO]  2024-02-28 hold (empty)
+[INFO]  2024-02-29 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2024-03-04 fill buy 600640.SH vol=1200 price=127.8651 amt=153438.17
+[INFO]  2024-03-04 fill buy 300027.SZ vol=4500 price=35.8657 amt=161395.64
+[INFO]  2024-03-04 fill buy 002248.SZ vol=10300 price=15.7484 amt=162208.87
+[INFO]  rebalance 2024-03-04: empty target_weights -> full exit
+[INFO]  2024-03-05 fill sell 600640.SH vol=1200 price=129.3049 amt=155165.85
+[INFO]  2024-03-05 fill sell 300027.SZ vol=4500 price=35.8732 amt=161429.62
+[INFO]  2024-03-05 fill sell 002248.SZ vol=10300 price=15.6856 amt=161561.33
+[INFO]  2024-03-05 hold (empty)
+[INFO]  2024-03-06 hold (empty)
+[INFO]  2024-03-07 hold (empty)
+[INFO]  2024-03-08 hold (empty)
+[INFO]  2024-03-11 hold (empty)
+[INFO]  2024-03-12 hold (empty)
+[INFO]  2024-03-13 hold (empty)
+[INFO]  2024-03-14 hold (empty)
+[INFO]  2024-03-15 hold (empty)
+[INFO]  2024-03-18 hold (empty)
+[INFO]  2024-03-19 hold (empty)
+[INFO]  2024-03-20 hold (empty)
+[INFO]  2024-03-21 hold (empty)
+[INFO]  2024-03-22 hold (empty)
+[INFO]  2024-03-25 hold (empty)
+[INFO]  2024-03-26 hold (empty)
+[INFO]  2024-03-27 hold (empty)
+[INFO]  2024-03-28 hold (empty)
+[INFO]  2024-03-29 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2024-04-02 fill buy 002829.SZ vol=1600 price=57.6431 amt=92228.89
+[INFO]  2024-04-02 fill buy 300697.SZ vol=3500 price=27.4869 amt=96204.02
+[INFO]  2024-04-02 fill buy 300139.SZ vol=2000 price=47.8347 amt=95669.46
+[INFO]  2024-04-02 fill buy 600490.SH vol=2300 price=40.6950 amt=93598.47
+[INFO]  2024-04-02 fill buy 601069.SH vol=8200 price=11.8106 amt=96846.95
+[INFO]  rebalance 2024-04-02: empty target_weights -> full exit
+[INFO]  2024-04-03 fill sell 002829.SZ vol=1600 price=56.5579 amt=90492.57
+[INFO]  2024-04-03 fill sell 300697.SZ vol=3500 price=28.4038 amt=99413.23
+[INFO]  2024-04-03 fill sell 300139.SZ vol=2000 price=49.9101 amt=99820.14
+[INFO]  2024-04-03 fill sell 600490.SH vol=2300 price=43.2066 amt=99375.07
+[INFO]  2024-04-03 fill sell 601069.SH vol=8200 price=11.8954 amt=97542.30
+[INFO]  2024-04-03 hold (empty)
+[INFO]  2024-04-08 hold (empty)
+[INFO]  2024-04-09 hold (empty)
+[INFO]  2024-04-10 hold (empty)
+[INFO]  2024-04-11 hold (empty)
+[INFO]  2024-04-12 hold (empty)
+[INFO]  2024-04-15 hold (empty)
+[INFO]  2024-04-16 hold (empty)
+[INFO]  2024-04-17 hold (empty)
+[INFO]  2024-04-18 hold (empty)
+[INFO]  2024-04-19 hold (empty)
+[INFO]  2024-04-22 hold (empty)
+[INFO]  2024-04-23 hold (empty)
+[INFO]  2024-04-24 hold (empty)
+[INFO]  2024-04-25 hold (empty)
+[INFO]  2024-04-26 hold (empty)
+[INFO]  2024-04-29 hold (empty)
+[INFO]  2024-04-30 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2024-05-07 fill buy 002054.SZ vol=5700 price=21.6711 amt=123525.25
+[ERROR] 2024-05-07 unfilled_order code=000952.SZ reason=limit_up_at_open
+[INFO]  2024-05-07 fill buy 000566.SZ vol=3400 price=35.6535 amt=121221.99
+[INFO]  2024-05-07 fill buy 000813.SZ vol=10800 price=11.4956 amt=124152.75
+[INFO]  rebalance 2024-05-07: empty target_weights -> full exit
+[INFO]  2024-05-08 fill sell 002054.SZ vol=5700 price=21.2041 amt=120863.30
+[INFO]  2024-05-08 fill sell 000566.SZ vol=3400 price=36.0809 amt=122675.04
+[INFO]  2024-05-08 fill sell 000813.SZ vol=10800 price=11.8026 amt=127468.48
+[INFO]  2024-05-08 hold (empty)
+[INFO]  2024-05-09 hold (empty)
+[INFO]  2024-05-10 hold (empty)
+[INFO]  2024-05-13 hold (empty)
+[INFO]  2024-05-14 hold (empty)
+[INFO]  2024-05-15 hold (empty)
+[INFO]  2024-05-16 hold (empty)
+[INFO]  2024-05-17 hold (empty)
+[INFO]  2024-05-20 hold (empty)
+[INFO]  2024-05-21 hold (empty)
+[INFO]  2024-05-22 hold (empty)
+[INFO]  2024-05-23 hold (empty)
+[INFO]  2024-05-24 hold (empty)
+[INFO]  2024-05-27 hold (empty)
+[INFO]  2024-05-28 hold (empty)
+[INFO]  2024-05-29 hold (empty)
+[INFO]  2024-05-30 hold (empty)
+[INFO]  2024-05-31 hold (empty)
+[INFO]  rebalance 2024-06-03: empty target_weights -> full exit
+[INFO]  2024-06-04 hold (empty)
+[INFO]  2024-06-05 hold (empty)
+[INFO]  2024-06-06 hold (empty)
+[INFO]  2024-06-07 hold (empty)
+[INFO]  2024-06-11 hold (empty)
+[INFO]  2024-06-12 hold (empty)
+[INFO]  2024-06-13 hold (empty)
+[INFO]  2024-06-14 hold (empty)
+[INFO]  2024-06-17 hold (empty)
+[INFO]  2024-06-18 hold (empty)
+[INFO]  2024-06-19 hold (empty)
+[INFO]  2024-06-20 hold (empty)
+[INFO]  2024-06-21 hold (empty)
+[INFO]  2024-06-24 hold (empty)
+[INFO]  2024-06-25 hold (empty)
+[INFO]  2024-06-26 hold (empty)
+[INFO]  2024-06-27 hold (empty)
+[INFO]  2024-06-28 hold (empty)
+[INFO]  rebalance 2024-07-01: empty target_weights -> full exit
+[INFO]  2024-07-02 hold (empty)
+[INFO]  2024-07-03 hold (empty)
+[INFO]  2024-07-04 hold (empty)
+[INFO]  2024-07-05 hold (empty)
+[INFO]  2024-07-08 hold (empty)
+[INFO]  2024-07-09 hold (empty)
+[INFO]  2024-07-10 hold (empty)
+[INFO]  2024-07-11 hold (empty)
+[INFO]  2024-07-12 hold (empty)
+[INFO]  2024-07-15 hold (empty)
+[INFO]  2024-07-16 hold (empty)
+[INFO]  2024-07-17 hold (empty)
+[INFO]  2024-07-18 hold (empty)
+[INFO]  2024-07-19 hold (empty)
+[INFO]  2024-07-22 hold (empty)
+[INFO]  2024-07-23 hold (empty)
+[INFO]  2024-07-24 hold (empty)
+[INFO]  2024-07-25 hold (empty)
+[INFO]  2024-07-26 hold (empty)
+[INFO]  2024-07-29 hold (empty)
+[INFO]  2024-07-30 hold (empty)
+[INFO]  2024-07-31 hold (empty)
+[INFO]  rebalance 2024-08-01: empty target_weights -> full exit
+[INFO]  2024-08-02 hold (empty)
+[INFO]  2024-08-05 hold (empty)
+[INFO]  2024-08-06 hold (empty)
+[INFO]  2024-08-07 hold (empty)
+[INFO]  2024-08-08 hold (empty)
+[INFO]  2024-08-09 hold (empty)
+[INFO]  2024-08-12 hold (empty)
+[INFO]  2024-08-13 hold (empty)
+[INFO]  2024-08-14 hold (empty)
+[INFO]  2024-08-15 hold (empty)
+[INFO]  2024-08-16 hold (empty)
+[INFO]  2024-08-19 hold (empty)
+[INFO]  2024-08-20 hold (empty)
+[INFO]  2024-08-21 hold (empty)
+[INFO]  2024-08-22 hold (empty)
+[INFO]  2024-08-23 hold (empty)
+[INFO]  2024-08-26 hold (empty)
+[INFO]  2024-08-27 hold (empty)
+[INFO]  2024-08-28 hold (empty)
+[INFO]  2024-08-29 hold (empty)
+[INFO]  2024-08-30 hold (empty)
+[INFO]  rebalance 2024-09-02: empty target_weights -> full exit
+[INFO]  2024-09-03 hold (empty)
+[INFO]  2024-09-04 hold (empty)
+[INFO]  2024-09-05 hold (empty)
+[INFO]  2024-09-06 hold (empty)
+[INFO]  2024-09-09 hold (empty)
+[INFO]  2024-09-10 hold (empty)
+[INFO]  2024-09-11 hold (empty)
+[INFO]  2024-09-12 hold (empty)
+[INFO]  2024-09-13 hold (empty)
+[INFO]  2024-09-18 hold (empty)
+[INFO]  2024-09-19 hold (empty)
+[INFO]  2024-09-20 hold (empty)
+[INFO]  2024-09-23 hold (empty)
+[INFO]  2024-09-24 hold (empty)
+[INFO]  2024-09-25 hold (empty)
+[INFO]  2024-09-26 hold (empty)
+[INFO]  2024-09-27 hold (empty)
+[INFO]  2024-09-30 hold (empty)
+[INFO]  2024-10-08 no selection from 5198
+[INFO]  2024-10-09 hold (empty)
+[INFO]  2024-10-10 hold (empty)
+[INFO]  2024-10-11 hold (empty)
+[INFO]  2024-10-14 hold (empty)
+[INFO]  2024-10-15 hold (empty)
+[INFO]  2024-10-16 hold (empty)
+[INFO]  2024-10-17 hold (empty)
+[INFO]  2024-10-18 hold (empty)
+[INFO]  2024-10-21 hold (empty)
+[INFO]  2024-10-22 hold (empty)
+[INFO]  2024-10-23 hold (empty)
+[INFO]  2024-10-24 hold (empty)
+[INFO]  2024-10-25 hold (empty)
+[INFO]  2024-10-28 hold (empty)
+[INFO]  2024-10-29 hold (empty)
+[INFO]  2024-10-30 hold (empty)
+[INFO]  2024-10-31 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2024-11-04 fill buy 301421.SZ vol=400 price=55.3361 amt=22134.45
+[INFO]  2024-11-04 fill buy 301183.SZ vol=400 price=50.2604 amt=20104.18
+[INFO]  2024-11-04 fill buy 301396.SZ vol=700 price=32.2927 amt=22604.92
+[INFO]  2024-11-04 fill buy 301191.SZ vol=200 price=115.9414 amt=23188.28
+[INFO]  2024-11-04 fill buy 301132.SZ vol=800 price=28.9818 amt=23185.48
+[INFO]  2024-11-04 fill buy 301378.SZ vol=400 price=58.8685 amt=23547.40
+[INFO]  2024-11-04 fill buy 301329.SZ vol=1200 price=19.3472 amt=23216.63
+[INFO]  2024-11-04 fill buy 301379.SZ vol=800 price=28.9434 amt=23154.73
+[ERROR] 2024-11-04 unfilled_order code=300339.SZ reason=below_min_lot
+[INFO]  2024-11-04 fill buy 300348.SZ vol=100 price=175.5345 amt=17553.45
+[INFO]  2024-11-04 fill buy 300803.SZ vol=200 price=94.4706 amt=18894.11
+[INFO]  2024-11-04 fill buy 300663.SZ vol=300 price=70.3846 amt=21115.39
+[INFO]  2024-11-04 fill buy 300578.SZ vol=500 price=43.8403 amt=21920.16
+[INFO]  2024-11-04 fill buy 300047.SZ vol=300 price=71.9773 amt=21593.20
+[INFO]  2024-11-04 fill buy 300598.SZ vol=100 price=143.3759 amt=14337.59
+[INFO]  2024-11-04 fill buy 300925.SZ vol=300 price=72.3782 amt=21713.47
+[INFO]  2024-11-04 fill buy 300722.SZ vol=100 price=134.1093 amt=13410.93
+[INFO]  2024-11-04 fill buy 000045.SZ vol=700 price=33.4910 amt=23443.73
+[INFO]  2024-11-04 fill buy 300075.SZ vol=100 price=154.6994 amt=15469.94
+[INFO]  2024-11-04 fill buy 300369.SZ vol=300 price=71.2930 amt=21387.91
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2024-11-05 fill sell 301421.SZ vol=400 price=57.3673 amt=22946.91
+[INFO]  2024-11-05 fill sell 301183.SZ vol=400 price=51.7098 amt=20683.92
+[INFO]  2024-11-05 fill sell 301396.SZ vol=700 price=32.8202 amt=22974.16
+[INFO]  2024-11-05 fill sell 301191.SZ vol=200 price=114.4963 amt=22899.27
+[INFO]  2024-11-05 fill sell 301132.SZ vol=800 price=31.4332 amt=25146.54
+[INFO]  2024-11-05 fill sell 301378.SZ vol=400 price=61.1079 amt=24443.18
+[INFO]  2024-11-05 fill sell 301329.SZ vol=1200 price=19.9946 amt=23993.55
+[INFO]  2024-11-05 fill sell 301379.SZ vol=800 price=29.9009 amt=23920.75
+[INFO]  2024-11-05 fill sell 300348.SZ vol=100 price=181.7335 amt=18173.35
+[INFO]  2024-11-05 fill sell 300663.SZ vol=300 price=73.8839 amt=22165.17
+[INFO]  2024-11-05 fill sell 300578.SZ vol=500 price=50.2868 amt=25143.42
+[INFO]  2024-11-05 fill sell 300047.SZ vol=300 price=74.4675 amt=22340.24
+[INFO]  2024-11-05 fill sell 300598.SZ vol=100 price=148.1370 amt=14813.70
+[INFO]  2024-11-05 fill sell 300925.SZ vol=300 price=75.6835 amt=22705.06
+[INFO]  2024-11-05 fill sell 300722.SZ vol=100 price=128.3471 amt=12834.71
+[INFO]  2024-11-05 fill sell 000045.SZ vol=700 price=33.8356 amt=23684.92
+[INFO]  2024-11-05 fill sell 300075.SZ vol=100 price=159.0768 amt=15907.68
+[INFO]  2024-11-05 fill sell 300369.SZ vol=300 price=71.8380 amt=21551.39
+[INFO]  2024-11-05 fill buy 300803.SZ vol=4900 price=101.2946 amt=496343.32
+[INFO]  2024-11-05 hold 1 positions (no change)
+[INFO]  2024-11-06 hold 1 positions (no change)
+[INFO]  2024-11-07 hold 1 positions (no change)
+[INFO]  2024-11-08 hold 1 positions (no change)
+[INFO]  2024-11-11 hold 1 positions (no change)
+[INFO]  rebalance 2024-11-12: empty target_weights -> full exit
+[INFO]  2024-11-13 fill sell 300803.SZ vol=5100 price=104.6039 amt=533479.75
+[INFO]  2024-11-13 hold (empty)
+[INFO]  2024-11-14 hold (empty)
+[INFO]  2024-11-15 hold (empty)
+[INFO]  2024-11-18 hold (empty)
+[INFO]  2024-11-19 hold (empty)
+[INFO]  2024-11-20 hold (empty)
+[INFO]  2024-11-21 hold (empty)
+[INFO]  2024-11-22 hold (empty)
+[INFO]  2024-11-25 hold (empty)
+[INFO]  2024-11-26 hold (empty)
+[INFO]  2024-11-27 hold (empty)
+[INFO]  2024-11-28 hold (empty)
+[INFO]  2024-11-29 hold (empty)
+[INFO]  rebalance 2024-12-02: empty target_weights -> full exit
+[INFO]  2024-12-03 hold (empty)
+[INFO]  2024-12-04 hold (empty)
+[INFO]  2024-12-05 hold (empty)
+[INFO]  2024-12-06 hold (empty)
+[INFO]  2024-12-09 hold (empty)
+[INFO]  2024-12-10 hold (empty)
+[INFO]  2024-12-11 hold (empty)
+[INFO]  2024-12-12 hold (empty)
+[INFO]  2024-12-13 hold (empty)
+[INFO]  2024-12-16 hold (empty)
+[INFO]  2024-12-17 hold (empty)
+[INFO]  2024-12-18 hold (empty)
+[INFO]  2024-12-19 hold (empty)
+[INFO]  2024-12-20 hold (empty)
+[INFO]  2024-12-23 hold (empty)
+[INFO]  2024-12-24 hold (empty)
+[INFO]  2024-12-25 hold (empty)
+[INFO]  2024-12-26 hold (empty)
+[INFO]  2024-12-27 hold (empty)
+[INFO]  2024-12-30 hold (empty)
+[INFO]  2024-12-31 hold (empty)
+[INFO]  rebalance 2025-01-02: empty target_weights -> full exit
+[INFO]  2025-01-03 hold (empty)
+[INFO]  2025-01-06 hold (empty)
+[INFO]  2025-01-07 hold (empty)
+[INFO]  2025-01-08 hold (empty)
+[INFO]  2025-01-09 hold (empty)
+[INFO]  2025-01-10 hold (empty)
+[INFO]  2025-01-13 hold (empty)
+[INFO]  2025-01-14 hold (empty)
+[INFO]  2025-01-15 hold (empty)
+[INFO]  2025-01-16 hold (empty)
+[INFO]  2025-01-17 hold (empty)
+[INFO]  2025-01-20 hold (empty)
+[INFO]  2025-01-21 hold (empty)
+[INFO]  2025-01-22 hold (empty)
+[INFO]  2025-01-23 hold (empty)
+[INFO]  2025-01-24 hold (empty)
+[INFO]  2025-01-27 hold (empty)
+[INFO]  rebalance 2025-02-05: empty target_weights -> full exit
+[INFO]  2025-02-06 hold (empty)
+[INFO]  2025-02-07 hold (empty)
+[INFO]  2025-02-10 hold (empty)
+[INFO]  2025-02-11 hold (empty)
+[INFO]  2025-02-12 hold (empty)
+[INFO]  2025-02-13 hold (empty)
+[INFO]  2025-02-14 hold (empty)
+[INFO]  2025-02-17 hold (empty)
+[INFO]  2025-02-18 hold (empty)
+[INFO]  2025-02-19 hold (empty)
+[INFO]  2025-02-20 hold (empty)
+[INFO]  2025-02-21 hold (empty)
+[INFO]  2025-02-24 hold (empty)
+[INFO]  2025-02-25 hold (empty)
+[INFO]  2025-02-26 hold (empty)
+[INFO]  2025-02-27 hold (empty)
+[INFO]  2025-02-28 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2025-03-04 fill buy 002910.SZ vol=13400 price=9.8597 amt=132119.71
+[INFO]  2025-03-04 fill buy 000761.SZ vol=14000 price=9.4190 amt=131865.44
+[INFO]  2025-03-04 fill buy 002912.SZ vol=1700 price=73.9681 amt=125745.84
+[INFO]  2025-03-04 fill buy 002209.SZ vol=8100 price=16.3211 amt=132201.08
+[INFO]  rebalance 2025-03-04: empty target_weights -> full exit
+[INFO]  2025-03-05 fill sell 002910.SZ vol=13400 price=9.5953 amt=128576.63
+[INFO]  2025-03-05 fill sell 000761.SZ vol=14000 price=9.5489 amt=133684.38
+[INFO]  2025-03-05 fill sell 002912.SZ vol=1700 price=75.9070 amt=129041.87
+[INFO]  2025-03-05 fill sell 002209.SZ vol=8100 price=16.6928 amt=135211.58
+[INFO]  2025-03-05 hold (empty)
+[INFO]  2025-03-06 hold (empty)
+[INFO]  2025-03-07 hold (empty)
+[INFO]  2025-03-10 hold (empty)
+[INFO]  2025-03-11 hold (empty)
+[INFO]  2025-03-12 hold (empty)
+[INFO]  2025-03-13 hold (empty)
+[INFO]  2025-03-14 hold (empty)
+[INFO]  2025-03-17 hold (empty)
+[INFO]  2025-03-18 hold (empty)
+[INFO]  2025-03-19 hold (empty)
+[INFO]  2025-03-20 hold (empty)
+[INFO]  2025-03-21 hold (empty)
+[INFO]  2025-03-24 hold (empty)
+[INFO]  2025-03-25 hold (empty)
+[INFO]  2025-03-26 hold (empty)
+[INFO]  2025-03-27 hold (empty)
+[INFO]  2025-03-28 hold (empty)
+[INFO]  2025-03-31 hold (empty)
+[INFO]  rebalance 2025-04-01: empty target_weights -> full exit
+[INFO]  2025-04-02 hold (empty)
+[INFO]  2025-04-03 hold (empty)
+[INFO]  2025-04-07 hold (empty)
+[INFO]  2025-04-08 hold (empty)
+[INFO]  2025-04-09 hold (empty)
+[INFO]  2025-04-10 hold (empty)
+[INFO]  2025-04-11 hold (empty)
+[INFO]  2025-04-14 hold (empty)
+[INFO]  2025-04-15 hold (empty)
+[INFO]  2025-04-16 hold (empty)
+[INFO]  2025-04-17 hold (empty)
+[INFO]  2025-04-18 hold (empty)
+[INFO]  2025-04-21 hold (empty)
+[INFO]  2025-04-22 hold (empty)
+[INFO]  2025-04-23 hold (empty)
+[INFO]  2025-04-24 hold (empty)
+[INFO]  2025-04-25 hold (empty)
+[INFO]  2025-04-28 hold (empty)
+[INFO]  2025-04-29 hold (empty)
+[INFO]  2025-04-30 hold (empty)
+[INFO]  rebalance 2025-05-06: empty target_weights -> full exit
+[INFO]  2025-05-07 hold (empty)
+[INFO]  2025-05-08 hold (empty)
+[INFO]  2025-05-09 hold (empty)
+[INFO]  2025-05-12 hold (empty)
+[INFO]  2025-05-13 hold (empty)
+[INFO]  2025-05-14 hold (empty)
+[INFO]  2025-05-15 hold (empty)
+[INFO]  2025-05-16 hold (empty)
+[INFO]  2025-05-19 hold (empty)
+[INFO]  2025-05-20 hold (empty)
+[INFO]  2025-05-21 hold (empty)
+[INFO]  2025-05-22 hold (empty)
+[INFO]  2025-05-23 hold (empty)
+[INFO]  2025-05-26 hold (empty)
+[INFO]  2025-05-27 hold (empty)
+[INFO]  2025-05-28 hold (empty)
+[INFO]  2025-05-29 hold (empty)
+[INFO]  2025-05-30 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2025-06-04 fill buy 002829.SZ vol=4900 price=54.4052 amt=266585.64
+[INFO]  2025-06-04 fill buy 300485.SZ vol=5800 price=45.5343 amt=264099.10
+[INFO]  rebalance 2025-06-04: empty target_weights -> full exit
+[INFO]  2025-06-05 fill sell 002829.SZ vol=4900 price=52.2824 amt=256183.89
+[INFO]  2025-06-05 fill sell 300485.SZ vol=5800 price=44.9689 amt=260819.81
+[INFO]  2025-06-05 hold (empty)
+[INFO]  2025-06-06 hold (empty)
+[INFO]  2025-06-09 hold (empty)
+[INFO]  2025-06-10 hold (empty)
+[INFO]  2025-06-11 hold (empty)
+[INFO]  2025-06-12 hold (empty)
+[INFO]  2025-06-13 hold (empty)
+[INFO]  2025-06-16 hold (empty)
+[INFO]  2025-06-17 hold (empty)
+[INFO]  2025-06-18 hold (empty)
+[INFO]  2025-06-19 hold (empty)
+[INFO]  2025-06-20 hold (empty)
+[INFO]  2025-06-23 hold (empty)
+[INFO]  2025-06-24 hold (empty)
+[INFO]  2025-06-25 hold (empty)
+[INFO]  2025-06-26 hold (empty)
+[INFO]  2025-06-27 hold (empty)
+[INFO]  2025-06-30 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2025-07-02 fill buy 301141.SZ vol=600 price=86.7769 amt=52066.14
+[INFO]  2025-07-02 fill buy 301306.SZ vol=1100 price=46.6486 amt=51313.45
+[INFO]  2025-07-02 fill buy 002961.SZ vol=2300 price=22.3855 amt=51486.58
+[INFO]  2025-07-02 fill buy 302132.SZ vol=100 price=512.7830 amt=51278.30
+[INFO]  2025-07-02 fill buy 002141.SZ vol=1400 price=35.3690 amt=49516.62
+[INFO]  2025-07-02 fill buy 300127.SZ vol=600 price=76.9724 amt=46183.42
+[INFO]  2025-07-02 fill buy 300748.SZ vol=800 price=63.6554 amt=50924.32
+[INFO]  2025-07-02 fill buy 300224.SZ vol=700 price=69.8334 amt=48883.35
+[INFO]  2025-07-02 fill buy 300696.SZ vol=500 price=91.1879 amt=45593.97
+[INFO]  2025-07-02 fill buy 002484.SZ vol=500 price=101.3773 amt=50688.65
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2025-07-03 fill sell 301306.SZ vol=1100 price=49.8992 amt=54889.12
+[INFO]  2025-07-03 fill sell 002961.SZ vol=2300 price=21.6297 amt=49748.39
+[INFO]  2025-07-03 fill sell 002141.SZ vol=1400 price=33.5388 amt=46954.35
+[INFO]  2025-07-03 fill sell 300127.SZ vol=600 price=77.6653 amt=46599.19
+[INFO]  2025-07-03 fill sell 300748.SZ vol=800 price=62.9940 amt=50395.20
+[INFO]  2025-07-03 fill sell 300224.SZ vol=700 price=68.9027 amt=48231.87
+[INFO]  2025-07-03 fill sell 300696.SZ vol=500 price=88.8038 amt=44401.89
+[INFO]  2025-07-03 fill sell 002484.SZ vol=500 price=100.5758 amt=50287.92
+[INFO]  2025-07-03 fill buy 301141.SZ vol=2300 price=86.0515 amt=197918.47
+[INFO]  2025-07-03 fill buy 302132.SZ vol=400 price=508.9221 amt=203568.83
+[INFO]  2025-07-03 hold 2 positions (no change)
+[INFO]  2025-07-04 hold 2 positions (no change)
+[INFO]  2025-07-07 hold 2 positions (no change)
+[INFO]  2025-07-08 hold 2 positions (no change)
+[INFO]  2025-07-09 hold 2 positions (no change)
+[INFO]  2025-07-10 hold 2 positions (no change)
+[INFO]  2025-07-11 hold 2 positions (no change)
+[INFO]  2025-07-14 hold 2 positions (no change)
+[INFO]  2025-07-15 hold 2 positions (no change)
+[INFO]  2025-07-16 hold 2 positions (no change)
+[INFO]  2025-07-17 hold 2 positions (no change)
+[INFO]  2025-07-18 hold 2 positions (no change)
+[INFO]  2025-07-21 hold 2 positions (no change)
+[INFO]  2025-07-22 hold 2 positions (no change)
+[INFO]  2025-07-23 hold 2 positions (no change)
+[INFO]  2025-07-24 hold 2 positions (no change)
+[INFO]  2025-07-25 hold 2 positions (no change)
+[INFO]  2025-07-28 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2025-07-30 fill sell 301141.SZ vol=2900 price=93.3580 amt=270738.08
+[INFO]  2025-07-30 fill buy 302132.SZ vol=500 price=527.8649 amt=263932.44
+[INFO]  2025-07-30 hold 1 positions (no change)
+[INFO]  2025-07-31 hold 1 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2025-08-04 fill sell 302132.SZ vol=1000 price=492.8302 amt=492830.18
+[INFO]  2025-08-04 fill buy 001226.SZ vol=1900 price=38.6527 amt=73440.08
+[INFO]  2025-08-04 fill buy 002675.SZ vol=800 price=91.1545 amt=72923.57
+[INFO]  2025-08-04 fill buy 002038.SZ vol=300 price=187.6721 amt=56301.63
+[INFO]  2025-08-04 fill buy 300434.SZ vol=1700 price=41.6205 amt=70754.85
+[INFO]  2025-08-04 fill buy 000710.SZ vol=1400 price=50.3174 amt=70444.30
+[INFO]  2025-08-04 fill buy 300030.SZ vol=2100 price=34.7935 amt=73066.41
+[INFO]  2025-08-04 fill buy 300583.SZ vol=2300 price=31.9245 amt=73426.31
+[INFO]  rebalance 2025-08-04: empty target_weights -> full exit
+[INFO]  2025-08-05 fill sell 001226.SZ vol=1900 price=37.9679 amt=72138.94
+[INFO]  2025-08-05 fill sell 002675.SZ vol=800 price=92.3741 amt=73899.31
+[INFO]  2025-08-05 fill sell 002038.SZ vol=300 price=190.3298 amt=57098.93
+[INFO]  2025-08-05 fill sell 300434.SZ vol=1700 price=41.4544 amt=70472.40
+[INFO]  2025-08-05 fill sell 000710.SZ vol=1400 price=51.3031 amt=71824.32
+[INFO]  2025-08-05 fill sell 300030.SZ vol=2100 price=36.3421 amt=76318.39
+[INFO]  2025-08-05 fill sell 300583.SZ vol=2300 price=31.8807 amt=73325.54
+[INFO]  2025-08-05 hold (empty)
+[INFO]  2025-08-06 hold (empty)
+[INFO]  2025-08-07 hold (empty)
+[INFO]  2025-08-08 hold (empty)
+[INFO]  2025-08-11 hold (empty)
+[INFO]  2025-08-12 hold (empty)
+[INFO]  2025-08-13 hold (empty)
+[INFO]  2025-08-14 hold (empty)
+[INFO]  2025-08-15 hold (empty)
+[INFO]  2025-08-18 hold (empty)
+[INFO]  2025-08-19 hold (empty)
+[INFO]  2025-08-20 hold (empty)
+[INFO]  2025-08-21 hold (empty)
+[INFO]  2025-08-22 hold (empty)
+[INFO]  2025-08-25 hold (empty)
+[INFO]  2025-08-26 hold (empty)
+[INFO]  2025-08-27 hold (empty)
+[INFO]  2025-08-28 hold (empty)
+[INFO]  2025-08-29 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2025-09-02 fill buy 300548.SZ vol=200 price=405.6297 amt=81125.93
+[INFO]  2025-09-02 fill buy 301606.SZ vol=1500 price=67.3038 amt=100955.63
+[INFO]  2025-09-02 fill buy 003012.SZ vol=12300 price=8.3202 amt=102338.00
+[INFO]  2025-09-02 fill buy 301566.SZ vol=5500 price=18.7098 amt=102903.76
+[INFO]  2025-09-02 fill buy 000070.SZ vol=2600 price=39.5527 amt=102836.93
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2025-09-03 fill sell 300548.SZ vol=200 price=360.7506 amt=72150.11
+[INFO]  2025-09-03 fill sell 003012.SZ vol=12300 price=8.0237 amt=98691.37
+[INFO]  2025-09-03 fill sell 301566.SZ vol=5500 price=17.7611 amt=97686.02
+[INFO]  2025-09-03 fill sell 000070.SZ vol=2600 price=36.3698 amt=94561.36
+[INFO]  2025-09-03 fill buy 301606.SZ vol=5800 price=66.8731 amt=387864.01
+[INFO]  2025-09-03 hold 1 positions (no change)
+[INFO]  2025-09-04 hold 1 positions (no change)
+[INFO]  2025-09-05 hold 1 positions (no change)
+[INFO]  2025-09-08 hold 1 positions (no change)
+[INFO]  2025-09-09 hold 1 positions (no change)
+[INFO]  2025-09-10 hold 1 positions (no change)
+[INFO]  2025-09-11 hold 1 positions (no change)
+[INFO]  2025-09-12 hold 1 positions (no change)
+[INFO]  2025-09-15 hold 1 positions (no change)
+[INFO]  2025-09-16 hold 1 positions (no change)
+[INFO]  2025-09-17 hold 1 positions (no change)
+[INFO]  2025-09-18 hold 1 positions (no change)
+[INFO]  2025-09-19 hold 1 positions (no change)
+[INFO]  2025-09-22 hold 1 positions (no change)
+[INFO]  2025-09-23 hold 1 positions (no change)
+[INFO]  2025-09-24 hold 1 positions (no change)
+[INFO]  2025-09-25 hold 1 positions (no change)
+[INFO]  2025-09-26 hold 1 positions (no change)
+[INFO]  2025-09-29 hold 1 positions (no change)
+[INFO]  2025-09-30 hold 1 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2025-10-10 fill sell 301606.SZ vol=7300 price=65.3092 amt=476756.83
+[INFO]  2025-10-10 fill buy 000559.SZ vol=100 price=509.5909 amt=50959.09
+[INFO]  2025-10-10 fill buy 300080.SZ vol=6600 price=14.2683 amt=94170.65
+[INFO]  2025-10-10 fill buy 300423.SZ vol=3700 price=25.0843 amt=92811.79
+[INFO]  2025-10-10 fill buy 301000.SZ vol=300 price=245.7277 amt=73718.30
+[INFO]  2025-10-10 fill buy 300690.SZ vol=800 price=110.8188 amt=88655.02
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2025-10-13 fill sell 000559.SZ vol=100 price=442.5894 amt=44258.94
+[INFO]  2025-10-13 fill sell 300080.SZ vol=6600 price=13.1586 amt=86846.96
+[INFO]  2025-10-13 fill sell 300423.SZ vol=3700 price=24.5115 amt=90692.40
+[INFO]  2025-10-13 fill sell 301000.SZ vol=300 price=220.4944 amt=66148.31
+[INFO]  2025-10-13 fill buy 300690.SZ vol=3700 price=102.6357 amt=379751.95
+[INFO]  2025-10-13 hold 1 positions (no change)
+[INFO]  2025-10-14 hold 1 positions (no change)
+[INFO]  2025-10-15 hold 1 positions (no change)
+[INFO]  2025-10-16 hold 1 positions (no change)
+[INFO]  2025-10-17 hold 1 positions (no change)
+[INFO]  2025-10-20 hold 1 positions (no change)
+[INFO]  2025-10-21 hold 1 positions (no change)
+[INFO]  2025-10-22 hold 1 positions (no change)
+[INFO]  rebalance 2025-10-23: empty target_weights -> full exit
+[INFO]  2025-10-24 fill sell 300690.SZ vol=4500 price=94.4899 amt=425204.64
+[INFO]  2025-10-24 hold (empty)
+[INFO]  2025-10-27 hold (empty)
+[INFO]  2025-10-28 hold (empty)
+[INFO]  2025-10-29 hold (empty)
+[INFO]  2025-10-30 hold (empty)
+[INFO]  2025-10-31 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2025-11-04 fill buy 002738.SZ vol=400 price=185.9505 amt=74380.18
+[INFO]  2025-11-04 fill buy 000923.SZ vol=2400 price=33.9278 amt=81426.64
+[INFO]  2025-11-04 fill buy 002466.SZ vol=100 price=453.4168 amt=45341.68
+[INFO]  2025-11-04 fill buy 000762.SZ vol=500 price=145.1338 amt=72566.88
+[INFO]  2025-11-04 fill buy 002667.SZ vol=1800 price=43.1364 amt=77645.50
+[INFO]  rebalance 2025-11-04: empty target_weights -> full exit
+[INFO]  2025-11-05 fill sell 002738.SZ vol=400 price=169.5222 amt=67808.90
+[INFO]  2025-11-05 fill sell 000923.SZ vol=2400 price=32.4570 amt=77896.69
+[INFO]  2025-11-05 fill sell 002466.SZ vol=100 price=433.3075 amt=43330.75
+[INFO]  2025-11-05 fill sell 000762.SZ vol=500 price=140.2509 amt=70125.43
+[INFO]  2025-11-05 fill sell 002667.SZ vol=1800 price=42.5834 amt=76650.05
+[INFO]  2025-11-05 hold (empty)
+[INFO]  2025-11-06 hold (empty)
+[INFO]  2025-11-07 hold (empty)
+[INFO]  2025-11-10 hold (empty)
+[INFO]  2025-11-11 hold (empty)
+[INFO]  2025-11-12 hold (empty)
+[INFO]  2025-11-13 hold (empty)
+[INFO]  2025-11-14 hold (empty)
+[INFO]  2025-11-17 hold (empty)
+[INFO]  2025-11-18 hold (empty)
+[INFO]  2025-11-19 hold (empty)
+[INFO]  2025-11-20 hold (empty)
+[INFO]  2025-11-21 hold (empty)
+[INFO]  2025-11-24 hold (empty)
+[INFO]  2025-11-25 hold (empty)
+[INFO]  2025-11-26 hold (empty)
+[INFO]  2025-11-27 hold (empty)
+[INFO]  2025-11-28 hold (empty)
+[INFO]  rebalance 2025-12-01: empty target_weights -> full exit
+[INFO]  2025-12-02 hold (empty)
+[INFO]  2025-12-03 hold (empty)
+[INFO]  2025-12-04 hold (empty)
+[INFO]  2025-12-05 hold (empty)
+[INFO]  2025-12-08 hold (empty)
+[INFO]  2025-12-09 hold (empty)
+[INFO]  2025-12-10 hold (empty)
+[INFO]  2025-12-11 hold (empty)
+[INFO]  2025-12-12 hold (empty)
+[INFO]  2025-12-15 hold (empty)
+[INFO]  2025-12-16 hold (empty)
+[INFO]  2025-12-17 hold (empty)
+[INFO]  2025-12-18 hold (empty)
+[INFO]  2025-12-19 hold (empty)
+[INFO]  2025-12-22 hold (empty)
+[INFO]  2025-12-23 hold (empty)
+[INFO]  2025-12-24 hold (empty)
+[INFO]  2025-12-25 hold (empty)
+[INFO]  2025-12-26 hold (empty)
+[INFO]  2025-12-29 hold (empty)
+[INFO]  2025-12-30 hold (empty)

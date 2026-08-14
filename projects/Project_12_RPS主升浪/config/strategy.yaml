@@ -1,0 +1,85 @@
+# Project 12: RPS 主升浪策略
+# 版本: v1.0
+# 日期: 2026-08-14
+# 证据底座: IMA RPS 文章 + 北京炒家风控 + 诚哥通宵研究（趋势门控有效）
+# 核心逻辑: 板块 RPS 前 5 + 个股 RPS>90 + 突破 20 日新高 + 放量确认 + 大盘门控
+
+project:
+  name: "RPS主升浪"
+  version: "1.0"
+  description: "板块+个股双强 RPS 过滤，突破+放量确认，大盘门控+4层风控"
+
+backtest:
+  name: "rps_momentum_v1_baseline"
+  start_date: "2019-01-01"
+  end_date: "2025-12-31"
+  initial_cash: 1000000
+  benchmark_code: "000300.SH"
+  benchmark_db_path: "F:/backtest_workspace/data/duckdb/benchmark_index.duckdb"
+
+data:
+  path: "E:/astock/daily/stock_daily.parquet"
+  adjustment: "hfq"           # 后复权（与 ATR 低波一致）
+
+universe:
+  csv: "D:/QuantLab/data/universe_all_a.csv"  # 全 A 股 PIT 宇宙
+
+strategy: "rps_momentum"      # 注册名（strategy/rps_momentum.py）
+trading_model: "next_open"    # T 收盘信号 -> T+1 开盘成交
+
+execution:
+  price: "next_open"
+  slippage: 0.002             # 千二滑点
+  commission_rate: 0.00025    # 万 2.5 佣金
+  tax_rate: 0.0005            # 万 5 印花税（卖出）
+
+strategy_params:
+  # 调仓频率（RPS 是 20/120 日中期指标，monthly 足够；止损/移动止盈每日检查不受影响）
+  rebalance_freq: "monthly"    # weekly / biweekly / monthly
+
+  # 持仓数量
+  n_hold: 20
+
+  # RPS 参数
+  rps_window_short: 20        # 短周期 RPS 窗口（日）
+  rps_window_long: 120        # 长周期 RPS 窗口（日）
+  rps_threshold: 90           # 个股 RPS 阈值（0-100）
+
+  # 入场模式（v2：回调买入替代追突破）
+  entry_mode: "pullback"       # breakout（追突破）/ pullback（回调买入，推荐）
+  pullback_ma_window: 20       # 回调参照均线窗口（日）
+  pullback_max: 0.15           # 距高点最大回调（15%）
+  pullback_min: 0.02           # 最小回调（2%，过滤仍在加速的票）
+
+  # 持仓保留（v2：让利润奔跑，降低换手）
+  keep_held: 1                 # 1=已持仓 RPS 仍高则保留，0=每月全量换仓
+  keep_threshold: 60           # 已持仓保留的 RPS 阈值（宽松，60）
+
+  # 板块参数（v1.1：板块 RPS 过滤，行业归属来自 E:/astock/basic/stock_basic.parquet）
+  sector_rps_enabled: 1        # 1=启用板块 RPS 前 N 过滤，0=禁用
+  sector_top_n: 5              # 板块 RPS 前 N
+  sector_rps_window: 20        # 板块 RPS 窗口（日）
+
+  # 突破确认
+  breakout_window: 20         # 突破 N 日新高
+
+  # 放量确认
+  volume_confirm: 1           # 1=需放量，0=不需
+  volume_ratio_min: 1.5       # 当日量 / 5 日均量 >= 1.5
+
+  # 大盘门控
+  market_gate: 1              # 1=启用 000300>MA60，0=禁用
+  ma_window: 60               # 大盘均线窗口
+
+  # 风控
+  stop_loss: -0.08            # 个股止损（-8%）
+  trailing_stop: -0.12        # 移动止盈（最高价回撤 -12%）
+  max_holding_days: 60        # 最长持有天数
+
+  # 数据要求
+  min_history: 252            # 最少历史数据（1 年）
+
+  # 组合层（框架自带）
+  position_sizing: "custom"    # custom（策略精确控制权重，避免引擎加仓）；equal 会无视权重平均分配
+  max_positions: 20           # 最大持仓数
+  min_position_value: 10000   # 最小持仓金额（元）

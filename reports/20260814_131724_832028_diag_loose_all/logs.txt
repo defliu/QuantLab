@@ -1,0 +1,1685 @@
+[WARN] SECTOR_HEAT_MODE_ZERO message="sector_heat_mode=zero, sector score forced to 0"
+
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-01-03 fill buy 300069.SZ vol=2500 price=33.2277 amt=83069.28
+[INFO]  2020-01-03 fill buy 002269.SZ vol=7200 price=11.5554 amt=83199.07
+[INFO]  2020-01-03 fill buy 002163.SZ vol=3100 price=26.1718 amt=81132.45
+[INFO]  2020-01-03 fill buy 000915.SZ vol=900 price=84.6163 amt=76154.64
+[INFO]  2020-01-03 fill buy 300526.SZ vol=700 price=106.9757 amt=74882.96
+[INFO]  2020-01-03 fill buy 002233.SZ vol=2400 price=33.4737 amt=80336.96
+[INFO]  2020-01-03 fill buy 300465.SZ vol=2400 price=33.3863 amt=80127.01
+[INFO]  2020-01-03 fill buy 002367.SZ vol=1400 price=58.6903 amt=82166.38
+[INFO]  2020-01-03 fill buy 002118.SZ vol=1000 price=78.2159 amt=78215.89
+[INFO]  2020-01-03 fill buy 300674.SZ vol=3000 price=27.7451 amt=83235.39
+[INFO]  2020-01-03 fill buy 002082.SZ vol=2900 price=28.2691 amt=81980.47
+[INFO]  2020-01-03 fill buy 300569.SZ vol=2000 price=41.6643 amt=83328.50
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-01-06 fill sell 002269.SZ vol=7200 price=10.9719 amt=78997.66
+[INFO]  2020-01-06 fill sell 002163.SZ vol=3100 price=25.3691 amt=78644.05
+[INFO]  2020-01-06 fill sell 300526.SZ vol=700 price=104.3175 amt=73022.28
+[INFO]  2020-01-06 fill sell 300465.SZ vol=2400 price=33.8962 amt=81350.80
+[INFO]  2020-01-06 fill sell 002367.SZ vol=1400 price=57.6492 amt=80708.86
+[INFO]  2020-01-06 fill sell 002118.SZ vol=1000 price=76.5391 amt=76539.10
+[INFO]  2020-01-06 fill sell 300674.SZ vol=3000 price=28.1368 amt=84410.44
+[INFO]  2020-01-06 fill sell 002082.SZ vol=2900 price=27.7314 amt=80421.01
+[INFO]  2020-01-06 fill sell 300569.SZ vol=2000 price=41.0840 amt=82168.10
+[INFO]  2020-01-06 fill buy 300069.SZ vol=7600 price=32.2807 amt=245332.96
+[INFO]  2020-01-06 fill buy 000915.SZ vol=2900 price=85.0636 amt=246684.53
+[INFO]  2020-01-06 fill buy 002233.SZ vol=7600 price=32.7142 amt=248627.60
+[INFO]  2020-01-06 hold 3 positions (no change)
+[INFO]  2020-01-07 hold 3 positions (no change)
+[INFO]  2020-01-08 hold 3 positions (no change)
+[INFO]  2020-01-09 hold 3 positions (no change)
+[INFO]  2020-01-10 hold 3 positions (no change)
+[INFO]  2020-01-13 hold 3 positions (no change)
+[INFO]  2020-01-14 hold 3 positions (no change)
+[INFO]  2020-01-15 hold 3 positions (no change)
+[INFO]  2020-01-16 hold 3 positions (no change)
+[INFO]  2020-01-17 hold 3 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-01-21 fill sell 300069.SZ vol=10100 price=31.0480 amt=313584.29
+[INFO]  2020-01-21 fill buy 000915.SZ vol=1700 price=87.8437 amt=149334.28
+[INFO]  2020-01-21 fill buy 002233.SZ vol=5400 price=30.8021 amt=166331.45
+[INFO]  2020-01-21 hold 2 positions (no change)
+[INFO]  2020-01-22 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[ERROR] 2020-02-03 unfilled_order code=002233.SZ reason=limit_down_at_open
+[INFO]  2020-02-03 fill buy 000915.SZ vol=6100 price=73.1445 amt=446181.43
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-02-04 fill sell 000915.SZ vol=11600 price=73.9665 amt=858010.88
+[INFO]  2020-02-04 fill sell 002233.SZ vol=15400 price=26.1138 amt=402152.64
+[INFO]  2020-02-04 fill buy 300336.SZ vol=900 price=42.5911 amt=38331.95
+[INFO]  2020-02-04 fill buy 300627.SZ vol=800 price=47.0122 amt=37609.80
+[INFO]  2020-02-04 fill buy 300433.SZ vol=400 price=98.2012 amt=39280.47
+[INFO]  2020-02-04 fill buy 002603.SZ vol=800 price=48.8505 amt=39080.40
+[INFO]  2020-02-04 fill buy 002409.SZ vol=400 price=94.5943 amt=37837.71
+[INFO]  2020-02-04 fill buy 000597.SZ vol=1200 price=31.8941 amt=38272.97
+[INFO]  2020-02-04 fill buy 002584.SZ vol=1900 price=20.3512 amt=38667.34
+[INFO]  2020-02-04 fill buy 002384.SZ vol=200 price=182.0911 amt=36418.22
+[INFO]  2020-02-04 fill buy 000021.SZ vol=200 price=169.4837 amt=33896.73
+[INFO]  2020-02-04 fill buy 300750.SZ vol=200 price=146.3391 amt=29267.81
+[INFO]  2020-02-04 fill buy 002709.SZ vol=400 price=97.1055 amt=38842.20
+[INFO]  2020-02-04 fill buy 300676.SZ vol=400 price=88.8109 amt=35524.35
+[INFO]  2020-02-04 fill buy 002399.SZ vol=500 price=76.7310 amt=38365.52
+[INFO]  2020-02-04 fill buy 000999.SZ vol=500 price=77.2659 amt=38632.94
+[INFO]  2020-02-04 fill buy 300551.SZ vol=1100 price=34.5638 amt=38020.19
+[INFO]  2020-02-04 fill buy 002308.SZ vol=2100 price=18.8029 amt=39486.06
+[INFO]  2020-02-04 fill buy 000790.SZ vol=500 price=69.4663 amt=34733.16
+[INFO]  2020-02-04 fill buy 300629.SZ vol=1500 price=26.7246 amt=40086.87
+[INFO]  2020-02-04 fill buy 002174.SZ vol=500 price=77.5318 amt=38765.89
+[INFO]  2020-02-04 fill buy 002170.SZ vol=1600 price=24.2883 amt=38861.30
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-02-05 fill sell 300336.SZ vol=900 price=42.3524 amt=38117.15
+[INFO]  2020-02-05 fill sell 300627.SZ vol=800 price=50.2908 amt=40232.65
+[INFO]  2020-02-05 fill sell 002409.SZ vol=400 price=101.6573 amt=40662.91
+[INFO]  2020-02-05 fill sell 002584.SZ vol=1900 price=18.7190 amt=35566.08
+[INFO]  2020-02-05 fill sell 002384.SZ vol=200 price=194.9847 amt=38996.95
+[INFO]  2020-02-05 fill sell 000021.SZ vol=200 price=180.4056 amt=36081.12
+[INFO]  2020-02-05 fill sell 002399.SZ vol=500 price=84.0488 amt=42024.39
+[INFO]  2020-02-05 fill sell 300551.SZ vol=1100 price=37.4213 amt=41163.48
+[INFO]  2020-02-05 fill sell 002308.SZ vol=2100 price=19.7226 amt=41417.47
+[INFO]  2020-02-05 fill sell 300629.SZ vol=1500 price=27.6538 amt=41480.68
+[INFO]  2020-02-05 fill sell 002170.SZ vol=1600 price=26.6828 amt=42692.51
+[INFO]  2020-02-05 fill buy 300433.SZ vol=400 price=110.4415 amt=44176.61
+[INFO]  2020-02-05 fill buy 002603.SZ vol=1100 price=48.5248 amt=53377.32
+[INFO]  2020-02-05 fill buy 000597.SZ vol=1700 price=32.0552 amt=54493.88
+[INFO]  2020-02-05 fill buy 300750.SZ vol=400 price=158.7875 amt=63514.99
+[INFO]  2020-02-05 fill buy 002709.SZ vol=400 price=113.0029 amt=45201.17
+[INFO]  2020-02-05 fill buy 300676.SZ vol=600 price=87.8017 amt=52680.99
+[INFO]  2020-02-05 fill buy 000999.SZ vol=700 price=73.4728 amt=51430.97
+[INFO]  2020-02-05 fill buy 000790.SZ vol=900 price=66.2809 amt=59652.82
+[INFO]  2020-02-05 fill buy 002174.SZ vol=600 price=86.1326 amt=51679.58
+[INFO]  2020-02-05 hold 9 positions (no change)
+[INFO]  2020-02-06 hold 9 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[ERROR] 2020-02-10 unfilled_order code=002174.SZ reason=below_min_lot
+[INFO]  2020-02-10 fill sell 000597.SZ vol=2900 price=27.4671 amt=79654.50
+[INFO]  2020-02-10 fill buy 300433.SZ vol=200 price=104.2101 amt=20842.01
+[INFO]  2020-02-10 fill buy 002603.SZ vol=200 price=48.2263 amt=9645.26
+[ERROR] 2020-02-10 unfilled_order code=300750.SZ reason=below_min_lot
+[ERROR] 2020-02-10 unfilled_order code=002709.SZ reason=below_min_lot
+[INFO]  2020-02-10 fill buy 300676.SZ vol=200 price=83.1593 amt=16631.85
+[INFO]  2020-02-10 fill buy 000999.SZ vol=300 price=70.6230 amt=21186.90
+[INFO]  2020-02-10 fill buy 000790.SZ vol=200 price=64.3207 amt=12864.13
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-02-11 fill sell 002603.SZ vol=2100 price=44.0603 amt=92526.53
+[INFO]  2020-02-11 fill sell 300676.SZ vol=1200 price=81.3698 amt=97643.73
+[INFO]  2020-02-11 fill sell 000999.SZ vol=1500 price=67.8225 amt=101733.72
+[INFO]  2020-02-11 fill sell 000790.SZ vol=1600 price=62.4775 amt=99964.07
+[INFO]  2020-02-11 fill buy 300433.SZ vol=900 price=110.1633 amt=99147.01
+[INFO]  2020-02-11 fill buy 300750.SZ vol=600 price=167.8527 amt=100711.63
+[INFO]  2020-02-11 fill buy 002709.SZ vol=800 price=122.1399 amt=97711.89
+[INFO]  2020-02-11 fill buy 002174.SZ vol=1100 price=93.6157 amt=102977.25
+[INFO]  2020-02-11 hold 4 positions (no change)
+[INFO]  2020-02-12 hold 4 positions (no change)
+[INFO]  2020-02-13 hold 4 positions (no change)
+[INFO]  2020-02-14 hold 4 positions (no change)
+[INFO]  2020-02-17 hold 4 positions (no change)
+[INFO]  2020-02-18 hold 4 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-02-20 fill sell 002174.SZ vol=2200 price=87.0568 amt=191524.87
+[INFO]  2020-02-20 fill buy 300433.SZ vol=400 price=118.4534 amt=47381.37
+[INFO]  2020-02-20 fill buy 300750.SZ vol=500 price=157.1109 amt=78555.47
+[INFO]  2020-02-20 fill buy 002709.SZ vol=400 price=137.9144 amt=55165.75
+[INFO]  2020-02-20 hold 3 positions (no change)
+[INFO]  2020-02-21 hold 3 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-02-25 fill sell 002709.SZ vol=2000 price=117.1225 amt=234244.91
+[INFO]  2020-02-25 fill buy 300433.SZ vol=1000 price=121.7917 amt=121791.70
+[INFO]  2020-02-25 fill buy 300750.SZ vol=900 price=150.3246 amt=135292.10
+[INFO]  2020-02-25 hold 2 positions (no change)
+[INFO]  2020-02-26 hold 2 positions (no change)
+[INFO]  rebalance 2020-02-27: empty target_weights -> full exit
+[INFO]  2020-02-28 fill sell 300433.SZ vol=3300 price=106.9528 amt=352944.16
+[INFO]  2020-02-28 fill sell 300750.SZ vol=2600 price=139.9755 amt=363936.22
+[INFO]  2020-02-28 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-03-03 fill buy 300578.SZ vol=200 price=145.1714 amt=29034.27
+[INFO]  2020-03-03 fill buy 002503.SZ vol=200 price=135.7757 amt=27155.14
+[INFO]  2020-03-03 fill buy 600661.SH vol=300 price=108.0430 amt=32412.90
+[INFO]  2020-03-03 fill buy 002221.SZ vol=800 price=43.3949 amt=34715.93
+[INFO]  2020-03-03 fill buy 002791.SZ vol=400 price=86.9243 amt=34769.72
+[INFO]  2020-03-03 fill buy 002082.SZ vol=900 price=36.9433 amt=33248.93
+[INFO]  2020-03-03 fill buy 002713.SZ vol=1000 price=36.0458 amt=36045.81
+[INFO]  2020-03-03 fill buy 002517.SZ vol=1600 price=21.8626 amt=34980.22
+[INFO]  2020-03-03 fill buy 002409.SZ vol=200 price=136.4856 amt=27297.11
+[INFO]  2020-03-03 fill buy 600391.SH vol=700 price=45.2083 amt=31645.82
+[INFO]  2020-03-03 fill buy 000061.SZ vol=200 price=147.5708 amt=29514.17
+[INFO]  2020-03-03 fill buy 000949.SZ vol=1700 price=20.4646 amt=34789.90
+[INFO]  2020-03-03 fill buy 600448.SH vol=3200 price=11.1358 amt=35634.61
+[INFO]  2020-03-03 fill buy 600568.SH vol=1500 price=23.8327 amt=35748.99
+[INFO]  2020-03-03 fill buy 002540.SZ vol=800 price=44.2958 amt=35436.68
+[INFO]  2020-03-03 fill buy 002507.SZ vol=200 price=160.6062 amt=32121.24
+[ERROR] 2020-03-03 unfilled_order code=600653.SH reason=below_min_lot
+[INFO]  2020-03-03 fill buy 002471.SZ vol=2100 price=17.1377 amt=35989.22
+[INFO]  2020-03-03 fill buy 000637.SZ vol=400 price=84.2165 amt=33686.58
+[INFO]  2020-03-03 fill buy 002776.SZ vol=700 price=47.7502 amt=33425.13
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-03-04 fill sell 600661.SH vol=300 price=102.0016 amt=30600.48
+[INFO]  2020-03-04 fill sell 002221.SZ vol=800 price=45.1975 amt=36158.03
+[INFO]  2020-03-04 fill sell 002713.SZ vol=1000 price=31.4423 amt=31442.28
+[INFO]  2020-03-04 fill sell 002517.SZ vol=1600 price=20.0955 amt=32152.88
+[INFO]  2020-03-04 fill sell 600448.SH vol=3200 price=11.8368 amt=37877.91
+[INFO]  2020-03-04 fill sell 600568.SH vol=1500 price=23.1028 amt=34654.24
+[INFO]  2020-03-04 fill sell 002471.SZ vol=2100 price=16.8620 amt=35410.17
+[INFO]  2020-03-04 fill sell 000637.SZ vol=400 price=86.2195 amt=34487.82
+[INFO]  2020-03-04 fill sell 002776.SZ vol=700 price=52.3613 amt=36652.88
+[INFO]  2020-03-04 fill buy 300578.SZ vol=200 price=147.8128 amt=29562.57
+[ERROR] 2020-03-04 unfilled_order code=002503.SZ reason=limit_up_at_open
+[INFO]  2020-03-04 fill buy 002791.SZ vol=400 price=90.8348 amt=36333.92
+[INFO]  2020-03-04 fill buy 002082.SZ vol=1100 price=36.2607 amt=39886.77
+[INFO]  2020-03-04 fill buy 002409.SZ vol=300 price=135.5715 amt=40671.44
+[INFO]  2020-03-04 fill buy 600391.SH vol=800 price=47.5629 amt=38050.33
+[INFO]  2020-03-04 fill buy 000061.SZ vol=200 price=153.7641 amt=30752.82
+[INFO]  2020-03-04 fill buy 000949.SZ vol=1800 price=20.7021 amt=37263.70
+[INFO]  2020-03-04 fill buy 002540.SZ vol=900 price=40.7741 amt=36696.68
+[INFO]  2020-03-04 fill buy 002507.SZ vol=200 price=158.1944 amt=31638.88
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-03-05 fill sell 300578.SZ vol=400 price=140.6820 amt=56272.79
+[INFO]  2020-03-05 fill sell 002409.SZ vol=500 price=124.9524 amt=62476.22
+[ERROR] 2020-03-05 unfilled_order code=002503.SZ reason=limit_up_at_open
+[INFO]  2020-03-05 fill buy 002791.SZ vol=200 price=89.1721 amt=17834.41
+[INFO]  2020-03-05 fill buy 002082.SZ vol=500 price=35.2084 amt=17604.22
+[INFO]  2020-03-05 fill buy 600391.SH vol=100 price=55.0976 amt=5509.76
+[INFO]  2020-03-05 fill buy 000061.SZ vol=100 price=152.4827 amt=15248.27
+[INFO]  2020-03-05 fill buy 000949.SZ vol=800 price=20.6071 amt=16485.67
+[INFO]  2020-03-05 fill buy 002540.SZ vol=400 price=41.9480 amt=16779.20
+[INFO]  2020-03-05 fill buy 002507.SZ vol=100 price=164.7173 amt=16471.73
+[INFO]  2020-03-05 hold 8 positions (no change)
+[INFO]  2020-03-06 hold 8 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-03-10 fill sell 002791.SZ vol=1000 price=74.8312 amt=74831.24
+[INFO]  2020-03-10 fill sell 600391.SH vol=1600 price=48.3111 amt=77297.80
+[INFO]  2020-03-10 fill sell 000061.SZ vol=500 price=137.1971 amt=68598.57
+[INFO]  2020-03-10 fill sell 002540.SZ vol=2100 price=37.8831 amt=79554.54
+[INFO]  2020-03-10 fill buy 002503.SZ vol=700 price=190.5424 amt=133379.67
+[INFO]  2020-03-10 fill buy 002082.SZ vol=2900 price=32.1654 amt=93279.59
+[INFO]  2020-03-10 fill buy 000949.SZ vol=3100 price=23.2661 amt=72124.81
+[INFO]  2020-03-10 fill buy 002507.SZ vol=600 price=161.7025 amt=97021.51
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-03-11 fill sell 002082.SZ vol=5400 price=33.1983 amt=179271.07
+[INFO]  2020-03-11 fill buy 002503.SZ vol=300 price=171.5262 amt=51457.85
+[INFO]  2020-03-11 fill buy 000949.SZ vol=2800 price=22.0790 amt=61821.27
+[INFO]  2020-03-11 fill buy 002507.SZ vol=300 price=162.5795 amt=48773.86
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-03-12 fill sell 002503.SZ vol=1200 price=172.7355 amt=207282.57
+[INFO]  2020-03-12 fill buy 000949.SZ vol=4500 price=22.9337 amt=103201.64
+[INFO]  2020-03-12 fill buy 002507.SZ vol=700 price=158.1944 amt=110736.07
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-03-13 fill sell 000949.SZ vol=14700 price=19.9100 amt=292677.40
+[INFO]  2020-03-13 fill buy 002507.SZ vol=2100 price=152.7129 amt=320697.19
+[INFO]  2020-03-13 hold 1 positions (no change)
+[INFO]  2020-03-16 hold 1 positions (no change)
+[INFO]  2020-03-17 hold 1 positions (no change)
+[INFO]  2020-03-18 hold 1 positions (no change)
+[INFO]  rebalance 2020-03-19: empty target_weights -> full exit
+[INFO]  2020-03-20 fill sell 002507.SZ vol=4200 price=152.8677 amt=642044.14
+[INFO]  2020-03-20 hold (empty)
+[INFO]  2020-03-23 hold (empty)
+[INFO]  2020-03-24 hold (empty)
+[INFO]  2020-03-25 hold (empty)
+[INFO]  2020-03-26 hold (empty)
+[INFO]  2020-03-27 hold (empty)
+[INFO]  2020-03-30 hold (empty)
+[INFO]  2020-03-31 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[ERROR] 2020-04-02 unfilled_order code=000903.SZ reason=limit_up_at_open
+[INFO]  2020-04-02 fill buy 601179.SH vol=5900 price=5.2698 amt=31091.86
+[INFO]  2020-04-02 fill buy 603226.SH vol=900 price=31.9405 amt=28746.47
+[INFO]  2020-04-02 fill buy 603316.SH vol=2800 price=11.0312 amt=30887.23
+[INFO]  2020-04-02 fill buy 603557.SH vol=3000 price=10.1921 amt=30576.21
+[INFO]  2020-04-02 fill buy 601872.SH vol=4000 price=7.7459 amt=30983.48
+[INFO]  2020-04-02 fill buy 300478.SZ vol=1000 price=28.5825 amt=28582.52
+[INFO]  2020-04-02 fill buy 600975.SH vol=500 price=62.1850 amt=31092.49
+[INFO]  2020-04-02 fill buy 600962.SH vol=2100 price=14.3367 amt=30107.01
+[INFO]  2020-04-02 fill buy 600963.SH vol=1900 price=15.8960 amt=30202.32
+[INFO]  2020-04-02 fill buy 600283.SH vol=2000 price=15.1343 amt=30268.68
+[INFO]  2020-04-02 fill buy 603555.SH vol=8000 price=3.8652 amt=30921.64
+[INFO]  2020-04-02 fill buy 603987.SH vol=1300 price=23.4803 amt=30524.45
+[INFO]  2020-04-02 fill buy 603609.SH vol=1500 price=19.5230 amt=29284.49
+[INFO]  2020-04-02 fill buy 002157.SZ vol=100 price=288.7992 amt=28879.92
+[INFO]  2020-04-02 fill buy 002502.SZ vol=1400 price=20.8878 amt=29242.93
+[INFO]  2020-04-02 fill buy 002650.SZ vol=1000 price=30.7664 amt=30766.43
+[INFO]  2020-04-02 fill buy 002470.SZ vol=2600 price=11.6354 amt=30252.16
+[INFO]  2020-04-02 fill buy 000902.SZ vol=1100 price=26.5061 amt=29156.71
+[INFO]  2020-04-02 fill buy 002697.SZ vol=400 price=67.5411 amt=27016.45
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-04-03 fill sell 603226.SH vol=900 price=35.6723 amt=32105.07
+[ERROR] 2020-04-03 unfilled_order code=603557.SH reason=limit_down_at_open
+[INFO]  2020-04-03 fill sell 601872.SH vol=4000 price=7.9235 amt=31693.84
+[INFO]  2020-04-03 fill sell 300478.SZ vol=1000 price=27.2365 amt=27236.52
+[INFO]  2020-04-03 fill sell 600975.SH vol=500 price=61.2870 amt=30643.52
+[INFO]  2020-04-03 fill sell 600962.SH vol=2100 price=13.7506 amt=28876.20
+[INFO]  2020-04-03 fill sell 600963.SH vol=1900 price=16.2087 amt=30796.44
+[INFO]  2020-04-03 fill sell 600283.SH vol=2000 price=15.1874 amt=30374.76
+[INFO]  2020-04-03 fill sell 603555.SH vol=8000 price=3.7730 amt=30183.99
+[INFO]  2020-04-03 fill sell 603987.SH vol=1300 price=23.8015 amt=30941.95
+[INFO]  2020-04-03 fill sell 603609.SH vol=1500 price=19.0227 amt=28534.02
+[INFO]  2020-04-03 fill sell 002157.SZ vol=100 price=273.1110 amt=27311.10
+[INFO]  2020-04-03 fill sell 002502.SZ vol=1400 price=20.9374 amt=29312.30
+[INFO]  2020-04-03 fill sell 002650.SZ vol=1000 price=30.2446 amt=30244.61
+[INFO]  2020-04-03 fill sell 002470.SZ vol=2600 price=11.6316 amt=30242.18
+[INFO]  2020-04-03 fill sell 000902.SZ vol=1100 price=27.3082 amt=30039.06
+[INFO]  2020-04-03 fill buy 601179.SH vol=30300 price=5.7823 amt=175203.78
+[INFO]  2020-04-03 fill buy 603316.SH vol=15800 price=11.2646 amt=177980.11
+[INFO]  2020-04-03 fill buy 002697.SZ vol=2600 price=67.8989 amt=176537.07
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-04-07 fill sell 603316.SH vol=500 price=11.5228 amt=5761.41
+[INFO]  2020-04-07 fill sell 603557.SH vol=3000 price=9.0436 amt=27130.78
+[INFO]  2020-04-07 fill buy 601179.SH vol=400 price=5.8269 amt=2330.75
+[ERROR] 2020-04-07 unfilled_order code=002697.SZ reason=below_min_lot
+[INFO]  2020-04-07 hold 3 positions (no change)
+[INFO]  2020-04-08 hold 3 positions (no change)
+[INFO]  2020-04-09 hold 3 positions (no change)
+[INFO]  2020-04-10 hold 3 positions (no change)
+[INFO]  2020-04-13 hold 3 positions (no change)
+[INFO]  2020-04-14 hold 3 positions (no change)
+[INFO]  2020-04-15 hold 3 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-04-17 fill sell 603316.SH vol=18100 price=11.4521 amt=207282.54
+[INFO]  2020-04-17 fill buy 601179.SH vol=7700 price=8.7904 amt=67686.36
+[INFO]  2020-04-17 fill buy 002697.SZ vol=2000 price=72.9788 amt=145957.53
+[INFO]  2020-04-17 hold 2 positions (no change)
+[INFO]  2020-04-20 hold 2 positions (no change)
+[INFO]  2020-04-21 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-04-23 fill sell 601179.SH vol=44300 price=7.5791 amt=335753.60
+[INFO]  2020-04-23 fill buy 002697.SZ vol=4600 price=73.4081 amt=337677.04
+[INFO]  2020-04-23 hold 1 positions (no change)
+[INFO]  2020-04-24 hold 1 positions (no change)
+[INFO]  2020-04-27 hold 1 positions (no change)
+[INFO]  2020-04-28 hold 1 positions (no change)
+[INFO]  2020-04-29 hold 1 positions (no change)
+[INFO]  2020-04-30 hold 1 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-05-07 fill sell 002697.SZ vol=9100 price=74.1839 amt=675073.85
+[INFO]  2020-05-07 fill buy 300688.SZ vol=800 price=40.4553 amt=32364.26
+[INFO]  2020-05-07 fill buy 002798.SZ vol=400 price=87.2788 amt=34911.52
+[INFO]  2020-05-07 fill buy 300738.SZ vol=200 price=150.7834 amt=30156.68
+[INFO]  2020-05-07 fill buy 002866.SZ vol=1300 price=25.4981 amt=33147.57
+[INFO]  2020-05-07 fill buy 002786.SZ vol=1300 price=27.1458 amt=35289.58
+[INFO]  2020-05-07 fill buy 002916.SZ vol=100 price=307.1711 amt=30717.11
+[INFO]  2020-05-07 fill buy 300768.SZ vol=700 price=45.5409 amt=31878.63
+[INFO]  2020-05-07 fill buy 002767.SZ vol=1700 price=19.9475 amt=33910.79
+[INFO]  2020-05-07 fill buy 002918.SZ vol=500 price=66.8218 amt=33410.91
+[INFO]  2020-05-07 fill buy 002493.SZ vol=200 price=121.7814 amt=24356.29
+[INFO]  2020-05-07 fill buy 002602.SZ vol=300 price=113.1966 amt=33958.99
+[INFO]  2020-05-07 fill buy 002583.SZ vol=800 price=39.3165 amt=31453.24
+[INFO]  2020-05-07 fill buy 002747.SZ vol=500 price=65.6011 amt=32800.56
+[INFO]  2020-05-07 fill buy 002507.SZ vol=100 price=181.9838 amt=18198.38
+[INFO]  2020-05-07 fill buy 002521.SZ vol=1800 price=18.6417 amt=33554.97
+[INFO]  2020-05-07 fill buy 002511.SZ vol=200 price=141.4022 amt=28280.43
+[INFO]  2020-05-07 fill buy 002594.SZ vol=500 price=63.4904 amt=31745.20
+[INFO]  2020-05-07 fill buy 002752.SZ vol=3300 price=10.6222 amt=35053.35
+[INFO]  2020-05-07 fill buy 002727.SZ vol=600 price=57.9773 amt=34786.37
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-05-08 fill sell 300688.SZ vol=800 price=37.6001 amt=30080.07
+[INFO]  2020-05-08 fill sell 002866.SZ vol=1300 price=24.6398 amt=32031.71
+[INFO]  2020-05-08 fill sell 002786.SZ vol=1300 price=27.3698 amt=35580.70
+[INFO]  2020-05-08 fill sell 300768.SZ vol=700 price=45.4389 amt=31807.26
+[INFO]  2020-05-08 fill sell 002767.SZ vol=1700 price=19.8074 amt=33672.52
+[INFO]  2020-05-08 fill sell 002493.SZ vol=200 price=119.2344 amt=23846.89
+[INFO]  2020-05-08 fill sell 002583.SZ vol=800 price=39.6084 amt=31686.73
+[INFO]  2020-05-08 fill sell 002747.SZ vol=500 price=65.1548 amt=32577.41
+[INFO]  2020-05-08 fill sell 002521.SZ vol=1800 price=18.4348 amt=33182.72
+[INFO]  2020-05-08 fill sell 002594.SZ vol=500 price=61.1416 amt=30570.79
+[INFO]  2020-05-08 fill sell 002752.SZ vol=3300 price=10.5996 amt=34978.67
+[INFO]  2020-05-08 fill sell 002727.SZ vol=600 price=54.7334 amt=32840.02
+[INFO]  2020-05-08 fill buy 002697.SZ vol=600 price=74.0520 amt=44431.19
+[INFO]  2020-05-08 fill buy 002798.SZ vol=600 price=85.5493 amt=51329.60
+[INFO]  2020-05-08 fill buy 300738.SZ vol=400 price=144.3631 amt=57745.25
+[INFO]  2020-05-08 fill buy 002916.SZ vol=100 price=303.1243 amt=30312.43
+[INFO]  2020-05-08 fill buy 002918.SZ vol=800 price=66.3522 amt=53081.73
+[INFO]  2020-05-08 fill buy 002602.SZ vol=400 price=117.8662 amt=47146.48
+[INFO]  2020-05-08 fill buy 002507.SZ vol=300 price=184.3957 amt=55318.70
+[INFO]  2020-05-08 fill buy 002511.SZ vol=300 price=149.0434 amt=44713.01
+[INFO]  2020-05-08 hold 8 positions (no change)
+[INFO]  2020-05-11 hold 8 positions (no change)
+[INFO]  2020-05-12 hold 8 positions (no change)
+[INFO]  2020-05-13 hold 8 positions (no change)
+[INFO]  2020-05-14 hold 8 positions (no change)
+[INFO]  2020-05-15 hold 8 positions (no change)
+[INFO]  2020-05-18 hold 8 positions (no change)
+[INFO]  2020-05-19 hold 8 positions (no change)
+[INFO]  2020-05-20 hold 8 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-05-22 fill sell 002916.SZ vol=200 price=283.5790 amt=56715.79
+[INFO]  2020-05-22 fill buy 002697.SZ vol=200 price=75.1908 amt=15038.15
+[ERROR] 2020-05-22 unfilled_order code=002798.SZ reason=below_min_lot
+[INFO]  2020-05-22 fill buy 300738.SZ vol=100 price=146.0917 amt=14609.17
+[ERROR] 2020-05-22 unfilled_order code=002918.SZ reason=below_min_lot
+[INFO]  2020-05-22 fill buy 002602.SZ vol=200 price=108.2050 amt=21641.01
+[INFO]  2020-05-22 fill buy 002507.SZ vol=100 price=191.7956 amt=19179.56
+[INFO]  2020-05-22 fill buy 002511.SZ vol=100 price=151.5368 amt=15153.68
+[INFO]  2020-05-22 hold 7 positions (no change)
+[INFO]  2020-05-25 hold 7 positions (no change)
+[INFO]  2020-05-26 hold 7 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-05-28 fill sell 002602.SZ vol=900 price=103.0420 amt=92737.77
+[INFO]  2020-05-28 fill buy 002697.SZ vol=200 price=78.7988 amt=15759.75
+[INFO]  2020-05-28 fill buy 002798.SZ vol=100 price=109.4041 amt=10940.41
+[INFO]  2020-05-28 fill buy 300738.SZ vol=100 price=143.2519 amt=14325.19
+[INFO]  2020-05-28 fill buy 002918.SZ vol=100 price=85.0863 amt=8508.63
+[INFO]  2020-05-28 fill buy 002507.SZ vol=100 price=191.3571 amt=19135.71
+[INFO]  2020-05-28 fill buy 002511.SZ vol=100 price=157.7302 amt=15773.02
+[INFO]  2020-05-28 hold 6 positions (no change)
+[INFO]  2020-05-29 hold 6 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-06-02 fill sell 002918.SZ vol=900 price=84.3308 amt=75897.72
+[INFO]  2020-06-02 fill sell 002798.SZ vol=700 price=115.0558 amt=80539.06
+[INFO]  2020-06-02 fill sell 002511.SZ vol=400 price=164.4798 amt=65791.91
+[INFO]  2020-06-02 fill sell 002697.SZ vol=1000 price=79.9216 amt=79921.63
+[INFO]  2020-06-02 fill sell 300738.SZ vol=800 price=155.2541 amt=124203.30
+[INFO]  2020-06-02 fill sell 002507.SZ vol=600 price=199.3285 amt=119597.10
+[INFO]  2020-06-02 fill buy 002655.SZ vol=1000 price=38.4948 amt=38494.77
+[INFO]  2020-06-02 fill buy 002517.SZ vol=1800 price=20.8632 amt=37553.77
+[INFO]  2020-06-02 fill buy 300432.SZ vol=800 price=45.8711 amt=36696.86
+[INFO]  2020-06-02 fill buy 002695.SZ vol=300 price=107.6070 amt=32282.11
+[INFO]  2020-06-02 fill buy 002497.SZ vol=600 price=56.8304 amt=34098.26
+[INFO]  2020-06-02 fill buy 002878.SZ vol=500 price=65.8310 amt=32915.52
+[INFO]  2020-06-02 fill buy 300364.SZ vol=1600 price=23.9619 amt=38339.05
+[INFO]  2020-06-02 fill buy 300400.SZ vol=900 price=42.4758 amt=38228.18
+[INFO]  2020-06-02 fill buy 300274.SZ vol=400 price=79.0255 amt=31610.20
+[INFO]  2020-06-02 fill buy 002473.SZ vol=2200 price=17.3144 amt=38091.61
+[INFO]  2020-06-02 fill buy 002943.SZ vol=1700 price=21.9629 amt=37336.86
+[INFO]  2020-06-02 fill buy 300259.SZ vol=400 price=80.0879 amt=32035.14
+[INFO]  2020-06-02 fill buy 300199.SZ vol=700 price=49.0772 amt=34354.03
+[INFO]  2020-06-02 fill buy 002698.SZ vol=1200 price=29.8869 amt=35864.28
+[INFO]  2020-06-02 fill buy 300345.SZ vol=1300 price=28.9658 amt=37655.59
+[INFO]  2020-06-02 fill buy 300271.SZ vol=100 price=235.0315 amt=23503.15
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-06-03 fill sell 002655.SZ vol=1000 price=38.1590 amt=38158.96
+[INFO]  2020-06-03 fill sell 002517.SZ vol=1800 price=21.4643 amt=38635.71
+[INFO]  2020-06-03 fill sell 002497.SZ vol=600 price=56.2087 amt=33725.19
+[INFO]  2020-06-03 fill sell 002878.SZ vol=500 price=63.8382 amt=31919.11
+[INFO]  2020-06-03 fill sell 300364.SZ vol=1600 price=23.0210 amt=36833.58
+[INFO]  2020-06-03 fill sell 300400.SZ vol=900 price=43.0294 amt=38726.44
+[INFO]  2020-06-03 fill sell 300274.SZ vol=400 price=78.6427 amt=31457.07
+[INFO]  2020-06-03 fill sell 002473.SZ vol=2200 price=16.9965 amt=37392.34
+[INFO]  2020-06-03 fill sell 002943.SZ vol=1700 price=21.6851 amt=36864.59
+[INFO]  2020-06-03 fill sell 300259.SZ vol=400 price=80.3289 amt=32131.56
+[INFO]  2020-06-03 fill sell 300199.SZ vol=700 price=48.0500 amt=33634.97
+[INFO]  2020-06-03 fill sell 300345.SZ vol=1300 price=28.8502 amt=37505.27
+[INFO]  2020-06-03 fill sell 300271.SZ vol=100 price=230.3586 amt=23035.86
+[INFO]  2020-06-03 fill buy 002697.SZ vol=800 price=78.8709 amt=63096.73
+[INFO]  2020-06-03 fill buy 002798.SZ vol=500 price=109.8514 amt=54925.71
+[INFO]  2020-06-03 fill buy 002918.SZ vol=800 price=80.8854 amt=64708.36
+[INFO]  2020-06-03 fill buy 002511.SZ vol=300 price=160.6998 amt=48209.94
+[INFO]  2020-06-03 fill buy 300432.SZ vol=1500 price=45.9778 amt=68966.63
+[INFO]  2020-06-03 fill buy 002695.SZ vol=700 price=102.6948 amt=71886.38
+[INFO]  2020-06-03 fill buy 002698.SZ vol=2400 price=29.8070 amt=71536.78
+[INFO]  2020-06-03 hold 7 positions (no change)
+[INFO]  2020-06-04 hold 7 positions (no change)
+[INFO]  2020-06-05 hold 7 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-06-09 fill sell 002697.SZ vol=1300 price=71.2970 amt=92686.09
+[INFO]  2020-06-09 fill sell 300432.SZ vol=2300 price=50.3630 amt=115834.92
+[INFO]  2020-06-09 fill buy 002798.SZ vol=500 price=105.5600 amt=52780.01
+[INFO]  2020-06-09 fill buy 002918.SZ vol=500 price=80.8854 amt=40442.72
+[INFO]  2020-06-09 fill buy 002511.SZ vol=300 price=153.1128 amt=45933.83
+[INFO]  2020-06-09 fill buy 002695.SZ vol=500 price=99.0841 amt=49542.07
+[INFO]  2020-06-09 fill buy 002698.SZ vol=1100 price=31.9646 amt=35161.06
+[INFO]  2020-06-09 hold 5 positions (no change)
+[INFO]  2020-06-10 hold 5 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-06-12 fill sell 002798.SZ vol=1400 price=93.3738 amt=130723.35
+[INFO]  2020-06-12 fill buy 002918.SZ vol=500 price=78.2762 amt=39138.12
+[INFO]  2020-06-12 fill buy 002511.SZ vol=200 price=156.5834 amt=31316.68
+[INFO]  2020-06-12 fill buy 002695.SZ vol=300 price=98.5803 amt=29574.09
+[INFO]  2020-06-12 fill buy 002698.SZ vol=1200 price=30.6860 amt=36823.22
+[INFO]  2020-06-12 hold 4 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-06-16 fill sell 002918.SZ vol=2300 price=75.0271 amt=172562.39
+[INFO]  2020-06-16 fill buy 002511.SZ vol=300 price=164.6547 amt=49396.42
+[INFO]  2020-06-16 fill buy 002695.SZ vol=600 price=99.0002 amt=59400.10
+[INFO]  2020-06-16 fill buy 002698.SZ vol=1700 price=32.5240 amt=55290.77
+[INFO]  2020-06-16 hold 3 positions (no change)
+[INFO]  2020-06-17 hold 3 positions (no change)
+[INFO]  2020-06-18 hold 3 positions (no change)
+[INFO]  2020-06-19 hold 3 positions (no change)
+[INFO]  2020-06-22 hold 3 positions (no change)
+[INFO]  2020-06-23 hold 3 positions (no change)
+[INFO]  2020-06-24 hold 3 positions (no change)
+[INFO]  2020-06-29 hold 3 positions (no change)
+[INFO]  2020-06-30 hold 3 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-07-02 fill sell 002698.SZ vol=5600 price=34.4435 amt=192883.66
+[INFO]  2020-07-02 fill sell 002511.SZ vol=1000 price=178.3874 amt=178387.40
+[INFO]  2020-07-02 fill sell 002695.SZ vol=2400 price=106.3830 amt=255319.08
+[INFO]  2020-07-02 fill buy 600812.SH vol=1200 price=50.9728 amt=61167.34
+[INFO]  2020-07-02 fill buy 601865.SH vol=3300 price=19.5244 amt=64430.59
+[INFO]  2020-07-02 fill buy 002950.SZ vol=1400 price=44.3156 amt=62041.88
+[INFO]  2020-07-02 fill buy 002305.SZ vol=6500 price=10.0557 amt=65362.10
+[INFO]  2020-07-02 fill buy 002832.SZ vol=700 price=90.6742 amt=63471.97
+[INFO]  2020-07-02 fill buy 002112.SZ vol=3100 price=20.6652 amt=64062.27
+[INFO]  2020-07-02 fill buy 000513.SZ vol=100 price=396.0370 amt=39603.70
+[INFO]  2020-07-02 fill buy 300565.SZ vol=3700 price=17.4655 amt=64622.19
+[INFO]  2020-07-02 fill buy 002286.SZ vol=2100 price=30.6059 amt=64272.37
+[INFO]  2020-07-02 fill buy 002281.SZ vol=600 price=104.7337 amt=62840.23
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-07-03 fill sell 002950.SZ vol=1400 price=44.0162 amt=61622.67
+[INFO]  2020-07-03 fill sell 002305.SZ vol=6500 price=9.2451 amt=60093.39
+[INFO]  2020-07-03 fill sell 002112.SZ vol=3100 price=22.7697 amt=70585.97
+[INFO]  2020-07-03 fill sell 300565.SZ vol=3700 price=17.9488 amt=66410.62
+[INFO]  2020-07-03 fill sell 002286.SZ vol=2100 price=29.9153 amt=62822.03
+[INFO]  2020-07-03 fill sell 002281.SZ vol=600 price=105.9997 amt=63599.82
+[INFO]  2020-07-03 fill buy 002511.SZ vol=300 price=177.8110 amt=53343.29
+[INFO]  2020-07-03 fill buy 002698.SZ vol=1800 price=34.1760 amt=61516.79
+[INFO]  2020-07-03 fill buy 600812.SH vol=1400 price=49.6985 amt=69577.85
+[INFO]  2020-07-03 fill buy 601865.SH vol=3100 price=20.0693 amt=62214.79
+[INFO]  2020-07-03 fill buy 002832.SZ vol=700 price=88.9634 amt=62274.39
+[INFO]  2020-07-03 fill buy 000513.SZ vol=200 price=392.6665 amt=78533.29
+[INFO]  2020-07-03 hold 6 positions (no change)
+[INFO]  2020-07-06 hold 6 positions (no change)
+[INFO]  2020-07-07 hold 6 positions (no change)
+[INFO]  2020-07-08 hold 6 positions (no change)
+[INFO]  2020-07-09 hold 6 positions (no change)
+[INFO]  2020-07-10 hold 6 positions (no change)
+[INFO]  2020-07-13 hold 6 positions (no change)
+[INFO]  2020-07-14 hold 6 positions (no change)
+[INFO]  2020-07-15 hold 6 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-07-17 fill sell 600812.SH vol=2600 price=50.5313 amt=131381.42
+[INFO]  2020-07-17 fill sell 601865.SH vol=6400 price=19.4967 amt=124779.06
+[INFO]  2020-07-17 fill buy 002511.SZ vol=300 price=196.2943 amt=58888.28
+[INFO]  2020-07-17 fill buy 002698.SZ vol=2100 price=34.2301 amt=71883.14
+[INFO]  2020-07-17 fill buy 002832.SZ vol=700 price=93.5256 amt=65467.95
+[INFO]  2020-07-17 fill buy 000513.SZ vol=100 price=412.5526 amt=41255.26
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-07-20 fill sell 002698.SZ vol=5900 price=33.5010 amt=197655.66
+[INFO]  2020-07-20 fill buy 002511.SZ vol=300 price=209.9348 amt=62980.44
+[INFO]  2020-07-20 fill buy 002832.SZ vol=600 price=107.8344 amt=64700.66
+[INFO]  2020-07-20 fill buy 000513.SZ vol=200 price=431.4275 amt=86285.51
+[INFO]  2020-07-20 hold 3 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-07-22 fill sell 002832.SZ vol=2700 price=89.3312 amt=241194.19
+[INFO]  2020-07-22 fill buy 002511.SZ vol=600 price=213.0826 amt=127849.56
+[INFO]  2020-07-22 fill buy 000513.SZ vol=300 price=423.8438 amt=127153.15
+[INFO]  2020-07-22 hold 2 positions (no change)
+[INFO]  2020-07-23 hold 2 positions (no change)
+[INFO]  2020-07-24 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-07-28 fill sell 002511.SZ vol=1900 price=191.8127 amt=364444.09
+[INFO]  2020-07-28 fill buy 000513.SZ vol=800 price=455.0212 amt=364016.98
+[INFO]  2020-07-28 hold 1 positions (no change)
+[INFO]  2020-07-29 hold 1 positions (no change)
+[INFO]  2020-07-30 hold 1 positions (no change)
+[INFO]  2020-07-31 hold 1 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-08-04 fill sell 000513.SZ vol=1500 price=473.6829 amt=710524.37
+[INFO]  2020-08-04 fill buy 002164.SZ vol=3300 price=16.2777 amt=53716.25
+[INFO]  2020-08-04 fill buy 600095.SH vol=1000 price=53.2505 amt=53250.46
+[INFO]  2020-08-04 fill buy 002080.SZ vol=500 price=103.1089 amt=51554.45
+[INFO]  2020-08-04 fill buy 600331.SH vol=2200 price=24.9812 amt=54958.75
+[INFO]  2020-08-04 fill buy 300439.SZ vol=700 price=71.6110 amt=50127.72
+[INFO]  2020-08-04 fill buy 002173.SZ vol=2300 price=23.8165 amt=54777.93
+[INFO]  2020-08-04 fill buy 000531.SZ vol=300 price=143.3967 amt=43019.01
+[INFO]  2020-08-04 fill buy 000089.SZ vol=600 price=81.8800 amt=49128.00
+[INFO]  2020-08-04 fill buy 002059.SZ vol=4200 price=12.9640 amt=54448.70
+[INFO]  2020-08-04 fill buy 000878.SZ vol=1300 price=42.2775 amt=54960.82
+[INFO]  2020-08-04 fill buy 300772.SZ vol=3500 price=15.7330 amt=55065.45
+[INFO]  2020-08-04 fill buy 002252.SZ vol=200 price=252.6178 amt=50523.56
+[INFO]  2020-08-04 fill buy 000885.SZ vol=2300 price=22.9873 amt=52870.74
+[INFO]  2020-08-04 fill buy 000012.SZ vol=300 price=181.3840 amt=54415.21
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-08-05 fill sell 002164.SZ vol=3300 price=15.8349 amt=52255.17
+[INFO]  2020-08-05 fill sell 600095.SH vol=1000 price=49.5376 amt=49537.58
+[INFO]  2020-08-05 fill sell 600331.SH vol=2200 price=23.7138 amt=52170.35
+[INFO]  2020-08-05 fill sell 002173.SZ vol=2300 price=24.8756 amt=57213.87
+[INFO]  2020-08-05 fill sell 002059.SZ vol=4200 price=12.4889 amt=52453.26
+[INFO]  2020-08-05 fill sell 300772.SZ vol=3500 price=15.5086 amt=54280.22
+[INFO]  2020-08-05 fill sell 002252.SZ vol=200 price=242.7007 amt=48540.14
+[ERROR] 2020-08-05 unfilled_order code=000513.SZ reason=below_min_lot
+[INFO]  2020-08-05 fill buy 002080.SZ vol=400 price=102.7214 amt=41088.58
+[INFO]  2020-08-05 fill buy 300439.SZ vol=800 price=66.9394 amt=53551.52
+[INFO]  2020-08-05 fill buy 000531.SZ vol=400 price=141.6616 amt=56664.63
+[INFO]  2020-08-05 fill buy 000089.SZ vol=700 price=77.4061 amt=54184.25
+[INFO]  2020-08-05 fill buy 000878.SZ vol=1000 price=44.7678 amt=44767.76
+[ERROR] 2020-08-05 unfilled_order code=000885.SZ reason=suspended
+[INFO]  2020-08-05 fill buy 000012.SZ vol=200 price=174.4077 amt=34881.54
+[INFO]  2020-08-05 hold 8 positions (no change)
+[INFO]  2020-08-06 hold 8 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-08-10 fill sell 300439.SZ vol=1500 price=62.8457 amt=94268.59
+[INFO]  2020-08-10 fill sell 000089.SZ vol=1300 price=71.0142 amt=92318.43
+[ERROR] 2020-08-10 unfilled_order code=000513.SZ reason=below_min_lot
+[INFO]  2020-08-10 fill buy 002080.SZ vol=300 price=110.9062 amt=33271.87
+[INFO]  2020-08-10 fill buy 000531.SZ vol=200 price=133.2338 amt=26646.75
+[INFO]  2020-08-10 fill buy 000878.SZ vol=700 price=42.2496 amt=29574.70
+[ERROR] 2020-08-10 unfilled_order code=000885.SZ reason=suspended
+[INFO]  2020-08-10 fill buy 000012.SZ vol=200 price=171.7245 amt=34344.90
+[INFO]  2020-08-10 hold 6 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-08-12 fill sell 000513.SZ vol=200 price=454.8833 amt=90976.66
+[INFO]  2020-08-12 fill sell 000878.SZ vol=3000 price=39.5728 amt=118718.33
+[INFO]  2020-08-12 fill buy 002080.SZ vol=600 price=103.4963 amt=62097.80
+[INFO]  2020-08-12 fill buy 000531.SZ vol=500 price=128.2762 amt=64138.11
+[ERROR] 2020-08-12 unfilled_order code=000885.SZ reason=suspended
+[INFO]  2020-08-12 fill buy 000012.SZ vol=400 price=166.3581 amt=66543.25
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-08-13 fill sell 002080.SZ vol=1800 price=99.3689 amt=178864.03
+[INFO]  2020-08-13 fill buy 000531.SZ vol=500 price=131.8704 amt=65935.22
+[INFO]  2020-08-13 fill buy 000885.SZ vol=8200 price=24.0833 amt=197482.81
+[INFO]  2020-08-13 fill buy 000012.SZ vol=400 price=166.3581 amt=66543.25
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-08-14 fill sell 000012.SZ vol=1500 price=163.0215 amt=244532.32
+[INFO]  2020-08-14 fill buy 000531.SZ vol=900 price=133.3577 amt=120021.93
+[INFO]  2020-08-14 fill buy 000885.SZ vol=5500 price=23.3713 amt=128542.42
+[INFO]  2020-08-14 hold 2 positions (no change)
+[INFO]  2020-08-17 hold 2 positions (no change)
+[INFO]  2020-08-18 hold 2 positions (no change)
+[INFO]  2020-08-19 hold 2 positions (no change)
+[INFO]  2020-08-20 hold 2 positions (no change)
+[INFO]  2020-08-21 hold 2 positions (no change)
+[INFO]  2020-08-24 hold 2 positions (no change)
+[INFO]  2020-08-25 hold 2 positions (no change)
+[INFO]  2020-08-26 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-08-28 fill sell 000531.SZ vol=2800 price=128.8751 amt=360850.38
+[INFO]  2020-08-28 fill buy 000885.SZ vol=15400 price=23.8188 amt=366810.18
+[INFO]  2020-08-28 hold 1 positions (no change)
+[INFO]  2020-08-31 hold 1 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-09-02 fill sell 000885.SZ vol=31400 price=23.7035 amt=744289.84
+[INFO]  2020-09-02 fill buy 002730.SZ vol=1300 price=27.1975 amt=35356.70
+[INFO]  2020-09-02 fill buy 002659.SZ vol=2300 price=15.9204 amt=36616.95
+[INFO]  2020-09-02 fill buy 002649.SZ vol=600 price=54.1631 amt=32497.85
+[INFO]  2020-09-02 fill buy 002848.SZ vol=2600 price=13.9543 amt=36281.08
+[INFO]  2020-09-02 fill buy 002607.SZ vol=100 price=288.7286 amt=28872.86
+[INFO]  2020-09-02 fill buy 300732.SZ vol=700 price=50.0326 amt=35022.82
+[INFO]  2020-09-02 fill buy 002747.SZ vol=300 price=115.4036 amt=34621.09
+[INFO]  2020-09-02 fill buy 002816.SZ vol=1000 price=34.8148 amt=34814.81
+[INFO]  2020-09-02 fill buy 300703.SZ vol=900 price=37.9591 amt=34163.19
+[INFO]  2020-09-02 fill buy 002701.SZ vol=700 price=51.8029 amt=36262.00
+[INFO]  2020-09-02 fill buy 300773.SZ vol=400 price=80.3874 amt=32154.94
+[INFO]  2020-09-02 fill buy 002512.SZ vol=900 price=39.9903 amt=35991.26
+[INFO]  2020-09-02 fill buy 002763.SZ vol=2100 price=16.9215 amt=35535.08
+[INFO]  2020-09-02 fill buy 002736.SZ vol=2300 price=15.5094 amt=35671.52
+[INFO]  2020-09-02 fill buy 002715.SZ vol=1200 price=29.2385 amt=35086.25
+[INFO]  2020-09-02 fill buy 300669.SZ vol=700 price=47.9685 amt=33577.98
+[INFO]  2020-09-02 fill buy 002646.SZ vol=3000 price=11.8992 amt=35697.59
+[INFO]  2020-09-02 fill buy 002516.SZ vol=1100 price=32.5980 amt=35857.75
+[INFO]  2020-09-02 fill buy 002628.SZ vol=2200 price=16.1120 amt=35446.51
+[INFO]  2020-09-02 fill buy 002839.SZ vol=5400 price=6.7386 amt=36388.27
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-09-03 fill sell 002730.SZ vol=1300 price=26.5910 amt=34568.31
+[INFO]  2020-09-03 fill sell 002659.SZ vol=2300 price=14.9455 amt=34374.75
+[INFO]  2020-09-03 fill sell 002649.SZ vol=600 price=53.6571 amt=32194.26
+[INFO]  2020-09-03 fill sell 002848.SZ vol=2600 price=13.7086 amt=35642.30
+[INFO]  2020-09-03 fill sell 300732.SZ vol=700 price=52.1659 amt=36516.11
+[INFO]  2020-09-03 fill sell 300773.SZ vol=400 price=79.8611 amt=31944.46
+[INFO]  2020-09-03 fill sell 002512.SZ vol=900 price=40.7987 amt=36718.87
+[INFO]  2020-09-03 fill sell 002763.SZ vol=2100 price=16.6875 amt=35043.66
+[INFO]  2020-09-03 fill sell 002736.SZ vol=2300 price=15.4585 amt=35554.50
+[INFO]  2020-09-03 fill sell 002646.SZ vol=3000 price=11.5806 amt=34741.84
+[INFO]  2020-09-03 fill sell 002628.SZ vol=2200 price=15.9336 amt=35054.02
+[INFO]  2020-09-03 fill sell 002839.SZ vol=5400 price=6.6152 amt=35721.94
+[INFO]  2020-09-03 fill buy 002607.SZ vol=200 price=297.4028 amt=59480.56
+[INFO]  2020-09-03 fill buy 002747.SZ vol=400 price=119.9087 amt=47963.48
+[INFO]  2020-09-03 fill buy 002816.SZ vol=1600 price=35.0060 amt=56009.58
+[INFO]  2020-09-03 fill buy 300703.SZ vol=1500 price=37.3137 amt=55970.54
+[INFO]  2020-09-03 fill buy 002701.SZ vol=1100 price=50.9035 amt=55993.85
+[INFO]  2020-09-03 fill buy 002715.SZ vol=2000 price=28.9672 amt=57934.32
+[INFO]  2020-09-03 fill buy 300669.SZ vol=1100 price=49.3277 amt=54260.42
+[INFO]  2020-09-03 fill buy 002516.SZ vol=1600 price=33.1906 amt=53105.03
+[INFO]  2020-09-03 hold 8 positions (no change)
+[INFO]  2020-09-04 hold 8 positions (no change)
+[INFO]  2020-09-07 hold 8 positions (no change)
+[INFO]  2020-09-08 hold 8 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-09-10 fill sell 002607.SZ vol=300 price=273.1766 amt=81952.98
+[INFO]  2020-09-10 fill sell 002747.SZ vol=700 price=107.9972 amt=75598.04
+[INFO]  2020-09-10 fill sell 002816.SZ vol=2600 price=32.1603 amt=83616.85
+[INFO]  2020-09-10 fill sell 002715.SZ vol=3200 price=26.3087 amt=84187.98
+[INFO]  2020-09-10 fill buy 300703.SZ vol=2300 price=37.3137 amt=85821.50
+[INFO]  2020-09-10 fill buy 002701.SZ vol=1600 price=51.2632 amt=82021.19
+[INFO]  2020-09-10 fill buy 300669.SZ vol=1800 price=48.2350 amt=86823.07
+[INFO]  2020-09-10 fill buy 002516.SZ vol=2700 price=32.5133 amt=87785.86
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-09-11 fill sell 300703.SZ vol=4700 price=31.4269 amt=147706.62
+[INFO]  2020-09-11 fill buy 002701.SZ vol=800 price=52.3425 amt=41873.97
+[INFO]  2020-09-11 fill buy 300669.SZ vol=1200 price=46.6361 amt=55963.30
+[INFO]  2020-09-11 fill buy 002516.SZ vol=1600 price=31.3279 amt=50124.64
+[INFO]  2020-09-11 hold 3 positions (no change)
+[INFO]  2020-09-14 hold 3 positions (no change)
+[INFO]  2020-09-15 hold 3 positions (no change)
+[INFO]  2020-09-16 hold 3 positions (no change)
+[INFO]  2020-09-17 hold 3 positions (no change)
+[INFO]  2020-09-18 hold 3 positions (no change)
+[INFO]  2020-09-21 hold 3 positions (no change)
+[INFO]  2020-09-22 hold 3 positions (no change)
+[INFO]  2020-09-23 hold 3 positions (no change)
+[INFO]  2020-09-24 hold 3 positions (no change)
+[INFO]  2020-09-25 hold 3 positions (no change)
+[INFO]  2020-09-28 hold 3 positions (no change)
+[INFO]  2020-09-29 hold 3 positions (no change)
+[INFO]  2020-09-30 hold 3 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-10-12 fill sell 300669.SZ vol=4100 price=50.9622 amt=208944.98
+[INFO]  2020-10-12 fill sell 002701.SZ vol=4200 price=52.0439 amt=218584.55
+[INFO]  2020-10-12 fill sell 002516.SZ vol=7000 price=35.5881 amt=249116.72
+[INFO]  2020-10-12 fill buy 300537.SZ vol=700 price=45.3980 amt=31778.63
+[INFO]  2020-10-12 fill buy 300518.SZ vol=700 price=46.0661 amt=32246.29
+[INFO]  2020-10-12 fill buy 000920.SZ vol=1400 price=25.3441 amt=35481.73
+[INFO]  2020-10-12 fill buy 300129.SZ vol=700 price=48.1108 amt=33677.60
+[INFO]  2020-10-12 fill buy 601218.SH vol=4100 price=8.6588 amt=35501.16
+[INFO]  2020-10-12 fill buy 300655.SZ vol=400 price=72.3895 amt=28955.79
+[INFO]  2020-10-12 fill buy 000625.SZ vol=300 price=111.8061 amt=33541.82
+[INFO]  2020-10-12 fill buy 603085.SH vol=1400 price=24.9345 amt=34908.24
+[INFO]  2020-10-12 fill buy 300769.SZ vol=100 price=185.4654 amt=18546.54
+[INFO]  2020-10-12 fill buy 603877.SH vol=1000 price=34.0579 amt=34057.88
+[INFO]  2020-10-12 fill buy 000034.SZ vol=400 price=82.2956 amt=32918.23
+[ERROR] 2020-10-12 unfilled_order code=300661.SZ reason=below_min_lot
+[INFO]  2020-10-12 fill buy 002226.SZ vol=500 price=64.4443 amt=32222.13
+[INFO]  2020-10-12 fill buy 603223.SH vol=1100 price=30.3551 amt=33390.59
+[INFO]  2020-10-12 fill buy 601208.SH vol=1600 price=21.6408 amt=34625.28
+[INFO]  2020-10-12 fill buy 000591.SZ vol=500 price=70.4830 amt=35241.51
+[INFO]  2020-10-12 fill buy 688005.SH vol=900 price=37.1704 amt=33453.35
+[INFO]  2020-10-12 fill buy 603028.SH vol=2600 price=13.2839 amt=34538.08
+[INFO]  2020-10-12 fill buy 600237.SH vol=1700 price=19.7946 amt=33650.74
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-10-13 fill sell 300655.SZ vol=400 price=75.9097 amt=30363.88
+[INFO]  2020-10-13 fill sell 603085.SH vol=1400 price=26.1227 amt=36571.71
+[INFO]  2020-10-13 fill sell 300769.SZ vol=100 price=192.8925 amt=19289.26
+[INFO]  2020-10-13 fill sell 002226.SZ vol=500 price=65.7217 amt=32860.86
+[INFO]  2020-10-13 fill sell 688005.SH vol=900 price=38.0826 amt=34274.37
+[INFO]  2020-10-13 fill sell 600237.SH vol=1700 price=20.2609 amt=34443.45
+[INFO]  2020-10-13 fill buy 300669.SZ vol=400 price=50.6335 amt=20253.39
+[INFO]  2020-10-13 fill buy 300537.SZ vol=400 price=47.1158 amt=18846.32
+[INFO]  2020-10-13 fill buy 300518.SZ vol=500 price=45.8144 amt=22907.20
+[INFO]  2020-10-13 fill buy 000920.SZ vol=800 price=25.6517 amt=20521.33
+[INFO]  2020-10-13 fill buy 300129.SZ vol=400 price=49.6238 amt=19849.51
+[INFO]  2020-10-13 fill buy 601218.SH vol=2300 price=8.8597 amt=20377.24
+[INFO]  2020-10-13 fill buy 000625.SZ vol=200 price=112.8225 amt=22564.50
+[INFO]  2020-10-13 fill buy 603877.SH vol=600 price=34.8083 amt=20884.98
+[INFO]  2020-10-13 fill buy 000034.SZ vol=200 price=89.0011 amt=17800.23
+[INFO]  2020-10-13 fill buy 603223.SH vol=600 price=32.3761 amt=19425.65
+[INFO]  2020-10-13 fill buy 601208.SH vol=900 price=21.8450 amt=19660.46
+[INFO]  2020-10-13 fill buy 000591.SZ vol=300 price=69.2584 amt=20777.52
+[INFO]  2020-10-13 fill buy 603028.SH vol=1600 price=13.2738 amt=21238.01
+[INFO]  2020-10-13 hold 13 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[ERROR] 2020-10-15 unfilled_order code=300129.SZ reason=below_min_lot
+[INFO]  2020-10-15 fill sell 300518.SZ vol=1200 price=39.8448 amt=47813.79
+[INFO]  2020-10-15 fill buy 300669.SZ vol=100 price=50.6201 amt=5062.01
+[INFO]  2020-10-15 fill buy 300537.SZ vol=200 price=45.5616 amt=9112.33
+[INFO]  2020-10-15 fill buy 000920.SZ vol=300 price=25.1288 amt=7538.64
+[INFO]  2020-10-15 fill buy 601218.SH vol=100 price=9.5738 amt=957.38
+[ERROR] 2020-10-15 unfilled_order code=000625.SZ reason=below_min_lot
+[ERROR] 2020-10-15 unfilled_order code=603877.SH reason=below_min_lot
+[INFO]  2020-10-15 fill buy 000034.SZ vol=100 price=85.6483 amt=8564.83
+[ERROR] 2020-10-15 unfilled_order code=603223.SH reason=suspended
+[INFO]  2020-10-15 fill buy 601208.SH vol=300 price=22.4348 amt=6730.43
+[INFO]  2020-10-15 fill buy 000591.SZ vol=100 price=70.2109 amt=7021.09
+[INFO]  2020-10-15 fill buy 603028.SH vol=300 price=13.9111 amt=4173.34
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-10-16 fill sell 300537.SZ vol=1300 price=43.1637 amt=56112.84
+[INFO]  2020-10-16 fill sell 000034.SZ vol=700 price=82.6046 amt=57823.19
+[INFO]  2020-10-16 fill buy 300669.SZ vol=200 price=50.7934 amt=10158.67
+[INFO]  2020-10-16 fill buy 000920.SZ vol=400 price=24.8520 amt=9940.79
+[INFO]  2020-10-16 fill buy 300129.SZ vol=200 price=54.5256 amt=10905.13
+[INFO]  2020-10-16 fill buy 601218.SH vol=1500 price=9.1944 amt=13791.62
+[INFO]  2020-10-16 fill buy 000625.SZ vol=100 price=119.8592 amt=11985.92
+[INFO]  2020-10-16 fill buy 603877.SH vol=300 price=38.5374 amt=11561.21
+[ERROR] 2020-10-16 unfilled_order code=603223.SH reason=suspended
+[INFO]  2020-10-16 fill buy 601208.SH vol=300 price=23.2514 amt=6975.42
+[INFO]  2020-10-16 fill buy 000591.SZ vol=100 price=68.5781 amt=6857.81
+[INFO]  2020-10-16 fill buy 603028.SH vol=900 price=13.5166 amt=12164.91
+[INFO]  2020-10-16 hold 10 positions (no change)
+[INFO]  2020-10-19 hold 10 positions (no change)
+[INFO]  2020-10-20 hold 10 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-10-22 fill sell 300129.SZ vol=1300 price=50.2092 amt=65272.02
+[INFO]  2020-10-22 fill sell 000591.SZ vol=1000 price=63.2899 amt=63289.90
+[INFO]  2020-10-22 fill buy 300669.SZ vol=400 price=50.9799 amt=20391.96
+[INFO]  2020-10-22 fill buy 000920.SZ vol=900 price=23.9908 amt=21591.69
+[INFO]  2020-10-22 fill buy 601218.SH vol=2700 price=8.5026 amt=22957.03
+[INFO]  2020-10-22 fill buy 000625.SZ vol=100 price=129.6325 amt=12963.25
+[INFO]  2020-10-22 fill buy 603877.SH vol=200 price=43.2477 amt=8649.55
+[INFO]  2020-10-22 fill buy 603223.SH vol=1100 price=32.2960 amt=35525.65
+[INFO]  2020-10-22 fill buy 601208.SH vol=1000 price=22.2306 amt=22230.59
+[INFO]  2020-10-22 fill buy 603028.SH vol=900 price=14.3664 amt=12929.77
+[INFO]  2020-10-22 hold 8 positions (no change)
+[INFO]  2020-10-23 hold 8 positions (no change)
+[INFO]  2020-10-26 hold 8 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-10-28 fill sell 000625.SZ vol=700 price=120.3931 amt=84275.18
+[INFO]  2020-10-28 fill buy 300669.SZ vol=300 price=50.0072 amt=15002.16
+[INFO]  2020-10-28 fill buy 000920.SZ vol=100 price=27.0973 amt=2709.73
+[INFO]  2020-10-28 fill buy 601218.SH vol=1800 price=8.4357 amt=15184.18
+[INFO]  2020-10-28 fill buy 603877.SH vol=200 price=47.4848 amt=9496.95
+[INFO]  2020-10-28 fill buy 603223.SH vol=200 price=34.8173 amt=6963.46
+[INFO]  2020-10-28 fill buy 601208.SH vol=700 price=21.3232 amt=14926.25
+[INFO]  2020-10-28 fill buy 603028.SH vol=1100 price=14.2754 amt=15702.90
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-10-29 fill sell 601218.SH vol=12500 price=8.2242 amt=102801.99
+[INFO]  2020-10-29 fill buy 300669.SZ vol=300 price=50.1804 amt=15054.13
+[INFO]  2020-10-29 fill buy 000920.SZ vol=700 price=26.4514 amt=18515.95
+[INFO]  2020-10-29 fill buy 603877.SH vol=300 price=46.3303 amt=13899.08
+[INFO]  2020-10-29 fill buy 603223.SH vol=500 price=34.6172 amt=17308.60
+[INFO]  2020-10-29 fill buy 601208.SH vol=800 price=21.7542 amt=17403.38
+[INFO]  2020-10-29 fill buy 603028.SH vol=1600 price=13.5975 amt=21756.01
+[INFO]  2020-10-29 hold 6 positions (no change)
+[INFO]  2020-10-30 hold 6 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-11-03 fill sell 603877.SH vol=1800 price=49.1350 amt=88443.07
+[INFO]  2020-11-03 fill sell 603223.SH vol=2400 price=35.3759 amt=84902.06
+[INFO]  2020-11-03 fill sell 300669.SZ vol=2400 price=49.1838 amt=118041.18
+[INFO]  2020-11-03 fill sell 000920.SZ vol=4600 price=26.0088 amt=119640.40
+[INFO]  2020-11-03 fill sell 601208.SH vol=5600 price=22.6615 amt=126904.42
+[INFO]  2020-11-03 fill sell 603028.SH vol=9000 price=12.9185 amt=116266.18
+[INFO]  2020-11-03 fill buy 002594.SZ vol=200 price=175.7736 amt=35154.73
+[INFO]  2020-11-03 fill buy 300469.SZ vol=600 price=52.9460 amt=31767.61
+[INFO]  2020-11-03 fill buy 300641.SZ vol=2700 price=13.5274 amt=36524.01
+[INFO]  2020-11-03 fill buy 300626.SZ vol=1500 price=24.2023 amt=36303.40
+[INFO]  2020-11-03 fill buy 300539.SZ vol=1400 price=25.6551 amt=35917.07
+[INFO]  2020-11-03 fill buy 600166.SH vol=400 price=82.2224 amt=32888.96
+[ERROR] 2020-11-03 unfilled_order code=000568.SZ reason=below_min_lot
+[INFO]  2020-11-03 fill buy 300605.SZ vol=1000 price=36.8170 amt=36817.05
+[INFO]  2020-11-03 fill buy 600068.SH vol=800 price=44.1663 amt=35333.07
+[INFO]  2020-11-03 fill buy 603337.SH vol=500 price=67.1426 amt=33571.28
+[INFO]  2020-11-03 fill buy 600189.SH vol=2000 price=17.9535 amt=35907.00
+[INFO]  2020-11-03 fill buy 300610.SZ vol=1100 price=32.5099 amt=35760.88
+[INFO]  2020-11-03 fill buy 002930.SZ vol=900 price=39.7243 amt=35751.84
+[INFO]  2020-11-03 fill buy 600885.SH vol=100 price=206.4849 amt=20648.49
+[INFO]  2020-11-03 fill buy 000030.SZ vol=1400 price=26.2250 amt=36715.02
+[INFO]  2020-11-03 fill buy 300665.SZ vol=1600 price=22.4686 amt=35949.72
+[INFO]  2020-11-03 fill buy 002151.SZ vol=100 price=332.0722 amt=33207.22
+[INFO]  2020-11-03 fill buy 300535.SZ vol=1100 price=32.5625 amt=35818.78
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-11-04 fill sell 300469.SZ vol=600 price=53.0414 amt=31824.86
+[INFO]  2020-11-04 fill sell 300641.SZ vol=2700 price=13.1235 amt=35433.32
+[INFO]  2020-11-04 fill sell 300626.SZ vol=1500 price=22.9664 amt=34449.56
+[INFO]  2020-11-04 fill sell 300539.SZ vol=1400 price=25.1075 amt=35150.46
+[INFO]  2020-11-04 fill sell 300605.SZ vol=1000 price=35.3548 amt=35354.82
+[INFO]  2020-11-04 fill sell 600189.SH vol=2000 price=17.4711 amt=34942.14
+[INFO]  2020-11-04 fill sell 300610.SZ vol=1100 price=31.6554 amt=34820.95
+[INFO]  2020-11-04 fill sell 002930.SZ vol=900 price=39.1154 amt=35203.90
+[INFO]  2020-11-04 fill sell 000030.SZ vol=1400 price=25.7802 amt=36092.31
+[INFO]  2020-11-04 fill sell 002151.SZ vol=100 price=335.7368 amt=33573.68
+[INFO]  2020-11-04 fill buy 603877.SH vol=800 price=48.9048 amt=39123.84
+[INFO]  2020-11-04 fill buy 603223.SH vol=1100 price=36.7182 amt=40390.06
+[INFO]  2020-11-04 fill buy 002594.SZ vol=200 price=170.6639 amt=34132.79
+[INFO]  2020-11-04 fill buy 600166.SH vol=600 price=79.5955 amt=47757.28
+[INFO]  2020-11-04 fill buy 600068.SH vol=1000 price=44.0403 amt=44040.33
+[INFO]  2020-11-04 fill buy 603337.SH vol=600 price=69.8318 amt=41899.10
+[INFO]  2020-11-04 fill buy 600885.SH vol=200 price=207.7161 amt=41543.22
+[INFO]  2020-11-04 fill buy 300665.SZ vol=1800 price=24.1957 amt=43552.23
+[INFO]  2020-11-04 fill buy 300535.SZ vol=1400 price=31.6556 amt=44317.89
+[INFO]  2020-11-04 hold 9 positions (no change)
+[INFO]  2020-11-05 hold 9 positions (no change)
+[INFO]  2020-11-06 hold 9 positions (no change)
+[INFO]  2020-11-09 hold 9 positions (no change)
+[INFO]  2020-11-10 hold 9 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-11-12 fill sell 603877.SH vol=1600 price=43.9835 amt=70373.61
+[INFO]  2020-11-12 fill sell 002594.SZ vol=400 price=171.0005 amt=68400.21
+[INFO]  2020-11-12 fill sell 600166.SH vol=1000 price=75.0914 amt=75091.45
+[INFO]  2020-11-12 fill sell 300535.SZ vol=2500 price=30.0295 amt=75073.74
+[INFO]  2020-11-12 fill buy 603223.SH vol=1400 price=39.1194 amt=54767.21
+[INFO]  2020-11-12 fill buy 600068.SH vol=1400 price=43.7253 amt=61215.42
+[INFO]  2020-11-12 fill buy 603337.SH vol=900 price=70.7955 amt=63715.95
+[INFO]  2020-11-12 fill buy 600885.SH vol=400 price=197.5885 amt=79035.39
+[INFO]  2020-11-12 fill buy 300665.SZ vol=2700 price=23.4532 amt=63323.61
+[INFO]  2020-11-12 hold 5 positions (no change)
+[INFO]  2020-11-13 hold 5 positions (no change)
+[INFO]  2020-11-16 hold 5 positions (no change)
+[INFO]  2020-11-17 hold 5 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-11-19 fill sell 600885.SH vol=700 price=185.9213 amt=130144.92
+[INFO]  2020-11-19 fill buy 603223.SH vol=500 price=44.0219 amt=22010.93
+[INFO]  2020-11-19 fill buy 600068.SH vol=900 price=43.2213 amt=38899.14
+[INFO]  2020-11-19 fill buy 603337.SH vol=400 price=72.0057 amt=28802.27
+[INFO]  2020-11-19 fill buy 300665.SZ vol=2000 price=22.2265 amt=44452.91
+[INFO]  2020-11-19 hold 4 positions (no change)
+[INFO]  2020-11-20 hold 4 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-11-24 fill sell 300665.SZ vol=8100 price=21.0124 amt=170200.07
+[INFO]  2020-11-24 fill buy 603223.SH vol=1100 price=45.9228 amt=50515.09
+[INFO]  2020-11-24 fill buy 600068.SH vol=1400 price=43.3473 amt=60686.18
+[INFO]  2020-11-24 fill buy 603337.SH vol=900 price=73.0366 amt=65732.92
+[INFO]  2020-11-24 hold 3 positions (no change)
+[INFO]  2020-11-25 hold 3 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-11-27 fill sell 603337.SH vol=3300 price=68.0575 amt=224589.90
+[INFO]  2020-11-27 fill buy 603223.SH vol=2300 price=46.2030 amt=106266.79
+[INFO]  2020-11-27 fill buy 600068.SH vol=2600 price=43.0322 amt=111883.85
+[INFO]  2020-11-27 hold 2 positions (no change)
+[INFO]  2020-11-30 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-12-02 fill sell 603223.SH vol=7500 price=43.4475 amt=325856.48
+[INFO]  2020-12-02 fill sell 600068.SH vol=8100 price=42.7977 amt=346661.46
+[INFO]  2020-12-02 fill buy 601127.SH vol=1400 price=23.1119 amt=32356.70
+[INFO]  2020-12-02 fill buy 002818.SZ vol=1100 price=29.9597 amt=32955.64
+[INFO]  2020-12-02 fill buy 002862.SZ vol=800 price=40.2970 amt=32237.58
+[INFO]  2020-12-02 fill buy 300710.SZ vol=800 price=38.4301 amt=30744.09
+[INFO]  2020-12-02 fill buy 002870.SZ vol=1300 price=25.1163 amt=32651.13
+[INFO]  2020-12-02 fill buy 002839.SZ vol=4700 price=7.2230 amt=33947.96
+[INFO]  2020-12-02 fill buy 300742.SZ vol=900 price=35.0500 amt=31544.96
+[INFO]  2020-12-02 fill buy 002926.SZ vol=2500 price=13.1510 amt=32877.42
+[INFO]  2020-12-02 fill buy 002925.SZ vol=400 price=69.4232 amt=27769.28
+[INFO]  2020-12-02 fill buy 002797.SZ vol=1900 price=17.4931 amt=33236.86
+[INFO]  2020-12-02 fill buy 300699.SZ vol=300 price=107.7364 amt=32320.91
+[INFO]  2020-12-02 fill buy 002850.SZ vol=300 price=104.0103 amt=31203.10
+[INFO]  2020-12-02 fill buy 002880.SZ vol=400 price=78.3650 amt=31346.01
+[INFO]  2020-12-02 fill buy 002773.SZ vol=300 price=88.6085 amt=26582.54
+[INFO]  2020-12-02 fill buy 002911.SZ vol=1900 price=17.8428 amt=33901.37
+[INFO]  2020-12-02 fill buy 002841.SZ vol=100 price=174.8367 amt=17483.67
+[INFO]  2020-12-02 fill buy 300772.SZ vol=2200 price=15.5100 amt=34121.93
+[INFO]  2020-12-02 fill buy 300695.SZ vol=400 price=70.8083 amt=28323.32
+[INFO]  2020-12-02 fill buy 002791.SZ vol=100 price=191.1161 amt=19111.61
+[INFO]  2020-12-02 fill buy 002778.SZ vol=1300 price=26.0553 amt=33871.85
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-12-03 fill sell 300710.SZ vol=800 price=37.7328 amt=30186.21
+[INFO]  2020-12-03 fill sell 002870.SZ vol=1300 price=24.4008 amt=31721.09
+[INFO]  2020-12-03 fill sell 002839.SZ vol=4700 price=7.0762 amt=33258.14
+[INFO]  2020-12-03 fill sell 300742.SZ vol=900 price=33.1835 amt=29865.15
+[INFO]  2020-12-03 fill sell 002925.SZ vol=400 price=68.7146 amt=27485.85
+[INFO]  2020-12-03 fill sell 002797.SZ vol=1900 price=17.5689 amt=33380.82
+[INFO]  2020-12-03 fill sell 300699.SZ vol=300 price=112.3152 amt=33694.57
+[INFO]  2020-12-03 fill sell 002850.SZ vol=300 price=102.9803 amt=30894.10
+[INFO]  2020-12-03 fill sell 002880.SZ vol=400 price=78.6026 amt=31441.04
+[INFO]  2020-12-03 fill sell 002773.SZ vol=300 price=88.8726 amt=26661.78
+[INFO]  2020-12-03 fill sell 002911.SZ vol=1900 price=17.6439 amt=33523.40
+[INFO]  2020-12-03 fill sell 300772.SZ vol=2200 price=15.4077 amt=33896.86
+[INFO]  2020-12-03 fill sell 300695.SZ vol=400 price=70.6443 amt=28257.71
+[INFO]  2020-12-03 fill sell 002791.SZ vol=100 price=189.0474 amt=18904.74
+[INFO]  2020-12-03 fill sell 002778.SZ vol=1300 price=26.4057 amt=34327.35
+[INFO]  2020-12-03 fill buy 601127.SH vol=4100 price=24.6944 amt=101246.92
+[INFO]  2020-12-03 fill buy 002818.SZ vol=3300 price=30.3955 amt=100305.21
+[INFO]  2020-12-03 fill buy 002862.SZ vol=2900 price=36.3582 amt=105438.70
+[INFO]  2020-12-03 fill buy 002926.SZ vol=7800 price=13.1714 amt=102736.84
+[INFO]  2020-12-03 fill buy 002841.SZ vol=600 price=178.2173 amt=106930.40
+[INFO]  min_position_value dropped 0 tiny weights
+[ERROR] 2020-12-04 unfilled_order code=601127.SH reason=limit_down_at_open
+[INFO]  2020-12-04 fill sell 002862.SZ vol=3700 price=35.9113 amt=132871.64
+[INFO]  2020-12-04 fill buy 002818.SZ vol=2700 price=30.9261 amt=83500.51
+[INFO]  2020-12-04 fill buy 002926.SZ vol=6200 price=13.2020 amt=81852.53
+[INFO]  2020-12-04 fill buy 002841.SZ vol=500 price=174.9027 amt=87451.33
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-12-07 fill sell 002818.SZ vol=100 price=30.9159 amt=3091.59
+[INFO]  2020-12-07 fill sell 601127.SH vol=5500 price=17.6277 amt=96952.21
+[ERROR] 2020-12-07 unfilled_order code=002926.SZ reason=below_min_lot
+[ERROR] 2020-12-07 unfilled_order code=002841.SZ reason=below_min_lot
+[INFO]  2020-12-07 hold 3 positions (no change)
+[INFO]  2020-12-08 hold 3 positions (no change)
+[INFO]  2020-12-09 hold 3 positions (no change)
+[INFO]  2020-12-10 hold 3 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-12-14 fill sell 002926.SZ vol=16500 price=11.9391 amt=196995.71
+[INFO]  2020-12-14 fill buy 002818.SZ vol=3600 price=28.2731 amt=101783.29
+[INFO]  2020-12-14 fill buy 002841.SZ vol=400 price=180.0808 amt=72032.32
+[INFO]  2020-12-14 hold 2 positions (no change)
+[INFO]  2020-12-15 hold 2 positions (no change)
+[INFO]  2020-12-16 hold 2 positions (no change)
+[INFO]  2020-12-17 hold 2 positions (no change)
+[INFO]  2020-12-18 hold 2 positions (no change)
+[INFO]  2020-12-21 hold 2 positions (no change)
+[INFO]  2020-12-22 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2020-12-24 fill sell 002818.SZ vol=10600 price=27.3487 amt=289896.02
+[INFO]  2020-12-24 fill buy 002841.SZ vol=1700 price=175.6118 amt=298540.00
+[INFO]  2020-12-24 hold 1 positions (no change)
+[INFO]  2020-12-25 hold 1 positions (no change)
+[INFO]  2020-12-28 hold 1 positions (no change)
+[INFO]  2020-12-29 hold 1 positions (no change)
+[INFO]  2020-12-30 hold 1 positions (no change)
+[INFO]  2020-12-31 hold 1 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-01-05 fill sell 002841.SZ vol=3100 price=187.8701 amt=582397.34
+[INFO]  2021-01-05 fill buy 002612.SZ vol=500 price=61.0608 amt=30530.38
+[INFO]  2021-01-05 fill buy 000767.SZ vol=700 price=42.2714 amt=29589.99
+[INFO]  2021-01-05 fill buy 000615.SZ vol=400 price=74.7093 amt=29883.70
+[INFO]  2021-01-05 fill buy 000530.SZ vol=700 price=43.6347 amt=30544.29
+[INFO]  2021-01-05 fill buy 000881.SZ vol=500 price=53.5756 amt=26787.79
+[INFO]  2021-01-05 fill buy 000633.SZ vol=800 price=39.1924 amt=31353.88
+[INFO]  2021-01-05 fill buy 002553.SZ vol=600 price=47.5367 amt=28522.01
+[INFO]  2021-01-05 fill buy 002404.SZ vol=700 price=40.3572 amt=28250.07
+[INFO]  2021-01-05 fill buy 002833.SZ vol=400 price=69.9024 amt=27960.95
+[INFO]  2021-01-05 fill buy 002852.SZ vol=500 price=59.5629 amt=29781.43
+[INFO]  2021-01-05 fill buy 002177.SZ vol=600 price=47.1431 amt=28285.84
+[INFO]  2021-01-05 fill buy 000631.SZ vol=500 price=52.7610 amt=26380.50
+[INFO]  2021-01-05 fill buy 000708.SZ vol=300 price=83.7452 amt=25123.55
+[INFO]  2021-01-05 fill buy 000718.SZ vol=1100 price=27.7233 amt=30495.58
+[INFO]  2021-01-05 fill buy 002239.SZ vol=600 price=48.9465 amt=29367.89
+[ERROR] 2021-01-05 unfilled_order code=002001.SZ reason=below_min_lot
+[INFO]  2021-01-05 fill buy 002011.SZ vol=1200 price=24.9730 amt=29967.65
+[INFO]  2021-01-05 fill buy 000712.SZ vol=100 price=205.5722 amt=20557.22
+[INFO]  2021-01-05 fill buy 000822.SZ vol=3300 price=9.3749 amt=30937.30
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-01-06 fill sell 002612.SZ vol=500 price=59.6877 amt=29843.83
+[INFO]  2021-01-06 fill sell 000767.SZ vol=700 price=38.6657 amt=27066.00
+[INFO]  2021-01-06 fill sell 000530.SZ vol=700 price=41.6906 amt=29183.44
+[INFO]  2021-01-06 fill sell 000881.SZ vol=500 price=53.3617 amt=26680.85
+[INFO]  2021-01-06 fill sell 000633.SZ vol=800 price=38.0656 amt=30452.48
+[INFO]  2021-01-06 fill sell 002553.SZ vol=600 price=46.3816 amt=27828.95
+[INFO]  2021-01-06 fill sell 002833.SZ vol=400 price=68.5279 amt=27411.18
+[INFO]  2021-01-06 fill sell 002852.SZ vol=500 price=56.9714 amt=28485.70
+[INFO]  2021-01-06 fill sell 002177.SZ vol=600 price=47.8358 amt=28701.50
+[INFO]  2021-01-06 fill sell 000631.SZ vol=500 price=52.0142 amt=26007.08
+[INFO]  2021-01-06 fill sell 002239.SZ vol=600 price=47.5731 amt=28543.85
+[INFO]  2021-01-06 fill sell 002011.SZ vol=1200 price=25.1208 amt=30145.02
+[INFO]  2021-01-06 fill sell 000712.SZ vol=100 price=204.4890 amt=20448.90
+[INFO]  2021-01-06 fill sell 000822.SZ vol=3300 price=9.1215 amt=30100.88
+[INFO]  2021-01-06 fill buy 002841.SZ vol=400 price=193.5869 amt=77434.75
+[INFO]  2021-01-06 fill buy 000615.SZ vol=1200 price=74.1626 amt=88995.13
+[INFO]  2021-01-06 fill buy 002404.SZ vol=2300 price=40.6558 amt=93508.39
+[INFO]  2021-01-06 fill buy 000708.SZ vol=1100 price=86.2720 amt=94899.15
+[INFO]  2021-01-06 fill buy 000718.SZ vol=2700 price=33.0423 amt=89214.08
+[INFO]  2021-01-06 hold 5 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-01-08 fill sell 002404.SZ vol=3000 price=33.7013 amt=101103.79
+[INFO]  2021-01-08 fill buy 002841.SZ vol=200 price=188.8439 amt=37768.79
+[INFO]  2021-01-08 fill buy 000615.SZ vol=400 price=76.5340 amt=30613.58
+[INFO]  2021-01-08 fill buy 000708.SZ vol=200 price=91.8797 amt=18375.95
+[INFO]  2021-01-08 fill buy 000718.SZ vol=400 price=38.4418 amt=15376.74
+[INFO]  2021-01-08 hold 4 positions (no change)
+[INFO]  2021-01-11 hold 4 positions (no change)
+[INFO]  2021-01-12 hold 4 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-01-14 fill sell 000718.SZ vol=4200 price=32.1077 amt=134852.16
+[INFO]  2021-01-14 fill buy 002841.SZ vol=300 price=178.2885 amt=53486.54
+[INFO]  2021-01-14 fill buy 000615.SZ vol=400 price=84.1874 amt=33674.94
+[INFO]  2021-01-14 fill buy 000708.SZ vol=600 price=90.7606 amt=54456.35
+[INFO]  2021-01-14 hold 3 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-01-18 fill sell 002841.SZ vol=1100 price=165.7000 amt=182269.95
+[INFO]  2021-01-18 fill buy 000615.SZ vol=1000 price=89.8363 amt=89836.29
+[INFO]  2021-01-18 fill buy 000708.SZ vol=1000 price=94.1542 amt=94154.17
+[INFO]  2021-01-18 hold 2 positions (no change)
+[INFO]  2021-01-19 hold 2 positions (no change)
+[INFO]  2021-01-20 hold 2 positions (no change)
+[INFO]  2021-01-21 hold 2 positions (no change)
+[INFO]  2021-01-22 hold 2 positions (no change)
+[INFO]  2021-01-25 hold 2 positions (no change)
+[INFO]  2021-01-26 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-01-28 fill sell 000615.SZ vol=3400 price=86.2107 amt=293116.49
+[INFO]  2021-01-28 fill buy 000708.SZ vol=3100 price=100.0749 amt=310232.22
+[INFO]  2021-01-28 hold 1 positions (no change)
+[INFO]  2021-01-29 hold 1 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-02-02 fill sell 000708.SZ vol=5900 price=101.7610 amt=600389.72
+[INFO]  2021-02-02 fill buy 000698.SZ vol=2000 price=19.6802 amt=39360.32
+[INFO]  2021-02-02 fill buy 601155.SH vol=500 price=67.2895 amt=33644.75
+[INFO]  2021-02-02 fill buy 601619.SH vol=11200 price=3.5501 amt=39761.41
+[INFO]  2021-02-02 fill buy 300731.SZ vol=1100 price=35.8885 amt=39477.40
+[INFO]  2021-02-02 fill buy 603517.SH vol=200 price=139.5759 amt=27915.18
+[INFO]  2021-02-02 fill buy 603595.SH vol=800 price=46.5377 amt=37230.15
+[INFO]  2021-02-02 fill buy 600882.SH vol=200 price=156.9466 amt=31389.33
+[INFO]  2021-02-02 fill buy 601949.SH vol=6100 price=6.5259 amt=39807.84
+[INFO]  2021-02-02 fill buy 002735.SZ vol=600 price=60.5158 amt=36309.50
+[INFO]  2021-02-02 fill buy 600816.SH vol=800 price=48.4004 amt=38720.36
+[INFO]  2021-02-02 fill buy 000733.SZ vol=200 price=134.5295 amt=26905.90
+[INFO]  2021-02-02 fill buy 002315.SZ vol=700 price=56.7306 amt=39711.39
+[INFO]  2021-02-02 fill buy 002425.SZ vol=1100 price=35.0367 amt=38540.41
+[INFO]  2021-02-02 fill buy 600880.SH vol=300 price=113.5480 amt=34064.39
+[INFO]  2021-02-02 fill buy 000712.SZ vol=100 price=211.2322 amt=21123.22
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-02-03 fill sell 000698.SZ vol=2000 price=19.6923 amt=39384.69
+[INFO]  2021-02-03 fill sell 601619.SH vol=11200 price=3.3827 amt=37885.80
+[INFO]  2021-02-03 fill sell 300731.SZ vol=1100 price=35.3334 amt=38866.78
+[INFO]  2021-02-03 fill sell 603595.SH vol=800 price=44.7414 amt=35793.10
+[INFO]  2021-02-03 fill sell 601949.SH vol=6100 price=6.3624 amt=38810.82
+[ERROR] 2021-02-03 unfilled_order code=002735.SZ reason=limit_down_at_open
+[INFO]  2021-02-03 fill sell 600816.SH vol=800 price=48.2072 amt=38565.79
+[INFO]  2021-02-03 fill sell 002315.SZ vol=700 price=54.3621 amt=38053.44
+[INFO]  2021-02-03 fill sell 002425.SZ vol=1100 price=38.9946 amt=42894.07
+[INFO]  2021-02-03 fill sell 600880.SH vol=300 price=113.0947 amt=33928.41
+[INFO]  2021-02-03 fill sell 000712.SZ vol=100 price=207.2390 amt=20723.90
+[INFO]  2021-02-03 fill buy 000708.SZ vol=700 price=108.3062 amt=75814.33
+[INFO]  2021-02-03 fill buy 601155.SH vol=1400 price=66.2381 amt=92733.36
+[INFO]  2021-02-03 fill buy 603517.SH vol=700 price=139.2253 amt=97457.71
+[INFO]  2021-02-03 fill buy 600882.SH vol=600 price=158.7821 amt=95269.27
+[INFO]  2021-02-03 fill buy 000733.SZ vol=700 price=140.9252 amt=98647.63
+[INFO]  min_position_value dropped 0 tiny weights
+[ERROR] 2021-02-04 unfilled_order code=000708.SZ reason=below_min_lot
+[ERROR] 2021-02-04 unfilled_order code=603517.SH reason=below_min_lot
+[ERROR] 2021-02-04 unfilled_order code=600882.SH reason=below_min_lot
+[ERROR] 2021-02-04 unfilled_order code=002735.SZ reason=limit_down_at_open
+[ERROR] 2021-02-04 unfilled_order code=601155.SH reason=below_min_lot
+[ERROR] 2021-02-04 unfilled_order code=000733.SZ reason=below_min_lot
+[INFO]  min_position_value dropped 0 tiny weights
+[ERROR] 2021-02-05 unfilled_order code=000708.SZ reason=below_min_lot
+[ERROR] 2021-02-05 unfilled_order code=603517.SH reason=below_min_lot
+[ERROR] 2021-02-05 unfilled_order code=600882.SH reason=below_min_lot
+[ERROR] 2021-02-05 unfilled_order code=002735.SZ reason=suspended
+[ERROR] 2021-02-05 unfilled_order code=601155.SH reason=below_min_lot
+[ERROR] 2021-02-05 unfilled_order code=000733.SZ reason=below_min_lot
+[INFO]  min_position_value dropped 0 tiny weights
+[ERROR] 2021-02-08 unfilled_order code=002735.SZ reason=suspended
+[INFO]  2021-02-08 fill sell 000733.SZ vol=900 price=123.0754 amt=110767.85
+[INFO]  2021-02-08 fill buy 000708.SZ vol=200 price=111.9164 amt=22383.28
+[INFO]  2021-02-08 fill buy 601155.SH vol=400 price=65.9377 amt=26375.08
+[INFO]  2021-02-08 fill buy 603517.SH vol=100 price=145.4780 amt=14547.80
+[INFO]  2021-02-08 fill buy 600882.SH vol=100 price=161.6188 amt=16161.88
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-02-09 fill sell 000708.SZ vol=1300 price=104.0982 amt=135327.71
+[ERROR] 2021-02-09 unfilled_order code=002735.SZ reason=suspended
+[INFO]  2021-02-09 fill buy 601155.SH vol=700 price=66.8389 amt=46787.24
+[INFO]  2021-02-09 fill buy 603517.SH vol=300 price=147.5379 amt=44261.37
+[INFO]  2021-02-09 fill buy 600882.SH vol=300 price=157.9001 amt=47370.04
+[INFO]  min_position_value dropped 0 tiny weights
+[ERROR] 2021-02-10 unfilled_order code=002735.SZ reason=suspended
+[INFO]  2021-02-10 fill buy 601155.SH vol=100 price=65.2017 amt=6520.17
+[ERROR] 2021-02-10 unfilled_order code=603517.SH reason=below_min_lot
+[ERROR] 2021-02-10 unfilled_order code=600882.SH reason=below_min_lot
+[INFO]  min_position_value dropped 0 tiny weights
+[ERROR] 2021-02-18 unfilled_order code=002735.SZ reason=suspended
+[ERROR] 2021-02-18 unfilled_order code=601155.SH reason=below_min_lot
+[ERROR] 2021-02-18 unfilled_order code=603517.SH reason=below_min_lot
+[ERROR] 2021-02-18 unfilled_order code=600882.SH reason=below_min_lot
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-02-19 fill sell 601155.SH vol=100 price=67.3201 amt=6732.01
+[ERROR] 2021-02-19 unfilled_order code=002735.SZ reason=suspended
+[ERROR] 2021-02-19 unfilled_order code=603517.SH reason=below_min_lot
+[INFO]  2021-02-19 fill buy 600882.SH vol=100 price=153.7762 amt=15377.62
+[INFO]  min_position_value dropped 0 tiny weights
+[ERROR] 2021-02-22 unfilled_order code=601155.SH reason=below_min_lot
+[ERROR] 2021-02-22 unfilled_order code=600882.SH reason=below_min_lot
+[ERROR] 2021-02-22 unfilled_order code=002735.SZ reason=suspended
+[INFO]  2021-02-22 fill buy 603517.SH vol=100 price=143.8272 amt=14382.72
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-02-23 fill sell 601155.SH vol=100 price=67.7689 amt=6776.89
+[ERROR] 2021-02-23 unfilled_order code=002735.SZ reason=suspended
+[ERROR] 2021-02-23 unfilled_order code=603517.SH reason=below_min_lot
+[ERROR] 2021-02-23 unfilled_order code=600882.SH reason=below_min_lot
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-02-24 fill sell 603517.SH vol=1400 price=138.2475 amt=193546.54
+[INFO]  2021-02-24 fill sell 600882.SH vol=1300 price=142.7869 amt=185622.99
+[ERROR] 2021-02-24 unfilled_order code=002735.SZ reason=suspended
+[INFO]  2021-02-24 fill buy 601155.SH vol=5600 price=68.1757 amt=381783.86
+[INFO]  min_position_value dropped 0 tiny weights
+[ERROR] 2021-02-25 unfilled_order code=002735.SZ reason=limit_down_at_open
+[ERROR] 2021-02-25 unfilled_order code=601155.SH reason=below_min_lot
+[INFO]  min_position_value dropped 0 tiny weights
+[ERROR] 2021-02-26 unfilled_order code=002735.SZ reason=limit_down_at_open
+[ERROR] 2021-02-26 unfilled_order code=601155.SH reason=below_min_lot
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-03-01 fill sell 002735.SZ vol=600 price=43.0654 amt=25839.24
+[ERROR] 2021-03-01 unfilled_order code=601155.SH reason=below_min_lot
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-03-02 fill sell 601155.SH vol=7700 price=74.8001 amt=575960.77
+[INFO]  2021-03-02 fill buy 000918.SZ vol=3100 price=16.6788 amt=51704.25
+[INFO]  2021-03-02 fill buy 002184.SZ vol=1000 price=52.7147 amt=52714.72
+[INFO]  2021-03-02 fill buy 300802.SZ vol=700 price=73.5893 amt=51512.49
+[INFO]  2021-03-02 fill buy 600766.SH vol=2500 price=20.4052 amt=51013.07
+[INFO]  2021-03-02 fill buy 002898.SZ vol=5500 price=9.6096 amt=52852.81
+[INFO]  2021-03-02 fill buy 002636.SZ vol=2300 price=22.3401 amt=51382.21
+[INFO]  2021-03-02 fill buy 002658.SZ vol=1900 price=27.7030 amt=52635.61
+[INFO]  2021-03-02 fill buy 002670.SZ vol=2300 price=22.8156 amt=52475.93
+[INFO]  2021-03-02 fill buy 002912.SZ vol=300 price=133.1196 amt=39935.88
+[INFO]  2021-03-02 fill buy 002544.SZ vol=600 price=88.0675 amt=52840.49
+[INFO]  2021-03-02 fill buy 002585.SZ vol=1400 price=37.4305 amt=52402.66
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-03-03 fill sell 000918.SZ vol=3100 price=18.9010 amt=58593.11
+[INFO]  2021-03-03 fill sell 600766.SH vol=2500 price=18.8480 amt=47119.94
+[INFO]  2021-03-03 fill sell 002898.SZ vol=5500 price=9.6049 amt=52826.74
+[INFO]  2021-03-03 fill sell 002636.SZ vol=2300 price=26.1252 amt=60087.93
+[INFO]  2021-03-03 fill sell 002658.SZ vol=1900 price=30.7311 amt=58389.00
+[INFO]  2021-03-03 fill sell 002670.SZ vol=2300 price=23.0039 amt=52909.06
+[INFO]  2021-03-03 fill sell 002912.SZ vol=300 price=131.9900 amt=39597.00
+[INFO]  2021-03-03 fill sell 002544.SZ vol=600 price=86.8350 amt=52100.99
+[INFO]  2021-03-03 fill buy 601155.SH vol=1300 price=74.6643 amt=97063.62
+[INFO]  2021-03-03 fill buy 002184.SZ vol=2000 price=52.7147 amt=105429.44
+[INFO]  2021-03-03 fill buy 300802.SZ vol=1600 price=67.9087 amt=108653.99
+[INFO]  2021-03-03 fill buy 002585.SZ vol=2900 price=37.2090 amt=107906.07
+[INFO]  2021-03-03 hold 4 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-03-05 fill sell 002184.SZ vol=3000 price=47.7508 amt=143252.42
+[INFO]  2021-03-05 fill sell 300802.SZ vol=2300 price=61.1944 amt=140747.23
+[INFO]  2021-03-05 fill buy 601155.SH vol=2200 price=72.1109 amt=158644.03
+[INFO]  2021-03-05 fill buy 002585.SZ vol=4000 price=37.6520 amt=150607.82
+[INFO]  2021-03-05 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-03-09 fill sell 601155.SH vol=4300 price=66.9760 amt=287996.84
+[INFO]  2021-03-09 fill buy 002585.SZ vol=7000 price=39.4238 amt=275966.67
+[INFO]  2021-03-09 hold 1 positions (no change)
+[INFO]  2021-03-10 hold 1 positions (no change)
+[INFO]  2021-03-11 hold 1 positions (no change)
+[INFO]  2021-03-12 hold 1 positions (no change)
+[INFO]  2021-03-15 hold 1 positions (no change)
+[INFO]  2021-03-16 hold 1 positions (no change)
+[INFO]  2021-03-17 hold 1 positions (no change)
+[INFO]  2021-03-18 hold 1 positions (no change)
+[INFO]  2021-03-19 hold 1 positions (no change)
+[INFO]  2021-03-22 hold 1 positions (no change)
+[INFO]  2021-03-23 hold 1 positions (no change)
+[INFO]  2021-03-24 hold 1 positions (no change)
+[INFO]  2021-03-25 hold 1 positions (no change)
+[INFO]  2021-03-26 hold 1 positions (no change)
+[INFO]  2021-03-29 hold 1 positions (no change)
+[INFO]  2021-03-30 hold 1 positions (no change)
+[INFO]  2021-03-31 hold 1 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-04-02 fill sell 002585.SZ vol=14300 price=42.9063 amt=613560.02
+[INFO]  2021-04-02 fill buy 002900.SZ vol=1200 price=26.2772 amt=31532.63
+[INFO]  2021-04-02 fill buy 300675.SZ vol=1500 price=20.8889 amt=31333.34
+[INFO]  2021-04-02 fill buy 002060.SZ vol=2100 price=15.2403 amt=32004.67
+[INFO]  2021-04-02 fill buy 000543.SZ vol=1500 price=21.5120 amt=32267.98
+[INFO]  2021-04-02 fill buy 002355.SZ vol=2300 price=13.6488 amt=31392.29
+[INFO]  2021-04-02 fill buy 000958.SZ vol=1400 price=22.8426 amt=31979.63
+[INFO]  2021-04-02 fill buy 002875.SZ vol=2000 price=15.5871 amt=31174.26
+[INFO]  2021-04-02 fill buy 300374.SZ vol=1000 price=31.3004 amt=31300.42
+[INFO]  2021-04-02 fill buy 002307.SZ vol=1500 price=21.5531 amt=32329.67
+[INFO]  2021-04-02 fill buy 002907.SZ vol=2500 price=12.6707 amt=31676.78
+[INFO]  2021-04-02 fill buy 002802.SZ vol=1200 price=26.9670 amt=32360.43
+[INFO]  2021-04-02 fill buy 002370.SZ vol=2300 price=13.9006 amt=31971.49
+[INFO]  2021-04-02 fill buy 002173.SZ vol=1500 price=20.6118 amt=30917.73
+[INFO]  2021-04-02 fill buy 000159.SZ vol=1700 price=18.2087 amt=30954.78
+[INFO]  2021-04-02 fill buy 002800.SZ vol=1700 price=18.8710 amt=32080.68
+[INFO]  2021-04-02 fill buy 000813.SZ vol=2100 price=15.2815 amt=32091.15
+[INFO]  2021-04-02 fill buy 002518.SZ vol=400 price=71.1163 amt=28446.52
+[INFO]  2021-04-02 fill buy 002962.SZ vol=1400 price=21.7754 amt=30485.54
+[INFO]  2021-04-02 fill buy 300081.SZ vol=700 price=43.7151 amt=30600.54
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-04-06 fill sell 300675.SZ vol=1500 price=19.2198 amt=28829.76
+[INFO]  2021-04-06 fill sell 002060.SZ vol=2100 price=14.3642 amt=30164.85
+[INFO]  2021-04-06 fill sell 000543.SZ vol=1500 price=20.7349 amt=31102.42
+[INFO]  2021-04-06 fill sell 002355.SZ vol=2300 price=13.7609 amt=31650.03
+[INFO]  2021-04-06 fill sell 000958.SZ vol=1400 price=22.1269 amt=30977.60
+[INFO]  2021-04-06 fill sell 002875.SZ vol=2000 price=15.9533 amt=31906.60
+[INFO]  2021-04-06 fill sell 300374.SZ vol=1000 price=30.9355 amt=30935.49
+[INFO]  2021-04-06 fill sell 002307.SZ vol=1500 price=21.0068 amt=31510.14
+[INFO]  2021-04-06 fill sell 002907.SZ vol=2500 price=12.3691 amt=30922.83
+[INFO]  2021-04-06 fill sell 002802.SZ vol=1200 price=27.2116 amt=32653.95
+[INFO]  2021-04-06 fill sell 002370.SZ vol=2300 price=13.5985 amt=31276.66
+[INFO]  2021-04-06 fill sell 002173.SZ vol=1500 price=20.0436 amt=30065.45
+[INFO]  2021-04-06 fill sell 000159.SZ vol=1700 price=17.6242 amt=29961.19
+[INFO]  2021-04-06 fill sell 002800.SZ vol=1700 price=18.9875 amt=32278.83
+[INFO]  2021-04-06 fill sell 000813.SZ vol=2100 price=15.0321 amt=31567.46
+[INFO]  2021-04-06 fill sell 002518.SZ vol=400 price=71.3281 amt=28531.24
+[INFO]  2021-04-06 fill sell 002962.SZ vol=1400 price=21.0977 amt=29536.81
+[INFO]  2021-04-06 fill sell 300081.SZ vol=700 price=43.2874 amt=30301.18
+[INFO]  2021-04-06 fill buy 002585.SZ vol=6600 price=42.6353 amt=281392.98
+[INFO]  2021-04-06 fill buy 002900.SZ vol=10800 price=27.0645 amt=292296.83
+[INFO]  2021-04-06 hold 2 positions (no change)
+[INFO]  2021-04-07 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-04-09 fill sell 002900.SZ vol=12000 price=23.7871 amt=285444.61
+[INFO]  2021-04-09 fill buy 002585.SZ vol=6400 price=44.8132 amt=286804.53
+[INFO]  2021-04-09 hold 1 positions (no change)
+[INFO]  2021-04-12 hold 1 positions (no change)
+[INFO]  2021-04-13 hold 1 positions (no change)
+[INFO]  2021-04-14 hold 1 positions (no change)
+[INFO]  2021-04-15 hold 1 positions (no change)
+[INFO]  2021-04-16 hold 1 positions (no change)
+[INFO]  2021-04-19 hold 1 positions (no change)
+[INFO]  2021-04-20 hold 1 positions (no change)
+[INFO]  2021-04-21 hold 1 positions (no change)
+[INFO]  2021-04-22 hold 1 positions (no change)
+[INFO]  2021-04-23 hold 1 positions (no change)
+[INFO]  2021-04-26 hold 1 positions (no change)
+[INFO]  2021-04-27 hold 1 positions (no change)
+[INFO]  2021-04-28 hold 1 positions (no change)
+[INFO]  2021-04-29 hold 1 positions (no change)
+[INFO]  2021-04-30 hold 1 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-05-07 fill sell 002585.SZ vol=14000 price=53.3112 amt=746356.30
+[INFO]  2021-05-07 fill buy 002172.SZ vol=2100 price=17.3536 amt=36442.64
+[INFO]  2021-05-07 fill buy 000908.SZ vol=2000 price=18.3467 amt=36693.44
+[INFO]  2021-05-07 fill buy 002174.SZ vol=800 price=46.1497 amt=36919.77
+[INFO]  2021-05-07 fill buy 002160.SZ vol=3700 price=9.8946 amt=36609.83
+[INFO]  2021-05-07 fill buy 000898.SZ vol=2300 price=16.0380 amt=36887.43
+[INFO]  2021-05-07 fill buy 002806.SZ vol=1800 price=20.5870 amt=37056.62
+[INFO]  2021-05-07 fill buy 002038.SZ vol=100 price=258.3010 amt=25830.10
+[ERROR] 2021-05-07 unfilled_order code=300782.SZ reason=below_min_lot
+[INFO]  2021-05-07 fill buy 000949.SZ vol=1500 price=24.5269 amt=36790.36
+[INFO]  2021-05-07 fill buy 002036.SZ vol=400 price=78.0804 amt=31232.18
+[INFO]  2021-05-07 fill buy 002826.SZ vol=3700 price=9.8259 amt=36355.80
+[INFO]  2021-05-07 fill buy 000159.SZ vol=1800 price=20.2319 amt=36417.39
+[INFO]  2021-05-07 fill buy 000892.SZ vol=5300 price=6.9498 amt=36834.00
+[INFO]  2021-05-07 fill buy 000887.SZ vol=400 price=79.5256 amt=31810.22
+[INFO]  2021-05-07 fill buy 000692.SZ vol=800 price=44.5825 amt=35665.99
+[INFO]  2021-05-07 fill buy 002254.SZ vol=300 price=99.5200 amt=29856.00
+[INFO]  2021-05-07 fill buy 002471.SZ vol=2000 price=17.8996 amt=35799.30
+[INFO]  2021-05-07 fill buy 000573.SZ vol=1600 price=22.3323 amt=35731.62
+[INFO]  2021-05-07 fill buy 002156.SZ vol=600 price=58.5813 amt=35148.77
+[INFO]  2021-05-07 fill buy 002046.SZ vol=800 price=42.0484 amt=33638.74
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-05-10 fill sell 000908.SZ vol=2000 price=17.3132 amt=34626.41
+[INFO]  2021-05-10 fill sell 002174.SZ vol=800 price=48.1395 amt=38511.62
+[INFO]  2021-05-10 fill sell 002160.SZ vol=3700 price=9.8972 amt=36619.51
+[INFO]  2021-05-10 fill sell 002806.SZ vol=1800 price=19.7805 amt=35604.94
+[INFO]  2021-05-10 fill sell 002038.SZ vol=100 price=249.3042 amt=24930.42
+[INFO]  2021-05-10 fill sell 002036.SZ vol=400 price=76.7131 amt=30685.23
+[INFO]  2021-05-10 fill sell 002826.SZ vol=3700 price=9.6251 amt=35612.76
+[INFO]  2021-05-10 fill sell 000159.SZ vol=1800 price=20.0232 amt=36041.71
+[INFO]  2021-05-10 fill sell 000892.SZ vol=5300 price=6.9469 amt=36818.45
+[INFO]  2021-05-10 fill sell 000887.SZ vol=400 price=79.7749 amt=31909.95
+[INFO]  2021-05-10 fill sell 000692.SZ vol=800 price=44.7695 amt=35815.59
+[INFO]  2021-05-10 fill sell 002254.SZ vol=300 price=102.0147 amt=30604.42
+[INFO]  2021-05-10 fill sell 002471.SZ vol=2000 price=17.9664 amt=35932.79
+[INFO]  2021-05-10 fill sell 000573.SZ vol=1600 price=22.7017 amt=36322.78
+[INFO]  2021-05-10 fill sell 002156.SZ vol=600 price=55.1106 amt=33066.33
+[INFO]  2021-05-10 fill sell 002046.SZ vol=800 price=41.1415 amt=32913.20
+[INFO]  2021-05-10 fill buy 002172.SZ vol=11800 price=17.8063 amt=210114.84
+[INFO]  2021-05-10 fill buy 000898.SZ vol=12900 price=16.2801 amt=210013.23
+[INFO]  2021-05-10 fill buy 000949.SZ vol=8000 price=25.9557 amt=207645.26
+[INFO]  2021-05-10 hold 3 positions (no change)
+[INFO]  2021-05-11 hold 3 positions (no change)
+[INFO]  2021-05-12 hold 3 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-05-14 fill sell 000898.SZ vol=15200 price=13.8341 amt=210277.96
+[INFO]  2021-05-14 fill buy 002172.SZ vol=3600 price=21.2469 amt=76488.80
+[INFO]  2021-05-14 fill buy 000949.SZ vol=5100 price=25.6708 amt=130921.07
+[INFO]  2021-05-14 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-05-18 fill sell 002172.SZ vol=17500 price=19.1481 amt=335091.17
+[INFO]  2021-05-18 fill buy 000949.SZ vol=13800 price=24.4302 amt=337136.80
+[INFO]  2021-05-18 hold 1 positions (no change)
+[INFO]  rebalance 2021-05-19: empty target_weights -> full exit
+[INFO]  2021-05-20 fill sell 000949.SZ vol=28400 price=23.6673 amt=672152.17
+[INFO]  2021-05-20 hold (empty)
+[INFO]  2021-05-21 hold (empty)
+[INFO]  2021-05-24 hold (empty)
+[INFO]  2021-05-25 hold (empty)
+[INFO]  2021-05-26 hold (empty)
+[INFO]  2021-05-27 hold (empty)
+[INFO]  2021-05-28 hold (empty)
+[INFO]  2021-05-31 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-06-02 fill buy 002858.SZ vol=1100 price=30.5428 amt=33597.04
+[INFO]  2021-06-02 fill buy 002793.SZ vol=900 price=38.7033 amt=34832.93
+[INFO]  2021-06-02 fill buy 002589.SZ vol=700 price=46.1251 amt=32287.57
+[INFO]  2021-06-02 fill buy 002915.SZ vol=1100 price=30.3963 amt=33435.95
+[INFO]  2021-06-02 fill buy 002805.SZ vol=1100 price=31.7524 amt=34927.62
+[INFO]  2021-06-02 fill buy 002724.SZ vol=1400 price=24.2438 amt=33941.35
+[INFO]  2021-06-02 fill buy 002857.SZ vol=1400 price=23.6659 amt=33132.31
+[INFO]  2021-06-02 fill buy 002582.SZ vol=600 price=50.5903 amt=30354.16
+[INFO]  2021-06-02 fill buy 002732.SZ vol=1400 price=25.0832 amt=35116.42
+[INFO]  2021-06-02 fill buy 002823.SZ vol=1600 price=21.9144 amt=35063.04
+[INFO]  2021-06-02 fill buy 002809.SZ vol=1300 price=26.4728 amt=34414.69
+[ERROR] 2021-06-02 unfilled_order code=002568.SZ reason=below_min_lot
+[INFO]  2021-06-02 fill buy 002666.SZ vol=1500 price=23.1462 amt=34719.30
+[INFO]  2021-06-02 fill buy 002627.SZ vol=1900 price=17.8895 amt=33990.14
+[INFO]  2021-06-02 fill buy 002689.SZ vol=3100 price=11.2063 amt=34739.55
+[INFO]  2021-06-02 fill buy 002932.SZ vol=300 price=100.8844 amt=30265.31
+[INFO]  2021-06-02 fill buy 002599.SZ vol=2400 price=14.4834 amt=34760.06
+[INFO]  2021-06-02 fill buy 002896.SZ vol=1400 price=24.9150 amt=34880.94
+[INFO]  2021-06-02 fill buy 002557.SZ vol=200 price=164.9062 amt=32981.23
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-06-03 fill sell 002858.SZ vol=1100 price=30.7220 amt=33794.24
+[INFO]  2021-06-03 fill sell 002793.SZ vol=900 price=37.0565 amt=33350.88
+[INFO]  2021-06-03 fill sell 002589.SZ vol=700 price=44.9054 amt=31433.79
+[INFO]  2021-06-03 fill sell 002915.SZ vol=1100 price=29.7616 amt=32737.75
+[INFO]  2021-06-03 fill sell 002582.SZ vol=600 price=47.3713 amt=28422.78
+[INFO]  2021-06-03 fill sell 002732.SZ vol=1400 price=24.8224 amt=34751.35
+[INFO]  2021-06-03 fill sell 002823.SZ vol=1600 price=21.7638 amt=34822.14
+[INFO]  2021-06-03 fill sell 002809.SZ vol=1300 price=27.0527 amt=35168.52
+[INFO]  2021-06-03 fill sell 002666.SZ vol=1500 price=22.8233 amt=34234.89
+[INFO]  2021-06-03 fill sell 002627.SZ vol=1900 price=18.0095 amt=34218.12
+[INFO]  2021-06-03 fill sell 002689.SZ vol=3100 price=11.0492 amt=34252.54
+[INFO]  2021-06-03 fill sell 002932.SZ vol=300 price=96.1071 amt=28832.14
+[INFO]  2021-06-03 fill sell 002599.SZ vol=2400 price=14.1475 amt=33953.90
+[INFO]  2021-06-03 fill sell 002896.SZ vol=1400 price=24.2542 amt=33955.94
+[INFO]  2021-06-03 fill sell 002557.SZ vol=200 price=161.0273 amt=32205.46
+[INFO]  2021-06-03 fill buy 002805.SZ vol=6100 price=30.6184 amt=186772.02
+[INFO]  2021-06-03 fill buy 002724.SZ vol=8200 price=23.0442 amt=188962.49
+[INFO]  2021-06-03 fill buy 002857.SZ vol=7400 price=24.9072 amt=184313.39
+[INFO]  2021-06-03 hold 3 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-06-07 fill sell 002724.SZ vol=9600 price=21.8730 amt=209980.95
+[INFO]  2021-06-07 fill buy 002805.SZ vol=2900 price=32.6142 amt=94581.26
+[INFO]  2021-06-07 fill buy 002857.SZ vol=4600 price=24.6786 amt=113521.37
+[INFO]  2021-06-07 hold 2 positions (no change)
+[INFO]  2021-06-08 hold 2 positions (no change)
+[INFO]  2021-06-09 hold 2 positions (no change)
+[INFO]  2021-06-10 hold 2 positions (no change)
+[INFO]  2021-06-11 hold 2 positions (no change)
+[INFO]  2021-06-15 hold 2 positions (no change)
+[INFO]  2021-06-16 hold 2 positions (no change)
+[INFO]  2021-06-17 hold 2 positions (no change)
+[INFO]  2021-06-18 hold 2 positions (no change)
+[INFO]  2021-06-21 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-06-23 fill sell 002805.SZ vol=10100 price=31.0232 amt=313334.61
+[INFO]  2021-06-23 fill buy 002857.SZ vol=12500 price=24.7929 amt=309911.09
+[INFO]  2021-06-23 hold 1 positions (no change)
+[INFO]  2021-06-24 hold 1 positions (no change)
+[INFO]  2021-06-25 hold 1 positions (no change)
+[INFO]  2021-06-28 hold 1 positions (no change)
+[INFO]  2021-06-29 hold 1 positions (no change)
+[INFO]  rebalance 2021-06-30: empty target_weights -> full exit
+[INFO]  2021-07-01 fill sell 002857.SZ vol=25900 price=22.7418 amt=589013.27
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-07-02 fill buy 002772.SZ vol=1000 price=34.7378 amt=34737.82
+[INFO]  2021-07-02 fill buy 603098.SH vol=700 price=45.6685 amt=31967.95
+[INFO]  2021-07-02 fill buy 300827.SZ vol=400 price=82.0112 amt=32804.47
+[INFO]  2021-07-02 fill buy 002218.SZ vol=1100 price=29.8752 amt=32862.70
+[INFO]  2021-07-02 fill buy 002716.SZ vol=2400 price=14.4151 amt=34596.22
+[INFO]  2021-07-02 fill buy 688018.SH vol=100 price=224.4157 amt=22441.57
+[ERROR] 2021-07-02 unfilled_order code=600687.SH reason=suspended
+[INFO]  2021-07-02 fill buy 603628.SH vol=3700 price=9.4177 amt=34845.48
+[INFO]  2021-07-02 fill buy 600869.SH vol=600 price=50.1480 amt=30088.81
+[INFO]  2021-07-02 fill buy 002309.SZ vol=1600 price=21.5812 amt=34529.91
+[INFO]  2021-07-02 fill buy 002009.SZ vol=500 price=61.2376 amt=30618.82
+[INFO]  2021-07-02 fill buy 002091.SZ vol=500 price=62.9240 amt=31462.00
+[INFO]  2021-07-02 fill buy 002132.SZ vol=1600 price=20.9705 amt=33552.86
+[INFO]  2021-07-02 fill buy 688298.SH vol=100 price=216.4934 amt=21649.34
+[INFO]  2021-07-02 fill buy 000801.SZ vol=300 price=97.1089 amt=29132.68
+[INFO]  2021-07-02 fill buy 600355.SH vol=2100 price=16.3841 amt=34406.60
+[INFO]  2021-07-02 fill buy 600252.SH vol=200 price=147.0724 amt=29414.47
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-07-05 fill sell 603098.SH vol=700 price=48.7504 amt=34125.31
+[INFO]  2021-07-05 fill sell 002218.SZ vol=1100 price=29.9784 amt=32976.23
+[INFO]  2021-07-05 fill sell 002716.SZ vol=2400 price=13.3674 amt=32081.69
+[INFO]  2021-07-05 fill sell 688018.SH vol=100 price=242.0986 amt=24209.86
+[INFO]  2021-07-05 fill sell 603628.SH vol=3700 price=9.6637 amt=35755.82
+[INFO]  2021-07-05 fill sell 600869.SH vol=600 price=50.3747 amt=30224.84
+[INFO]  2021-07-05 fill sell 002309.SZ vol=1600 price=21.7962 amt=34873.92
+[INFO]  2021-07-05 fill sell 002132.SZ vol=1600 price=21.1202 amt=33792.31
+[INFO]  2021-07-05 fill sell 688298.SH vol=100 price=210.4992 amt=21049.92
+[INFO]  2021-07-05 fill sell 600355.SH vol=2100 price=16.7833 amt=35244.88
+[INFO]  2021-07-05 fill buy 002772.SZ vol=1900 price=33.8521 amt=64318.97
+[INFO]  2021-07-05 fill buy 300827.SZ vol=700 price=86.2229 amt=60356.03
+[INFO]  2021-07-05 fill buy 002009.SZ vol=1000 price=63.4964 amt=63496.42
+[INFO]  2021-07-05 fill buy 002091.SZ vol=1000 price=66.3484 amt=66348.43
+[INFO]  2021-07-05 fill buy 000801.SZ vol=700 price=97.2545 amt=68078.16
+[INFO]  2021-07-05 fill buy 600252.SH vol=400 price=146.2983 amt=58519.32
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-07-06 fill sell 002772.SZ vol=2900 price=31.8880 amt=92475.25
+[INFO]  2021-07-06 fill buy 300827.SZ vol=300 price=85.0118 amt=25503.54
+[INFO]  2021-07-06 fill buy 002009.SZ vol=300 price=63.2267 amt=18968.00
+[INFO]  2021-07-06 fill buy 002091.SZ vol=200 price=66.5625 amt=13312.49
+[INFO]  2021-07-06 fill buy 000801.SZ vol=200 price=96.3810 amt=19276.20
+[INFO]  2021-07-06 fill buy 600252.SH vol=100 price=147.4594 amt=14745.94
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-07-07 fill sell 600252.SH vol=700 price=132.9932 amt=93095.23
+[INFO]  2021-07-07 fill buy 300827.SZ vol=400 price=78.9925 amt=31596.99
+[INFO]  2021-07-07 fill buy 002009.SZ vol=300 price=66.8951 amt=20068.54
+[INFO]  2021-07-07 fill buy 002091.SZ vol=400 price=66.7051 amt=26682.06
+[INFO]  2021-07-07 fill buy 000801.SZ vol=300 price=96.6722 amt=29001.65
+[INFO]  2021-07-07 hold 4 positions (no change)
+[INFO]  2021-07-08 hold 4 positions (no change)
+[INFO]  2021-07-09 hold 4 positions (no change)
+[INFO]  2021-07-12 hold 4 positions (no change)
+[INFO]  2021-07-13 hold 4 positions (no change)
+[INFO]  2021-07-14 hold 4 positions (no change)
+[INFO]  2021-07-15 hold 4 positions (no change)
+[INFO]  2021-07-16 hold 4 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-07-20 fill sell 002009.SZ vol=2100 price=67.1654 amt=141047.34
+[INFO]  2021-07-20 fill buy 300827.SZ vol=700 price=84.9576 amt=59470.30
+[INFO]  2021-07-20 fill buy 002091.SZ vol=200 price=97.9531 amt=19590.62
+[INFO]  2021-07-20 fill buy 000801.SZ vol=700 price=101.4766 amt=71033.65
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-07-21 fill sell 300827.SZ vol=2500 price=87.1210 amt=217802.42
+[INFO]  2021-07-21 fill buy 002091.SZ vol=1000 price=102.2337 amt=102233.66
+[INFO]  2021-07-21 fill buy 000801.SZ vol=1000 price=104.2429 amt=104242.87
+[INFO]  2021-07-21 hold 2 positions (no change)
+[INFO]  2021-07-22 hold 2 positions (no change)
+[INFO]  2021-07-23 hold 2 positions (no change)
+[INFO]  2021-07-26 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-07-28 fill sell 002091.SZ vol=3300 price=86.4060 amt=285139.94
+[INFO]  2021-07-28 fill buy 000801.SZ vol=3000 price=102.7870 amt=308360.89
+[INFO]  2021-07-28 hold 1 positions (no change)
+[INFO]  2021-07-29 hold 1 positions (no change)
+[INFO]  2021-07-30 hold 1 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-08-03 fill sell 000801.SZ vol=6200 price=105.8569 amt=656312.54
+[INFO]  2021-08-03 fill buy 688368.SH vol=100 price=474.6730 amt=47467.30
+[INFO]  2021-08-03 fill buy 600577.SH vol=200 price=217.9885 amt=43597.70
+[ERROR] 2021-08-03 unfilled_order code=600687.SH reason=suspended
+[INFO]  2021-08-03 fill buy 002902.SZ vol=2100 price=22.7860 amt=47850.52
+[INFO]  2021-08-03 fill buy 002678.SZ vol=2300 price=21.0933 amt=48514.53
+[INFO]  2021-08-03 fill buy 603220.SH vol=3400 price=14.4721 amt=49205.09
+[INFO]  2021-08-03 fill buy 600623.SH vol=100 price=288.6593 amt=28865.93
+[INFO]  2021-08-03 fill buy 603897.SH vol=1400 price=34.4388 amt=48214.31
+[INFO]  2021-08-03 fill buy 600405.SH vol=1000 price=49.7353 amt=49735.26
+[INFO]  2021-08-03 fill buy 603773.SH vol=1600 price=29.9357 amt=47897.08
+[INFO]  2021-08-03 fill buy 603693.SH vol=3100 price=15.5607 amt=48238.04
+[INFO]  2021-08-03 fill buy 002742.SZ vol=1900 price=25.5720 amt=48586.88
+[INFO]  2021-08-03 fill buy 600395.SH vol=1200 price=39.6164 amt=47539.72
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-08-04 fill sell 688368.SH vol=100 price=441.0581 amt=44105.81
+[INFO]  2021-08-04 fill sell 002902.SZ vol=2100 price=21.5934 amt=45346.24
+[INFO]  2021-08-04 fill sell 603220.SH vol=3400 price=14.0987 amt=47935.74
+[INFO]  2021-08-04 fill sell 600405.SH vol=1000 price=48.5446 amt=48544.57
+[INFO]  2021-08-04 fill sell 603773.SH vol=1600 price=30.1345 amt=48215.18
+[INFO]  2021-08-04 fill sell 603693.SH vol=3100 price=15.4038 amt=47751.72
+[INFO]  2021-08-04 fill sell 002742.SZ vol=1900 price=25.3761 amt=48214.68
+[INFO]  2021-08-04 fill sell 600395.SH vol=1200 price=39.3474 amt=47216.94
+[INFO]  2021-08-04 fill buy 600577.SH vol=500 price=207.3549 amt=103677.45
+[INFO]  2021-08-04 fill buy 002678.SZ vol=4900 price=21.7844 amt=106743.57
+[INFO]  2021-08-04 fill buy 600623.SH vol=400 price=288.6593 amt=115463.73
+[INFO]  2021-08-04 fill buy 603897.SH vol=3500 price=32.5645 amt=113975.75
+[INFO]  2021-08-04 hold 4 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-08-06 fill sell 002678.SZ vol=7200 price=20.1830 amt=145317.77
+[INFO]  2021-08-06 fill buy 600577.SH vol=200 price=226.6887 amt=45337.74
+[INFO]  2021-08-06 fill buy 600623.SH vol=200 price=298.2137 amt=59642.75
+[INFO]  2021-08-06 fill buy 603897.SH vol=800 price=37.2764 amt=29821.12
+[INFO]  2021-08-06 hold 3 positions (no change)
+[INFO]  2021-08-09 hold 3 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-08-11 fill sell 600577.SH vol=900 price=206.5271 amt=185874.42
+[INFO]  2021-08-11 fill buy 600623.SH vol=300 price=315.8749 amt=94762.48
+[INFO]  2021-08-11 fill buy 603897.SH vol=2400 price=41.6428 amt=99942.65
+[INFO]  2021-08-11 hold 2 positions (no change)
+[INFO]  2021-08-12 hold 2 positions (no change)
+[INFO]  2021-08-13 hold 2 positions (no change)
+[INFO]  2021-08-16 hold 2 positions (no change)
+[INFO]  2021-08-17 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-08-19 fill sell 603897.SH vol=8100 price=39.4846 amt=319825.04
+[INFO]  2021-08-19 fill buy 600623.SH vol=1000 price=342.8010 amt=342801.03
+[INFO]  2021-08-19 hold 1 positions (no change)
+[INFO]  2021-08-20 hold 1 positions (no change)
+[INFO]  2021-08-23 hold 1 positions (no change)
+[INFO]  2021-08-24 hold 1 positions (no change)
+[INFO]  2021-08-25 hold 1 positions (no change)
+[INFO]  2021-08-26 hold 1 positions (no change)
+[INFO]  2021-08-27 hold 1 positions (no change)
+[INFO]  2021-08-30 hold 1 positions (no change)
+[INFO]  2021-08-31 hold 1 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-09-02 fill sell 600623.SH vol=1800 price=335.3768 amt=603678.15
+[INFO]  2021-09-02 fill buy 603396.SH vol=300 price=217.7847 amt=65335.41
+[INFO]  2021-09-02 fill buy 002986.SZ vol=1100 price=58.2100 amt=64031.01
+[INFO]  2021-09-02 fill buy 600590.SH vol=1800 price=36.8509 amt=66331.54
+[INFO]  2021-09-02 fill buy 600307.SH vol=5300 price=12.7547 amt=67600.17
+[ERROR] 2021-09-02 unfilled_order code=600687.SH reason=suspended
+[INFO]  2021-09-02 fill buy 000546.SZ vol=4900 price=13.8467 amt=67848.77
+[INFO]  2021-09-02 fill buy 002947.SZ vol=1800 price=37.2285 amt=67011.24
+[ERROR] 2021-09-02 unfilled_order code=000016.SZ reason=suspended
+[INFO]  2021-09-02 fill buy 002534.SZ vol=1600 price=41.7427 amt=66788.32
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-09-03 fill sell 603396.SH vol=300 price=229.9302 amt=68979.07
+[INFO]  2021-09-03 fill sell 000546.SZ vol=4900 price=13.8282 amt=67758.37
+[INFO]  2021-09-03 fill sell 002947.SZ vol=1800 price=37.0665 amt=66719.73
+[INFO]  2021-09-03 fill buy 600623.SH vol=100 price=359.8832 amt=35988.32
+[INFO]  2021-09-03 fill buy 002986.SZ vol=1100 price=62.5750 amt=68832.54
+[INFO]  2021-09-03 fill buy 600590.SH vol=1800 price=38.7156 amt=69688.07
+[INFO]  2021-09-03 fill buy 600307.SH vol=5100 price=13.6446 amt=69587.54
+[INFO]  2021-09-03 fill buy 002534.SZ vol=1400 price=48.2720 amt=67580.84
+[INFO]  2021-09-03 hold 5 positions (no change)
+[INFO]  2021-09-06 hold 5 positions (no change)
+[INFO]  2021-09-07 hold 5 positions (no change)
+[INFO]  2021-09-08 hold 5 positions (no change)
+[INFO]  2021-09-09 hold 5 positions (no change)
+[INFO]  2021-09-10 hold 5 positions (no change)
+[INFO]  2021-09-13 hold 5 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-09-15 fill sell 002986.SZ vol=2200 price=61.5101 amt=135322.14
+[INFO]  2021-09-15 fill sell 600590.SH vol=3600 price=35.7309 amt=128631.15
+[INFO]  2021-09-15 fill buy 600623.SH vol=200 price=418.9469 amt=83789.37
+[INFO]  2021-09-15 fill buy 600307.SH vol=7100 price=13.3904 amt=95071.61
+[INFO]  2021-09-15 fill buy 002534.SZ vol=1800 price=48.4071 amt=87132.82
+[INFO]  2021-09-15 hold 3 positions (no change)
+[INFO]  2021-09-16 hold 3 positions (no change)
+[INFO]  2021-09-17 hold 3 positions (no change)
+[INFO]  2021-09-22 hold 3 positions (no change)
+[INFO]  2021-09-23 hold 3 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-09-27 fill sell 600623.SH vol=500 price=387.2837 amt=193641.86
+[INFO]  2021-09-27 fill sell 600307.SH vol=17500 price=12.9149 amt=226010.03
+[INFO]  2021-09-27 fill buy 002534.SZ vol=7900 price=57.5032 amt=454274.94
+[INFO]  2021-09-27 hold 1 positions (no change)
+[INFO]  2021-09-28 hold 1 positions (no change)
+[INFO]  rebalance 2021-09-29: empty target_weights -> full exit
+[INFO]  2021-09-30 fill sell 002534.SZ vol=12700 price=51.9140 amt=659307.98
+[INFO]  2021-09-30 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-10-11 fill buy 603318.SH vol=1800 price=29.4813 amt=53066.31
+[INFO]  2021-10-11 fill buy 603159.SH vol=1700 price=30.9443 amt=52605.35
+[ERROR] 2021-10-11 unfilled_order code=600687.SH reason=suspended
+[INFO]  2021-10-11 fill buy 603603.SH vol=8700 price=6.2587 amt=54450.97
+[INFO]  2021-10-11 fill buy 603031.SH vol=1000 price=54.4548 amt=54454.77
+[INFO]  2021-10-11 fill buy 300679.SZ vol=300 price=149.3084 amt=44792.53
+[INFO]  2021-10-11 fill buy 002534.SZ vol=1100 price=47.9568 amt=52752.50
+[INFO]  2021-10-11 fill buy 603138.SH vol=1100 price=47.3685 amt=52105.31
+[INFO]  2021-10-11 fill buy 600979.SH vol=2600 price=20.7364 amt=53914.72
+[ERROR] 2021-10-11 unfilled_order code=600861.SH reason=suspended
+[INFO]  2021-10-11 fill buy 603101.SH vol=4500 price=12.0913 amt=54410.82
+[INFO]  2021-10-11 fill buy 300788.SZ vol=1500 price=34.2850 amt=51427.49
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-10-12 fill sell 603318.SH vol=1800 price=27.5510 amt=49591.85
+[INFO]  2021-10-12 fill sell 603603.SH vol=8700 price=6.1224 amt=53265.15
+[INFO]  2021-10-12 fill sell 603031.SH vol=1000 price=53.0645 amt=53064.46
+[INFO]  2021-10-12 fill sell 300679.SZ vol=300 price=149.4325 amt=44829.76
+[INFO]  2021-10-12 fill sell 002534.SZ vol=1100 price=42.7646 amt=47041.05
+[INFO]  2021-10-12 fill sell 603138.SH vol=1100 price=49.6266 amt=54589.29
+[INFO]  2021-10-12 fill sell 600979.SH vol=2600 price=19.3353 amt=50271.86
+[INFO]  2021-10-12 fill sell 603101.SH vol=4500 price=12.2017 amt=54907.87
+[INFO]  2021-10-12 fill sell 300788.SZ vol=1500 price=35.6577 amt=53486.49
+[INFO]  2021-10-12 fill buy 603159.SH vol=18700 price=32.0505 amt=599344.97
+[INFO]  2021-10-12 hold 1 positions (no change)
+[INFO]  2021-10-13 hold 1 positions (no change)
+[INFO]  rebalance 2021-10-14: empty target_weights -> full exit
+[INFO]  2021-10-15 fill sell 603159.SH vol=20400 price=27.0306 amt=551424.85
+[INFO]  2021-10-15 hold (empty)
+[INFO]  2021-10-18 hold (empty)
+[INFO]  2021-10-19 hold (empty)
+[INFO]  2021-10-20 hold (empty)
+[INFO]  2021-10-21 hold (empty)
+[INFO]  2021-10-22 hold (empty)
+[INFO]  2021-10-25 hold (empty)
+[INFO]  2021-10-26 hold (empty)
+[INFO]  2021-10-27 hold (empty)
+[INFO]  2021-10-28 hold (empty)
+[INFO]  2021-10-29 hold (empty)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-11-02 fill buy 603038.SH vol=600 price=40.7804 amt=24468.27
+[INFO]  2021-11-02 fill buy 603129.SH vol=100 price=179.9985 amt=17999.85
+[ERROR] 2021-11-02 unfilled_order code=600687.SH reason=suspended
+[INFO]  2021-11-02 fill buy 603800.SH vol=1200 price=21.4343 amt=25721.14
+[INFO]  2021-11-02 fill buy 688033.SH vol=800 price=32.2481 amt=25798.47
+[ERROR] 2021-11-02 unfilled_order code=000568.SZ reason=below_min_lot
+[INFO]  2021-11-02 fill buy 002330.SZ vol=1900 price=13.7142 amt=26057.01
+[ERROR] 2021-11-02 unfilled_order code=603806.SH reason=below_min_lot
+[INFO]  2021-11-02 fill buy 600733.SH vol=200 price=122.7674 amt=24553.49
+[INFO]  2021-11-02 fill buy 603583.SH vol=100 price=144.5429 amt=14454.29
+[INFO]  2021-11-02 fill buy 002885.SZ vol=700 price=36.1833 amt=25328.34
+[ERROR] 2021-11-02 unfilled_order code=603338.SH reason=below_min_lot
+[INFO]  2021-11-02 fill buy 603101.SH vol=2100 price=12.6889 amt=26646.66
+[INFO]  2021-11-02 fill buy 603786.SH vol=400 price=65.5402 amt=26216.09
+[INFO]  2021-11-02 fill buy 601111.SH vol=2800 price=9.5225 amt=26663.02
+[INFO]  2021-11-02 fill buy 002142.SZ vol=300 price=84.1227 amt=25236.81
+[INFO]  2021-11-02 fill buy 600609.SH vol=100 price=167.3038 amt=16730.38
+[INFO]  2021-11-02 fill buy 603605.SH vol=100 price=201.9262 amt=20192.62
+[INFO]  2021-11-02 fill buy 603755.SH vol=600 price=44.8401 amt=26904.08
+[INFO]  2021-11-02 fill buy 688065.SH vol=100 price=155.4112 amt=15541.12
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-11-03 fill sell 603038.SH vol=600 price=41.3135 amt=24788.07
+[INFO]  2021-11-03 fill sell 688033.SH vol=800 price=30.8028 amt=24642.26
+[INFO]  2021-11-03 fill sell 002330.SZ vol=1900 price=13.8438 amt=26303.18
+[INFO]  2021-11-03 fill sell 600733.SH vol=200 price=116.0187 amt=23203.74
+[INFO]  2021-11-03 fill sell 603583.SH vol=100 price=147.5943 amt=14759.43
+[INFO]  2021-11-03 fill sell 002885.SZ vol=700 price=35.6304 amt=24941.28
+[INFO]  2021-11-03 fill sell 603101.SH vol=2100 price=12.4200 amt=26081.98
+[INFO]  2021-11-03 fill sell 603786.SH vol=400 price=68.8979 amt=27559.15
+[INFO]  2021-11-03 fill sell 601111.SH vol=2800 price=9.6102 amt=26908.53
+[INFO]  2021-11-03 fill sell 002142.SZ vol=300 price=79.7477 amt=23924.30
+[INFO]  2021-11-03 fill sell 600609.SH vol=100 price=156.5446 amt=15654.46
+[INFO]  2021-11-03 fill sell 603605.SH vol=100 price=199.6485 amt=19964.85
+[INFO]  2021-11-03 fill sell 603755.SH vol=600 price=45.9337 amt=27560.22
+[INFO]  2021-11-03 fill sell 688065.SH vol=100 price=151.7829 amt=15178.29
+[INFO]  2021-11-03 fill buy 603129.SH vol=1300 price=183.4061 amt=238427.90
+[INFO]  2021-11-03 fill buy 603800.SH vol=12000 price=20.4450 amt=245340.10
+[INFO]  2021-11-03 hold 2 positions (no change)
+[INFO]  2021-11-04 hold 2 positions (no change)
+[INFO]  2021-11-05 hold 2 positions (no change)
+[INFO]  2021-11-08 hold 2 positions (no change)
+[INFO]  2021-11-09 hold 2 positions (no change)
+[INFO]  2021-11-10 hold 2 positions (no change)
+[INFO]  2021-11-11 hold 2 positions (no change)
+[INFO]  2021-11-12 hold 2 positions (no change)
+[INFO]  2021-11-15 hold 2 positions (no change)
+[INFO]  2021-11-16 hold 2 positions (no change)
+[INFO]  2021-11-17 hold 2 positions (no change)
+[INFO]  2021-11-18 hold 2 positions (no change)
+[INFO]  2021-11-19 hold 2 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-11-23 fill sell 603800.SH vol=13200 price=25.1696 amt=332238.59
+[INFO]  2021-11-23 fill buy 603129.SH vol=1800 price=189.2521 amt=340653.87
+[INFO]  2021-11-23 hold 1 positions (no change)
+[INFO]  2021-11-24 hold 1 positions (no change)
+[INFO]  2021-11-25 hold 1 positions (no change)
+[INFO]  2021-11-26 hold 1 positions (no change)
+[INFO]  2021-11-29 hold 1 positions (no change)
+[INFO]  2021-11-30 hold 1 positions (no change)
+[INFO]  min_position_value dropped 0 tiny weights
+[INFO]  2021-12-02 fill sell 603129.SH vol=3200 price=178.5119 amt=571237.96
+[INFO]  2021-12-02 fill buy 300289.SZ vol=1400 price=20.2441 amt=28341.72
+[INFO]  2021-12-02 fill buy 002965.SZ vol=900 price=30.3424 amt=27308.18
+[INFO]  2021-12-02 fill buy 300371.SZ vol=400 price=61.6709 amt=24668.35
+[INFO]  2021-12-02 fill buy 300131.SZ vol=100 price=147.6241 amt=14762.41
+[INFO]  2021-12-02 fill buy 300203.SZ vol=1100 price=25.4869 amt=28035.61
+[INFO]  2021-12-02 fill buy 300334.SZ vol=1100 price=24.7152 amt=27186.70
+[INFO]  2021-12-02 fill buy 300342.SZ vol=400 price=64.7312 amt=25892.48
+[INFO]  2021-12-02 fill buy 300569.SZ vol=200 price=126.7795 amt=25355.90
+[INFO]  2021-12-02 fill buy 300485.SZ vol=500 price=52.7546 amt=26377.30
+[INFO]  2021-12-02 fill buy 300465.SZ vol=700 price=36.8309 amt=25781.64
+[INFO]  2021-12-02 fill buy 300541.SZ vol=800 price=34.8738 amt=27899.05
+[INFO]  2021-12-02 fill buy 300584.SZ vol=1000 price=27.0385 amt=27038.53
+[INFO]  2021-12-02 fill buy 300214.SZ vol=1100 price=25.7857 amt=28364.28
+[INFO]  2021-12-02 fill buy 300310.SZ vol=700 price=39.9710 amt=27979.67
+[INFO]  2021-12-02 fill buy 300085.SZ vol=100 price=162.3528 amt=16235.28
+[INFO]  2021-12-02 fill buy 300486.SZ vol=1000 price=27.5462 amt=27546.18
+[INFO]  2021-12-02 fill buy 300097.SZ vol=800 price=35.4758 amt=28380.65
+[INFO]  2021-12-02 fill buy 300282.SZ vol=1400 price=19.6001 amt=27440.11
+[INFO]  2021-12-02 fill buy 300201.SZ vol=700 price=40.8409 amt=28588.64
+[INFO]  2021-12-02 fill buy 300534.SZ vol=1300 price=21.2973 amt=27686.45
+[INFO]  rebalance 2021-12-02: empty target_weights -> full exit
+[INFO]  2021-12-03 fill sell 300289.SZ vol=1400 price=19.6746 amt=27544.47
+[INFO]  2021-12-03 fill sell 002965.SZ vol=900 price=29.7929 amt=26813.62
+[INFO]  2021-12-03 fill sell 300371.SZ vol=400 price=57.1742 amt=22869.69
+[INFO]  2021-12-03 fill sell 300131.SZ vol=100 price=140.5615 amt=14056.15
+[INFO]  2021-12-03 fill sell 300203.SZ vol=1100 price=25.8800 amt=28468.04
+[INFO]  2021-12-03 fill sell 300334.SZ vol=1100 price=23.8027 amt=26183.02
+[INFO]  2021-12-03 fill sell 300342.SZ vol=400 price=62.4689 amt=24987.56
+[INFO]  2021-12-03 fill sell 300569.SZ vol=200 price=117.0791 amt=23415.83
+[INFO]  2021-12-03 fill sell 300485.SZ vol=500 price=51.5471 amt=25773.56
+[INFO]  2021-12-03 fill sell 300465.SZ vol=700 price=36.6194 amt=25633.59
+[INFO]  2021-12-03 fill sell 300541.SZ vol=800 price=34.0909 amt=27272.71
+[INFO]  2021-12-03 fill sell 300584.SZ vol=1000 price=26.8839 amt=26883.94
+[INFO]  2021-12-03 fill sell 300214.SZ vol=1100 price=25.6167 amt=28178.33
+[INFO]  2021-12-03 fill sell 300310.SZ vol=700 price=39.1197 amt=27383.79
+[INFO]  2021-12-03 fill sell 300085.SZ vol=100 price=157.5387 amt=15753.87
+[INFO]  2021-12-03 fill sell 300486.SZ vol=1000 price=27.0054 amt=27005.40
+[INFO]  2021-12-03 fill sell 300097.SZ vol=800 price=34.5692 amt=27655.38
+[INFO]  2021-12-03 fill sell 300282.SZ vol=1400 price=19.0248 amt=26634.66
+[INFO]  2021-12-03 fill sell 300201.SZ vol=700 price=41.6363 amt=29145.38
+[INFO]  2021-12-03 fill sell 300534.SZ vol=1300 price=20.8259 amt=27073.72
+[INFO]  2021-12-03 hold (empty)
+[INFO]  2021-12-06 hold (empty)
+[INFO]  2021-12-07 hold (empty)
+[INFO]  2021-12-08 hold (empty)
+[INFO]  2021-12-09 hold (empty)
+[INFO]  2021-12-10 hold (empty)
+[INFO]  2021-12-13 hold (empty)
+[INFO]  2021-12-14 hold (empty)
+[INFO]  2021-12-15 hold (empty)
+[INFO]  2021-12-16 hold (empty)
+[INFO]  2021-12-17 hold (empty)
+[INFO]  2021-12-20 hold (empty)
+[INFO]  2021-12-21 hold (empty)
+[INFO]  2021-12-22 hold (empty)
+[INFO]  2021-12-23 hold (empty)
+[INFO]  2021-12-24 hold (empty)
+[INFO]  2021-12-27 hold (empty)
+[INFO]  2021-12-28 hold (empty)
+[INFO]  2021-12-29 hold (empty)
+[INFO]  2021-12-30 hold (empty)
