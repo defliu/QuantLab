@@ -376,10 +376,20 @@ def _cancel_pending_orders(C):
     _pending_orders = {}
 
 def _rollback_pending(C, code, info):
-    """重试耗尽：回滚估算记账（真实成交交给收盘对账校准）
+    """重试耗尽/跨日残留：回滚估算记账（真实成交交给收盘对账校准）
+    2026-08-14 P1 修复: ①回滚前先反查并撤销 QMT 端活单，防止次日意外成交；
+    ②卖出回滚后若仍跌停/停牌，进暂缓队列（解封后自动补卖），不留管理空窗。
     按 original_amount 全额反冲估算，并标记 _today_orders rolled_back 防止对账二次反冲"""
-    global _cash, _holdings, _entry_prices, _entry_dates, _today_orders
+    global _cash, _holdings, _entry_prices, _entry_dates, _today_orders, _suspended_sells
     try:
+        # 1) 先撤 QMT 端活单（防次日意外成交）。
+        #    反查失败/查不到 = 可能已成交或已撤，不做动作，留给收盘对账按真实成交校准。
+        orders = _query_orders()
+        if orders:
+            order = _find_order(orders, code, info["type"])
+            order_id = getattr(order, "m_nOrderID", None) if order else None
+            if order_id:
+                _cancel_order_by(C, code, order_id)
         orig = info.get("original_amount", info.get("amount", 0))
         if info["type"] == "buy":
             _holdings.pop(code, None)
@@ -395,6 +405,14 @@ def _rollback_pending(C, code, info):
                 _holdings[code] = remain
                 _entry_prices[code] = info.get("entry_price", 0) or info["price"]
                 _entry_dates[code] = info.get("entry_date", "") or _get_market_time(C).strftime("%Y-%m-%d")
+                # 2) 恢复后仍跌停/停牌卖不出 -> 进暂缓队列，解封后自动补卖
+                try:
+                    if _is_limit_down(C, code) or _is_suspended(C, code):
+                        if code not in _suspended_sells:
+                            _suspended_sells.append(code)
+                            _log("[pending] %s 卖出放弃但跌停/停牌，进暂缓队列" % code, C)
+                except Exception:
+                    pass
             _cash -= orig * info["price"]
             _log("[pending] %s 卖出放弃(重试%d次)，恢复持仓 %d股 现金=%.0f"
                  % (code, info.get("retries", 0), remain, _cash), C)

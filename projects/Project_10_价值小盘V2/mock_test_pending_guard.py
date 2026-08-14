@@ -23,7 +23,16 @@ class _MockPos:
         self.m_strInstrumentID = inst
         self.m_nVolume = vol
 
+class _MockOrder:
+    def __init__(self, inst, opt_name, remark, order_id, vol_traded=0):
+        self.m_strInstrumentID = inst
+        self.m_strOptName = opt_name
+        self.m_strRemark = remark
+        self.m_nOrderID = order_id
+        self.m_nVolumeTraded = vol_traded
+
 _mock_positions = {}  # inst -> _MockPos
+_mock_orders = []     # list of _MockOrder
 
 def _mock_passorder(*args):
     _mock_order_log.append(args)
@@ -31,6 +40,8 @@ def _mock_passorder(*args):
 def _mock_get_trade_detail_data(acct, mtype, dtype):
     if dtype == "position":
         return list(_mock_positions.values())
+    if dtype == "order":
+        return list(_mock_orders)
     return []
 
 class MockC:
@@ -55,8 +66,13 @@ class MockC:
                 result[code] = pd.DataFrame(row, index=[0])
         return result
 
-    def set_price(self, code, close_price):
-        self._market_data[code] = {"close": [close_price]}
+    def set_price(self, code, close_price, pre_close=None, open_price=None, volume=1000000):
+        self._market_data[code] = {
+            "close": [close_price],
+            "pre_close": [pre_close if pre_close is not None else close_price],
+            "open": [open_price if open_price is not None else close_price],
+            "volume": [volume],
+        }
 
 _ns = {
     "__name__": "strategy_v2_mock",
@@ -108,6 +124,7 @@ def reset_state():
     _ss("_last_reconcile_date", "")
     _mock_order_log.clear()
     _mock_positions.clear()
+    _mock_orders.clear()
 
 # ============ Test 1 ============
 def test_sell_pending_guard():
@@ -369,6 +386,154 @@ def test_reconcile_buy_truly_unfilled():
     _assert(abs(_gs("_cash") - 100000.0) < 0.01,
             "cash refunded to pre-buy value")
 
+# ============ Test 12: rollback cancels live order before reverting (P1 fix) ============
+def test_rollback_cancels_live_order():
+    print("\n[Test 12] rollback: cancel QMT live order before reverting estimate")
+    reset_state()
+    from datetime import datetime as _dt, timedelta as _td
+    ts_now = 1723196400
+    C = MockC(ts_now)
+    C.set_price("688121.SH", 9.0)
+
+    # 卖出挂单 4 分钟未成交、已重试 3 次 -> 封顶回滚；QMT 端仍有活单(order_id=999)
+    _mock_orders.append(_MockOrder("688121", "卖出", "V2卖出", 999, vol_traded=0))
+    _ss("_holdings", {"688121.SH": 100})
+    _ss("_entry_prices", {"688121.SH": 10.0})
+    _ss("_entry_dates", {"688121.SH": "2024-08-01"})
+    _ss("_cash", 100000.0)
+    _ss("_pending_orders", {
+        "688121.SH": {"type": "sell", "amount": 100, "price": 9.0,
+                      "original_amount": 100, "retries": 3, "time": _dt.fromtimestamp(ts_now - 240),
+                      "entry_price": 10.0, "entry_date": "2024-08-01"},
+    })
+
+    _mock_order_log.clear()
+    _ns["_check_pending_orders"](C)
+
+    cancel_calls = [a for a in _mock_order_log if len(a) > 0 and a[0] == 24]
+    _assert(len(cancel_calls) >= 1, "live order cancelled before rollback (passorder(24) called)")
+    _assert("688121.SH" not in _gs("_pending_orders"), "pending removed after rollback")
+    _assert(_gs("_holdings").get("688121.SH") == 100, "holding restored after sell rollback")
+
+# ============ Test 13: sell rollback while limit-down -> suspended queue ============
+def test_rollback_limitdown_enters_suspended():
+    print("\n[Test 13] sell rollback: limit-down -> enters suspended queue")
+    reset_state()
+    from datetime import datetime as _dt
+    ts_now = 1723196400
+    C = MockC(ts_now)
+    C.set_price("688121.SH", 8.0, pre_close=10.0)  # -20% 科创板跌停
+    _mock_orders.append(_MockOrder("688121", "卖出", "V2卖出", 999, vol_traded=0))  # 跌停封死挂单未成交
+
+    _ss("_holdings", {"688121.SH": 100})
+    _ss("_entry_prices", {"688121.SH": 10.0})
+    _ss("_entry_dates", {"688121.SH": "2024-08-01"})
+    _ss("_cash", 100000.0)
+    _ss("_pending_orders", {
+        "688121.SH": {"type": "sell", "amount": 100, "price": 9.0,
+                      "original_amount": 100, "retries": 3, "time": _dt.fromtimestamp(ts_now - 240),
+                      "entry_price": 10.0, "entry_date": "2024-08-01"},
+    })
+
+    _ns["_check_pending_orders"](C)
+
+    _assert("688121.SH" in _gs("_holdings"), "holding restored after sell rollback")
+    _assert("688121.SH" in _gs("_suspended_sells"),
+            "limit-down stock enters suspended queue (no management gap)")
+
+# ============ Test 14: sell rollback not limit-down -> NOT suspended ============
+def test_rollback_no_limitdown_not_suspended():
+    print("\n[Test 14] sell rollback: no limit-down -> NOT in suspended queue")
+    reset_state()
+    from datetime import datetime as _dt
+    ts_now = 1723196400
+    C = MockC(ts_now)
+    C.set_price("688121.SH", 9.5, pre_close=10.0)  # -5% 非跌停
+    _mock_orders.append(_MockOrder("688121", "卖出", "V2卖出", 999, vol_traded=0))
+
+    _ss("_holdings", {"688121.SH": 100})
+    _ss("_entry_prices", {"688121.SH": 10.0})
+    _ss("_entry_dates", {"688121.SH": "2024-08-01"})
+    _ss("_cash", 100000.0)
+    _ss("_pending_orders", {
+        "688121.SH": {"type": "sell", "amount": 100, "price": 9.5,
+                      "original_amount": 100, "retries": 3, "time": _dt.fromtimestamp(ts_now - 240),
+                      "entry_price": 10.0, "entry_date": "2024-08-01"},
+    })
+
+    _ns["_check_pending_orders"](C)
+
+    _assert("688121.SH" in _gs("_holdings"), "holding restored after sell rollback")
+    _assert("688121.SH" not in _gs("_suspended_sells"),
+            "non-limit-down stock NOT in suspended queue")
+
+# ============ Test 15: END-TO-END 跌停卖出全链路演练 ============
+def test_full_rollback_scenario():
+    print("\n[Test 15] 端到端演练: 跌停卖出 -> 超时撤单重下x3 -> 回滚撤活单 -> 暂缓队列 -> 解封自动补卖")
+    reset_state()
+    from datetime import datetime as _dt
+    ts_base = 1723196400  # 2024-08-09
+    C = MockC(ts_base)
+    C.set_price("688121.SH", 8.0, pre_close=10.0)  # 科创板跌停 -20%
+
+    _ss("_holdings", {"688121.SH": 100})
+    _ss("_entry_prices", {"688121.SH": 10.0})
+    _ss("_entry_dates", {"688121.SH": "2024-07-01"})
+    _ss("_cash", 100000.0)
+    _ss("_inited", True)
+    _ss("_last_reconcile_date", "2024-08-08")
+
+    # ===== 第1步: 止损触发卖出（跌停封死，卖单挂在 QMT 端不成交） =====
+    _mock_order_log.clear()
+    _ns["_execute_sell"](C, "688121.SH")
+    _assert(len(_mock_order_log) == 1, "step1 卖单已下(挂单未成交)")
+    _assert("688121.SH" in _gs("_pending_orders"), "step1 pending 已跟踪")
+
+    # ===== 第2步: 3轮超时 -> 撤单重下（模拟 QMT 端每次挂单不成交） =====
+    for i in (1, 2, 3):
+        C._tick_time = ts_base + i * 200  # 每轮推进 ~3.3分钟
+        C._bar_time = C._tick_time
+        info = _gs("_pending_orders")["688121.SH"]
+        info["time"] = _dt.fromtimestamp(ts_base + (i - 1) * 200)  # 模拟上一轮遗留时间
+        _ss("_pending_orders", {"688121.SH": info})
+        _mock_orders.clear()
+        _mock_orders.append(_MockOrder("688121", "卖出", "V2卖出", 1000 + i, vol_traded=0))  # QMT 端挂单仍在
+        _ns["_check_pending_orders"](C)
+        _assert(_gs("_pending_orders").get("688121.SH", {}).get("retries", 0) == i,
+                "step2 第%d轮撤单重下 retry=%d" % (i, i))
+
+    # ===== 第3步: 第4轮超时 -> 重试封顶 -> 回滚：先撤活单，恢复持仓，进暂缓队列 =====
+    C._tick_time = ts_base + 4 * 200
+    C._bar_time = C._tick_time
+    info = _gs("_pending_orders")["688121.SH"]
+    info["time"] = _dt.fromtimestamp(ts_base + 3 * 200)
+    _ss("_pending_orders", {"688121.SH": info})
+    _mock_orders.clear()
+    _mock_orders.append(_MockOrder("688121", "卖出", "V2卖出", 1004, vol_traded=0))
+    _mock_order_log.clear()
+    _ns["_check_pending_orders"](C)
+
+    cancel_calls = [a for a in _mock_order_log if len(a) > 0 and a[0] == 24]
+    _assert(len(cancel_calls) >= 1, "step3 回滚前已撤 QMT 活单(撤单passorder(24)被调用)")
+    _assert("688121.SH" not in _gs("_pending_orders"), "step3 pending 已清理")
+    _assert(_gs("_holdings").get("688121.SH") == 100, "step3 持仓已恢复")
+    _assert("688121.SH" in _gs("_suspended_sells"), "step3 跌停 -> 进暂缓队列(无管理空窗)")
+
+    # ===== 第4步: 解封（非跌停）-> 暂缓队列自动补卖 =====
+    C.set_price("688121.SH", 10.5, pre_close=10.0)  # 次日/盘中解封 +5%
+    _mock_order_log.clear()
+    for code in list(_gs("_suspended_sells")):
+        if code in _gs("_pending_orders"):
+            continue
+        if not _ns["_is_limit_down"](C, code) and not _ns["_is_suspended"](C, code):
+            _gs("_suspended_sells").remove(code)
+            if code in _gs("_holdings"):
+                _ns["_execute_sell"](C, code)
+    _assert("688121.SH" not in _gs("_suspended_sells"), "step4 暂缓队列已移除")
+    _assert(len(_mock_order_log) == 1, "step4 补卖单已下(自动补卖)")
+    _assert(_gs("_pending_orders").get("688121.SH", {}).get("type") == "sell",
+            "step4 补卖进入 pending 跟踪")
+
 # ============ Run ============
 if __name__ == "__main__":
     print("=" * 60)
@@ -385,6 +550,10 @@ if __name__ == "__main__":
     test_reconcile_buy_position_fallback()
     test_reconcile_sell_position_fallback()
     test_reconcile_buy_truly_unfilled()
+    test_rollback_cancels_live_order()
+    test_rollback_limitdown_enters_suspended()
+    test_rollback_no_limitdown_not_suspended()
+    test_full_rollback_scenario()
     print("\n" + "=" * 60)
     print("Results: %d passed, %d failed" % (passed, failed))
     print("=" * 60)

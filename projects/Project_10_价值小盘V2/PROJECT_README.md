@@ -2,7 +2,8 @@
 
 > 立项日期：2026-08-02
 > 审计基线：audit14-17 (2026-08-01~02)
-> 状态：**v2.3 已集成退市排雷+buffer，待模拟盘验证**
+> 状态：**v2.3 已集成退市排雷+buffer；P0四异常2026-08-09定性关闭，修复版build 20260809-005102已部署，待模拟盘复跑验证**
+> **2026-08-09 P0封案**：模拟盘首跑（8-06）4个P0异常全部定性关闭——①688121重复下单10次：根因=reconcile每bar清场打穿在途跟踪，3处fix落地（在途守卫×2/reconcile每日闸门/循环跳过×2），MOCK 18/18，审查APPROVED（specs/688121重复下单Bug修复报告_20260809.md）；②非调仓日建仓67只=reconcile污染的连锁后果，修后不触发；③盘中卖出=止损每bar设计行为+调试模式解锁时间窗（部署生产前恢复09:35/14:50时间锁）；④额度冲突校验PASS（20万/1000万）。**拍板：MIN_POSITION_PCT=0.6补仓保留（与回测口径一致，诚哥2026-08-09批准）**。遗留P1：rollback/reconcile恢复持仓时未撤活单（下轮修）。
 > **2026-08-06 v2.3（讨论室拆解吸收，诚哥批准）**：并入小市值策略 v2.3 两个已验证组件——
 > ① 退市排雷（市值红线缓冲+退市临近剔除，config `universe.delist_screen`，QMT 端 `_delist_hit_qmt`）
 > ② buffer 降换手（config `rebalance.buffer_keep=160`，QMT 端 `BUFFER_KEEP_MAX=160`）。
@@ -103,7 +104,8 @@ python build.py
 
 - [x] 预生成CSV数据管道（`scripts/update_p10_csv.bat`，已注册计划任务 QuantLab_P10_CSV_Pipeline，工作日 18:30；v2.3 起 gen_qmt_csv.py 额外产出 financial_total_mv.csv + delist_info.csv）
 - [x] v2.3 退市排雷 + buffer 集成（研究回测+QMT单文件+本地验证，2026-08-06）
-- [ ] 模拟盘跑1个交易日验证日志（需 QMT 模拟端在线，人工执行；v2.3 需重点核对 [buffer]/[排雷] 日志行）
+- [ ] 模拟盘跑1个交易日验证日志（2026-08-10 复跑，核对清单：specs/模拟盘复跑核对清单_20260810.md；重点：无重复下单 + [buffer]/[排雷] 日志 + reconcile每日一次）
+- [ ] P1：rollback/reconcile 恢复持仓前撤活单（原子化"恢复+撤单"，修复报告审查遗留项）
 - [ ] 与SellStrategyEngine对接（分层卖出风控模块，D:/QuantLab 内集成）
 - [ ] 组合层配置（与红利低波等防御策略配比）
 

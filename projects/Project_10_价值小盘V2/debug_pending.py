@@ -1,15 +1,16 @@
-# coding=gbk
+# coding=utf-8
 """挂单调试脚本：下一单 → 盯3分钟 → 没成交就撤单重下
-用法：在QMT中加载运行，观察 strategy_log_v2.txt 输出
+用法：在QMT中加载运行，观察 debug_pending_log.txt 输出
 """
 import time
 from datetime import datetime
 
 ACCOUNT_ID = "67014907"
+TEST_SIDE = "buy"         # buy / sell（sell 模式 init 先校验账户持仓，无持仓不执行）
 TEST_CODE = "600016.SH"  # 测试股票（流动性好）
 TEST_AMOUNT = 100        # 测试数量（最小100股）
 TIMEOUT_SEC = 180        # 超时秒数（3分钟）
-LOG_FILE = "D:/QMT_POOL/strategy_log_v2.txt"
+LOG_FILE = "D:/QMT_POOL/debug_pending_log.txt"
 
 # 模块级变量（QMT的global必须在模块级初始化）
 _order_time = 0
@@ -57,11 +58,33 @@ def _find_order(orders, code):
 
 def init(C):
     _log("=== 挂单调试启动 ===")
-    _log("测试标的: %s, 数量: %d, 超时: %d秒" % (TEST_CODE, TEST_AMOUNT, TIMEOUT_SEC))
-    # 第一步：下一笔市价买单
-    _log("[1] 下单 passorder(23, 1101, %s, %s, 5, -1, %d)" % (ACCOUNT_ID, TEST_CODE, TEST_AMOUNT))
+    _log("方向=%s 测试标的: %s, 数量: %d, 超时: %d秒" % (TEST_SIDE, TEST_CODE, TEST_AMOUNT, TIMEOUT_SEC))
+    # sell 模式：先校验账户持仓（红线：绝不盲卖无持仓的票）
+    if TEST_SIDE == "sell":
+        try:
+            pos_vol = 0
+            c6 = _norm_code(TEST_CODE)
+            for p in (get_trade_detail_data(ACCOUNT_ID, "STOCK", "position") or []):
+                inst = getattr(p, "m_strInstrumentID", "") or ""
+                if _norm_code(inst) == c6:
+                    pos_vol = int(getattr(p, "m_nVolume", 0) or 0)
+                    break
+            if pos_vol < TEST_AMOUNT:
+                _log("[abort] 卖出模式但账户持仓 %d < %d，不执行（防盲卖）" % (pos_vol, TEST_AMOUNT))
+                _order_time = time.time()
+                _stage = "已中止"
+                return
+            _log("[sell] 账户持仓校验通过: %d股" % pos_vol)
+        except Exception as e:
+            _log("[abort] 持仓校验异常: %s，不执行" % str(e))
+            _order_time = time.time()
+            _stage = "已中止"
+            return
+    # 第一步：下市价单（买卖同链路，方向不同）
+    _order_type = 24 if TEST_SIDE == "sell" else 23
+    _log("[1] 下单 passorder(%d, 1101, %s, %s, 5, -1, %d)" % (_order_type, ACCOUNT_ID, TEST_CODE, TEST_AMOUNT))
     try:
-        passorder(23, 1101, ACCOUNT_ID, TEST_CODE, 5, -1, TEST_AMOUNT, "调试测试", 2, "", C)
+        passorder(_order_type, 1101, ACCOUNT_ID, TEST_CODE, 5, -1, TEST_AMOUNT, "调试测试", 2, "", C)
         _log("[1] passorder调用成功")
     except Exception as e:
         _log("[1] passorder异常: %s" % str(e))
@@ -135,7 +158,8 @@ def handlebar(C):
         return
 
     try:
-        passorder(23, 1101, ACCOUNT_ID, TEST_CODE, 5, -1, TEST_AMOUNT, "调试重试%d" % _retries, 2, "", C)
+        _order_type = 24 if TEST_SIDE == "sell" else 23
+        passorder(_order_type, 1101, ACCOUNT_ID, TEST_CODE, 5, -1, TEST_AMOUNT, "调试重试%d" % _retries, 2, "", C)
         _log("[重下] passorder调用成功, retry=%d" % _retries)
         _order_time = now  # 重置计时
         _stage = "重试中"
