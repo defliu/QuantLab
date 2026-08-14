@@ -20,3 +20,19 @@ Thumbs.db
 # 本地临时
 .tmp/
 *.tmp
+
+
+# agent 内部数据（不提交）
+memory/
+.zcode/
+.workbuddy/
+.codegraph/
+opencode.jsonc
+
+# 行情数据
+data/etf_daily/
+
+# 备份与临时产物
+*.bak_*
+tmp_*
+_tmp_*
