@@ -127,12 +127,18 @@ scorer = V2Scorer(
 scorer.compute_bp_monthly(pb_wide)
 
 # 初始化风控
+# 2026-08-14 修复: 回测必须非确定性零污染 —— 用独立 per-run state 文件,
+# 且每次 run_backtest 前强制重置 nav_peak/持仓/禁入, 避免上次运行残留
+# (曾因 risk_state.json 残留 nav_peak=12.70 导致年化虚高 18%->35.7%)。
+state_dir = os.path.join(os.path.dirname(__file__), "results")
+os.makedirs(state_dir, exist_ok=True)
+_risk_state_file = os.path.join(state_dir, "risk_state_run_%d.json" % os.getpid())
 risk = RiskController(
     stop_loss=CFG["risk_control"]["stop_loss_pct"],
     max_drawdown=CFG["risk_control"]["max_drawdown_pct"],
     max_holding_days=CFG["risk_control"]["max_holding_days"],
     max_daily_turnover=CFG["risk_control"]["max_daily_turnover"],
-    state_file=os.path.join(os.path.dirname(__file__), "results", "risk_state.json"),
+    state_file=_risk_state_file,
 )
 
 # --------------- 候选股筛选 ---------------
@@ -192,8 +198,28 @@ def limit_pct(code):
     return 0.10
 
 # --------------- 回测主循环 ---------------
-def run_backtest(force_full_turn=False):
-    """状态机口径回测，含风控"""
+def _reset_risk_state():
+    """强制重置风控状态 (nav_peak=1.0, 清持仓/禁入), 保证回测确定性"""
+    risk._state = {
+        "holdings": {},
+        "nav_peak": 1.0,
+        "禁入列表": {},
+        "dd_tier": 0,
+    }
+
+def run_backtest(force_full_turn=False, daily_risk=False):
+    """状态机口径回测，含风控
+
+    daily_risk=True: 每次换仓前, 用两换仓日之间的每个交易日 close 检查
+    止损/持有期/回撤 (对齐实盘每 bar 检查), 触发则剔除。
+    状态机收益结算仍按换仓日 open, 与实盘每 bar 口径有固有差异但可隔离风控频率贡献。
+
+    ⚠️ 2026-08-14 已知缺陷（勿用于结论）: 每日止损剔除的股票直接移出
+    prev_holdings, 换仓日结算时其收益不计入 → 止损亏损被抹掉, 该模式年化
+    虚高 (17.8% 不可信)。正确逐日口径见 research/dir1_daily_risk.py
+    (对照B = 逐日close结算+每日风控 = 7.5%, 实盘预期)。
+    """
+    _reset_risk_state()  # 2026-08-14: 每次回测强制重置, 消除运行历史污染
     rows = []
     prev_holdings = {}
     prev_cost = 0.0
@@ -230,6 +256,41 @@ def run_backtest(force_full_turn=False):
                     "sells": prev_sells,
                     "buys": prev_buys,
                 })
+
+        # 1.5 每日风控检查 (方向1, 仅换仓日之间逐日检查, 用当日 close)
+        if daily_risk and prev_holdings:
+            nxt_rebal_idx = ti[pd.Timestamp(d)] + 1
+            end_idx = ti[pd.Timestamp(rebal[i + 1])]
+            if end_idx >= len(trade_dates):
+                end_idx = len(trade_dates) - 1
+            for k in range(e_idx, end_idx + 1):
+                tdate = trade_dates[k]
+                trow = panel.loc[tdate]
+                current_prices = {}
+                for code in prev_holdings:
+                    xc = trow["close"].get(code)
+                    if xc is not None and xc > 0:
+                        current_prices[code] = xc
+                if not current_prices:
+                    continue
+                risk_sell = risk.update_holdings(prev_holdings, current_prices, tdate)
+                for code in risk_sell:
+                    if code in prev_holdings:
+                        del prev_holdings[code]
+                        risk.register_exit(code)
+                # 回撤检查: 用当日持仓 close 相对成本估算 nav
+                if prev_holdings:
+                    est_ret = np.mean([current_prices[c] / base - 1.0
+                                       for c, base in prev_holdings.items() if c in current_prices]) \
+                        if prev_holdings else 0.0
+                    est_nav = nav * (1 + est_ret)
+                    dd_trig, dd = risk.check_drawdown(est_nav)
+                    if dd_trig:
+                        for code in list(prev_holdings.keys()):
+                            risk.register_exit(code)
+                        prev_holdings = {}
+                        prev_cost, prev_turnover, prev_sells, prev_buys = 0.0, 0.0, 0, 0
+                        break
 
         # 2. 组合回撤检查
         drawdown_triggered, dd = risk.check_drawdown(nav)
@@ -363,7 +424,10 @@ if __name__ == "__main__":
     p("基准: 累计=%6.1f%% 年化=%6.1f%%" % (b_cum.iloc[-1] * 100, ((1 + b_cum.iloc[-1]) ** (1 / b_years) - 1) * 100))
 
     p("\n============ 2. 策略（状态机+风控） ============")
-    result = run_backtest()
+    use_daily = "--daily-risk" in sys.argv
+    if use_daily:
+        p("[每日风控模式 daily_risk=True]")
+    result = run_backtest(daily_risk=use_daily)
     if len(result) > 0:
         result = result.set_index("date")
         cum = (1 + result["period_return"]).cumprod() - 1
