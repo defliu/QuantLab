@@ -18,8 +18,6 @@ REBALANCE_MONTHS = 2
 STOP_LOSS = 0.08
 MAX_HOLDING_DAYS = 60
 MAX_DRAWDOWN = 0.15
-TX_COST = 0.001
-MV_MAX = 300000.0
 Z_WEIGHT = 1.0
 HP_WEIGHT = 0.0
 HP_WINDOW = 36
@@ -63,6 +61,8 @@ _pending_orders = {}  # 待成交订单跟踪 {code: {"type": "buy/sell", "order
 _today_orders = {}    # 当日下单记录（收盘对账校准用） {code: {"dir": "buy/sell", "amount": 下单量, "price": 估算价, "entry_price": 卖出前成本价, "entry_date": 卖出前买入日}}
 _suspended_sells = []  # 跌停暂缓卖出队列
 _last_pending_min = -1  # 挂单巡检节流（同一分钟只查一次，防模拟端刷屏）
+_last_reconcile_date = ""  # 收盘对账每日闸门（同一天只跑一次）
+_ACCT_QUERY_FAIL = object()  # 账户持仓查询失败哨兵（对账兜底：无法判定时保守处理）
 
 def _get_market_time(C):
     """QMT行情时间（生产验证方案）: get_tick_timetag -> get_bar_timetag -> datetime.now()
@@ -275,12 +275,17 @@ def _is_limit_down(C, code):
     return False
 
 def _is_suspended(C, code):
-    """检测是否停牌"""
+    """检测是否停牌
+    集合竞价早段(09:15-09:25)正常股 volume 可能为 0，不能仅凭 volume 判停牌。
+    综合判据：volume==0 且当日无有效开盘价(open<=0 或无 open) → 停牌。
+    连续竞价中(本策略下单窗口 09:30+)，volume 持续为0且无开盘价基本确证停牌/无成交。"""
     try:
-        data = C.get_market_data_ex(["volume"], [code], period="1d")
+        data = C.get_market_data_ex(["open", "volume"], [code], period="1d")
         if data and code in data and len(data[code]) > 0:
-            vol = float(data[code].iloc[-1].get("volume", 0))
-            if vol == 0:
+            row = data[code].iloc[-1]
+            vol = float(row.get("volume", 0) or 0)
+            opn = float(row.get("open", 0) or 0)
+            if vol == 0 and opn <= 0:
                 return True
     except Exception:
         pass
@@ -297,12 +302,36 @@ def _norm_code(code):
     """规范化证券代码为6位（兼容 '600000' 与 '600000.SH' 两种格式）"""
     return str(code or "").split(".")[0]
 
+def _get_acct_position(code):
+    """查询账户真实持仓量（position 接口，兜底防误撤销）
+    返回三态：
+      - POS 对象  → 账户有该 code 持仓（可读 m_nVolume）
+      - None      → 账户确无该 code 持仓（接口正常，查询成功）
+      - _ACCT_QUERY_FAIL → 接口异常/查询失败（无法判定，调用方须保守处理）
+    仅用于对账兜底：deal 反查可能因模拟端/remark 时序漏记录，账户持仓是最终真相。
+    注意：共享账户 position 含其他策略持仓，本函数只用于"该代码账户是否有货"的
+    存在性判断与仓位下限校准，不覆盖虚拟账本的全部口径。"""
+    try:
+        c6 = _norm_code(code)
+        for p in (get_trade_detail_data(ACCOUNT_ID, "STOCK", "position") or []):
+            inst = getattr(p, "m_strInstrumentID", "") or getattr(p, "m_strSecurityCode", "") or ""
+            if _norm_code(inst) == c6:
+                return p
+        return None
+    except Exception:
+        return _ACCT_QUERY_FAIL
+
 def _find_order(orders, code, direction):
-    """在委托列表中找 code+方向 的最近一笔订单（属性风格访问，兼容模拟端）
-    direction: 'buy'/'sell'；返回 order 对象或 None"""
+    """在委托列表中找 code+方向 的订单（属性风格访问，兼容模拟端）
+    direction: 'buy'/'sell'；返回 order 对象 或 None
+    共享账户防串撤：多策略可能对同 code 同方向下单。
+    红线：remark 只作候选优先级，不硬过滤；唯一候选即使 remark 空也返回。
+    本实现: 候选集内优先返回 remark 含 'V2' 的订单(本策略)；无 V2 且唯一候选时返回之；
+    多候选且均非 V2(含 remark 空) 时返回 None(歧义, 宁可跳过不撤他人单)。"""
     if not orders:
         return None
     c6 = _norm_code(code)
+    cand = []
     for o in reversed(orders):
         inst = getattr(o, "m_strInstrumentID", "") or ""
         if _norm_code(inst) != c6:
@@ -312,7 +341,15 @@ def _find_order(orders, code, direction):
             continue
         if direction == "sell" and "卖" not in op and "sell" not in op.lower():
             continue
-        return o
+        cand.append(o)
+    if not cand:
+        return None
+    for o in cand:
+        remark = str(getattr(o, "m_strRemark", "") or "")
+        if remark.find("V2") >= 0:
+            return o
+    if len(cand) == 1:
+        return cand[0]
     return None
 
 def _cancel_order_by(C, code, order_id):
@@ -418,6 +455,18 @@ def _check_pending_orders(C):
             elapsed_min = (now - info["time"]).total_seconds() / 60.0
         except Exception:
             elapsed_min = 0
+        # 跨日强制清理：QMT 模拟端只保留当日委托数据，隔日反查必失败。
+        # pending 的 time 与当前时刻不在同一交易日 → 直接回滚并移出跟踪，
+        # 不再走"未反查到就跳过"的死路（该路径会让残留跨天滞留、永不收敛）。
+        try:
+            same_day = info["time"].strftime("%Y-%m-%d") == now.strftime("%Y-%m-%d")
+        except Exception:
+            same_day = False
+        if not same_day:
+            _rollback_pending(C, code, info)
+            _pending_orders.pop(code, None)
+            _log("[pending] %s 跨日残留，强制回滚并移出" % code, C)
+            continue
         if elapsed_min < PENDING_TIMEOUT_MIN:
             continue
         # 反查成交状态：已全部成交则移出跟踪
@@ -556,11 +605,19 @@ def handlebar(C):
     current_minute = now.minute
 
     # ============ 时间过滤 ============
-    # 模拟盘调试模式：解锁09:35/14:50时间锁，任何bar都允许交易和保存状态
-    # 上线前需恢复为: is_trading_time = (current_hour == 9 and current_minute == 35)
-    #              is_save_time   = (current_hour == 14 and current_minute >= 50)
-    is_trading_time = True
-    is_save_time = True
+    # A股连续竞价时段: 09:30-11:30, 13:00-14:57
+    # 交易信号(买入/卖出/挂单巡检)只在连续竞价内触发; 收盘集合竞价(14:57-15:00)
+    # 不收市价单(本策略全用市价单), 故下单窗口收至 14:56, 避免产生废单/挂单.
+    # 日终对账/状态保存独立于下单窗口: 14:50 之后直到收盘都执行.
+    _h, _m = current_hour, current_minute
+    is_trading_time = (
+        (_h == 9 and _m >= 30) or
+        (_h == 10) or
+        (_h == 11 and _m <= 30) or
+        (_h == 13) or
+        (_h == 14 and _m <= 56)
+    )
+    is_save_time = ((_h == 14 and _m >= 50) or (_h == 15 and _m == 0))
     # 日志节流：同一分钟内只打印一次换仓/补仓日志
     log_min = current_hour * 100 + current_minute
     log_gate = (log_min != _last_rebal_log_min)
@@ -580,78 +637,89 @@ def handlebar(C):
     need_rebal = False
 
     # 正常换仓：每2个月的第一个交易日
+    # 注意: _last_rebal_month 只在真正执行换仓后提交（交易时点），
+    #       避免"非交易时序先置标记、换仓body被跳过、整月丢失调仓"。
     if current_month != _last_rebal_month and current_month % REBALANCE_MONTHS == 1:
         need_rebal = True
-        _last_rebal_month = current_month
 
     # 补仓触发：持仓低于60%时提前补仓（避免空仓资金闲置）
+    # 保护：当日已对账（14:50 后）不再因空仓触发补仓，防止对账撤销持仓后
+    #       尾盘重复建仓（2026-08-14 事故：对账误撤销 → 空仓 → 14:50 重买67只）。
     current_pct = len(_holdings) / N_STOCKS if N_STOCKS > 0 else 0
-    if current_pct < MIN_POSITION_PCT and current_month != _last_rebal_month:
+    reconciled_today = (_last_reconcile_date == today_str)
+    if current_pct < MIN_POSITION_PCT and current_month != _last_rebal_month and not reconciled_today:
         need_rebal = True
-        _last_rebal_month = current_month
         # 只在交易时点打日志，避免每个 bar 刷屏
         if is_trading_time and log_gate:
             _last_rebal_log_min = log_min
             _log("[rebal] 持仓比例=%.1f%% < %.0f%%, 触发补仓" % (current_pct * 100, MIN_POSITION_PCT * 100))
 
-    # ============ 止损 + 持有期检查（每次bar都执行） ============
-    sells = []
-    for code in list(_holdings.keys()):
-        price = _get_price(C, code, "close")
-        if price is None:
-            continue
-        entry = _entry_prices.get(code, price)
-        pnl = price / entry - 1.0 if entry > 0 else 0
-        # 止损
-        if pnl <= -STOP_LOSS:
-            sells.append(code)
-            continue
-        # 持有期
-        entry_d = _entry_dates.get(code, today_str)
-        try:
-            days_held = (now - datetime.strptime(entry_d, "%Y-%m-%d")).days
-        except Exception:
-            days_held = 0
-        if days_held >= MAX_HOLDING_DAYS:
-            sells.append(code)
+    # ============ 止损 + 持有期 + 组合回撤 + 卖出执行（仅交易时段） ============
+    # 非交易时段不计算/不执行任何卖出信号（避免基于陈旧收盘价触发、或盘后误下单）
+    if is_trading_time:
+        sells = []
+        for code in list(_holdings.keys()):
+            if code in _pending_orders:
+                continue
+            price = _get_price(C, code, "close")
+            if price is None:
+                continue
+            entry = _entry_prices.get(code, price)
+            pnl = price / entry - 1.0 if entry > 0 else 0
+            # 止损
+            if pnl <= -STOP_LOSS:
+                sells.append(code)
+                continue
+            # 持有期
+            entry_d = _entry_dates.get(code, today_str)
+            try:
+                days_held = (now - datetime.strptime(entry_d, "%Y-%m-%d")).days
+            except Exception:
+                days_held = 0
+            if days_held >= MAX_HOLDING_DAYS:
+                sells.append(code)
 
-    # 组合回撤检查
-    nav = _calc_nav(C)
-    if nav > _nav_peak:
-        _nav_peak = nav
-    dd = 1.0 - nav / _nav_peak if _nav_peak > 0 else 0
-    if dd >= MAX_DRAWDOWN:
-        sells = list(_holdings.keys())
-        _nav_peak = nav
-        _log("[risk] 触发组合回撤止损, dd=%.1f%%" % (dd * 100))
+        # 组合回撤检查
+        nav = _calc_nav(C)
+        if nav > _nav_peak:
+            _nav_peak = nav
+        dd = 1.0 - nav / _nav_peak if _nav_peak > 0 else 0
+        if dd >= MAX_DRAWDOWN:
+            sells = list(_holdings.keys())
+            _nav_peak = nav
+            _log("[risk] 触发组合回撤止损, dd=%.1f%%" % (dd * 100))
 
-    # 执行卖出（每次bar都执行，防止跌停无法卖出）
-    for code in sells:
-        # 检查是否跌停/停牌，暂缓卖出
-        if _is_limit_down(C, code):
-            if code not in _suspended_sells:
-                _suspended_sells.append(code)
-                _log("[sell suspended] %s 跌停，暂缓卖出" % code, C)
-            continue
-        if _is_suspended(C, code):
-            if code not in _suspended_sells:
-                _suspended_sells.append(code)
-                _log("[sell suspended] %s 停牌，暂缓卖出" % code, C)
-            continue
-        # 从暂缓队列移除（如果不在sells中但之前暂缓了）
-        if code in _suspended_sells:
-            _suspended_sells.remove(code)
-        _execute_sell(C, code)
+        # 执行卖出（每次bar都执行，防止跌停无法卖出）
+        for code in sells:
+            # 检查是否跌停/停牌，暂缓卖出
+            if _is_limit_down(C, code):
+                if code not in _suspended_sells:
+                    _suspended_sells.append(code)
+                    _log("[sell suspended] %s 跌停，暂缓卖出" % code, C)
+                continue
+            if _is_suspended(C, code):
+                if code not in _suspended_sells:
+                    _suspended_sells.append(code)
+                    _log("[sell suspended] %s 停牌，暂缓卖出" % code, C)
+                continue
+            # 从暂缓队列移除（如果不在sells中但之前暂缓了）
+            if code in _suspended_sells:
+                _suspended_sells.remove(code)
+            _execute_sell(C, code)
 
-    # 处理暂缓队列中可以卖出的
-    for code in list(_suspended_sells):
-        if not _is_limit_down(C, code) and not _is_suspended(C, code):
-            _suspended_sells.remove(code)
-            if code in _holdings:
-                _execute_sell(C, code)
+        # 处理暂缓队列中可以卖出的
+        for code in list(_suspended_sells):
+            if code in _pending_orders:
+                continue
+            if not _is_limit_down(C, code) and not _is_suspended(C, code):
+                _suspended_sells.remove(code)
+                if code in _holdings:
+                    _execute_sell(C, code)
 
-    # ============ 换仓选股（模拟盘调试：任何bar都执行） ============
+    # ============ 换仓选股（仅交易时段执行） ============
     if need_rebal and is_trading_time:
+        # 真正开始执行换仓时才提交月度标记，防止非交易时序提前消费
+        _last_rebal_month = current_month
         pool = _load_pool(C)
         fin_data = _load_financial()
         bp_hist = _load_bp_history()
@@ -724,8 +792,7 @@ def handlebar(C):
 
     # ============ 日终处理（模拟盘调试：任何bar都保存状态） ============
     if is_save_time:
-        # 对账仅收盘时段执行（盘中估算记账未定型，过早对账会把未成交单误判为未成交）
-        if current_hour == 14 and current_minute >= 50:
+        if current_hour == 14 and current_minute >= 50 and _last_reconcile_date != today_str:
             _reconcile(C)
         _save_state()
 
@@ -749,12 +816,14 @@ def _reconcile(C):
     买入: 撤销估算扣减，按实际成交金额/数量回写持仓
     卖出: 撤销估算回笼，按实际成交金额回笼；部分成交恢复剩余持仓
     """
-    global _cash, _holdings, _entry_prices, _entry_dates, _today_orders, _pending_orders
+    global _cash, _holdings, _entry_prices, _entry_dates, _today_orders, _pending_orders, _last_reconcile_date
     try:
         if not _today_orders:
             return
         # 获取当日全部成交，按code汇总（deal记录当日有效）
         # 生产/模拟端统一走全局函数（C 对象无反查接口；qmt_wrapper 生产验证）
+        # 共享账户防串账：只归集 remark 含 'V2' 的本策略成交；
+        # 其他策略（如 ATR 低波）同 code 的 deal 不计入，避免把他人成交算进本资金池。
         try:
             deals = get_trade_detail_data(ACCOUNT_ID, "STOCK", "deal") or []
         except Exception:
@@ -763,9 +832,12 @@ def _reconcile(C):
         for d in deals:
             code = _norm_code(getattr(d, "m_strSecurityCode", "") or getattr(d, "m_strInstrumentID", ""))
             direction = str(getattr(d, "m_strOptName", "") or "")
+            remark = str(getattr(d, "m_strRemark", "") or "")
             vol = float(getattr(d, "m_nVolume", 0) or 0)
             price = float(getattr(d, "m_nPrice", 0) or 0)
             if not code or vol <= 0 or price <= 0:
+                continue
+            if remark.find("V2") < 0:
                 continue
             if code not in traded:
                 traded[code] = {"buy_vol": 0.0, "buy_amt": 0.0, "sell_vol": 0.0, "sell_amt": 0.0}
@@ -790,11 +862,30 @@ def _reconcile(C):
                     _log("[reconcile] %s 买入校准 成交=%.0f股 均价=%.3f 现金=%.0f"
                          % (code, tr["buy_vol"], _entry_prices[code], _cash), C)
                 elif not rolled:
-                    # 未成交（涨停买不进等）：撤销虚拟持仓
+                    # deal 反查为空时，以账户真实持仓兜底：
+                    # 模拟端 deal 可能漏记 remark 或当日时序，账户 position 是最终真相。
+                    # 账户有货 → 买入实际成交（至少部分），以实际持仓量校准；
+                    # 账户确无货 → 才确认未成交（涨停买不进等），撤销虚拟持仓；
+                    # 查询失败 → 无法判定，保守保留持仓，等下一交易日再对（不主动撤销）。
+                    pos = _get_acct_position(code)
+                    if pos is not None and pos is not _ACCT_QUERY_FAIL:
+                        acct_vol = float(getattr(pos, "m_nVolume", 0) or 0)
+                        if acct_vol > 0:
+                            # 撤销估算扣减后需按估算价扣回（无真实成交价，用下单时价）
+                            _cash -= od["amount"] * od["price"]
+                            _holdings[code] = acct_vol
+                            _entry_prices[code] = od.get("price", 0) or 0
+                            _entry_dates[code] = od.get("entry_date", "") or _get_market_time(C).strftime("%Y-%m-%d")
+                            _log("[reconcile] %s 买入成交(账户持仓兜底) 持仓=%.0f股 现金=%.0f"
+                                 % (code, acct_vol, _cash), C)
+                            continue
+                    if pos is _ACCT_QUERY_FAIL:
+                        _log("[reconcile] %s 买入对账兜底查询失败，保守保留持仓" % code, C)
+                        continue
                     _holdings.pop(code, None)
                     _entry_prices.pop(code, None)
                     _entry_dates.pop(code, None)
-                    _log("[reconcile] %s 买入未成交，撤销虚拟持仓" % code, C)
+                    _log("[reconcile] %s 买入未成交（账户无货）撤销虚拟持仓" % code, C)
                 # rolled 且无成交：回滚已恢复现金/撤销持仓，跳过
             elif od["dir"] == "sell":
                 if not rolled:
@@ -816,14 +907,32 @@ def _reconcile(C):
                         _entry_dates.pop(code, None)
                         _log("[reconcile] %s 卖出全部成交，持仓清零" % code, C)
                 elif not rolled:
-                    # 未成交（跌停卖不出等）：恢复持仓
+                    # deal 反查为空时，以账户真实持仓兜底：
+                    # 账户仍有货 → 未成交（跌停卖不出等），恢复持仓；
+                    # 账户已无货（pos None）→ 实际已卖出（deal 漏记），维持回笼现金、持仓清零；
+                    # 查询失败 → 无法判定，保守恢复持仓（宁可不回笼也不误判已卖出）。
+                    pos = _get_acct_position(code)
+                    acct_vol = 0
+                    if pos is not None and pos is not _ACCT_QUERY_FAIL:
+                        acct_vol = float(getattr(pos, "m_nVolume", 0) or 0)
+                    if pos is None:
+                        # 查询成功但账户确无货：实际已卖出
+                        _cash += od["amount"] * od["price"]
+                        _holdings.pop(code, None)
+                        _entry_prices.pop(code, None)
+                        _entry_dates.pop(code, None)
+                        _log("[reconcile] %s 卖出成交(账户无货兜底) 现金=%.0f" % (code, _cash), C)
+                        continue
+                    if pos is _ACCT_QUERY_FAIL:
+                        _log("[reconcile] %s 卖出对账兜底查询失败，保守恢复持仓" % code, C)
                     _holdings[code] = od["amount"]
                     _entry_prices[code] = od.get("entry_price", 0)
                     _entry_dates[code] = od.get("entry_date", "")
-                    _log("[reconcile] %s 卖出未成交，恢复持仓" % code, C)
+                    _log("[reconcile] %s 卖出未成交（账户仍有货）恢复持仓" % code, C)
                 # rolled 且无成交：回滚已恢复持仓/现金，跳过
         _today_orders = {}
         _pending_orders = {}
+        _last_reconcile_date = _get_market_time(C).strftime("%Y-%m-%d")
         _log("[reconcile] 对账完成 持仓=%d 现金=%.0f" % (len(_holdings), _cash), C)
     except Exception as e:
         _log("[reconcile error] %s" % str(e), C)
@@ -832,6 +941,8 @@ def _execute_buy(C, code):
     """买入：从专属资金池等权分配，估算记账（收盘对账校准）"""
     global _pending_orders, _cash, _today_orders
     try:
+        if code in _pending_orders:
+            return
         price = _get_price(C, code, "close")
         if price is None or price <= 0:
             return
@@ -864,7 +975,7 @@ def _execute_buy(C, code):
             "time": _get_market_time(C),
             "retries": 0
         }
-        _today_orders[code] = {"dir": "buy", "amount": amount, "price": price}
+        _today_orders[code] = {"dir": "buy", "amount": amount, "price": price, "entry_date": _get_market_time(C).strftime("%Y-%m-%d")}
         # 估算记账（真实成交价收盘对账校准）
         _holdings[code] = amount
         _entry_prices[code] = price
@@ -886,6 +997,8 @@ def _execute_sell(C, code):
     """卖出：回笼资金到专属资金池，估算记账（收盘对账校准）"""
     global _pending_orders, _cash, _today_orders
     try:
+        if code in _pending_orders:
+            return
         amount = _holdings.get(code, 0)
         if amount <= 0:
             return

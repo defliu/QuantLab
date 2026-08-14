@@ -18,8 +18,6 @@ REBALANCE_MONTHS = 2
 STOP_LOSS = 0.08
 MAX_HOLDING_DAYS = 60
 MAX_DRAWDOWN = 0.15
-TX_COST = 0.001
-MV_MAX = 300000.0
 Z_WEIGHT = 1.0
 HP_WEIGHT = 0.0
 HP_WINDOW = 36
@@ -47,7 +45,7 @@ PENDING_MAX_RETRIES = 3      # µ¥Ö»×î¶àÖØÏÂ´ÎÊı£¨º¬Ê×´Î£©£¬³¬¹ıÔò·ÅÆú£¨µÈÊÕÅÌ¶ÔÕ
 RETRY_COOLDOWN_MIN = 1       # ³·µ¥ÖØÏÂµÄ×îĞ¡ÀäÈ´¼ä¸ô£¨·ÖÖÓ£©£¬·ÀÖ¹Í¬Ò»·ÖÖÓ·´¸´ÖØÏÂ
 
 # ¹¹½¨°æ±¾±ê¼Ç£ºbuild.py Ã¿´Î¹¹½¨Ê±×Ô¶¯Ìæ»»ÎªÊ±¼ä´Á£¨YYYYmmdd-HHMMSS£©
-BUILD_TAG = "20260806-154904"
+BUILD_TAG = "20260814-151539"
 
 # ============ È«¾Ö×´Ì¬ ============
 _cash = CAPITAL_INIT       # ×¨Êô×Ê½ğ³ØÏÖ½ğ£¨ÓëÕË»§ÆäËû²ßÂÔ×Ê½ğÍêÈ«¸ôÀë£©
@@ -63,6 +61,8 @@ _pending_orders = {}  # ´ı³É½»¶©µ¥¸ú×Ù {code: {"type": "buy/sell", "order_id": N
 _today_orders = {}    # µ±ÈÕÏÂµ¥¼ÇÂ¼£¨ÊÕÅÌ¶ÔÕËĞ£×¼ÓÃ£© {code: {"dir": "buy/sell", "amount": ÏÂµ¥Á¿, "price": ¹ÀËã¼Û, "entry_price": Âô³öÇ°³É±¾¼Û, "entry_date": Âô³öÇ°ÂòÈëÈÕ}}
 _suspended_sells = []  # µøÍ£Ôİ»ºÂô³ö¶ÓÁĞ
 _last_pending_min = -1  # ¹Òµ¥Ñ²¼ì½ÚÁ÷£¨Í¬Ò»·ÖÖÓÖ»²éÒ»´Î£¬·ÀÄ£Äâ¶ËË¢ÆÁ£©
+_last_reconcile_date = ""  # ÊÕÅÌ¶ÔÕËÃ¿ÈÕÕ¢ÃÅ£¨Í¬Ò»ÌìÖ»ÅÜÒ»´Î£©
+_ACCT_QUERY_FAIL = object()  # ÕË»§³Ö²Ö²éÑ¯Ê§°ÜÉÚ±ø£¨¶ÔÕË¶µµ×£ºÎŞ·¨ÅĞ¶¨Ê±±£ÊØ´¦Àí£©
 
 def _get_market_time(C):
     """QMTĞĞÇéÊ±¼ä£¨Éú²úÑéÖ¤·½°¸£©: get_tick_timetag -> get_bar_timetag -> datetime.now()
@@ -275,12 +275,17 @@ def _is_limit_down(C, code):
     return False
 
 def _is_suspended(C, code):
-    """¼ì²âÊÇ·ñÍ£ÅÆ"""
+    """¼ì²âÊÇ·ñÍ£ÅÆ
+    ¼¯ºÏ¾º¼ÛÔç¶Î(09:15-09:25)Õı³£¹É volume ¿ÉÄÜÎª 0£¬²»ÄÜ½öÆ¾ volume ÅĞÍ£ÅÆ¡£
+    ×ÛºÏÅĞ¾İ£ºvolume==0 ÇÒµ±ÈÕÎŞÓĞĞ§¿ªÅÌ¼Û(open<=0 »òÎŞ open) ¡ú Í£ÅÆ¡£
+    Á¬Ğø¾º¼ÛÖĞ(±¾²ßÂÔÏÂµ¥´°¿Ú 09:30+)£¬volume ³ÖĞøÎª0ÇÒÎŞ¿ªÅÌ¼Û»ù±¾È·Ö¤Í£ÅÆ/ÎŞ³É½»¡£"""
     try:
-        data = C.get_market_data_ex(["volume"], [code], period="1d")
+        data = C.get_market_data_ex(["open", "volume"], [code], period="1d")
         if data and code in data and len(data[code]) > 0:
-            vol = float(data[code].iloc[-1].get("volume", 0))
-            if vol == 0:
+            row = data[code].iloc[-1]
+            vol = float(row.get("volume", 0) or 0)
+            opn = float(row.get("open", 0) or 0)
+            if vol == 0 and opn <= 0:
                 return True
     except Exception:
         pass
@@ -297,12 +302,36 @@ def _norm_code(code):
     """¹æ·¶»¯Ö¤È¯´úÂëÎª6Î»£¨¼æÈİ '600000' Óë '600000.SH' Á½ÖÖ¸ñÊ½£©"""
     return str(code or "").split(".")[0]
 
+def _get_acct_position(code):
+    """²éÑ¯ÕË»§ÕæÊµ³Ö²ÖÁ¿£¨position ½Ó¿Ú£¬¶µµ×·ÀÎó³·Ïú£©
+    ·µ»ØÈıÌ¬£º
+      - POS ¶ÔÏó  ¡ú ÕË»§ÓĞ¸Ã code ³Ö²Ö£¨¿É¶Á m_nVolume£©
+      - None      ¡ú ÕË»§È·ÎŞ¸Ã code ³Ö²Ö£¨½Ó¿ÚÕı³££¬²éÑ¯³É¹¦£©
+      - _ACCT_QUERY_FAIL ¡ú ½Ó¿ÚÒì³£/²éÑ¯Ê§°Ü£¨ÎŞ·¨ÅĞ¶¨£¬µ÷ÓÃ·½Ğë±£ÊØ´¦Àí£©
+    ½öÓÃÓÚ¶ÔÕË¶µµ×£ºdeal ·´²é¿ÉÄÜÒòÄ£Äâ¶Ë/remark Ê±ĞòÂ©¼ÇÂ¼£¬ÕË»§³Ö²ÖÊÇ×îÖÕÕæÏà¡£
+    ×¢Òâ£º¹²ÏíÕË»§ position º¬ÆäËû²ßÂÔ³Ö²Ö£¬±¾º¯ÊıÖ»ÓÃÓÚ"¸Ã´úÂëÕË»§ÊÇ·ñÓĞ»õ"µÄ
+    ´æÔÚĞÔÅĞ¶ÏÓë²ÖÎ»ÏÂÏŞĞ£×¼£¬²»¸²¸ÇĞéÄâÕË±¾µÄÈ«²¿¿Ú¾¶¡£"""
+    try:
+        c6 = _norm_code(code)
+        for p in (get_trade_detail_data(ACCOUNT_ID, "STOCK", "position") or []):
+            inst = getattr(p, "m_strInstrumentID", "") or getattr(p, "m_strSecurityCode", "") or ""
+            if _norm_code(inst) == c6:
+                return p
+        return None
+    except Exception:
+        return _ACCT_QUERY_FAIL
+
 def _find_order(orders, code, direction):
-    """ÔÚÎ¯ÍĞÁĞ±íÖĞÕÒ code+·½Ïò µÄ×î½üÒ»±Ê¶©µ¥£¨ÊôĞÔ·ç¸ñ·ÃÎÊ£¬¼æÈİÄ£Äâ¶Ë£©
-    direction: 'buy'/'sell'£»·µ»Ø order ¶ÔÏó»ò None"""
+    """ÔÚÎ¯ÍĞÁĞ±íÖĞÕÒ code+·½Ïò µÄ¶©µ¥£¨ÊôĞÔ·ç¸ñ·ÃÎÊ£¬¼æÈİÄ£Äâ¶Ë£©
+    direction: 'buy'/'sell'£»·µ»Ø order ¶ÔÏó »ò None
+    ¹²ÏíÕË»§·À´®³·£º¶à²ßÂÔ¿ÉÄÜ¶ÔÍ¬ code Í¬·½ÏòÏÂµ¥¡£
+    ºìÏß£ºremark Ö»×÷ºòÑ¡ÓÅÏÈ¼¶£¬²»Ó²¹ıÂË£»Î¨Ò»ºòÑ¡¼´Ê¹ remark ¿ÕÒ²·µ»Ø¡£
+    ±¾ÊµÏÖ: ºòÑ¡¼¯ÄÚÓÅÏÈ·µ»Ø remark º¬ 'V2' µÄ¶©µ¥(±¾²ßÂÔ)£»ÎŞ V2 ÇÒÎ¨Ò»ºòÑ¡Ê±·µ»ØÖ®£»
+    ¶àºòÑ¡ÇÒ¾ù·Ç V2(º¬ remark ¿Õ) Ê±·µ»Ø None(ÆçÒå, Äş¿ÉÌø¹ı²»³·ËûÈËµ¥)¡£"""
     if not orders:
         return None
     c6 = _norm_code(code)
+    cand = []
     for o in reversed(orders):
         inst = getattr(o, "m_strInstrumentID", "") or ""
         if _norm_code(inst) != c6:
@@ -312,7 +341,15 @@ def _find_order(orders, code, direction):
             continue
         if direction == "sell" and "Âô" not in op and "sell" not in op.lower():
             continue
-        return o
+        cand.append(o)
+    if not cand:
+        return None
+    for o in cand:
+        remark = str(getattr(o, "m_strRemark", "") or "")
+        if remark.find("V2") >= 0:
+            return o
+    if len(cand) == 1:
+        return cand[0]
     return None
 
 def _cancel_order_by(C, code, order_id):
@@ -418,6 +455,18 @@ def _check_pending_orders(C):
             elapsed_min = (now - info["time"]).total_seconds() / 60.0
         except Exception:
             elapsed_min = 0
+        # ¿çÈÕÇ¿ÖÆÇåÀí£ºQMT Ä£Äâ¶ËÖ»±£Áôµ±ÈÕÎ¯ÍĞÊı¾İ£¬¸ôÈÕ·´²é±ØÊ§°Ü¡£
+        # pending µÄ time Óëµ±Ç°Ê±¿Ì²»ÔÚÍ¬Ò»½»Ò×ÈÕ ¡ú Ö±½Ó»Ø¹ö²¢ÒÆ³ö¸ú×Ù£¬
+        # ²»ÔÙ×ß"Î´·´²éµ½¾ÍÌø¹ı"µÄËÀÂ·£¨¸ÃÂ·¾¶»áÈÃ²ĞÁô¿çÌìÖÍÁô¡¢ÓÀ²»ÊÕÁ²£©¡£
+        try:
+            same_day = info["time"].strftime("%Y-%m-%d") == now.strftime("%Y-%m-%d")
+        except Exception:
+            same_day = False
+        if not same_day:
+            _rollback_pending(C, code, info)
+            _pending_orders.pop(code, None)
+            _log("[pending] %s ¿çÈÕ²ĞÁô£¬Ç¿ÖÆ»Ø¹ö²¢ÒÆ³ö" % code, C)
+            continue
         if elapsed_min < PENDING_TIMEOUT_MIN:
             continue
         # ·´²é³É½»×´Ì¬£ºÒÑÈ«²¿³É½»ÔòÒÆ³ö¸ú×Ù
@@ -556,11 +605,19 @@ def handlebar(C):
     current_minute = now.minute
 
     # ============ Ê±¼ä¹ıÂË ============
-    # Ä£ÄâÅÌµ÷ÊÔÄ£Ê½£º½âËø09:35/14:50Ê±¼äËø£¬ÈÎºÎbar¶¼ÔÊĞí½»Ò×ºÍ±£´æ×´Ì¬
-    # ÉÏÏßÇ°Ğè»Ö¸´Îª: is_trading_time = (current_hour == 9 and current_minute == 35)
-    #              is_save_time   = (current_hour == 14 and current_minute >= 50)
-    is_trading_time = True
-    is_save_time = True
+    # A¹ÉÁ¬Ğø¾º¼ÛÊ±¶Î: 09:30-11:30, 13:00-14:57
+    # ½»Ò×ĞÅºÅ(ÂòÈë/Âô³ö/¹Òµ¥Ñ²¼ì)Ö»ÔÚÁ¬Ğø¾º¼ÛÄÚ´¥·¢; ÊÕÅÌ¼¯ºÏ¾º¼Û(14:57-15:00)
+    # ²»ÊÕÊĞ¼Ûµ¥(±¾²ßÂÔÈ«ÓÃÊĞ¼Ûµ¥), ¹ÊÏÂµ¥´°¿ÚÊÕÖÁ 14:56, ±ÜÃâ²úÉú·Ïµ¥/¹Òµ¥.
+    # ÈÕÖÕ¶ÔÕË/×´Ì¬±£´æ¶ÀÁ¢ÓÚÏÂµ¥´°¿Ú: 14:50 Ö®ºóÖ±µ½ÊÕÅÌ¶¼Ö´ĞĞ.
+    _h, _m = current_hour, current_minute
+    is_trading_time = (
+        (_h == 9 and _m >= 30) or
+        (_h == 10) or
+        (_h == 11 and _m <= 30) or
+        (_h == 13) or
+        (_h == 14 and _m <= 56)
+    )
+    is_save_time = ((_h == 14 and _m >= 50) or (_h == 15 and _m == 0))
     # ÈÕÖ¾½ÚÁ÷£ºÍ¬Ò»·ÖÖÓÄÚÖ»´òÓ¡Ò»´Î»»²Ö/²¹²ÖÈÕÖ¾
     log_min = current_hour * 100 + current_minute
     log_gate = (log_min != _last_rebal_log_min)
@@ -580,78 +637,89 @@ def handlebar(C):
     need_rebal = False
 
     # Õı³£»»²Ö£ºÃ¿2¸öÔÂµÄµÚÒ»¸ö½»Ò×ÈÕ
+    # ×¢Òâ: _last_rebal_month Ö»ÔÚÕæÕıÖ´ĞĞ»»²ÖºóÌá½»£¨½»Ò×Ê±µã£©£¬
+    #       ±ÜÃâ"·Ç½»Ò×Ê±ĞòÏÈÖÃ±ê¼Ç¡¢»»²Öbody±»Ìø¹ı¡¢ÕûÔÂ¶ªÊ§µ÷²Ö"¡£
     if current_month != _last_rebal_month and current_month % REBALANCE_MONTHS == 1:
         need_rebal = True
-        _last_rebal_month = current_month
 
     # ²¹²Ö´¥·¢£º³Ö²ÖµÍÓÚ60%Ê±ÌáÇ°²¹²Ö£¨±ÜÃâ¿Õ²Ö×Ê½ğÏĞÖÃ£©
+    # ±£»¤£ºµ±ÈÕÒÑ¶ÔÕË£¨14:50 ºó£©²»ÔÙÒò¿Õ²Ö´¥·¢²¹²Ö£¬·ÀÖ¹¶ÔÕË³·Ïú³Ö²Öºó
+    #       Î²ÅÌÖØ¸´½¨²Ö£¨2026-08-14 ÊÂ¹Ê£º¶ÔÕËÎó³·Ïú ¡ú ¿Õ²Ö ¡ú 14:50 ÖØÂò67Ö»£©¡£
     current_pct = len(_holdings) / N_STOCKS if N_STOCKS > 0 else 0
-    if current_pct < MIN_POSITION_PCT and current_month != _last_rebal_month:
+    reconciled_today = (_last_reconcile_date == today_str)
+    if current_pct < MIN_POSITION_PCT and current_month != _last_rebal_month and not reconciled_today:
         need_rebal = True
-        _last_rebal_month = current_month
         # Ö»ÔÚ½»Ò×Ê±µã´òÈÕÖ¾£¬±ÜÃâÃ¿¸ö bar Ë¢ÆÁ
         if is_trading_time and log_gate:
             _last_rebal_log_min = log_min
             _log("[rebal] ³Ö²Ö±ÈÀı=%.1f%% < %.0f%%, ´¥·¢²¹²Ö" % (current_pct * 100, MIN_POSITION_PCT * 100))
 
-    # ============ Ö¹Ëğ + ³ÖÓĞÆÚ¼ì²é£¨Ã¿´Îbar¶¼Ö´ĞĞ£© ============
-    sells = []
-    for code in list(_holdings.keys()):
-        price = _get_price(C, code, "close")
-        if price is None:
-            continue
-        entry = _entry_prices.get(code, price)
-        pnl = price / entry - 1.0 if entry > 0 else 0
-        # Ö¹Ëğ
-        if pnl <= -STOP_LOSS:
-            sells.append(code)
-            continue
-        # ³ÖÓĞÆÚ
-        entry_d = _entry_dates.get(code, today_str)
-        try:
-            days_held = (now - datetime.strptime(entry_d, "%Y-%m-%d")).days
-        except Exception:
-            days_held = 0
-        if days_held >= MAX_HOLDING_DAYS:
-            sells.append(code)
+    # ============ Ö¹Ëğ + ³ÖÓĞÆÚ + ×éºÏ»Ø³· + Âô³öÖ´ĞĞ£¨½ö½»Ò×Ê±¶Î£© ============
+    # ·Ç½»Ò×Ê±¶Î²»¼ÆËã/²»Ö´ĞĞÈÎºÎÂô³öĞÅºÅ£¨±ÜÃâ»ùÓÚ³Â¾ÉÊÕÅÌ¼Û´¥·¢¡¢»òÅÌºóÎóÏÂµ¥£©
+    if is_trading_time:
+        sells = []
+        for code in list(_holdings.keys()):
+            if code in _pending_orders:
+                continue
+            price = _get_price(C, code, "close")
+            if price is None:
+                continue
+            entry = _entry_prices.get(code, price)
+            pnl = price / entry - 1.0 if entry > 0 else 0
+            # Ö¹Ëğ
+            if pnl <= -STOP_LOSS:
+                sells.append(code)
+                continue
+            # ³ÖÓĞÆÚ
+            entry_d = _entry_dates.get(code, today_str)
+            try:
+                days_held = (now - datetime.strptime(entry_d, "%Y-%m-%d")).days
+            except Exception:
+                days_held = 0
+            if days_held >= MAX_HOLDING_DAYS:
+                sells.append(code)
 
-    # ×éºÏ»Ø³·¼ì²é
-    nav = _calc_nav(C)
-    if nav > _nav_peak:
-        _nav_peak = nav
-    dd = 1.0 - nav / _nav_peak if _nav_peak > 0 else 0
-    if dd >= MAX_DRAWDOWN:
-        sells = list(_holdings.keys())
-        _nav_peak = nav
-        _log("[risk] ´¥·¢×éºÏ»Ø³·Ö¹Ëğ, dd=%.1f%%" % (dd * 100))
+        # ×éºÏ»Ø³·¼ì²é
+        nav = _calc_nav(C)
+        if nav > _nav_peak:
+            _nav_peak = nav
+        dd = 1.0 - nav / _nav_peak if _nav_peak > 0 else 0
+        if dd >= MAX_DRAWDOWN:
+            sells = list(_holdings.keys())
+            _nav_peak = nav
+            _log("[risk] ´¥·¢×éºÏ»Ø³·Ö¹Ëğ, dd=%.1f%%" % (dd * 100))
 
-    # Ö´ĞĞÂô³ö£¨Ã¿´Îbar¶¼Ö´ĞĞ£¬·ÀÖ¹µøÍ£ÎŞ·¨Âô³ö£©
-    for code in sells:
-        # ¼ì²éÊÇ·ñµøÍ£/Í£ÅÆ£¬Ôİ»ºÂô³ö
-        if _is_limit_down(C, code):
-            if code not in _suspended_sells:
-                _suspended_sells.append(code)
-                _log("[sell suspended] %s µøÍ££¬Ôİ»ºÂô³ö" % code, C)
-            continue
-        if _is_suspended(C, code):
-            if code not in _suspended_sells:
-                _suspended_sells.append(code)
-                _log("[sell suspended] %s Í£ÅÆ£¬Ôİ»ºÂô³ö" % code, C)
-            continue
-        # ´ÓÔİ»º¶ÓÁĞÒÆ³ı£¨Èç¹û²»ÔÚsellsÖĞµ«Ö®Ç°Ôİ»ºÁË£©
-        if code in _suspended_sells:
-            _suspended_sells.remove(code)
-        _execute_sell(C, code)
+        # Ö´ĞĞÂô³ö£¨Ã¿´Îbar¶¼Ö´ĞĞ£¬·ÀÖ¹µøÍ£ÎŞ·¨Âô³ö£©
+        for code in sells:
+            # ¼ì²éÊÇ·ñµøÍ£/Í£ÅÆ£¬Ôİ»ºÂô³ö
+            if _is_limit_down(C, code):
+                if code not in _suspended_sells:
+                    _suspended_sells.append(code)
+                    _log("[sell suspended] %s µøÍ££¬Ôİ»ºÂô³ö" % code, C)
+                continue
+            if _is_suspended(C, code):
+                if code not in _suspended_sells:
+                    _suspended_sells.append(code)
+                    _log("[sell suspended] %s Í£ÅÆ£¬Ôİ»ºÂô³ö" % code, C)
+                continue
+            # ´ÓÔİ»º¶ÓÁĞÒÆ³ı£¨Èç¹û²»ÔÚsellsÖĞµ«Ö®Ç°Ôİ»ºÁË£©
+            if code in _suspended_sells:
+                _suspended_sells.remove(code)
+            _execute_sell(C, code)
 
-    # ´¦ÀíÔİ»º¶ÓÁĞÖĞ¿ÉÒÔÂô³öµÄ
-    for code in list(_suspended_sells):
-        if not _is_limit_down(C, code) and not _is_suspended(C, code):
-            _suspended_sells.remove(code)
-            if code in _holdings:
-                _execute_sell(C, code)
+        # ´¦ÀíÔİ»º¶ÓÁĞÖĞ¿ÉÒÔÂô³öµÄ
+        for code in list(_suspended_sells):
+            if code in _pending_orders:
+                continue
+            if not _is_limit_down(C, code) and not _is_suspended(C, code):
+                _suspended_sells.remove(code)
+                if code in _holdings:
+                    _execute_sell(C, code)
 
-    # ============ »»²ÖÑ¡¹É£¨Ä£ÄâÅÌµ÷ÊÔ£ºÈÎºÎbar¶¼Ö´ĞĞ£© ============
+    # ============ »»²ÖÑ¡¹É£¨½ö½»Ò×Ê±¶ÎÖ´ĞĞ£© ============
     if need_rebal and is_trading_time:
+        # ÕæÕı¿ªÊ¼Ö´ĞĞ»»²ÖÊ±²ÅÌá½»ÔÂ¶È±ê¼Ç£¬·ÀÖ¹·Ç½»Ò×Ê±ĞòÌáÇ°Ïû·Ñ
+        _last_rebal_month = current_month
         pool = _load_pool(C)
         fin_data = _load_financial()
         bp_hist = _load_bp_history()
@@ -724,8 +792,7 @@ def handlebar(C):
 
     # ============ ÈÕÖÕ´¦Àí£¨Ä£ÄâÅÌµ÷ÊÔ£ºÈÎºÎbar¶¼±£´æ×´Ì¬£© ============
     if is_save_time:
-        # ¶ÔÕË½öÊÕÅÌÊ±¶ÎÖ´ĞĞ£¨ÅÌÖĞ¹ÀËã¼ÇÕËÎ´¶¨ĞÍ£¬¹ıÔç¶ÔÕË»á°ÑÎ´³É½»µ¥ÎóÅĞÎªÎ´³É½»£©
-        if current_hour == 14 and current_minute >= 50:
+        if current_hour == 14 and current_minute >= 50 and _last_reconcile_date != today_str:
             _reconcile(C)
         _save_state()
 
@@ -749,12 +816,14 @@ def _reconcile(C):
     ÂòÈë: ³·Ïú¹ÀËã¿Û¼õ£¬°´Êµ¼Ê³É½»½ğ¶î/ÊıÁ¿»ØĞ´³Ö²Ö
     Âô³ö: ³·Ïú¹ÀËã»ØÁı£¬°´Êµ¼Ê³É½»½ğ¶î»ØÁı£»²¿·Ö³É½»»Ö¸´Ê£Óà³Ö²Ö
     """
-    global _cash, _holdings, _entry_prices, _entry_dates, _today_orders, _pending_orders
+    global _cash, _holdings, _entry_prices, _entry_dates, _today_orders, _pending_orders, _last_reconcile_date
     try:
         if not _today_orders:
             return
         # »ñÈ¡µ±ÈÕÈ«²¿³É½»£¬°´code»ã×Ü£¨deal¼ÇÂ¼µ±ÈÕÓĞĞ§£©
         # Éú²ú/Ä£Äâ¶ËÍ³Ò»×ßÈ«¾Öº¯Êı£¨C ¶ÔÏóÎŞ·´²é½Ó¿Ú£»qmt_wrapper Éú²úÑéÖ¤£©
+        # ¹²ÏíÕË»§·À´®ÕË£ºÖ»¹é¼¯ remark º¬ 'V2' µÄ±¾²ßÂÔ³É½»£»
+        # ÆäËû²ßÂÔ£¨Èç ATR µÍ²¨£©Í¬ code µÄ deal ²»¼ÆÈë£¬±ÜÃâ°ÑËûÈË³É½»Ëã½ø±¾×Ê½ğ³Ø¡£
         try:
             deals = get_trade_detail_data(ACCOUNT_ID, "STOCK", "deal") or []
         except Exception:
@@ -763,9 +832,12 @@ def _reconcile(C):
         for d in deals:
             code = _norm_code(getattr(d, "m_strSecurityCode", "") or getattr(d, "m_strInstrumentID", ""))
             direction = str(getattr(d, "m_strOptName", "") or "")
+            remark = str(getattr(d, "m_strRemark", "") or "")
             vol = float(getattr(d, "m_nVolume", 0) or 0)
             price = float(getattr(d, "m_nPrice", 0) or 0)
             if not code or vol <= 0 or price <= 0:
+                continue
+            if remark.find("V2") < 0:
                 continue
             if code not in traded:
                 traded[code] = {"buy_vol": 0.0, "buy_amt": 0.0, "sell_vol": 0.0, "sell_amt": 0.0}
@@ -790,11 +862,30 @@ def _reconcile(C):
                     _log("[reconcile] %s ÂòÈëĞ£×¼ ³É½»=%.0f¹É ¾ù¼Û=%.3f ÏÖ½ğ=%.0f"
                          % (code, tr["buy_vol"], _entry_prices[code], _cash), C)
                 elif not rolled:
-                    # Î´³É½»£¨ÕÇÍ£Âò²»½øµÈ£©£º³·ÏúĞéÄâ³Ö²Ö
+                    # deal ·´²éÎª¿ÕÊ±£¬ÒÔÕË»§ÕæÊµ³Ö²Ö¶µµ×£º
+                    # Ä£Äâ¶Ë deal ¿ÉÄÜÂ©¼Ç remark »òµ±ÈÕÊ±Ğò£¬ÕË»§ position ÊÇ×îÖÕÕæÏà¡£
+                    # ÕË»§ÓĞ»õ ¡ú ÂòÈëÊµ¼Ê³É½»£¨ÖÁÉÙ²¿·Ö£©£¬ÒÔÊµ¼Ê³Ö²ÖÁ¿Ğ£×¼£»
+                    # ÕË»§È·ÎŞ»õ ¡ú ²ÅÈ·ÈÏÎ´³É½»£¨ÕÇÍ£Âò²»½øµÈ£©£¬³·ÏúĞéÄâ³Ö²Ö£»
+                    # ²éÑ¯Ê§°Ü ¡ú ÎŞ·¨ÅĞ¶¨£¬±£ÊØ±£Áô³Ö²Ö£¬µÈÏÂÒ»½»Ò×ÈÕÔÙ¶Ô£¨²»Ö÷¶¯³·Ïú£©¡£
+                    pos = _get_acct_position(code)
+                    if pos is not None and pos is not _ACCT_QUERY_FAIL:
+                        acct_vol = float(getattr(pos, "m_nVolume", 0) or 0)
+                        if acct_vol > 0:
+                            # ³·Ïú¹ÀËã¿Û¼õºóĞè°´¹ÀËã¼Û¿Û»Ø£¨ÎŞÕæÊµ³É½»¼Û£¬ÓÃÏÂµ¥Ê±¼Û£©
+                            _cash -= od["amount"] * od["price"]
+                            _holdings[code] = acct_vol
+                            _entry_prices[code] = od.get("price", 0) or 0
+                            _entry_dates[code] = od.get("entry_date", "") or _get_market_time(C).strftime("%Y-%m-%d")
+                            _log("[reconcile] %s ÂòÈë³É½»(ÕË»§³Ö²Ö¶µµ×) ³Ö²Ö=%.0f¹É ÏÖ½ğ=%.0f"
+                                 % (code, acct_vol, _cash), C)
+                            continue
+                    if pos is _ACCT_QUERY_FAIL:
+                        _log("[reconcile] %s ÂòÈë¶ÔÕË¶µµ×²éÑ¯Ê§°Ü£¬±£ÊØ±£Áô³Ö²Ö" % code, C)
+                        continue
                     _holdings.pop(code, None)
                     _entry_prices.pop(code, None)
                     _entry_dates.pop(code, None)
-                    _log("[reconcile] %s ÂòÈëÎ´³É½»£¬³·ÏúĞéÄâ³Ö²Ö" % code, C)
+                    _log("[reconcile] %s ÂòÈëÎ´³É½»£¨ÕË»§ÎŞ»õ£©³·ÏúĞéÄâ³Ö²Ö" % code, C)
                 # rolled ÇÒÎŞ³É½»£º»Ø¹öÒÑ»Ö¸´ÏÖ½ğ/³·Ïú³Ö²Ö£¬Ìø¹ı
             elif od["dir"] == "sell":
                 if not rolled:
@@ -816,14 +907,32 @@ def _reconcile(C):
                         _entry_dates.pop(code, None)
                         _log("[reconcile] %s Âô³öÈ«²¿³É½»£¬³Ö²ÖÇåÁã" % code, C)
                 elif not rolled:
-                    # Î´³É½»£¨µøÍ£Âô²»³öµÈ£©£º»Ö¸´³Ö²Ö
+                    # deal ·´²éÎª¿ÕÊ±£¬ÒÔÕË»§ÕæÊµ³Ö²Ö¶µµ×£º
+                    # ÕË»§ÈÔÓĞ»õ ¡ú Î´³É½»£¨µøÍ£Âô²»³öµÈ£©£¬»Ö¸´³Ö²Ö£»
+                    # ÕË»§ÒÑÎŞ»õ£¨pos None£©¡ú Êµ¼ÊÒÑÂô³ö£¨deal Â©¼Ç£©£¬Î¬³Ö»ØÁıÏÖ½ğ¡¢³Ö²ÖÇåÁã£»
+                    # ²éÑ¯Ê§°Ü ¡ú ÎŞ·¨ÅĞ¶¨£¬±£ÊØ»Ö¸´³Ö²Ö£¨Äş¿É²»»ØÁıÒ²²»ÎóÅĞÒÑÂô³ö£©¡£
+                    pos = _get_acct_position(code)
+                    acct_vol = 0
+                    if pos is not None and pos is not _ACCT_QUERY_FAIL:
+                        acct_vol = float(getattr(pos, "m_nVolume", 0) or 0)
+                    if pos is None:
+                        # ²éÑ¯³É¹¦µ«ÕË»§È·ÎŞ»õ£ºÊµ¼ÊÒÑÂô³ö
+                        _cash += od["amount"] * od["price"]
+                        _holdings.pop(code, None)
+                        _entry_prices.pop(code, None)
+                        _entry_dates.pop(code, None)
+                        _log("[reconcile] %s Âô³ö³É½»(ÕË»§ÎŞ»õ¶µµ×) ÏÖ½ğ=%.0f" % (code, _cash), C)
+                        continue
+                    if pos is _ACCT_QUERY_FAIL:
+                        _log("[reconcile] %s Âô³ö¶ÔÕË¶µµ×²éÑ¯Ê§°Ü£¬±£ÊØ»Ö¸´³Ö²Ö" % code, C)
                     _holdings[code] = od["amount"]
                     _entry_prices[code] = od.get("entry_price", 0)
                     _entry_dates[code] = od.get("entry_date", "")
-                    _log("[reconcile] %s Âô³öÎ´³É½»£¬»Ö¸´³Ö²Ö" % code, C)
+                    _log("[reconcile] %s Âô³öÎ´³É½»£¨ÕË»§ÈÔÓĞ»õ£©»Ö¸´³Ö²Ö" % code, C)
                 # rolled ÇÒÎŞ³É½»£º»Ø¹öÒÑ»Ö¸´³Ö²Ö/ÏÖ½ğ£¬Ìø¹ı
         _today_orders = {}
         _pending_orders = {}
+        _last_reconcile_date = _get_market_time(C).strftime("%Y-%m-%d")
         _log("[reconcile] ¶ÔÕËÍê³É ³Ö²Ö=%d ÏÖ½ğ=%.0f" % (len(_holdings), _cash), C)
     except Exception as e:
         _log("[reconcile error] %s" % str(e), C)
@@ -832,6 +941,8 @@ def _execute_buy(C, code):
     """ÂòÈë£º´Ó×¨Êô×Ê½ğ³ØµÈÈ¨·ÖÅä£¬¹ÀËã¼ÇÕË£¨ÊÕÅÌ¶ÔÕËĞ£×¼£©"""
     global _pending_orders, _cash, _today_orders
     try:
+        if code in _pending_orders:
+            return
         price = _get_price(C, code, "close")
         if price is None or price <= 0:
             return
@@ -864,7 +975,7 @@ def _execute_buy(C, code):
             "time": _get_market_time(C),
             "retries": 0
         }
-        _today_orders[code] = {"dir": "buy", "amount": amount, "price": price}
+        _today_orders[code] = {"dir": "buy", "amount": amount, "price": price, "entry_date": _get_market_time(C).strftime("%Y-%m-%d")}
         # ¹ÀËã¼ÇÕË£¨ÕæÊµ³É½»¼ÛÊÕÅÌ¶ÔÕËĞ£×¼£©
         _holdings[code] = amount
         _entry_prices[code] = price
@@ -886,6 +997,8 @@ def _execute_sell(C, code):
     """Âô³ö£º»ØÁı×Ê½ğµ½×¨Êô×Ê½ğ³Ø£¬¹ÀËã¼ÇÕË£¨ÊÕÅÌ¶ÔÕËĞ£×¼£©"""
     global _pending_orders, _cash, _today_orders
     try:
+        if code in _pending_orders:
+            return
         amount = _holdings.get(code, 0)
         if amount <= 0:
             return
