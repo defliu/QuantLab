@@ -18,11 +18,11 @@ account:
 
 strategies:
   - key: atr_lowvol_equalweight
-    name: "ATR低波等权不杠杆"
+    name: "ATR低波等权不杠杆(8只集中)"
     capital_base: 100000
-    max_hold: 100
+    max_hold: 8
     config_file: "config/atr_lowvol_equalweight_config.yaml"
-    note: "满仓等权100只；NAV含浮盈滚动；虚拟子账户，绝不抢占他人资金/持仓"
+    note: "满仓等权8只集中版；10万/8=1.25万/只 + 真实价<50过滤(2026-08-14 由100只改8只，诚哥拍板)；NAV含浮盈滚动；虚拟子账户，绝不抢占他人资金/持仓"
 
   - key: value_smallcap_v2
     name: "价值小盘V2(退市排雷+buffer)"

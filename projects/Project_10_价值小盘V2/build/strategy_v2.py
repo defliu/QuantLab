@@ -45,7 +45,7 @@ PENDING_MAX_RETRIES = 3      # µ¥Ö»×î¶àÖØÏÂ´ÎÊı£¨º¬Ê×´Î£©£¬³¬¹ıÔò·ÅÆú£¨µÈÊÕÅÌ¶ÔÕ
 RETRY_COOLDOWN_MIN = 1       # ³·µ¥ÖØÏÂµÄ×îĞ¡ÀäÈ´¼ä¸ô£¨·ÖÖÓ£©£¬·ÀÖ¹Í¬Ò»·ÖÖÓ·´¸´ÖØÏÂ
 
 # ¹¹½¨°æ±¾±ê¼Ç£ºbuild.py Ã¿´Î¹¹½¨Ê±×Ô¶¯Ìæ»»ÎªÊ±¼ä´Á£¨YYYYmmdd-HHMMSS£©
-BUILD_TAG = "20260814-151539"
+BUILD_TAG = "20260814-210622"
 
 # ============ È«¾Ö×´Ì¬ ============
 _cash = CAPITAL_INIT       # ×¨Êô×Ê½ğ³ØÏÖ½ğ£¨ÓëÕË»§ÆäËû²ßÂÔ×Ê½ğÍêÈ«¸ôÀë£©
@@ -376,10 +376,20 @@ def _cancel_pending_orders(C):
     _pending_orders = {}
 
 def _rollback_pending(C, code, info):
-    """ÖØÊÔºÄ¾¡£º»Ø¹ö¹ÀËã¼ÇÕË£¨ÕæÊµ³É½»½»¸øÊÕÅÌ¶ÔÕËĞ£×¼£©
+    """ÖØÊÔºÄ¾¡/¿çÈÕ²ĞÁô£º»Ø¹ö¹ÀËã¼ÇÕË£¨ÕæÊµ³É½»½»¸øÊÕÅÌ¶ÔÕËĞ£×¼£©
+    2026-08-14 P1 ĞŞ¸´: ¢Ù»Ø¹öÇ°ÏÈ·´²é²¢³·Ïú QMT ¶Ë»îµ¥£¬·ÀÖ¹´ÎÈÕÒâÍâ³É½»£»
+    ¢ÚÂô³ö»Ø¹öºóÈôÈÔµøÍ£/Í£ÅÆ£¬½øÔİ»º¶ÓÁĞ£¨½â·âºó×Ô¶¯²¹Âô£©£¬²»Áô¹ÜÀí¿Õ´°¡£
     °´ original_amount È«¶î·´³å¹ÀËã£¬²¢±ê¼Ç _today_orders rolled_back ·ÀÖ¹¶ÔÕË¶ş´Î·´³å"""
-    global _cash, _holdings, _entry_prices, _entry_dates, _today_orders
+    global _cash, _holdings, _entry_prices, _entry_dates, _today_orders, _suspended_sells
     try:
+        # 1) ÏÈ³· QMT ¶Ë»îµ¥£¨·À´ÎÈÕÒâÍâ³É½»£©¡£
+        #    ·´²éÊ§°Ü/²é²»µ½ = ¿ÉÄÜÒÑ³É½»»òÒÑ³·£¬²»×ö¶¯×÷£¬Áô¸øÊÕÅÌ¶ÔÕË°´ÕæÊµ³É½»Ğ£×¼¡£
+        orders = _query_orders()
+        if orders:
+            order = _find_order(orders, code, info["type"])
+            order_id = getattr(order, "m_nOrderID", None) if order else None
+            if order_id:
+                _cancel_order_by(C, code, order_id)
         orig = info.get("original_amount", info.get("amount", 0))
         if info["type"] == "buy":
             _holdings.pop(code, None)
@@ -395,6 +405,14 @@ def _rollback_pending(C, code, info):
                 _holdings[code] = remain
                 _entry_prices[code] = info.get("entry_price", 0) or info["price"]
                 _entry_dates[code] = info.get("entry_date", "") or _get_market_time(C).strftime("%Y-%m-%d")
+                # 2) »Ö¸´ºóÈÔµøÍ£/Í£ÅÆÂô²»³ö -> ½øÔİ»º¶ÓÁĞ£¬½â·âºó×Ô¶¯²¹Âô
+                try:
+                    if _is_limit_down(C, code) or _is_suspended(C, code):
+                        if code not in _suspended_sells:
+                            _suspended_sells.append(code)
+                            _log("[pending] %s Âô³ö·ÅÆúµ«µøÍ£/Í£ÅÆ£¬½øÔİ»º¶ÓÁĞ" % code, C)
+                except Exception:
+                    pass
             _cash -= orig * info["price"]
             _log("[pending] %s Âô³ö·ÅÆú(ÖØÊÔ%d´Î)£¬»Ö¸´³Ö²Ö %d¹É ÏÖ½ğ=%.0f"
                  % (code, info.get("retries", 0), remain, _cash), C)

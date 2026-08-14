@@ -34,13 +34,14 @@ CONFIG = {
         'account_id': '67014907',
     },
     'screening': {
-        'n_hold': 100,
+        'n_hold': 8,
         'atr_threshold': 6.0,
         'min_turnover': 1.0,
         'max_turnover': 8.0,
         'min_history': 252,
         'quality_gate': 1,
         'momentum_gate': 1,
+        'max_price': 50.0,          # 真实收盘价上限(元)：高价股小资金买不起整手
     },
     'rebalance': {
         'freq': 'quarterly',
@@ -75,13 +76,14 @@ _g_turnover_available = True
 # 可配置参数（被 _load_config 覆盖；config 中 capital_base 设定本策略锁定可用资金）
 _STRATEGY_CAPITAL = 100000
 _ACCOUNT_ID = '67014907'
-_N_HOLD = 100
+_N_HOLD = 8
 _ATR_THRESHOLD = 6.0
 _MIN_TURNOVER = 1.0
 _MAX_TURNOVER = 8.0
 _MIN_HISTORY = 252
 _QUALITY_GATE = 1
 _MOMENTUM_GATE = 1
+_MAX_PRICE = 50.0                 # 真实价上限(元)，0=关闭
 _REBALANCE_FREQ = 'quarterly'
 _STOP_LOSS = -0.08
 _REBALANCE_RETRY_DAYS = 1   # 空仓兜底：未建仓时每隔几天重试一次（1=每天）
@@ -99,7 +101,7 @@ _TRADE_LOG_FILE = 'D:/QMT_POOL/atr_ew_trade_log.csv'
 def _load_config():
     global _STRATEGY_CAPITAL, _ACCOUNT_ID, _N_HOLD, _ATR_THRESHOLD
     global _MIN_TURNOVER, _MAX_TURNOVER, _MIN_HISTORY, _QUALITY_GATE
-    global _MOMENTUM_GATE, _REBALANCE_FREQ, _STOP_LOSS
+    global _MOMENTUM_GATE, _MAX_PRICE, _REBALANCE_FREQ, _STOP_LOSS
     global _HOLDINGS_FILE, _NAV_FILE, _TRADE_LOG_FILE
 
     config_path = 'D:/QMT_STRATEGIES/config/atr_lowvol_equalweight_config.yaml'
@@ -148,6 +150,8 @@ def _load_config():
                         _QUALITY_GATE = int(float(v))
                     elif k == 'momentum_gate':
                         _MOMENTUM_GATE = int(float(v))
+                    elif k == 'max_price':
+                        _MAX_PRICE = float(v)
                 elif section == 'rebalance':
                     if k == 'freq':
                         _REBALANCE_FREQ = str(v).strip("'\"")
@@ -160,8 +164,8 @@ def _load_config():
                         _NAV_FILE = str(v).strip("'\"")
                     elif k == 'trade_log_file':
                         _TRADE_LOG_FILE = str(v).strip("'\"")
-        print("[ATR_EW] 配置加载完成: N_HOLD=%d ATR<%.2f%% turnover[%.1f,%.1f] freq=%s"
-              % (_N_HOLD, _ATR_THRESHOLD, _MIN_TURNOVER, _MAX_TURNOVER, _REBALANCE_FREQ))
+        print("[ATR_EW] 配置加载完成: N_HOLD=%d ATR<%.2f%% turnover[%.1f,%.1f] max_price=%.0f freq=%s"
+              % (_N_HOLD, _ATR_THRESHOLD, _MIN_TURNOVER, _MAX_TURNOVER, _MAX_PRICE, _REBALANCE_FREQ))
     except Exception as e:
         print("[ATR_EW] 配置加载失败: %s, 使用默认值" % e)
 
@@ -307,19 +311,33 @@ def _reconcile_own_holdings(C):
         positions = C.get_trade_detail_data(_ACCOUNT_ID, 'stock', 'position')
         if not positions:
             return
-        account_codes = set()
+        account_pos = {}
         for pos in positions:
             code = str(pos.m_strCode if hasattr(pos, 'm_strCode') else pos.get('code', ''))
             if not code:
                 continue
             if not code.endswith('.SH') and not code.endswith('.SZ'):
                 continue
-            account_codes.add(code)
+            try:
+                acct_vol = float(getattr(pos, 'm_nVolume', 0) or 0)
+            except Exception:
+                acct_vol = 0.0
+            account_pos[code] = acct_vol
         # 只移除本策略 ledger 中、账户已不存在的票（如被手动/外部卖出）
-        to_remove = [c for c in _g_my_codes if c not in account_codes]
+        to_remove = [c for c in _g_my_codes if c not in account_pos]
         for c in to_remove:
             print("[ATR_EW 对账] %s 账户已无此持仓(或已外部卖出), 移除本策略记录" % c)
             del _g_my_codes[c]
+        # R5修复: 份额数向下校准（ledger 声称 > 账户实际时取 min，防多卖他策略/外部已减持部分；
+        # 仅向下不向上，避免把别人票接进本策略）
+        for c in list(_g_my_codes.keys()):
+            info = _g_my_codes[c]
+            acct_vol = account_pos.get(c, 0)
+            if info.get('shares', 0) > acct_vol:
+                print("[ATR_EW 对账] %s 份额校准 %d -> %d" % (c, info.get('shares', 0), int(acct_vol)))
+                info['shares'] = int(acct_vol)
+                if info['shares'] <= 0:
+                    del _g_my_codes[c]
     except Exception as e:
         print("[ATR_EW 对账] 异常: %s" % e)
 
@@ -374,13 +392,30 @@ def _lookup_order(C, code, volume, direction, retries=None, interval=None):
     return None, None
 
 
+def _cancel_order(C, code, order_id):
+    """撤单：生产级11参数格式（对齐 V2，order_id 为平台委托号，由 _lookup_order 取回）。"""
+    if not order_id:
+        return None
+    try:
+        r = passorder(24, 1101, _ACCOUNT_ID, code, 5, order_id, 0, 'ATR_EW撤单', 2, '', C)
+        print("[ATR_EW 撤单] code=%s order_id=%s 返回:%s" % (code, order_id, r))
+        return r
+    except Exception as e:
+        print("[ATR_EW 撤单失败] code=%s order_id=%s: %s" % (code, order_id, e))
+        return None
+
+
 def _check_pending_orders(C):
     global _g_my_codes, _g_cumulative_pnl
     now = time.time()
     for code in list(_g_pending_sells.keys()):
         pending = _g_pending_sells[code]
         if now - pending['time'] > 30:
-            print("[ATR_EW pending超时] %s 卖出未确认超时, 放弃" % code)
+            oid, _ = _lookup_order(C, code, pending['shares'], 'sell')
+            if oid:
+                _cancel_order(C, code, oid)
+            # R4修复: 超时保留 ledger 持仓（账户有货即真实持仓），待下次调仓/对账重试，防孤儿仓位
+            print("[ATR_EW pending超时] %s 卖出未确认超时, 保留持仓待重试" % code)
             del _g_pending_sells[code]
             continue
         oid, matched = _lookup_order(C, code, pending['shares'], 'sell')
@@ -393,7 +428,11 @@ def _check_pending_orders(C):
     for code in list(_g_pending_buys.keys()):
         pending = _g_pending_buys[code]
         if now - pending['time'] > 30:
-            # 乐观模式：委托可能已成交，保留 ledger 不回滚（避免误删已持仓）
+            oid, _ = _lookup_order(C, code, pending['shares'], 'buy')
+            if oid:
+                _cancel_order(C, code, oid)
+            # 乐观模式：委托可能已成交，保留 ledger 不回滚（避免误删已持仓）；
+            # 若实为被拒，由 R5 对账份额校准兜底纠正
             print("[ATR_EW pending超时] %s 买入未确认超时, 保留持仓记录(乐观)" % code)
             del _g_pending_buys[code]
             continue
@@ -415,16 +454,18 @@ def _execute_sells(C, to_sell, current_prices):
             continue
         try:
             # 只卖本策略 ledger 记录的量（不用 -1=全部），多策略重叠时不会误卖别人的仓位
-            order_id = C.passorder(
+            order_id = passorder(
                 24,  # 24=卖出
                 1101 if price >= 1.0 else 1102,
                 _ACCOUNT_ID,
                 code,
-                5,   # 卖5价类型
+                5,   # 对手价，确保成交
                 price,
-                shares,  # 仅本策略持仓量
-                code,
-                1,
+                shares,  # 仅本策略持仓量（绝不用-1，防误卖他策略份额）
+                'ATR_EW',  # R7: 策略标识（V2 对账按 remark 过滤，防串账）
+                2,
+                '',
+                C,
             )
             print("[ATR_EW 卖出] %s %d股 @ %.3f 原因:%s 返回值:%s" % (code, shares, price, reason, order_id))
             oid, matched = _lookup_order(C, code, shares, 'sell')
@@ -435,11 +476,11 @@ def _execute_sells(C, to_sell, current_prices):
                 _log_trade('卖出', code, price, shares, reason)
                 del _g_my_codes[code]
             else:
-                print("[ATR_EW 卖出反查失败] %s 登记pending" % code)
+                print("[ATR_EW 卖出反查失败] %s 登记pending, 保留持仓待重试" % code)
                 _g_pending_sells[code] = {
                     'shares': shares, 'price': price, 'reason': reason, 'time': time.time(),
                 }
-                del _g_my_codes[code]
+                # R4修复: 确认失败不删 ledger（防停牌/部分成交产生孤儿仓位），由对账/下次调仓校准
         except Exception as e:
             print("[ATR_EW 卖出失败] %s: %s" % (code, e))
 
@@ -472,16 +513,18 @@ def _partial_sell(C, code, shares, price, reason):
     if info is None or shares <= 0 or price <= 0:
         return
     try:
-        order_id = C.passorder(
+        order_id = passorder(
             24,  # 24=卖出
             1101 if price >= 1.0 else 1102,
             _ACCOUNT_ID,
             code,
-            5,   # 卖5价类型
-            shares,  # 仅本策略持仓量
+            5,   # 对手价，确保成交
             price,
-            code,
-            1,
+            shares,  # R8修复: 原实现 6/7 位价格~股数颠倒（易废单），已纠正；仅卖本策略量
+            'ATR_EW',
+            2,
+            '',
+            C,
         )
         print("[ATR_EW 调仓卖出] %s %d股 @ %.3f 原因:%s 返回值:%s" % (code, shares, price, reason, order_id))
         oid, matched = _lookup_order(C, code, shares, 'sell')
@@ -493,11 +536,9 @@ def _partial_sell(C, code, shares, price, reason):
             if info['shares'] <= 0:
                 del _g_my_codes[code]
         else:
-            print("[ATR_EW 调仓卖出反查失败] %s 登记pending" % code)
+            print("[ATR_EW 调仓卖出反查失败] %s 登记pending, 保留持仓待重试" % code)
             _g_pending_sells[code] = {'shares': shares, 'price': price, 'reason': reason, 'time': time.time()}
-            info['shares'] -= shares
-            if info['shares'] <= 0:
-                del _g_my_codes[code]
+            # R4修复: 确认失败不缩减 ledger，待对账校准
     except Exception as e:
         print("[ATR_EW 调仓卖出失败] %s: %s" % (code, e))
 
@@ -540,17 +581,28 @@ def _execute_buys_equalweight(C, target_codes, prices):
                 delta = int(spendable / price / 100) * 100
                 if delta <= 0:
                     continue
+            # R6修复: 下单前再查一次账户现金，防共享账户被 V2 并发占用导致资金不足被拒、
+            # 乐观写 ledger 产生幻影持仓
             try:
-                order_id = C.passorder(
+                _acct_cash_now = _get_account_cash(C)
+                if delta * price > _acct_cash_now + 1:
+                    print("[ATR_EW 资金不足跳过] %s 需%.0f 账户可用%.0f" % (code, delta * price, _acct_cash_now))
+                    continue
+            except Exception:
+                pass
+            try:
+                order_id = passorder(
                     23,  # 23=买入
                     1101,
                     _ACCOUNT_ID,
                     code,
-                    5,   # 买1价类型
+                    5,   # 对手价，确保成交
                     price,
                     delta,
-                    code,
-                    1,
+                    'ATR_EW',
+                    2,
+                    '',
+                    C,
                 )
                 print("[ATR_EW 买入] %s %d股 @ %.3f 目标市值=%.0f 返回值:%s"
                       % (code, delta, price, target_value, order_id))
@@ -695,12 +747,17 @@ def _run_screening(C):
         print("[ATR_EW] 警告: ST板块名单获取失败，ST过滤本次跳过（保守降级）")
 
     eligible = []
+    skip_price = 0
     for code, df in data.items():
         if df is None or len(df) < _MIN_HISTORY:
             continue
         try:
             cl = float(df['close'].iloc[-1])
             if cl <= 0:
+                continue
+            # 真实价上限过滤（QMT 行情即真实价，非复权）：高价股小资金买不起整手
+            if _MAX_PRICE > 0 and cl >= _MAX_PRICE:
+                skip_price += 1
                 continue
             # ATR% 过滤（低波动）
             atr_pct = _calc_atr_pct(df)
@@ -750,7 +807,7 @@ def _run_screening(C):
     _g_hold_pool_cache = selected
     _g_hold_pool_cache_date = today_str
 
-    print("[ATR_EW] 筛选完成: 候选%d -> 入选%d只" % (len(eligible), len(selected)))
+    print("[ATR_EW] 筛选完成: 候选%d -> 入选%d只 (高价排除%d)" % (len(eligible), len(selected), skip_price))
     for c in selected[:15]:
         name = _get_stock_name_safe(C, c)
         print("    [ATR_EW 选股] %s %s ATR%%=%.2f" % (c, name, dict(eligible).get(c, 0)))
@@ -824,6 +881,14 @@ def _evaluate_interim_stops(C, prices):
 # ============================================================
 def _main_loop(C):
     global _g_last_rebalance_key, _g_cooling_until, _g_last_attempt_date
+
+    # R2修复: 历史K线回放守卫（对齐 src 尾盘版 is_last_bar）；回测模式全量跑，实盘仅最后一根bar交易
+    try:
+        if not (C.do_back_test or C.do_backtest):
+            if getattr(C, 'is_last_bar', None) is not None and not C.is_last_bar():
+                return
+    except Exception:
+        pass
 
     now = _get_qmt_time(C)
     now_str = now.strftime('%H%M') if hasattr(now, 'strftime') else str(now)

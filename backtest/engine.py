@@ -418,9 +418,16 @@ def run_backtest(
             )
             if "target_weights" in decision:
                 tw = decision["target_weights"]
+                # 保留策略侧 strategy_specific 诊断：target_weights_to_decision
+                # 会整体重建 decision，策略侧塞入的诊断需在转换前取出、转换后回填。
+                _strat_specific = (decision.get("diagnostics", {}) or {}).get(
+                    "strategy_specific", {})
                 try:
                     decision = target_weights_to_decision(
                         tw, pf, today, strategy_config, window, industry_map)
+                    if _strat_specific:
+                        decision.setdefault("diagnostics", {})[
+                            "strategy_specific"] = _strat_specific
                 except Exception as e:
                     log.warning("target_weights rebalance failed %s: %s", today, e)
                     decision = {

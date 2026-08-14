@@ -91,6 +91,10 @@ def evaluate_day(current_date, market_window, positions, cash, universe,
     if stop_loss is not None:
         stop_loss = float(stop_loss)
     min_history = int(cfg.get("min_history", 252))
+    # 真实价上限（元）：0 关闭。用小资金（如 10 万）时排除高价股，
+    # 保证每只够买整手、避免现金闲置。用"真实收盘价 = 复权价/复权因子"，
+    # 不能用复权价直接比（复权价是合成数，与真实成交价差一个 adj_factor）。
+    max_price = float(cfg.get("max_price", 0) or 0)
 
     if not is_rebalance_day(current_date, freq,
                             (aux_data or {}).get("trading_calendar")):
@@ -108,9 +112,18 @@ def evaluate_day(current_date, market_window, positions, cash, universe,
         }
 
     eligible = []
+    price_filtered = 0
     for c in valid:
         df = market_window[c]
         last = df.iloc[-1]
+        # 真实价上限过滤：真实收盘价 = 复权价 / 复权因子（缺失 adj_factor 时跳过本过滤，向后兼容）
+        if max_price > 0:
+            af = last.get("adj_factor")
+            if af is not None and float(af) > 0:
+                real_close = float(last.get("close", 0)) / float(af)
+                if real_close >= max_price:
+                    price_filtered += 1
+                    continue
         # 换手率过滤
         to = last.get("turnover_rate")
         if to is None or not (turnover_min <= float(to) <= turnover_max):
@@ -158,6 +171,9 @@ def evaluate_day(current_date, market_window, positions, cash, universe,
             "warnings": [],
             "candidate_total": len(valid),
             "candidate_passed": len(selected),
+            "strategy_specific": {
+                "atr_lowvol": {"price_filtered": {"count": price_filtered}},
+            },
         },
         "logs": ["%s rebalance: %d selected (ATR%%<=%.3f) from %d"
                  % (current_date, len(selected), atr_pct_max, len(valid))],

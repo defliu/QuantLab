@@ -109,7 +109,8 @@ class AstockParquetReader(object):
                             rows[col] = rows[col] * (adj_factor / latest_adj)
             
             available = ["date", "open", "high", "low", "close", "vol", "amount", "circ_mv",
-                         "pe_ttm", "pb", "ps_ttm", "dv_ttm", "turnover_rate", "is_st"]
+                         "pe_ttm", "pb", "ps_ttm", "dv_ttm", "turnover_rate", "is_st",
+                         "adj_factor"]  # adj_factor 供策略侧还原真实价（真实价 = 复权价/adj_factor）
             keep = [c for c in available if c in rows.columns]
             rows = rows[keep]
             out[code] = rows

@@ -9,13 +9,14 @@ strategy:
   account_id: '67014907'         # 国金QMT模拟端账号
 
 screening:
-  n_hold: 100                   # 等权持仓数（低ATR%前100）
+  n_hold: 8                     # 等权持仓数（低ATR%前8，10万/8=每只1.25万集中版；2026-08-14 诚哥拍板由100改8）
   atr_threshold: 6.0            # ATR% 上限（百分比）
   min_turnover: 1.0             # 换手率下限(%)
   max_turnover: 8.0             # 换手率上限(%)
   min_history: 252              # 最小上市交易日(≈1年)
   quality_gate: 1               # ROE>0 质量门控(1开/0关)
   momentum_gate: 1              # 12-1月动量>0 门控(1开/0关)
+  max_price: 50.0               # 真实收盘价上限(元)：高价股小资金买不起整手；0=关闭
 
 rebalance:
   freq: quarterly               # weekly|monthly|quarterly（季频=每季度首个交易日）
