@@ -149,6 +149,10 @@ def target_weights_to_decision(target_weights, pf, date, config,
         base = _normalize(raw)
     elif position_sizing == "custom":
         base = _normalize({c: abs(w) for c, w in sel.items()})
+    elif position_sizing == "absolute":
+        # 绝对权重：不归一化。策略给出每只的目标权重（如各 1/n_hold），
+        # 总和 <1 时剩余资金留现金——事件驱动策略信号稀疏日不被迫满仓少数票。
+        base = {c: abs(w) for c, w in sel.items()}
     else:  # equal
         base = {c: 1.0 / len(sel) for c in sel}
 

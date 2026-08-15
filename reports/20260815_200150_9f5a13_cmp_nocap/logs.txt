@@ -1,0 +1,2699 @@
+[WARN] SHORT_SAMPLE_PERIOD requested=2021-06-01..2022-12-31 actual=2021-06-01..2022-12-30 trading_days=388 message="样本期约 18.5 个月，仅用于 MVP 管线验证，不可作为策略最终定论"
+[WARN] BENCHMARK_DISABLED reason="benchmark 数据不可用"
+[WARN] SECTOR_HEAT_MODE_ZERO message="sector_heat_mode=zero, sector score forced to 0"
+
+[INFO]  2021-06-02 fill buy 600479.SH vol=1000 price=121.1076 amt=121107.59
+[INFO]  2021-06-02 fill buy 002347.SZ vol=7600 price=16.4260 amt=124837.75
+[INFO]  2021-06-02 fill buy 600663.SH vol=800 price=155.3440 amt=124275.19
+[INFO]  2021-06-02 fill buy 000828.SZ vol=2900 price=42.4889 amt=123217.94
+[INFO]  2021-06-02 fill buy 603808.SH vol=3500 price=34.8783 amt=122074.20
+[INFO]  2021-06-02 fill buy 002191.SZ vol=1700 price=72.8907 amt=123914.25
+[INFO]  2021-06-02 fill buy 603001.SH vol=10200 price=12.1649 amt=124081.50
+[INFO]  2021-06-02 fill buy 000595.SZ vol=10100 price=12.3081 amt=124312.17
+[INFO]  2021-06-02 hold
+[INFO]  2021-06-03 hold
+[INFO]  2021-06-04 hold
+[INFO]  2021-06-07 hold
+[INFO]  2021-06-08 hold
+[INFO]  2021-06-09 hold
+[INFO]  2021-06-10 hold
+[INFO]  2021-06-11 hold
+[INFO]  2021-06-15 hold
+[ERROR] 2021-06-17 unfilled_order code=600663.SH reason=below_min_lot
+[INFO]  2021-06-17 fill sell 000595.SZ vol=500 price=12.9770 amt=6488.48
+[INFO]  2021-06-17 fill sell 002191.SZ vol=1700 price=66.7373 amt=113453.42
+[ERROR] 2021-06-17 unfilled_order code=600479.SH reason=below_min_lot
+[ERROR] 2021-06-17 unfilled_order code=002347.SZ reason=below_min_lot
+[ERROR] 2021-06-17 unfilled_order code=000828.SZ reason=below_min_lot
+[INFO]  2021-06-17 fill buy 603808.SH vol=200 price=33.5503 amt=6710.05
+[INFO]  2021-06-17 fill buy 603001.SH vol=600 price=11.4443 amt=6866.57
+[INFO]  2021-06-17 fill buy 600968.SH vol=41700 price=2.9972 amt=124985.07
+[INFO]  2021-06-17 hold
+[INFO]  2021-06-18 hold
+[INFO]  2021-06-21 hold
+[INFO]  2021-06-22 hold
+[INFO]  2021-06-23 hold
+[INFO]  2021-06-24 hold
+[INFO]  2021-06-25 hold
+[ERROR] 2021-06-29 unfilled_order code=600663.SH reason=below_min_lot
+[ERROR] 2021-06-29 unfilled_order code=000828.SZ reason=below_min_lot
+[INFO]  2021-06-29 fill sell 000595.SZ vol=1100 price=15.3049 amt=16835.39
+[INFO]  2021-06-29 fill sell 600968.SH vol=41700 price=2.6668 amt=111204.77
+[ERROR] 2021-06-29 unfilled_order code=600479.SH reason=below_min_lot
+[ERROR] 2021-06-29 unfilled_order code=002347.SZ reason=below_min_lot
+[ERROR] 2021-06-29 unfilled_order code=603808.SH reason=below_min_lot
+[INFO]  2021-06-29 fill buy 603001.SH vol=100 price=11.7693 amt=1176.93
+[INFO]  2021-06-29 fill buy 000036.SZ vol=2400 price=52.4652 amt=125916.51
+[INFO]  2021-06-29 hold
+[INFO]  2021-06-30 hold
+[INFO]  2021-07-01 hold
+[INFO]  2021-07-02 hold
+[INFO]  2021-07-05 hold
+[INFO]  2021-07-06 hold
+[INFO]  2021-07-07 hold
+[INFO]  2021-07-08 hold
+[INFO]  2021-07-09 hold
+[INFO]  2021-07-12 hold
+[INFO]  2021-07-13 hold
+[INFO]  2021-07-14 hold
+[INFO]  2021-07-15 hold
+[INFO]  2021-07-16 hold
+[INFO]  2021-07-19 hold
+[INFO]  2021-07-20 hold
+[INFO]  2021-07-21 hold
+[INFO]  2021-07-22 hold
+[INFO]  2021-07-23 hold
+[INFO]  2021-07-26 hold
+[INFO]  2021-07-27 hold
+[INFO]  2021-07-28 hold
+[INFO]  2021-07-29 hold
+[INFO]  2021-08-02 fill sell 002347.SZ vol=800 price=17.5540 amt=14043.20
+[ERROR] 2021-08-02 unfilled_order code=600663.SH reason=below_min_lot
+[ERROR] 2021-08-02 unfilled_order code=000036.SZ reason=below_min_lot
+[INFO]  2021-08-02 fill sell 603808.SH vol=3700 price=31.4190 amt=116250.48
+[INFO]  2021-08-02 fill sell 603001.SH vol=10900 price=11.0835 amt=120810.20
+[ERROR] 2021-08-02 unfilled_order code=600479.SH reason=below_min_lot
+[ERROR] 2021-08-02 unfilled_order code=000828.SZ reason=below_min_lot
+[INFO]  2021-08-02 fill buy 000595.SZ vol=400 price=13.0030 amt=5201.18
+[INFO]  2021-08-02 fill buy 601139.SH vol=6800 price=17.3430 amt=117932.10
+[INFO]  2021-08-02 fill buy 600068.SH vol=2200 price=52.7024 amt=115945.37
+[INFO]  2021-08-02 hold
+[INFO]  2021-08-03 hold
+[INFO]  2021-08-04 hold
+[INFO]  2021-08-05 hold
+[INFO]  2021-08-06 hold
+[INFO]  2021-08-09 hold
+[INFO]  2021-08-10 hold
+[INFO]  2021-08-11 hold
+[INFO]  2021-08-12 hold
+[INFO]  2021-08-13 hold
+[INFO]  2021-08-16 hold
+[INFO]  2021-08-17 hold
+[INFO]  2021-08-19 fill sell 601139.SH vol=2000 price=25.1343 amt=50268.50
+[INFO]  2021-08-19 fill sell 000036.SZ vol=2400 price=47.1344 amt=113122.48
+[INFO]  2021-08-19 fill buy 600479.SH vol=100 price=113.0229 amt=11302.28
+[ERROR] 2021-08-19 unfilled_order code=002347.SZ reason=below_min_lot
+[ERROR] 2021-08-19 unfilled_order code=600663.SH reason=below_min_lot
+[INFO]  2021-08-19 fill buy 000828.SZ vol=100 price=42.2733 amt=4227.33
+[INFO]  2021-08-19 fill buy 000595.SZ vol=1200 price=12.5563 amt=15067.54
+[ERROR] 2021-08-19 unfilled_order code=600068.SH reason=below_min_lot
+[INFO]  2021-08-19 fill buy 000685.SZ vol=900 price=129.5165 amt=116564.88
+[INFO]  2021-08-19 hold
+[INFO]  2021-08-20 hold
+[INFO]  2021-08-23 hold
+[INFO]  2021-08-24 hold
+[INFO]  2021-08-26 fill sell 600479.SH vol=1100 price=115.7070 amt=127277.73
+[INFO]  2021-08-26 fill sell 002347.SZ vol=6800 price=19.9495 amt=135656.67
+[INFO]  2021-08-26 fill sell 600663.SH vol=800 price=153.4435 amt=122754.82
+[INFO]  2021-08-26 fill sell 000828.SZ vol=3000 price=42.3019 amt=126905.81
+[INFO]  2021-08-26 fill sell 000595.SZ vol=10100 price=13.3732 amt=135069.45
+[INFO]  2021-08-26 fill buy 601139.SH vol=100 price=26.1227 amt=2612.27
+[ERROR] 2021-08-26 unfilled_order code=600068.SH reason=below_min_lot
+[INFO]  2021-08-26 fill buy 000685.SZ vol=100 price=129.3651 amt=12936.51
+[INFO]  2021-08-26 fill buy 601107.SH vol=30500 price=4.2611 amt=129963.46
+[INFO]  2021-08-26 fill buy 600881.SH vol=800 price=146.5842 amt=117267.39
+[INFO]  2021-08-26 fill buy 601989.SH vol=18300 price=7.1009 amt=129947.28
+[INFO]  2021-08-26 fill buy 600561.SH vol=9800 price=13.1631 amt=128998.09
+[INFO]  2021-08-26 fill buy 002830.SZ vol=5900 price=21.8205 amt=128741.06
+[INFO]  2021-08-26 hold
+[INFO]  2021-08-27 hold
+[INFO]  2021-08-30 hold
+[INFO]  2021-08-31 hold
+[INFO]  2021-09-01 hold
+[INFO]  2021-09-02 hold
+[INFO]  2021-09-03 hold
+[INFO]  2021-09-06 hold
+[INFO]  2021-09-07 hold
+[INFO]  2021-09-08 hold
+[INFO]  2021-09-09 hold
+[INFO]  2021-09-10 hold
+[INFO]  2021-09-13 hold
+[INFO]  2021-09-14 hold
+[INFO]  2021-09-15 hold
+[INFO]  2021-09-16 hold
+[INFO]  2021-09-17 hold
+[INFO]  2021-09-22 hold
+[INFO]  2021-09-23 hold
+[INFO]  2021-09-24 hold
+[INFO]  2021-09-27 hold
+[INFO]  2021-09-28 hold
+[ERROR] 2021-09-30 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-09-30 unfilled_order code=000685.SZ reason=below_min_lot
+[INFO]  2021-09-30 fill sell 601107.SH vol=1100 price=4.4243 amt=4866.70
+[INFO]  2021-09-30 fill sell 601989.SH vol=600 price=7.4234 amt=4454.05
+[INFO]  2021-09-30 fill sell 002830.SZ vol=5900 price=19.8787 amt=117284.57
+[INFO]  2021-09-30 fill buy 601139.SH vol=400 price=23.7654 amt=9506.15
+[INFO]  2021-09-30 fill buy 600881.SH vol=100 price=141.3829 amt=14138.29
+[INFO]  2021-09-30 fill buy 600561.SH vol=200 price=13.1631 amt=2632.61
+[INFO]  2021-09-30 fill buy 600900.SH vol=1700 price=73.4666 amt=124893.21
+[INFO]  2021-09-30 hold
+[INFO]  2021-10-08 hold
+[INFO]  2021-10-11 hold
+[INFO]  2021-10-12 hold
+[INFO]  2021-10-13 hold
+[INFO]  2021-10-14 hold
+[INFO]  2021-10-15 hold
+[INFO]  2021-10-18 hold
+[INFO]  2021-10-19 hold
+[INFO]  2021-10-20 hold
+[INFO]  2021-10-21 hold
+[INFO]  2021-10-22 hold
+[INFO]  2021-10-25 hold
+[INFO]  2021-10-26 hold
+[ERROR] 2021-10-28 unfilled_order code=600881.SH reason=below_min_lot
+[INFO]  2021-10-28 fill sell 600561.SH vol=10000 price=11.9957 amt=119956.52
+[INFO]  2021-10-28 fill buy 601139.SH vol=1200 price=22.7792 amt=27335.00
+[ERROR] 2021-10-28 unfilled_order code=600068.SH reason=suspended
+[INFO]  2021-10-28 fill buy 000685.SZ vol=100 price=129.2136 amt=12921.36
+[INFO]  2021-10-28 fill buy 601107.SH vol=1000 price=4.8963 amt=4896.29
+[INFO]  2021-10-28 fill buy 601989.SH vol=3600 price=6.9154 amt=24895.47
+[INFO]  2021-10-28 fill buy 600900.SH vol=400 price=70.0249 amt=28009.97
+[INFO]  2021-10-29 fill sell 601139.SH vol=600 price=21.8454 amt=13107.26
+[ERROR] 2021-10-29 unfilled_order code=600068.SH reason=suspended
+[INFO]  2021-10-29 fill sell 000685.SZ vol=100 price=129.5601 amt=12956.01
+[INFO]  2021-10-29 fill sell 601107.SH vol=3600 price=4.7148 amt=16973.35
+[INFO]  2021-10-29 fill sell 600881.SH vol=100 price=163.7519 amt=16375.19
+[INFO]  2021-10-29 fill sell 601989.SH vol=2500 price=6.8343 amt=17085.65
+[INFO]  2021-10-29 fill sell 600900.SH vol=200 price=69.6868 amt=13937.37
+[INFO]  2021-10-29 fill buy 600867.SH vol=300 price=400.3604 amt=120108.11
+[INFO]  2021-10-29 hold
+[INFO]  2021-11-01 hold
+[INFO]  2021-11-03 fill sell 601989.SH vol=1700 price=7.2383 amt=12305.03
+[ERROR] 2021-11-03 unfilled_order code=600900.SH reason=below_min_lot
+[INFO]  2021-11-03 fill sell 601139.SH vol=5900 price=21.2213 amt=125205.53
+[ERROR] 2021-11-03 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-11-03 unfilled_order code=000685.SZ reason=below_min_lot
+[INFO]  2021-11-03 fill buy 601107.SH vol=1700 price=4.4596 amt=7581.31
+[ERROR] 2021-11-03 unfilled_order code=600881.SH reason=below_min_lot
+[ERROR] 2021-11-03 unfilled_order code=600867.SH reason=below_min_lot
+[INFO]  2021-11-03 fill buy 002262.SZ vol=900 price=130.8999 amt=117809.88
+[INFO]  2021-11-03 fill buy 603139.SH vol=6600 price=19.1148 amt=126157.98
+[INFO]  2021-11-04 fill sell 601107.SH vol=400 price=4.5299 amt=1811.97
+[ERROR] 2021-11-04 unfilled_order code=600881.SH reason=below_min_lot
+[ERROR] 2021-11-04 unfilled_order code=600900.SH reason=below_min_lot
+[ERROR] 2021-11-04 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2021-11-04 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-11-04 unfilled_order code=000685.SZ reason=below_min_lot
+[INFO]  2021-11-04 fill buy 601989.SH vol=700 price=7.1515 amt=5006.08
+[ERROR] 2021-11-04 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-11-04 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-11-05 unfilled_order code=601107.SH reason=below_min_lot
+[ERROR] 2021-11-05 unfilled_order code=600881.SH reason=below_min_lot
+[ERROR] 2021-11-05 unfilled_order code=600900.SH reason=below_min_lot
+[ERROR] 2021-11-05 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-11-05 unfilled_order code=000685.SZ reason=below_min_lot
+[ERROR] 2021-11-05 unfilled_order code=601989.SH reason=below_min_lot
+[ERROR] 2021-11-05 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-11-05 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-11-05 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2021-11-08 unfilled_order code=600881.SH reason=below_min_lot
+[ERROR] 2021-11-08 unfilled_order code=600900.SH reason=below_min_lot
+[ERROR] 2021-11-08 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-11-08 unfilled_order code=000685.SZ reason=below_min_lot
+[ERROR] 2021-11-08 unfilled_order code=601107.SH reason=below_min_lot
+[INFO]  2021-11-08 fill buy 601989.SH vol=200 price=6.9323 amt=1386.45
+[ERROR] 2021-11-08 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-11-08 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-11-08 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2021-11-09 unfilled_order code=000685.SZ reason=below_min_lot
+[INFO]  2021-11-09 fill sell 601107.SH vol=200 price=4.4771 amt=895.42
+[ERROR] 2021-11-09 unfilled_order code=600881.SH reason=below_min_lot
+[ERROR] 2021-11-09 unfilled_order code=601989.SH reason=below_min_lot
+[ERROR] 2021-11-09 unfilled_order code=600900.SH reason=below_min_lot
+[ERROR] 2021-11-09 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2021-11-09 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-11-09 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-11-09 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-11-10 unfilled_order code=000685.SZ reason=below_min_lot
+[ERROR] 2021-11-10 unfilled_order code=600881.SH reason=below_min_lot
+[INFO]  2021-11-10 fill sell 601989.SH vol=100 price=6.9858 amt=698.58
+[ERROR] 2021-11-10 unfilled_order code=600900.SH reason=below_min_lot
+[ERROR] 2021-11-10 unfilled_order code=600068.SH reason=suspended
+[INFO]  2021-11-10 fill buy 601107.SH vol=200 price=4.4596 amt=891.92
+[ERROR] 2021-11-10 unfilled_order code=600867.SH reason=below_min_lot
+[INFO]  2021-11-10 fill buy 002262.SZ vol=100 price=124.3121 amt=12431.21
+[ERROR] 2021-11-10 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2021-11-11 unfilled_order code=000685.SZ reason=below_min_lot
+[ERROR] 2021-11-11 unfilled_order code=600881.SH reason=below_min_lot
+[ERROR] 2021-11-11 unfilled_order code=601989.SH reason=below_min_lot
+[ERROR] 2021-11-11 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-11-11 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2021-11-11 unfilled_order code=600068.SH reason=suspended
+[INFO]  2021-11-11 fill sell 600900.SH vol=1900 price=66.3841 amt=126129.88
+[INFO]  2021-11-11 fill buy 601107.SH vol=100 price=4.4067 amt=440.67
+[ERROR] 2021-11-11 unfilled_order code=600867.SH reason=below_min_lot
+[INFO]  2021-11-11 fill buy 002308.SZ vol=6800 price=18.1776 amt=123607.81
+[ERROR] 2021-11-12 unfilled_order code=000685.SZ reason=below_min_lot
+[ERROR] 2021-11-12 unfilled_order code=600881.SH reason=below_min_lot
+[ERROR] 2021-11-12 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2021-11-12 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2021-11-12 unfilled_order code=600068.SH reason=suspended
+[INFO]  2021-11-12 fill buy 601107.SH vol=100 price=4.4596 amt=445.96
+[ERROR] 2021-11-12 unfilled_order code=601989.SH reason=below_min_lot
+[ERROR] 2021-11-12 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-11-12 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-11-15 unfilled_order code=000685.SZ reason=below_min_lot
+[ERROR] 2021-11-15 unfilled_order code=600881.SH reason=below_min_lot
+[ERROR] 2021-11-15 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-11-15 fill sell 002308.SZ vol=200 price=19.7000 amt=3940.00
+[ERROR] 2021-11-15 unfilled_order code=600068.SH reason=suspended
+[INFO]  2021-11-15 fill buy 601107.SH vol=600 price=4.4067 amt=2644.00
+[INFO]  2021-11-15 fill buy 601989.SH vol=100 price=7.0841 amt=708.41
+[ERROR] 2021-11-15 unfilled_order code=600867.SH reason=below_min_lot
+[INFO]  2021-11-15 fill buy 603139.SH vol=100 price=19.0122 amt=1901.22
+[ERROR] 2021-11-16 unfilled_order code=000685.SZ reason=below_min_lot
+[ERROR] 2021-11-16 unfilled_order code=600881.SH reason=below_min_lot
+[ERROR] 2021-11-16 unfilled_order code=601989.SH reason=below_min_lot
+[ERROR] 2021-11-16 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-11-16 fill sell 603139.SH vol=100 price=19.5886 amt=1958.86
+[ERROR] 2021-11-16 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2021-11-16 unfilled_order code=600068.SH reason=suspended
+[INFO]  2021-11-16 fill buy 601107.SH vol=100 price=4.4067 amt=440.67
+[ERROR] 2021-11-16 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-11-17 unfilled_order code=000685.SZ reason=below_min_lot
+[ERROR] 2021-11-17 unfilled_order code=600881.SH reason=below_min_lot
+[ERROR] 2021-11-17 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-11-17 fill sell 002308.SZ vol=200 price=20.1329 amt=4026.59
+[ERROR] 2021-11-17 unfilled_order code=600068.SH reason=suspended
+[INFO]  2021-11-17 fill buy 601107.SH vol=100 price=4.3934 amt=439.34
+[INFO]  2021-11-17 fill buy 601989.SH vol=300 price=6.9829 amt=2094.86
+[ERROR] 2021-11-17 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-11-17 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2021-11-18 unfilled_order code=000685.SZ reason=below_min_lot
+[ERROR] 2021-11-18 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-11-18 fill sell 002308.SZ vol=400 price=21.4318 amt=8572.74
+[ERROR] 2021-11-18 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-11-18 unfilled_order code=601107.SH reason=below_min_lot
+[ERROR] 2021-11-18 unfilled_order code=600881.SH reason=below_min_lot
+[INFO]  2021-11-18 fill buy 601989.SH vol=100 price=6.9829 amt=698.29
+[ERROR] 2021-11-18 unfilled_order code=600867.SH reason=below_min_lot
+[INFO]  2021-11-18 fill buy 603139.SH vol=100 price=19.2482 amt=1924.82
+[ERROR] 2021-11-19 unfilled_order code=000685.SZ reason=below_min_lot
+[INFO]  2021-11-19 fill sell 601107.SH vol=600 price=4.5431 amt=2725.88
+[INFO]  2021-11-19 fill sell 601989.SH vol=100 price=7.0194 amt=701.94
+[ERROR] 2021-11-19 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-11-19 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2021-11-19 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-11-19 unfilled_order code=600881.SH reason=below_min_lot
+[ERROR] 2021-11-19 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-11-19 unfilled_order code=603139.SH reason=below_min_lot
+[INFO]  2021-11-22 fill sell 601107.SH vol=400 price=4.6356 amt=1854.23
+[ERROR] 2021-11-22 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-11-22 unfilled_order code=600068.SH reason=suspended
+[INFO]  2021-11-22 fill sell 000685.SZ vol=1000 price=131.2231 amt=131223.09
+[ERROR] 2021-11-22 unfilled_order code=600881.SH reason=below_min_lot
+[ERROR] 2021-11-22 unfilled_order code=601989.SH reason=below_min_lot
+[ERROR] 2021-11-22 unfilled_order code=600867.SH reason=below_min_lot
+[INFO]  2021-11-22 fill buy 603139.SH vol=100 price=18.9815 amt=1898.15
+[ERROR] 2021-11-22 unfilled_order code=002308.SZ reason=below_min_lot
+[INFO]  2021-11-22 fill buy 002864.SZ vol=5100 price=25.1043 amt=128031.92
+[ERROR] 2021-11-23 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-11-23 fill sell 603139.SH vol=300 price=20.1723 amt=6051.69
+[ERROR] 2021-11-23 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2021-11-23 unfilled_order code=600068.SH reason=suspended
+[INFO]  2021-11-23 fill buy 601107.SH vol=400 price=4.5522 amt=1820.89
+[ERROR] 2021-11-23 unfilled_order code=600881.SH reason=below_min_lot
+[ERROR] 2021-11-23 unfilled_order code=601989.SH reason=below_min_lot
+[ERROR] 2021-11-23 unfilled_order code=600867.SH reason=below_min_lot
+[INFO]  2021-11-23 fill buy 002864.SZ vol=100 price=24.8396 amt=2483.96
+[INFO]  2021-11-24 fill sell 601107.SH vol=300 price=4.6092 amt=1382.75
+[ERROR] 2021-11-24 unfilled_order code=601989.SH reason=below_min_lot
+[ERROR] 2021-11-24 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-11-24 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-11-24 unfilled_order code=600881.SH reason=below_min_lot
+[ERROR] 2021-11-24 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-11-24 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2021-11-24 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2021-11-24 unfilled_order code=002864.SZ reason=below_min_lot
+[INFO]  2021-11-25 fill sell 601107.SH vol=200 price=4.6488 amt=929.76
+[ERROR] 2021-11-25 unfilled_order code=601989.SH reason=below_min_lot
+[ERROR] 2021-11-25 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-11-25 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2021-11-25 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-11-25 unfilled_order code=600881.SH reason=below_min_lot
+[ERROR] 2021-11-25 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-11-25 unfilled_order code=603139.SH reason=below_min_lot
+[INFO]  2021-11-25 fill buy 002308.SZ vol=100 price=21.0843 amt=2108.43
+[ERROR] 2021-11-26 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-11-26 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2021-11-26 unfilled_order code=600068.SH reason=suspended
+[INFO]  2021-11-26 fill buy 601107.SH vol=100 price=4.6184 amt=461.84
+[ERROR] 2021-11-26 unfilled_order code=600881.SH reason=below_min_lot
+[INFO]  2021-11-26 fill buy 601989.SH vol=200 price=7.0166 amt=1403.32
+[ERROR] 2021-11-26 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-11-26 unfilled_order code=603139.SH reason=below_min_lot
+[INFO]  2021-11-26 fill buy 002308.SZ vol=200 price=20.7806 amt=4156.12
+[ERROR] 2021-11-29 unfilled_order code=600068.SH reason=suspended
+[INFO]  2021-11-29 fill sell 601107.SH vol=28100 price=4.6488 amt=130630.91
+[INFO]  2021-11-29 fill sell 600881.SH vol=800 price=152.4262 amt=121940.93
+[INFO]  2021-11-29 fill sell 601989.SH vol=18500 price=6.9016 amt=127679.43
+[INFO]  2021-11-29 fill buy 600867.SH vol=100 price=397.9486 amt=39794.86
+[INFO]  2021-11-29 fill buy 002262.SZ vol=200 price=132.7821 amt=26556.42
+[INFO]  2021-11-29 fill buy 603139.SH vol=2000 price=20.1922 amt=40384.34
+[INFO]  2021-11-29 fill buy 002308.SZ vol=2300 price=19.9563 amt=45899.57
+[INFO]  2021-11-29 fill buy 002864.SZ vol=1600 price=25.3690 amt=40590.37
+[INFO]  2021-11-29 fill buy 600062.SH vol=1600 price=101.8617 amt=162978.67
+[ERROR] 2021-11-30 unfilled_order code=600867.SH reason=below_min_lot
+[INFO]  2021-11-30 fill sell 002262.SZ vol=200 price=131.5776 amt=26315.51
+[INFO]  2021-11-30 fill sell 603139.SH vol=2100 price=19.8037 amt=41587.72
+[INFO]  2021-11-30 fill sell 002308.SZ vol=2000 price=19.5701 amt=39140.18
+[INFO]  2021-11-30 fill sell 002864.SZ vol=1700 price=25.3081 amt=43023.83
+[INFO]  2021-11-30 fill sell 600062.SH vol=300 price=102.1411 amt=30642.33
+[ERROR] 2021-11-30 unfilled_order code=600068.SH reason=suspended
+[INFO]  2021-11-30 fill buy 002197.SZ vol=4000 price=31.3607 amt=125442.92
+[INFO]  2021-11-30 fill buy 600594.SH vol=1100 price=110.1486 amt=121163.43
+[ERROR] 2021-12-01 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-12-01 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-12-01 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2021-12-01 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2021-12-01 fill sell 002197.SZ vol=100 price=33.4636 amt=3346.36
+[ERROR] 2021-12-01 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-01 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2021-12-01 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2021-12-01 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2021-12-02 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-12-02 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-12-02 fill sell 603139.SH vol=100 price=20.3976 amt=2039.76
+[ERROR] 2021-12-02 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2021-12-02 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2021-12-02 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2021-12-02 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2021-12-02 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-02 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2021-12-03 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-12-03 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-12-03 fill sell 603139.SH vol=200 price=20.8174 amt=4163.48
+[ERROR] 2021-12-03 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2021-12-03 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2021-12-03 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2021-12-03 unfilled_order code=600068.SH reason=suspended
+[INFO]  2021-12-03 fill buy 002308.SZ vol=100 price=18.8718 amt=1887.18
+[ERROR] 2021-12-03 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2021-12-06 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-12-06 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-12-06 fill sell 603139.SH vol=200 price=22.2817 amt=4456.34
+[ERROR] 2021-12-06 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2021-12-06 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2021-12-06 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-06 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2021-12-06 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2021-12-06 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2021-12-07 unfilled_order code=600867.SH reason=below_min_lot
+[INFO]  2021-12-07 fill sell 603139.SH vol=200 price=22.3431 amt=4468.63
+[ERROR] 2021-12-07 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2021-12-07 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2021-12-07 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-07 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-12-07 fill buy 002308.SZ vol=100 price=18.4379 amt=1843.79
+[ERROR] 2021-12-07 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2021-12-07 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2021-12-08 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-12-08 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-12-08 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2021-12-08 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2021-12-08 unfilled_order code=600068.SH reason=suspended
+[INFO]  2021-12-08 fill buy 603139.SH vol=100 price=21.7312 amt=2173.12
+[INFO]  2021-12-08 fill buy 002308.SZ vol=100 price=18.2644 amt=1826.44
+[ERROR] 2021-12-08 unfilled_order code=002864.SZ reason=below_min_lot
+[INFO]  2021-12-08 fill buy 002197.SZ vol=100 price=31.5245 amt=3152.45
+[ERROR] 2021-12-09 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-12-09 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2021-12-09 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2021-12-09 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-09 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-12-09 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2021-12-09 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2021-12-09 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2021-12-09 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2021-12-10 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-12-10 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-12-10 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2021-12-10 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2021-12-10 unfilled_order code=600068.SH reason=suspended
+[INFO]  2021-12-10 fill buy 603139.SH vol=100 price=21.5465 amt=2154.65
+[ERROR] 2021-12-10 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2021-12-10 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2021-12-10 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2021-12-13 unfilled_order code=600867.SH reason=below_min_lot
+[INFO]  2021-12-13 fill sell 603139.SH vol=200 price=23.0087 amt=4601.74
+[INFO]  2021-12-13 fill sell 002308.SZ vol=100 price=19.1804 amt=1918.04
+[INFO]  2021-12-13 fill sell 002864.SZ vol=400 price=28.3053 amt=11322.11
+[ERROR] 2021-12-13 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2021-12-13 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-13 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-12-13 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2021-12-13 fill buy 002197.SZ vol=100 price=31.3198 amt=3131.98
+[ERROR] 2021-12-14 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-12-14 unfilled_order code=002308.SZ reason=below_min_lot
+[INFO]  2021-12-14 fill sell 002864.SZ vol=200 price=28.4475 amt=5689.50
+[ERROR] 2021-12-14 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2021-12-14 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2021-12-14 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-14 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-12-14 fill buy 603139.SH vol=300 price=21.4952 amt=6448.57
+[ERROR] 2021-12-14 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2021-12-15 unfilled_order code=600867.SH reason=below_min_lot
+[ERROR] 2021-12-15 unfilled_order code=603139.SH reason=below_min_lot
+[INFO]  2021-12-15 fill sell 002308.SZ vol=200 price=19.8732 amt=3974.63
+[INFO]  2021-12-15 fill sell 002864.SZ vol=100 price=29.7175 amt=2971.75
+[ERROR] 2021-12-15 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2021-12-15 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-15 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-12-15 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2021-12-15 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2021-12-16 fill sell 002308.SZ vol=300 price=20.5659 amt=6169.77
+[ERROR] 2021-12-16 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2021-12-16 unfilled_order code=600068.SH reason=suspended
+[INFO]  2021-12-16 fill sell 600867.SH vol=400 price=364.1433 amt=145657.32
+[ERROR] 2021-12-16 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-12-16 fill buy 603139.SH vol=100 price=22.4699 amt=2246.99
+[ERROR] 2021-12-16 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2021-12-16 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2021-12-16 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2021-12-16 fill buy 002628.SZ vol=9000 price=14.3018 amt=128716.08
+[INFO]  2021-12-17 fill sell 002197.SZ vol=100 price=32.4421 amt=3244.21
+[INFO]  2021-12-17 fill sell 002628.SZ vol=400 price=14.4635 amt=5785.41
+[ERROR] 2021-12-17 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-17 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-12-17 fill buy 603139.SH vol=100 price=20.5205 amt=2052.05
+[ERROR] 2021-12-17 unfilled_order code=002308.SZ reason=below_min_lot
+[INFO]  2021-12-17 fill buy 002864.SZ vol=100 price=28.7386 amt=2873.86
+[ERROR] 2021-12-17 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2021-12-17 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2021-12-20 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2021-12-20 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2021-12-20 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-20 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-12-20 fill buy 002308.SZ vol=100 price=19.6093 amt=1960.93
+[ERROR] 2021-12-20 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2021-12-20 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2021-12-20 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2021-12-20 fill buy 002628.SZ vol=300 price=14.2636 amt=4279.09
+[ERROR] 2021-12-21 unfilled_order code=603139.SH reason=below_min_lot
+[INFO]  2021-12-21 fill sell 002864.SZ vol=200 price=31.4955 amt=6299.09
+[INFO]  2021-12-21 fill sell 002628.SZ vol=200 price=14.8441 amt=2968.83
+[ERROR] 2021-12-21 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-21 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-12-21 fill buy 002308.SZ vol=300 price=19.0453 amt=5713.59
+[ERROR] 2021-12-21 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2021-12-21 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2021-12-21 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2021-12-22 unfilled_order code=603139.SH reason=below_min_lot
+[INFO]  2021-12-22 fill sell 002308.SZ vol=100 price=19.9165 amt=1991.65
+[ERROR] 2021-12-22 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2021-12-22 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-22 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-12-22 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2021-12-22 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2021-12-22 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2021-12-22 fill buy 002628.SZ vol=100 price=14.6069 amt=1460.69
+[ERROR] 2021-12-23 unfilled_order code=603139.SH reason=below_min_lot
+[INFO]  2021-12-23 fill sell 002864.SZ vol=100 price=31.1094 amt=3110.94
+[ERROR] 2021-12-23 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-23 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-12-23 fill buy 002308.SZ vol=100 price=19.6960 amt=1969.60
+[ERROR] 2021-12-23 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2021-12-23 fill buy 002197.SZ vol=100 price=32.3433 amt=3234.33
+[ERROR] 2021-12-23 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2021-12-23 fill buy 002628.SZ vol=200 price=14.5688 amt=2913.75
+[ERROR] 2021-12-24 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2021-12-24 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2021-12-24 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2021-12-24 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-24 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-12-24 fill buy 002308.SZ vol=100 price=19.0453 amt=1904.53
+[ERROR] 2021-12-24 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2021-12-24 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2021-12-24 fill buy 002628.SZ vol=100 price=14.1111 amt=1411.11
+[INFO]  2021-12-27 fill sell 603139.SH vol=100 price=21.5752 amt=2157.52
+[ERROR] 2021-12-27 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2021-12-27 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2021-12-27 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-27 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-12-27 fill buy 002308.SZ vol=300 price=18.4379 amt=5531.38
+[ERROR] 2021-12-27 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2021-12-27 unfilled_order code=002197.SZ reason=below_min_lot
+[INFO]  2021-12-27 fill buy 002628.SZ vol=600 price=13.4627 amt=8077.65
+[ERROR] 2021-12-28 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-12-28 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2021-12-28 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2021-12-28 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-28 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2021-12-28 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2021-12-28 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2021-12-28 fill buy 002197.SZ vol=100 price=31.5654 amt=3156.54
+[ERROR] 2021-12-28 unfilled_order code=002628.SZ reason=below_min_lot
+[INFO]  2021-12-29 fill sell 002308.SZ vol=100 price=19.3103 amt=1931.03
+[ERROR] 2021-12-29 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2021-12-29 fill sell 002197.SZ vol=200 price=35.9151 amt=7183.03
+[ERROR] 2021-12-29 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2021-12-29 unfilled_order code=002628.SZ reason=below_min_lot
+[ERROR] 2021-12-29 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-29 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-12-29 fill buy 603139.SH vol=200 price=21.1361 amt=4227.22
+[ERROR] 2021-12-29 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2021-12-30 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2021-12-30 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2021-12-30 fill sell 002197.SZ vol=100 price=34.1173 amt=3411.73
+[ERROR] 2021-12-30 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2021-12-30 unfilled_order code=002628.SZ reason=below_min_lot
+[ERROR] 2021-12-30 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-30 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2021-12-30 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2021-12-30 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2021-12-31 unfilled_order code=603139.SH reason=below_min_lot
+[INFO]  2021-12-31 fill sell 002308.SZ vol=300 price=20.2628 amt=6078.85
+[ERROR] 2021-12-31 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2021-12-31 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2021-12-31 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2021-12-31 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2021-12-31 fill buy 002864.SZ vol=200 price=30.8968 amt=6179.36
+[ERROR] 2021-12-31 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2021-12-31 unfilled_order code=002628.SZ reason=below_min_lot
+[ERROR] 2022-01-04 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2022-01-04 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2022-01-04 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-01-04 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2022-01-04 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2022-01-04 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-01-04 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2022-01-04 fill buy 002308.SZ vol=200 price=19.8262 amt=3965.24
+[INFO]  2022-01-04 fill buy 002628.SZ vol=400 price=13.7297 amt=5491.89
+[ERROR] 2022-01-05 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2022-01-05 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2022-01-05 unfilled_order code=002197.SZ reason=below_min_lot
+[INFO]  2022-01-05 fill sell 600594.SH vol=100 price=139.1414 amt=13914.14
+[INFO]  2022-01-05 fill sell 002628.SZ vol=100 price=14.1210 amt=1412.10
+[ERROR] 2022-01-05 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-01-05 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2022-01-05 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2022-01-05 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2022-01-06 fill sell 002308.SZ vol=100 price=19.9598 amt=1995.98
+[ERROR] 2022-01-06 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-01-06 unfilled_order code=002197.SZ reason=below_min_lot
+[INFO]  2022-01-06 fill sell 002628.SZ vol=300 price=14.1590 amt=4247.71
+[ERROR] 2022-01-06 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-01-06 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2022-01-06 fill buy 603139.SH vol=100 price=21.3413 amt=2134.13
+[INFO]  2022-01-06 fill buy 002864.SZ vol=100 price=30.0315 amt=3003.15
+[ERROR] 2022-01-06 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2022-01-07 fill sell 603139.SH vol=400 price=23.2750 amt=9309.98
+[ERROR] 2022-01-07 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-01-07 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2022-01-07 fill buy 002308.SZ vol=200 price=20.0865 amt=4017.30
+[ERROR] 2022-01-07 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2022-01-07 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-01-07 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2022-01-07 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2022-01-07 unfilled_order code=002628.SZ reason=below_min_lot
+[INFO]  2022-01-10 fill sell 002308.SZ vol=200 price=19.9165 amt=3983.29
+[ERROR] 2022-01-10 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-01-10 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2022-01-10 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-01-10 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2022-01-10 fill buy 603139.SH vol=200 price=21.5465 amt=4309.31
+[ERROR] 2022-01-10 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2022-01-10 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2022-01-10 unfilled_order code=002628.SZ reason=below_min_lot
+[INFO]  2022-01-11 fill sell 002864.SZ vol=100 price=31.7495 amt=3174.95
+[ERROR] 2022-01-11 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-01-11 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-01-11 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2022-01-11 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2022-01-11 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2022-01-11 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2022-01-11 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2022-01-11 fill buy 002628.SZ vol=100 price=14.1111 amt=1411.11
+[ERROR] 2022-01-12 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2022-01-12 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2022-01-12 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-01-12 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2022-01-12 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-01-12 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2022-01-12 unfilled_order code=002864.SZ reason=below_min_lot
+[INFO]  2022-01-12 fill buy 002197.SZ vol=200 price=34.2266 amt=6845.32
+[INFO]  2022-01-12 fill buy 002628.SZ vol=200 price=13.9204 amt=2784.08
+[ERROR] 2022-01-13 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2022-01-13 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2022-01-13 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-01-13 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2022-01-13 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-01-13 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2022-01-13 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2022-01-13 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2022-01-13 unfilled_order code=002628.SZ reason=below_min_lot
+[ERROR] 2022-01-14 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2022-01-14 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2022-01-14 fill sell 002197.SZ vol=200 price=35.2205 amt=7044.11
+[INFO]  2022-01-14 fill sell 002628.SZ vol=200 price=14.3113 amt=2862.25
+[ERROR] 2022-01-14 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-01-14 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2022-01-14 fill buy 603139.SH vol=100 price=21.8749 amt=2187.49
+[ERROR] 2022-01-14 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2022-01-14 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2022-01-17 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2022-01-17 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2022-01-17 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-01-17 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-01-17 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2022-01-17 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2022-01-17 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2022-01-17 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2022-01-17 fill buy 002628.SZ vol=300 price=13.6916 amt=4107.47
+[INFO]  2022-01-18 fill sell 002308.SZ vol=100 price=20.9123 amt=2091.23
+[ERROR] 2022-01-18 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2022-01-18 fill sell 002197.SZ vol=100 price=37.5087 amt=3750.87
+[ERROR] 2022-01-18 unfilled_order code=002628.SZ reason=below_min_lot
+[ERROR] 2022-01-18 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-01-18 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2022-01-18 fill buy 603139.SH vol=100 price=21.7722 amt=2177.22
+[ERROR] 2022-01-18 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2022-01-18 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2022-01-19 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2022-01-19 fill sell 002197.SZ vol=100 price=36.0786 amt=3607.86
+[INFO]  2022-01-19 fill sell 002628.SZ vol=600 price=14.2732 amt=8563.93
+[ERROR] 2022-01-19 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-01-19 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2022-01-19 fill buy 603139.SH vol=400 price=19.6279 amt=7851.14
+[ERROR] 2022-01-19 unfilled_order code=002308.SZ reason=below_min_lot
+[INFO]  2022-01-19 fill buy 002864.SZ vol=200 price=29.3189 amt=5863.78
+[ERROR] 2022-01-19 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2022-01-20 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2022-01-20 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2022-01-20 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-01-20 unfilled_order code=002197.SZ reason=below_min_lot
+[INFO]  2022-01-20 fill sell 002628.SZ vol=100 price=14.3874 amt=1438.74
+[ERROR] 2022-01-20 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-01-20 unfilled_order code=002262.SZ reason=below_min_lot
+[ERROR] 2022-01-20 unfilled_order code=603139.SH reason=below_min_lot
+[ERROR] 2022-01-20 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2022-01-21 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2022-01-21 fill sell 002197.SZ vol=100 price=36.9775 amt=3697.75
+[ERROR] 2022-01-21 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-01-21 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2022-01-21 fill buy 603139.SH vol=100 price=19.2482 amt=1924.82
+[ERROR] 2022-01-21 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2022-01-21 unfilled_order code=002864.SZ reason=below_min_lot
+[INFO]  2022-01-21 fill buy 600594.SH vol=100 price=119.6237 amt=11962.37
+[ERROR] 2022-01-21 unfilled_order code=002628.SZ reason=below_min_lot
+[ERROR] 2022-01-24 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2022-01-24 fill sell 002197.SZ vol=300 price=45.3945 amt=13618.34
+[ERROR] 2022-01-24 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-01-24 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2022-01-24 fill buy 603139.SH vol=100 price=18.8378 amt=1883.78
+[ERROR] 2022-01-24 unfilled_order code=002308.SZ reason=below_min_lot
+[ERROR] 2022-01-24 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2022-01-24 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2022-01-24 fill buy 002628.SZ vol=100 price=13.8441 amt=1384.41
+[INFO]  2022-01-25 fill sell 002197.SZ vol=300 price=49.9298 amt=14978.95
+[ERROR] 2022-01-25 unfilled_order code=002628.SZ reason=below_min_lot
+[ERROR] 2022-01-25 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-01-25 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2022-01-25 fill buy 603139.SH vol=100 price=18.7455 amt=1874.55
+[INFO]  2022-01-25 fill buy 002308.SZ vol=200 price=19.0453 amt=3809.06
+[INFO]  2022-01-25 fill buy 002864.SZ vol=100 price=27.9446 amt=2794.46
+[ERROR] 2022-01-25 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-01-25 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2022-01-26 fill sell 002197.SZ vol=300 price=54.9146 amt=16474.39
+[ERROR] 2022-01-26 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-01-26 fill sell 603139.SH vol=7100 price=17.9196 amt=127228.90
+[ERROR] 2022-01-26 unfilled_order code=002262.SZ reason=below_min_lot
+[INFO]  2022-01-26 fill buy 002308.SZ vol=200 price=18.1342 amt=3626.85
+[INFO]  2022-01-26 fill buy 002864.SZ vol=100 price=26.3565 amt=2635.65
+[ERROR] 2022-01-26 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2022-01-26 fill buy 600594.SH vol=100 price=107.1030 amt=10710.30
+[INFO]  2022-01-26 fill buy 002628.SZ vol=200 price=13.1576 amt=2631.53
+[INFO]  2022-01-26 fill buy 600115.SH vol=16200 price=7.9277 amt=128428.58
+[INFO]  2022-01-27 fill sell 002197.SZ vol=300 price=54.9146 amt=16474.39
+[INFO]  2022-01-27 fill sell 002628.SZ vol=100 price=13.8545 amt=1385.45
+[ERROR] 2022-01-27 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-01-27 fill sell 002262.SZ vol=1000 price=120.4776 amt=120477.57
+[INFO]  2022-01-27 fill buy 002308.SZ vol=100 price=17.7872 amt=1778.72
+[INFO]  2022-01-27 fill buy 002864.SZ vol=200 price=26.4583 amt=5291.65
+[ERROR] 2022-01-27 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-01-27 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2022-01-27 fill buy 600115.SH vol=400 price=7.9416 amt=3176.63
+[INFO]  2022-01-27 fill buy 600857.SH vol=2000 price=64.6565 amt=129313.02
+[ERROR] 2022-01-28 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2022-01-28 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2022-01-28 fill sell 002628.SZ vol=100 price=13.4359 amt=1343.59
+[INFO]  2022-01-28 fill sell 600115.SH vol=500 price=7.8149 amt=3907.43
+[ERROR] 2022-01-28 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-01-28 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-01-28 fill sell 002308.SZ vol=7200 price=16.4960 amt=118771.39
+[ERROR] 2022-01-28 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2022-01-28 fill buy 002197.SZ vol=100 price=44.5846 amt=4458.46
+[INFO]  2022-01-28 fill buy 603056.SH vol=10800 price=11.7628 amt=127038.68
+[ERROR] 2022-02-07 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2022-02-07 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2022-02-07 fill sell 002628.SZ vol=200 price=14.1210 amt=2824.19
+[INFO]  2022-02-07 fill sell 600115.SH vol=100 price=7.9811 amt=798.11
+[ERROR] 2022-02-07 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-02-07 unfilled_order code=603056.SH reason=below_min_lot
+[ERROR] 2022-02-07 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-02-07 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2022-02-07 fill buy 002197.SZ vol=300 price=47.4914 amt=14247.43
+[ERROR] 2022-02-08 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2022-02-08 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2022-02-08 fill sell 002628.SZ vol=400 price=14.8441 amt=5937.66
+[INFO]  2022-02-08 fill sell 600857.SH vol=200 price=71.1967 amt=14239.33
+[ERROR] 2022-02-08 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-02-08 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2022-02-08 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2022-02-08 fill buy 600115.SH vol=400 price=7.8999 amt=3159.97
+[INFO]  2022-02-08 fill buy 603056.SH vol=400 price=11.4404 amt=4576.17
+[INFO]  2022-02-09 fill sell 002197.SZ vol=100 price=51.4825 amt=5148.25
+[ERROR] 2022-02-09 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2022-02-09 fill sell 002628.SZ vol=100 price=15.6054 amt=1560.54
+[INFO]  2022-02-09 fill sell 600115.SH vol=200 price=8.1890 amt=1637.79
+[ERROR] 2022-02-09 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-02-09 fill buy 002864.SZ vol=100 price=26.0409 amt=2604.09
+[ERROR] 2022-02-09 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2022-02-09 fill buy 600857.SH vol=100 price=69.1116 amt=6911.16
+[INFO]  2022-02-09 fill buy 603056.SH vol=400 price=11.3780 amt=4551.21
+[ERROR] 2022-02-10 unfilled_order code=002864.SZ reason=below_min_lot
+[INFO]  2022-02-10 fill sell 002197.SZ vol=200 price=59.2457 amt=11849.14
+[ERROR] 2022-02-10 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2022-02-10 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-02-10 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2022-02-10 fill buy 002628.SZ vol=100 price=15.0264 amt=1502.64
+[INFO]  2022-02-10 fill buy 600115.SH vol=300 price=8.1359 amt=2440.78
+[ERROR] 2022-02-10 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-02-10 unfilled_order code=603056.SH reason=below_min_lot
+[INFO]  2022-02-11 fill sell 002197.SZ vol=200 price=60.8801 amt=12176.01
+[INFO]  2022-02-11 fill sell 600115.SH vol=100 price=8.3552 amt=835.52
+[ERROR] 2022-02-11 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-02-11 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-02-11 fill buy 002864.SZ vol=100 price=26.2038 amt=2620.38
+[ERROR] 2022-02-11 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-02-11 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2022-02-11 fill buy 002628.SZ vol=100 price=15.2552 amt=1525.52
+[INFO]  2022-02-11 fill buy 603056.SH vol=600 price=11.3364 amt=6801.85
+[INFO]  2022-02-14 fill sell 600115.SH vol=100 price=8.2998 amt=829.98
+[ERROR] 2022-02-14 unfilled_order code=600857.SH reason=below_min_lot
+[INFO]  2022-02-14 fill sell 603056.SH vol=600 price=11.6044 amt=6962.64
+[ERROR] 2022-02-14 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-02-14 fill buy 002864.SZ vol=100 price=25.3486 amt=2534.86
+[ERROR] 2022-02-14 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-02-14 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2022-02-14 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2022-02-14 unfilled_order code=002628.SZ reason=below_min_lot
+[ERROR] 2022-02-15 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2022-02-15 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-02-15 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-02-15 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-02-15 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2022-02-15 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2022-02-15 unfilled_order code=002628.SZ reason=below_min_lot
+[INFO]  2022-02-15 fill buy 600115.SH vol=200 price=8.1359 amt=1627.19
+[INFO]  2022-02-15 fill buy 603056.SH vol=100 price=11.3676 amt=1136.76
+[INFO]  2022-02-16 fill sell 002864.SZ vol=200 price=26.3648 amt=5272.95
+[ERROR] 2022-02-16 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2022-02-16 fill sell 002628.SZ vol=100 price=15.1486 amt=1514.86
+[ERROR] 2022-02-16 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-02-16 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-02-16 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2022-02-16 fill buy 002197.SZ vol=200 price=54.6561 amt=10931.22
+[INFO]  2022-02-16 fill buy 600115.SH vol=300 price=7.9555 amt=2386.64
+[INFO]  2022-02-16 fill buy 603056.SH vol=200 price=11.1388 amt=2227.76
+[ERROR] 2022-02-17 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2022-02-17 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2022-02-17 fill sell 002628.SZ vol=700 price=17.6607 amt=12362.51
+[ERROR] 2022-02-17 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-02-17 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2022-02-17 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-02-17 unfilled_order code=600115.SH reason=below_min_lot
+[INFO]  2022-02-17 fill buy 600857.SH vol=100 price=66.2558 amt=6625.58
+[INFO]  2022-02-17 fill buy 603056.SH vol=100 price=11.1804 amt=1118.04
+[INFO]  2022-02-18 fill sell 002628.SZ vol=100 price=15.3389 amt=1533.89
+[INFO]  2022-02-18 fill sell 603056.SH vol=200 price=11.2619 amt=2252.38
+[ERROR] 2022-02-18 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-02-18 unfilled_order code=002864.SZ reason=below_min_lot
+[ERROR] 2022-02-18 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-02-18 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2022-02-18 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2022-02-18 unfilled_order code=600115.SH reason=below_min_lot
+[ERROR] 2022-02-18 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-02-21 unfilled_order code=002864.SZ reason=below_min_lot
+[INFO]  2022-02-21 fill sell 600115.SH vol=300 price=8.1474 amt=2444.22
+[ERROR] 2022-02-21 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-02-21 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-02-21 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2022-02-21 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2022-02-21 fill buy 002628.SZ vol=100 price=16.0561 amt=1605.61
+[ERROR] 2022-02-21 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-02-21 unfilled_order code=603056.SH reason=below_min_lot
+[INFO]  2022-02-22 fill sell 002197.SZ vol=100 price=57.7748 amt=5777.48
+[ERROR] 2022-02-22 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2022-02-22 unfilled_order code=600115.SH reason=below_min_lot
+[ERROR] 2022-02-22 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-02-22 fill sell 002864.SZ vol=5100 price=26.3140 amt=134201.20
+[ERROR] 2022-02-22 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2022-02-22 fill buy 002628.SZ vol=400 price=15.7892 amt=6315.67
+[ERROR] 2022-02-22 unfilled_order code=600857.SH reason=below_min_lot
+[INFO]  2022-02-22 fill buy 603056.SH vol=300 price=11.2220 amt=3366.61
+[INFO]  2022-02-22 fill buy 600663.SH vol=900 price=151.0953 amt=135985.74
+[INFO]  2022-02-23 fill sell 002197.SZ vol=200 price=66.3552 amt=13271.04
+[ERROR] 2022-02-23 unfilled_order code=600663.SH reason=below_min_lot
+[ERROR] 2022-02-23 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-02-23 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-02-23 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2022-02-23 unfilled_order code=002628.SZ reason=below_min_lot
+[INFO]  2022-02-23 fill buy 600115.SH vol=600 price=7.9693 amt=4781.60
+[INFO]  2022-02-23 fill buy 600857.SH vol=100 price=64.6565 amt=6465.65
+[INFO]  2022-02-23 fill buy 603056.SH vol=200 price=11.0660 amt=2213.20
+[ERROR] 2022-02-24 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2022-02-24 unfilled_order code=600857.SH reason=below_min_lot
+[INFO]  2022-02-24 fill sell 603056.SH vol=600 price=11.6355 amt=6981.33
+[ERROR] 2022-02-24 unfilled_order code=600663.SH reason=below_min_lot
+[ERROR] 2022-02-24 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-02-24 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-02-24 unfilled_order code=002197.SZ reason=below_min_lot
+[INFO]  2022-02-24 fill buy 002628.SZ vol=200 price=15.1790 amt=3035.79
+[INFO]  2022-02-24 fill buy 600115.SH vol=400 price=7.6639 amt=3065.56
+[ERROR] 2022-02-25 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2022-02-25 fill sell 600115.SH vol=100 price=7.6070 amt=760.70
+[INFO]  2022-02-25 fill sell 600857.SH vol=100 price=65.9524 amt=6595.24
+[INFO]  2022-02-25 fill sell 603056.SH vol=500 price=12.5593 amt=6279.66
+[ERROR] 2022-02-25 unfilled_order code=600663.SH reason=below_min_lot
+[ERROR] 2022-02-25 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-02-25 unfilled_order code=600062.SH reason=below_min_lot
+[INFO]  2022-02-25 fill buy 002197.SZ vol=200 price=54.4105 amt=10882.09
+[INFO]  2022-02-25 fill buy 002628.SZ vol=300 price=14.6832 amt=4404.95
+[ERROR] 2022-02-28 unfilled_order code=600594.SH reason=below_min_lot
+[ERROR] 2022-02-28 unfilled_order code=603056.SH reason=suspended
+[ERROR] 2022-02-28 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-02-28 unfilled_order code=600062.SH reason=below_min_lot
+[ERROR] 2022-02-28 unfilled_order code=002197.SZ reason=below_min_lot
+[INFO]  2022-02-28 fill buy 002628.SZ vol=200 price=14.5688 amt=2913.75
+[INFO]  2022-02-28 fill buy 600115.SH vol=300 price=7.6084 amt=2282.51
+[ERROR] 2022-02-28 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-02-28 unfilled_order code=600663.SH reason=below_min_lot
+[ERROR] 2022-03-01 unfilled_order code=002197.SZ reason=below_min_lot
+[ERROR] 2022-03-01 unfilled_order code=002628.SZ reason=below_min_lot
+[ERROR] 2022-03-01 unfilled_order code=603056.SH reason=suspended
+[ERROR] 2022-03-01 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-01 fill sell 600062.SH vol=1300 price=99.2435 amt=129016.51
+[ERROR] 2022-03-01 unfilled_order code=600594.SH reason=below_min_lot
+[INFO]  2022-03-01 fill buy 600115.SH vol=300 price=7.4418 amt=2232.53
+[ERROR] 2022-03-01 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-03-01 unfilled_order code=600663.SH reason=below_min_lot
+[INFO]  2022-03-01 fill buy 300596.SZ vol=1800 price=72.6922 amt=130845.92
+[INFO]  2022-03-02 fill sell 002628.SZ vol=100 price=14.8061 amt=1480.61
+[INFO]  2022-03-02 fill sell 600115.SH vol=100 price=7.5793 amt=757.93
+[ERROR] 2022-03-02 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-03-02 unfilled_order code=603056.SH reason=suspended
+[ERROR] 2022-03-02 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-02 fill sell 002197.SZ vol=2400 price=55.8544 amt=134050.54
+[INFO]  2022-03-02 fill sell 600594.SH vol=1200 price=112.1237 amt=134548.42
+[ERROR] 2022-03-02 unfilled_order code=600663.SH reason=below_min_lot
+[ERROR] 2022-03-02 unfilled_order code=300596.SZ reason=below_min_lot
+[INFO]  2022-03-02 fill buy 002966.SZ vol=17600 price=7.7694 amt=136740.77
+[INFO]  2022-03-02 fill buy 300154.SZ vol=3700 price=36.4371 amt=134817.09
+[INFO]  2022-03-03 fill sell 002628.SZ vol=100 price=15.3389 amt=1533.89
+[INFO]  2022-03-03 fill sell 600115.SH vol=200 price=7.7594 amt=1551.89
+[ERROR] 2022-03-03 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-03-03 unfilled_order code=603056.SH reason=suspended
+[INFO]  2022-03-03 fill sell 002966.SZ vol=200 price=7.8699 amt=1573.98
+[ERROR] 2022-03-03 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-03-03 unfilled_order code=600663.SH reason=below_min_lot
+[ERROR] 2022-03-03 unfilled_order code=300596.SZ reason=below_min_lot
+[INFO]  2022-03-03 fill buy 300154.SZ vol=100 price=36.1822 amt=3618.22
+[INFO]  2022-03-04 fill sell 002628.SZ vol=100 price=15.2628 amt=1526.28
+[INFO]  2022-03-04 fill sell 600115.SH vol=700 price=8.1890 amt=5732.28
+[ERROR] 2022-03-04 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-03-04 unfilled_order code=603056.SH reason=suspended
+[ERROR] 2022-03-04 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-03-04 unfilled_order code=600663.SH reason=below_min_lot
+[INFO]  2022-03-04 fill buy 300596.SZ vol=100 price=71.0184 amt=7101.84
+[INFO]  2022-03-04 fill buy 002966.SZ vol=200 price=7.8856 amt=1577.13
+[INFO]  2022-03-04 fill buy 300154.SZ vol=100 price=35.4178 amt=3541.78
+[ERROR] 2022-03-07 unfilled_order code=600115.SH reason=below_min_lot
+[ERROR] 2022-03-07 unfilled_order code=603056.SH reason=suspended
+[ERROR] 2022-03-07 unfilled_order code=600663.SH reason=below_min_lot
+[INFO]  2022-03-07 fill sell 002966.SZ vol=200 price=7.8066 amt=1561.32
+[ERROR] 2022-03-07 unfilled_order code=300154.SZ reason=below_min_lot
+[ERROR] 2022-03-07 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-03-07 unfilled_order code=002628.SZ reason=below_min_lot
+[ERROR] 2022-03-07 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-03-07 unfilled_order code=300596.SZ reason=below_min_lot
+[ERROR] 2022-03-08 unfilled_order code=002628.SZ reason=below_min_lot
+[ERROR] 2022-03-08 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-03-08 unfilled_order code=603056.SH reason=suspended
+[ERROR] 2022-03-08 unfilled_order code=600663.SH reason=below_min_lot
+[INFO]  2022-03-08 fill sell 002966.SZ vol=100 price=7.7011 amt=770.11
+[ERROR] 2022-03-08 unfilled_order code=300154.SZ reason=below_min_lot
+[ERROR] 2022-03-08 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-08 fill buy 600115.SH vol=1100 price=7.3168 amt=8048.48
+[ERROR] 2022-03-08 unfilled_order code=300596.SZ reason=below_min_lot
+[ERROR] 2022-03-09 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-09 fill sell 600115.SH vol=18100 price=7.1775 amt=129912.30
+[INFO]  2022-03-09 fill sell 300154.SZ vol=3900 price=33.2110 amt=129522.85
+[INFO]  2022-03-09 fill buy 002628.SZ vol=2900 price=14.6832 amt=42581.19
+[INFO]  2022-03-09 fill buy 600857.SH vol=500 price=67.1697 amt=33584.83
+[ERROR] 2022-03-09 unfilled_order code=603056.SH reason=suspended
+[INFO]  2022-03-09 fill buy 600663.SH vol=200 price=147.1121 amt=29422.42
+[INFO]  2022-03-09 fill buy 300596.SZ vol=600 price=70.4810 amt=42288.61
+[INFO]  2022-03-09 fill buy 002966.SZ vol=5900 price=7.5791 amt=44716.64
+[INFO]  2022-03-10 fill sell 002628.SZ vol=2000 price=15.6054 amt=31210.76
+[INFO]  2022-03-10 fill sell 600857.SH vol=200 price=66.2374 amt=13247.48
+[ERROR] 2022-03-10 unfilled_order code=600663.SH reason=below_min_lot
+[INFO]  2022-03-10 fill sell 300596.SZ vol=300 price=71.6888 amt=21506.63
+[INFO]  2022-03-10 fill sell 002966.SZ vol=2700 price=7.4268 amt=20052.38
+[ERROR] 2022-03-10 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-03-10 unfilled_order code=603056.SH reason=suspended
+[INFO]  2022-03-10 fill buy 600874.SH vol=11700 price=12.6616 amt=148140.83
+[INFO]  2022-03-11 fill sell 002628.SZ vol=1200 price=14.8822 amt=17858.64
+[INFO]  2022-03-11 fill sell 600857.SH vol=300 price=68.9736 amt=20692.07
+[ERROR] 2022-03-11 unfilled_order code=603056.SH reason=suspended
+[INFO]  2022-03-11 fill sell 600663.SH vol=100 price=140.7228 amt=14072.28
+[INFO]  2022-03-11 fill sell 300596.SZ vol=300 price=68.9610 amt=20688.29
+[INFO]  2022-03-11 fill sell 002966.SZ vol=2500 price=7.3846 amt=18461.52
+[INFO]  2022-03-11 fill sell 600874.SH vol=1600 price=12.6881 amt=20300.96
+[ERROR] 2022-03-11 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-11 fill buy 600736.SH vol=800 price=149.2920 amt=119433.62
+[ERROR] 2022-03-14 unfilled_order code=600857.SH reason=below_min_lot
+[INFO]  2022-03-14 fill sell 603056.SH vol=900 price=14.4588 amt=13012.92
+[ERROR] 2022-03-14 unfilled_order code=600663.SH reason=below_min_lot
+[INFO]  2022-03-14 fill sell 002966.SZ vol=100 price=7.3952 amt=739.52
+[ERROR] 2022-03-14 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-14 fill buy 002628.SZ vol=200 price=14.9501 amt=2990.03
+[ERROR] 2022-03-14 unfilled_order code=300596.SZ reason=below_min_lot
+[INFO]  2022-03-14 fill buy 600874.SH vol=200 price=12.6962 amt=2539.24
+[ERROR] 2022-03-14 unfilled_order code=600736.SH reason=below_min_lot
+[INFO]  2022-03-15 fill sell 603056.SH vol=1300 price=14.5315 amt=18890.89
+[ERROR] 2022-03-15 unfilled_order code=600663.SH reason=below_min_lot
+[ERROR] 2022-03-15 unfilled_order code=002966.SZ reason=below_min_lot
+[ERROR] 2022-03-15 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-15 fill buy 002628.SZ vol=100 price=14.1874 amt=1418.74
+[ERROR] 2022-03-15 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-03-15 unfilled_order code=300596.SZ reason=below_min_lot
+[INFO]  2022-03-15 fill buy 600874.SH vol=300 price=12.0562 amt=3616.86
+[ERROR] 2022-03-15 unfilled_order code=600736.SH reason=below_min_lot
+[ERROR] 2022-03-16 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-16 fill sell 600663.SH vol=1000 price=133.3024 amt=133302.40
+[INFO]  2022-03-16 fill sell 300596.SZ vol=1900 price=64.7007 amt=122931.36
+[INFO]  2022-03-16 fill sell 002966.SZ vol=17900 price=6.9732 amt=124819.92
+[INFO]  2022-03-16 fill sell 600874.SH vol=10600 price=10.9618 amt=116195.37
+[INFO]  2022-03-16 fill sell 600736.SH vol=800 price=136.3251 amt=109060.11
+[INFO]  2022-03-16 fill buy 002628.SZ vol=15100 price=13.9204 amt=210198.13
+[INFO]  2022-03-16 fill buy 600857.SH vol=3100 price=65.0563 amt=201674.63
+[INFO]  2022-03-16 fill buy 603056.SH vol=12400 price=15.2886 amt=189578.31
+[INFO]  2022-03-17 fill sell 002628.SZ vol=5500 price=14.3874 amt=79130.69
+[INFO]  2022-03-17 fill sell 600857.SH vol=1000 price=64.7553 amt=64755.34
+[INFO]  2022-03-17 fill sell 603056.SH vol=5700 price=19.0881 amt=108802.19
+[ERROR] 2022-03-17 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-17 fill buy 002787.SZ vol=18300 price=14.4221 amt=263924.21
+[ERROR] 2022-03-18 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-18 fill sell 002628.SZ vol=18600 price=14.0829 amt=261942.00
+[INFO]  2022-03-18 fill buy 600857.SH vol=1000 price=73.1098 amt=73109.84
+[INFO]  2022-03-18 fill buy 603056.SH vol=3400 price=19.2303 amt=65383.09
+[INFO]  2022-03-18 fill buy 002787.SZ vol=8300 price=13.7568 amt=114181.30
+[ERROR] 2022-03-21 unfilled_order code=600857.SH reason=below_min_lot
+[INFO]  2022-03-21 fill sell 002787.SZ vol=200 price=13.8578 amt=2771.56
+[ERROR] 2022-03-21 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-21 fill buy 603056.SH vol=600 price=18.7207 amt=11232.42
+[INFO]  2022-03-22 fill sell 600857.SH vol=1300 price=75.6999 amt=98409.88
+[INFO]  2022-03-22 fill sell 603056.SH vol=5700 price=19.3580 amt=110340.45
+[INFO]  2022-03-22 fill sell 002787.SZ vol=5700 price=13.8792 amt=79111.59
+[ERROR] 2022-03-22 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-22 fill buy 002363.SZ vol=17200 price=16.6683 amt=286693.93
+[INFO]  2022-03-23 fill sell 600857.SH vol=700 price=73.5338 amt=51473.66
+[INFO]  2022-03-23 fill sell 603056.SH vol=2000 price=17.9982 amt=35996.49
+[INFO]  2022-03-23 fill sell 002787.SZ vol=4600 price=13.6008 amt=62563.62
+[INFO]  2022-03-23 fill sell 002363.SZ vol=3800 price=16.3958 amt=62303.99
+[ERROR] 2022-03-23 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-23 fill buy 600838.SH vol=3300 price=66.0630 amt=218007.92
+[INFO]  2022-03-24 fill sell 600857.SH vol=500 price=71.7097 amt=35854.85
+[INFO]  2022-03-24 fill sell 603056.SH vol=2200 price=18.1020 amt=39824.49
+[INFO]  2022-03-24 fill sell 002787.SZ vol=2600 price=13.2581 amt=34471.03
+[INFO]  2022-03-24 fill sell 002363.SZ vol=2300 price=16.2629 amt=37404.72
+[INFO]  2022-03-24 fill sell 600838.SH vol=400 price=63.4552 amt=25382.06
+[ERROR] 2022-03-24 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-24 fill buy 600084.SH vol=5200 price=33.8080 amt=175801.46
+[ERROR] 2022-03-25 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-25 fill sell 002787.SZ vol=13500 price=12.8511 amt=173490.34
+[INFO]  2022-03-25 fill buy 600857.SH vol=400 price=69.5686 amt=27827.43
+[INFO]  2022-03-25 fill buy 603056.SH vol=1400 price=19.1159 amt=26762.28
+[INFO]  2022-03-25 fill buy 002363.SZ vol=2300 price=16.0558 amt=36928.43
+[INFO]  2022-03-25 fill buy 600838.SH vol=400 price=64.1335 amt=25653.40
+[INFO]  2022-03-25 fill buy 600084.SH vol=1000 price=34.2396 amt=34239.57
+[INFO]  2022-03-28 fill sell 600857.SH vol=400 price=70.1136 amt=28045.45
+[INFO]  2022-03-28 fill sell 603056.SH vol=2300 price=22.3162 amt=51327.17
+[INFO]  2022-03-28 fill sell 002363.SZ vol=1800 price=15.7315 amt=28316.62
+[INFO]  2022-03-28 fill sell 600838.SH vol=400 price=64.3721 amt=25748.86
+[INFO]  2022-03-28 fill sell 600084.SH vol=900 price=34.1712 amt=30754.04
+[ERROR] 2022-03-28 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-28 fill buy 002087.SZ vol=20400 price=9.0166 amt=183937.99
+[INFO]  2022-03-29 fill sell 600857.SH vol=400 price=70.7977 amt=28319.06
+[INFO]  2022-03-29 fill sell 603056.SH vol=800 price=18.9013 amt=15121.02
+[INFO]  2022-03-29 fill sell 002363.SZ vol=1900 price=15.8909 amt=30192.70
+[INFO]  2022-03-29 fill sell 600838.SH vol=500 price=65.7476 amt=32873.81
+[INFO]  2022-03-29 fill sell 600084.SH vol=700 price=33.8122 amt=23668.55
+[INFO]  2022-03-29 fill sell 002087.SZ vol=3200 price=8.9514 amt=28644.61
+[ERROR] 2022-03-29 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-29 fill buy 002307.SZ vol=7000 price=22.0772 amt=154540.64
+[ERROR] 2022-03-30 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-30 fill sell 002363.SZ vol=9700 price=15.3329 amt=148728.66
+[INFO]  2022-03-30 fill buy 600857.SH vol=300 price=68.1407 amt=20442.20
+[INFO]  2022-03-30 fill buy 603056.SH vol=1900 price=17.4831 amt=33217.81
+[INFO]  2022-03-30 fill buy 600838.SH vol=200 price=65.2361 amt=13047.21
+[INFO]  2022-03-30 fill buy 600084.SH vol=500 price=33.6641 amt=16832.06
+[INFO]  2022-03-30 fill buy 002087.SZ vol=2400 price=8.9222 amt=21413.17
+[INFO]  2022-03-30 fill buy 002307.SZ vol=1100 price=21.6575 amt=23823.27
+[INFO]  2022-03-31 fill sell 600857.SH vol=500 price=66.9215 amt=33460.73
+[INFO]  2022-03-31 fill sell 603056.SH vol=2300 price=17.0329 amt=39175.76
+[INFO]  2022-03-31 fill sell 600838.SH vol=500 price=64.3721 amt=32186.07
+[INFO]  2022-03-31 fill sell 600084.SH vol=1200 price=33.6686 amt=40402.37
+[INFO]  2022-03-31 fill sell 002087.SZ vol=4700 price=8.8101 amt=41407.47
+[INFO]  2022-03-31 fill sell 002307.SZ vol=2200 price=22.8709 amt=50315.95
+[ERROR] 2022-03-31 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-03-31 fill buy 601328.SH vol=12400 price=10.5585 amt=130924.88
+[INFO]  2022-03-31 fill buy 601998.SH vol=15900 price=8.2175 amt=130658.08
+[ERROR] 2022-04-01 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-04-01 unfilled_order code=600838.SH reason=below_min_lot
+[ERROR] 2022-04-01 unfilled_order code=600084.SH reason=below_min_lot
+[ERROR] 2022-04-01 unfilled_order code=002087.SZ reason=below_min_lot
+[INFO]  2022-04-01 fill sell 002307.SZ vol=300 price=22.9965 amt=6898.97
+[ERROR] 2022-04-01 unfilled_order code=601328.SH reason=below_min_lot
+[ERROR] 2022-04-01 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-04-01 fill buy 603056.SH vol=200 price=16.5886 amt=3317.72
+[INFO]  2022-04-01 fill buy 601998.SH vol=200 price=8.1690 amt=1633.79
+[ERROR] 2022-04-06 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-04-06 unfilled_order code=600838.SH reason=below_min_lot
+[INFO]  2022-04-06 fill sell 600084.SH vol=100 price=35.1762 amt=3517.62
+[ERROR] 2022-04-06 unfilled_order code=601328.SH reason=below_min_lot
+[INFO]  2022-04-06 fill sell 601998.SH vol=500 price=8.4109 amt=4205.47
+[ERROR] 2022-04-06 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-04-06 unfilled_order code=603056.SH reason=below_min_lot
+[ERROR] 2022-04-06 unfilled_order code=002087.SZ reason=below_min_lot
+[INFO]  2022-04-06 fill buy 002307.SZ vol=300 price=22.4550 amt=6736.49
+[INFO]  2022-04-07 fill sell 600857.SH vol=100 price=71.7097 amt=7170.97
+[INFO]  2022-04-07 fill sell 600838.SH vol=100 price=67.8567 amt=6785.67
+[INFO]  2022-04-07 fill sell 002307.SZ vol=300 price=25.6774 amt=7703.22
+[ERROR] 2022-04-07 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-04-07 fill buy 603056.SH vol=500 price=15.8398 amt=7919.90
+[ERROR] 2022-04-07 unfilled_order code=600084.SH reason=below_min_lot
+[INFO]  2022-04-07 fill buy 002087.SZ vol=100 price=9.0166 amt=901.66
+[ERROR] 2022-04-07 unfilled_order code=601328.SH reason=below_min_lot
+[INFO]  2022-04-07 fill buy 601998.SH vol=400 price=8.3793 amt=3351.70
+[INFO]  2022-04-08 fill sell 002307.SZ vol=500 price=28.9028 amt=14451.38
+[ERROR] 2022-04-08 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-04-08 unfilled_order code=600857.SH reason=below_min_lot
+[INFO]  2022-04-08 fill buy 603056.SH vol=300 price=15.3198 amt=4595.93
+[ERROR] 2022-04-08 unfilled_order code=600838.SH reason=below_min_lot
+[ERROR] 2022-04-08 unfilled_order code=600084.SH reason=below_min_lot
+[INFO]  2022-04-08 fill buy 002087.SZ vol=300 price=8.7805 amt=2634.16
+[ERROR] 2022-04-08 unfilled_order code=601328.SH reason=below_min_lot
+[INFO]  2022-04-08 fill buy 601998.SH vol=400 price=8.1690 amt=3267.58
+[ERROR] 2022-04-11 unfilled_order code=600084.SH reason=below_min_lot
+[INFO]  2022-04-11 fill sell 002307.SZ vol=400 price=32.4214 amt=12968.55
+[ERROR] 2022-04-11 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-04-11 fill buy 600857.SH vol=100 price=68.0264 amt=6802.64
+[INFO]  2022-04-11 fill buy 603056.SH vol=200 price=16.8070 amt=3361.41
+[ERROR] 2022-04-11 unfilled_order code=600838.SH reason=below_min_lot
+[INFO]  2022-04-11 fill buy 002087.SZ vol=400 price=8.7333 amt=3493.33
+[INFO]  2022-04-11 fill buy 601328.SH vol=200 price=10.8313 amt=2166.27
+[INFO]  2022-04-11 fill buy 601998.SH vol=200 price=8.2175 amt=1643.50
+[INFO]  2022-04-12 fill sell 603056.SH vol=400 price=15.4968 amt=6198.70
+[ERROR] 2022-04-12 unfilled_order code=600084.SH reason=below_min_lot
+[INFO]  2022-04-12 fill sell 002307.SZ vol=300 price=34.7252 amt=10417.56
+[ERROR] 2022-04-12 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-04-12 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-04-12 unfilled_order code=600838.SH reason=below_min_lot
+[INFO]  2022-04-12 fill buy 002087.SZ vol=500 price=8.5445 amt=4272.25
+[INFO]  2022-04-12 fill buy 601328.SH vol=300 price=10.8103 amt=3243.11
+[INFO]  2022-04-12 fill buy 601998.SH vol=600 price=8.1204 amt=4872.26
+[ERROR] 2022-04-13 unfilled_order code=600857.SH reason=below_min_lot
+[INFO]  2022-04-13 fill sell 600838.SH vol=100 price=78.8605 amt=7886.05
+[INFO]  2022-04-13 fill sell 600084.SH vol=100 price=38.7656 amt=3876.56
+[INFO]  2022-04-13 fill sell 002087.SZ vol=100 price=8.7394 amt=873.94
+[ERROR] 2022-04-13 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-04-13 fill buy 603056.SH vol=1000 price=14.6125 amt=14612.55
+[INFO]  2022-04-13 fill buy 002307.SZ vol=300 price=26.9040 amt=8071.20
+[ERROR] 2022-04-13 unfilled_order code=601328.SH reason=below_min_lot
+[ERROR] 2022-04-13 unfilled_order code=601998.SH reason=below_min_lot
+[INFO]  2022-04-14 fill sell 603056.SH vol=200 price=14.5834 amt=2916.67
+[ERROR] 2022-04-14 unfilled_order code=600838.SH reason=below_min_lot
+[ERROR] 2022-04-14 unfilled_order code=600084.SH reason=below_min_lot
+[INFO]  2022-04-14 fill sell 002087.SZ vol=400 price=8.7865 amt=3514.62
+[INFO]  2022-04-14 fill sell 601328.SH vol=200 price=10.8516 amt=2170.32
+[INFO]  2022-04-14 fill sell 601998.SH vol=200 price=8.1688 amt=1633.76
+[ERROR] 2022-04-14 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-04-14 unfilled_order code=600857.SH reason=below_min_lot
+[INFO]  2022-04-14 fill buy 002307.SZ vol=400 price=24.3437 amt=9737.49
+[ERROR] 2022-04-15 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-04-15 unfilled_order code=603056.SH reason=below_min_lot
+[ERROR] 2022-04-15 unfilled_order code=600838.SH reason=below_min_lot
+[INFO]  2022-04-15 fill sell 002087.SZ vol=200 price=8.7394 amt=1747.89
+[INFO]  2022-04-15 fill sell 601328.SH vol=100 price=10.7888 amt=1078.88
+[INFO]  2022-04-15 fill sell 601998.SH vol=500 price=8.1526 amt=4076.32
+[ERROR] 2022-04-15 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-04-15 unfilled_order code=600084.SH reason=below_min_lot
+[INFO]  2022-04-15 fill buy 002307.SZ vol=200 price=25.1832 amt=5036.63
+[ERROR] 2022-04-18 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-04-18 fill sell 603056.SH vol=9300 price=14.4796 amt=134659.87
+[INFO]  2022-04-18 fill buy 600857.SH vol=200 price=66.9412 amt=13388.24
+[INFO]  2022-04-18 fill buy 600838.SH vol=300 price=68.3601 amt=20508.02
+[INFO]  2022-04-18 fill buy 600084.SH vol=300 price=37.1168 amt=11135.05
+[INFO]  2022-04-18 fill buy 002087.SZ vol=2100 price=8.5445 amt=17943.44
+[INFO]  2022-04-18 fill buy 002307.SZ vol=1100 price=23.2105 amt=25531.52
+[INFO]  2022-04-18 fill buy 601328.SH vol=1400 price=10.8103 amt=15134.49
+[INFO]  2022-04-18 fill buy 601998.SH vol=1700 price=8.2498 amt=14024.73
+[INFO]  2022-04-19 fill sell 600857.SH vol=200 price=70.1136 amt=14022.72
+[INFO]  2022-04-19 fill sell 600838.SH vol=200 price=70.6076 amt=14121.52
+[INFO]  2022-04-19 fill sell 600084.SH vol=500 price=38.0477 amt=19023.86
+[INFO]  2022-04-19 fill sell 002087.SZ vol=2000 price=8.6688 amt=17337.53
+[INFO]  2022-04-19 fill sell 002307.SZ vol=600 price=22.9128 amt=13747.66
+[INFO]  2022-04-19 fill sell 601328.SH vol=1300 price=10.6212 amt=13807.51
+[INFO]  2022-04-19 fill sell 601998.SH vol=1800 price=8.1849 amt=14732.87
+[ERROR] 2022-04-19 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-04-19 fill buy 000429.SZ vol=4200 price=31.6198 amt=132803.11
+[INFO]  2022-04-20 fill sell 600857.SH vol=100 price=71.4247 amt=7142.47
+[ERROR] 2022-04-20 unfilled_order code=600838.SH reason=below_min_lot
+[INFO]  2022-04-20 fill sell 002087.SZ vol=300 price=8.9043 amt=2671.30
+[ERROR] 2022-04-20 unfilled_order code=002307.SZ reason=below_min_lot
+[INFO]  2022-04-20 fill sell 601328.SH vol=100 price=10.8097 amt=1080.97
+[ERROR] 2022-04-20 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-04-20 fill buy 600084.SH vol=100 price=37.9800 amt=3798.00
+[ERROR] 2022-04-20 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-04-20 unfilled_order code=000429.SZ reason=below_min_lot
+[INFO]  2022-04-21 fill sell 600838.SH vol=100 price=71.5246 amt=7152.46
+[INFO]  2022-04-21 fill sell 600084.SH vol=100 price=38.6938 amt=3869.38
+[ERROR] 2022-04-21 unfilled_order code=002087.SZ reason=below_min_lot
+[ERROR] 2022-04-21 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-04-21 unfilled_order code=600857.SH reason=below_min_lot
+[INFO]  2022-04-21 fill buy 002307.SZ vol=200 price=22.1612 amt=4432.24
+[ERROR] 2022-04-21 unfilled_order code=601328.SH reason=below_min_lot
+[INFO]  2022-04-21 fill buy 601998.SH vol=200 price=8.0719 amt=1614.38
+[INFO]  2022-04-21 fill buy 000429.SZ vol=100 price=31.3841 amt=3138.41
+[ERROR] 2022-04-22 unfilled_order code=600084.SH reason=below_min_lot
+[INFO]  2022-04-22 fill sell 002087.SZ vol=600 price=8.8337 amt=5300.19
+[INFO]  2022-04-22 fill sell 601328.SH vol=400 price=10.6421 amt=4256.84
+[INFO]  2022-04-22 fill sell 601998.SH vol=400 price=8.0235 amt=3209.40
+[INFO]  2022-04-22 fill sell 000429.SZ vol=100 price=30.9686 amt=3096.86
+[ERROR] 2022-04-22 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-04-22 unfilled_order code=600857.SH reason=below_min_lot
+[INFO]  2022-04-22 fill buy 600838.SH vol=100 price=62.4796 amt=6247.96
+[INFO]  2022-04-22 fill buy 002307.SZ vol=100 price=20.7341 amt=2073.41
+[ERROR] 2022-04-25 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-04-25 unfilled_order code=600838.SH reason=below_min_lot
+[INFO]  2022-04-25 fill sell 002087.SZ vol=400 price=9.1399 amt=3655.96
+[ERROR] 2022-04-25 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-04-25 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-04-25 fill buy 600084.SH vol=100 price=36.6852 amt=3668.52
+[INFO]  2022-04-25 fill buy 002307.SZ vol=100 price=20.6922 amt=2069.22
+[INFO]  2022-04-25 fill buy 601328.SH vol=100 price=10.7894 amt=1078.94
+[INFO]  2022-04-25 fill buy 601998.SH vol=100 price=8.1690 amt=816.90
+[ERROR] 2022-04-26 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-04-26 fill sell 002307.SZ vol=6200 price=20.5252 amt=127255.95
+[INFO]  2022-04-26 fill buy 600857.SH vol=100 price=73.3954 amt=7339.54
+[INFO]  2022-04-26 fill buy 600838.SH vol=400 price=61.6527 amt=24661.07
+[INFO]  2022-04-26 fill buy 600084.SH vol=500 price=35.1027 amt=17551.37
+[INFO]  2022-04-26 fill buy 002087.SZ vol=2600 price=8.3793 amt=21786.10
+[INFO]  2022-04-26 fill buy 601328.SH vol=1500 price=10.6214 amt=15932.15
+[INFO]  2022-04-26 fill buy 601998.SH vol=2100 price=7.9425 amt=16679.24
+[INFO]  2022-04-26 fill buy 000429.SZ vol=400 price=31.0306 amt=12412.24
+[ERROR] 2022-04-27 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-04-27 fill sell 002087.SZ vol=16900 price=7.5616 amt=127791.23
+[INFO]  2022-04-27 fill buy 600857.SH vol=300 price=65.3419 amt=19602.58
+[INFO]  2022-04-27 fill buy 600838.SH vol=200 price=60.9176 amt=12183.53
+[INFO]  2022-04-27 fill buy 600084.SH vol=700 price=35.0308 amt=24521.57
+[INFO]  2022-04-27 fill buy 601328.SH vol=2200 price=10.5585 amt=23228.61
+[INFO]  2022-04-27 fill buy 601998.SH vol=2800 price=7.9748 amt=22329.57
+[INFO]  2022-04-27 fill buy 000429.SZ vol=800 price=30.4807 amt=24384.55
+[ERROR] 2022-04-28 unfilled_order code=600838.SH reason=below_min_lot
+[INFO]  2022-04-28 fill sell 601328.SH vol=100 price=10.5583 amt=1055.83
+[INFO]  2022-04-28 fill sell 601998.SH vol=100 price=7.9105 amt=791.05
+[ERROR] 2022-04-28 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-04-28 fill buy 600857.SH vol=100 price=69.5115 amt=6951.15
+[INFO]  2022-04-28 fill buy 600084.SH vol=200 price=33.3045 amt=6660.89
+[ERROR] 2022-04-28 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-04-29 unfilled_order code=600838.SH reason=below_min_lot
+[ERROR] 2022-04-29 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-04-29 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-04-29 unfilled_order code=600857.SH reason=below_min_lot
+[ERROR] 2022-04-29 unfilled_order code=600084.SH reason=below_min_lot
+[ERROR] 2022-04-29 unfilled_order code=601328.SH reason=below_min_lot
+[ERROR] 2022-04-29 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-05-05 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-05-05 fill sell 600857.SH vol=2400 price=68.8596 amt=165262.92
+[INFO]  2022-05-05 fill buy 600838.SH vol=200 price=75.9862 amt=15197.25
+[INFO]  2022-05-05 fill buy 600084.SH vol=900 price=34.9589 amt=31463.00
+[INFO]  2022-05-05 fill buy 601328.SH vol=3700 price=10.6634 amt=39454.63
+[INFO]  2022-05-05 fill buy 601998.SH vol=4800 price=7.7646 amt=37269.87
+[INFO]  2022-05-05 fill buy 000429.SZ vol=1300 price=30.9128 amt=40186.59
+[INFO]  2022-05-06 fill sell 600838.SH vol=100 price=68.7737 amt=6877.37
+[ERROR] 2022-05-06 unfilled_order code=600084.SH reason=below_min_lot
+[ERROR] 2022-05-06 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-05-06 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-05-06 fill buy 601328.SH vol=100 price=10.4535 amt=1045.35
+[INFO]  2022-05-06 fill buy 601998.SH vol=1300 price=7.5219 amt=9778.49
+[INFO]  2022-05-09 fill sell 600084.SH vol=100 price=35.1762 amt=3517.62
+[INFO]  2022-05-09 fill sell 601998.SH vol=200 price=7.4585 amt=1491.69
+[ERROR] 2022-05-09 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-05-09 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-05-09 fill buy 600838.SH vol=100 price=69.7383 amt=6973.83
+[ERROR] 2022-05-09 unfilled_order code=601328.SH reason=below_min_lot
+[INFO]  2022-05-10 fill sell 600838.SH vol=100 price=76.8431 amt=7684.31
+[ERROR] 2022-05-10 unfilled_order code=600084.SH reason=below_min_lot
+[ERROR] 2022-05-10 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-05-10 fill buy 601328.SH vol=600 price=10.2016 amt=6120.97
+[INFO]  2022-05-10 fill buy 601998.SH vol=500 price=7.5219 amt=3760.96
+[ERROR] 2022-05-10 unfilled_order code=000429.SZ reason=below_min_lot
+[INFO]  2022-05-11 fill sell 600838.SH vol=500 price=78.8605 amt=39430.23
+[ERROR] 2022-05-11 unfilled_order code=600084.SH reason=suspended
+[INFO]  2022-05-11 fill sell 601328.SH vol=3100 price=10.2860 amt=31886.52
+[INFO]  2022-05-11 fill sell 601998.SH vol=4300 price=7.6037 amt=32696.12
+[INFO]  2022-05-11 fill sell 000429.SZ vol=900 price=30.8902 amt=27801.18
+[ERROR] 2022-05-11 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-05-11 fill buy 002818.SZ vol=6900 price=25.2866 amt=174477.41
+[ERROR] 2022-05-12 unfilled_order code=600838.SH reason=below_min_lot
+[INFO]  2022-05-12 fill sell 600084.SH vol=1000 price=38.7656 amt=38765.60
+[INFO]  2022-05-12 fill sell 601328.SH vol=100 price=10.2650 amt=1026.50
+[ERROR] 2022-05-12 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-05-12 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-05-12 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-05-12 fill buy 002818.SZ vol=100 price=24.7931 amt=2479.31
+[INFO]  2022-05-13 fill sell 600838.SH vol=200 price=99.9510 amt=19990.21
+[INFO]  2022-05-13 fill sell 600084.SH vol=100 price=37.8323 amt=3783.24
+[ERROR] 2022-05-13 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-05-13 fill buy 601328.SH vol=400 price=10.2856 amt=4114.23
+[INFO]  2022-05-13 fill buy 601998.SH vol=500 price=7.5704 amt=3785.22
+[ERROR] 2022-05-13 unfilled_order code=000429.SZ reason=below_min_lot
+[INFO]  2022-05-13 fill buy 002818.SZ vol=200 price=24.8979 amt=4979.58
+[INFO]  2022-05-16 fill sell 600084.SH vol=300 price=42.2114 amt=12663.43
+[ERROR] 2022-05-16 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-05-16 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-05-16 unfilled_order code=600838.SH reason=below_min_lot
+[INFO]  2022-05-16 fill buy 601328.SH vol=100 price=10.3905 amt=1039.05
+[INFO]  2022-05-16 fill buy 601998.SH vol=300 price=7.5543 amt=2266.28
+[INFO]  2022-05-16 fill buy 002818.SZ vol=100 price=24.9822 amt=2498.22
+[INFO]  2022-05-17 fill sell 600084.SH vol=300 price=45.1547 amt=13546.42
+[ERROR] 2022-05-17 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-05-17 unfilled_order code=600838.SH reason=below_min_lot
+[INFO]  2022-05-17 fill buy 601328.SH vol=400 price=10.4325 amt=4173.00
+[INFO]  2022-05-17 fill buy 601998.SH vol=800 price=7.5866 amt=6069.30
+[ERROR] 2022-05-17 unfilled_order code=000429.SZ reason=below_min_lot
+[INFO]  2022-05-17 fill buy 002818.SZ vol=100 price=25.2563 amt=2525.63
+[INFO]  2022-05-18 fill sell 601328.SH vol=400 price=10.3488 amt=4139.53
+[INFO]  2022-05-18 fill sell 601998.SH vol=700 price=7.5553 amt=5288.72
+[ERROR] 2022-05-18 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-05-18 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-05-18 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-05-18 fill buy 600838.SH vol=100 price=77.4563 amt=7745.63
+[INFO]  2022-05-18 fill buy 600084.SH vol=100 price=42.2240 amt=4222.40
+[ERROR] 2022-05-19 unfilled_order code=600084.SH reason=below_min_lot
+[ERROR] 2022-05-19 unfilled_order code=000429.SZ reason=below_min_lot
+[INFO]  2022-05-19 fill sell 002818.SZ vol=100 price=24.3642 amt=2436.42
+[ERROR] 2022-05-19 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-05-19 fill buy 600838.SH vol=100 price=82.7855 amt=8278.55
+[ERROR] 2022-05-19 unfilled_order code=601328.SH reason=below_min_lot
+[ERROR] 2022-05-19 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-05-20 unfilled_order code=600084.SH reason=below_min_lot
+[INFO]  2022-05-20 fill sell 000429.SZ vol=200 price=32.0662 amt=6413.24
+[ERROR] 2022-05-20 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-05-20 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-05-20 unfilled_order code=600838.SH reason=below_min_lot
+[ERROR] 2022-05-20 unfilled_order code=601328.SH reason=below_min_lot
+[INFO]  2022-05-20 fill buy 601998.SH vol=100 price=7.4249 amt=742.49
+[ERROR] 2022-05-23 unfilled_order code=600084.SH reason=below_min_lot
+[INFO]  2022-05-23 fill sell 601328.SH vol=100 price=10.3488 amt=1034.88
+[INFO]  2022-05-23 fill sell 601998.SH vol=200 price=7.4907 amt=1498.15
+[ERROR] 2022-05-23 unfilled_order code=000429.SZ reason=below_min_lot
+[INFO]  2022-05-23 fill sell 002818.SZ vol=100 price=25.0165 amt=2501.65
+[ERROR] 2022-05-23 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-05-23 fill buy 600838.SH vol=100 price=77.1807 amt=7718.07
+[ERROR] 2022-05-24 unfilled_order code=600084.SH reason=below_min_lot
+[INFO]  2022-05-24 fill sell 601328.SH vol=100 price=10.3488 amt=1034.88
+[ERROR] 2022-05-24 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-05-24 unfilled_order code=600838.SH reason=below_min_lot
+[ERROR] 2022-05-24 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-05-24 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-05-24 unfilled_order code=002818.SZ reason=below_min_lot
+[INFO]  2022-05-25 fill sell 601328.SH vol=400 price=10.3279 amt=4131.15
+[INFO]  2022-05-25 fill sell 601998.SH vol=300 price=7.3939 amt=2218.16
+[ERROR] 2022-05-25 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-05-25 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-05-25 fill buy 600838.SH vol=100 price=71.9434 amt=7194.34
+[ERROR] 2022-05-25 unfilled_order code=600084.SH reason=below_min_lot
+[ERROR] 2022-05-25 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-05-26 unfilled_order code=600838.SH reason=below_min_lot
+[ERROR] 2022-05-26 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-05-26 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-05-26 fill buy 600084.SH vol=100 price=41.0012 amt=4100.12
+[INFO]  2022-05-26 fill buy 601328.SH vol=200 price=10.3485 amt=2069.71
+[ERROR] 2022-05-26 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-05-26 unfilled_order code=002818.SZ reason=below_min_lot
+[INFO]  2022-05-27 fill sell 600838.SH vol=300 price=77.3933 amt=23217.99
+[INFO]  2022-05-27 fill sell 600084.SH vol=500 price=41.3500 amt=20674.98
+[INFO]  2022-05-27 fill sell 601328.SH vol=2400 price=10.3698 amt=24887.45
+[INFO]  2022-05-27 fill sell 601998.SH vol=3200 price=7.4907 amt=23970.37
+[INFO]  2022-05-27 fill sell 000429.SZ vol=800 price=32.3014 amt=25841.14
+[INFO]  2022-05-27 fill sell 002818.SZ vol=1000 price=24.9323 amt=24932.33
+[ERROR] 2022-05-27 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-05-27 fill buy 600350.SH vol=10400 price=14.5678 amt=151505.46
+[INFO]  2022-05-30 fill sell 600838.SH vol=400 price=82.9869 amt=33194.75
+[INFO]  2022-05-30 fill sell 600084.SH vol=400 price=40.8475 amt=16338.98
+[INFO]  2022-05-30 fill sell 601328.SH vol=1800 price=10.4326 amt=18778.71
+[INFO]  2022-05-30 fill sell 601998.SH vol=2500 price=7.5230 amt=18807.57
+[INFO]  2022-05-30 fill sell 000429.SZ vol=600 price=32.3798 amt=19427.90
+[INFO]  2022-05-30 fill sell 002818.SZ vol=700 price=25.1836 amt=17628.53
+[INFO]  2022-05-30 fill sell 600350.SH vol=1100 price=14.5885 amt=16047.37
+[ERROR] 2022-05-30 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-05-30 fill buy 002267.SZ vol=6700 price=19.8573 amt=133043.76
+[ERROR] 2022-05-31 unfilled_order code=600838.SH reason=below_min_lot
+[INFO]  2022-05-31 fill sell 600084.SH vol=100 price=42.7857 amt=4278.57
+[ERROR] 2022-05-31 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-05-31 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-05-31 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-05-31 fill buy 601328.SH vol=300 price=10.2856 amt=3085.67
+[INFO]  2022-05-31 fill buy 601998.SH vol=300 price=7.5381 amt=2261.43
+[ERROR] 2022-05-31 unfilled_order code=600350.SH reason=below_min_lot
+[INFO]  2022-05-31 fill buy 002267.SZ vol=100 price=20.0641 amt=2006.41
+[ERROR] 2022-06-01 unfilled_order code=600838.SH reason=below_min_lot
+[ERROR] 2022-06-01 unfilled_order code=600084.SH reason=below_min_lot
+[ERROR] 2022-06-01 unfilled_order code=601998.SH reason=below_min_lot
+[INFO]  2022-06-01 fill sell 000429.SZ vol=100 price=33.4382 amt=3343.82
+[ERROR] 2022-06-01 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-06-01 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-06-01 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-06-01 unfilled_order code=601328.SH reason=below_min_lot
+[ERROR] 2022-06-01 unfilled_order code=002267.SZ reason=below_min_lot
+[INFO]  2022-06-02 fill sell 601328.SH vol=200 price=10.3069 amt=2061.38
+[INFO]  2022-06-02 fill sell 601998.SH vol=300 price=7.5392 amt=2261.75
+[INFO]  2022-06-02 fill sell 002818.SZ vol=100 price=25.1205 amt=2512.05
+[INFO]  2022-06-02 fill sell 600350.SH vol=100 price=14.7130 amt=1471.30
+[ERROR] 2022-06-02 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-06-02 unfilled_order code=600838.SH reason=below_min_lot
+[ERROR] 2022-06-02 unfilled_order code=600084.SH reason=below_min_lot
+[ERROR] 2022-06-02 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-06-02 unfilled_order code=002267.SZ reason=below_min_lot
+[INFO]  2022-06-06 fill sell 601328.SH vol=100 price=10.3069 amt=1030.69
+[INFO]  2022-06-06 fill sell 601998.SH vol=300 price=7.5230 amt=2256.91
+[ERROR] 2022-06-06 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-06-06 unfilled_order code=002818.SZ reason=below_min_lot
+[INFO]  2022-06-06 fill sell 600350.SH vol=100 price=14.6881 amt=1468.81
+[ERROR] 2022-06-06 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-06-06 fill buy 600838.SH vol=100 price=73.4136 amt=7341.35
+[ERROR] 2022-06-06 unfilled_order code=600084.SH reason=below_min_lot
+[ERROR] 2022-06-06 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-06-07 unfilled_order code=600838.SH reason=below_min_lot
+[ERROR] 2022-06-07 unfilled_order code=600084.SH reason=below_min_lot
+[ERROR] 2022-06-07 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-06-07 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-06-07 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-06-07 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-06-07 unfilled_order code=601328.SH reason=below_min_lot
+[ERROR] 2022-06-07 unfilled_order code=000429.SZ reason=below_min_lot
+[INFO]  2022-06-07 fill buy 600350.SH vol=200 price=14.4930 amt=2898.60
+[ERROR] 2022-06-08 unfilled_order code=600084.SH reason=below_min_lot
+[ERROR] 2022-06-08 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-06-08 unfilled_order code=002818.SZ reason=below_min_lot
+[INFO]  2022-06-08 fill sell 600350.SH vol=100 price=14.5636 amt=1456.36
+[ERROR] 2022-06-08 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-06-08 unfilled_order code=600838.SH reason=below_min_lot
+[ERROR] 2022-06-08 unfilled_order code=601328.SH reason=below_min_lot
+[ERROR] 2022-06-08 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-06-08 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-06-09 unfilled_order code=601328.SH reason=below_min_lot
+[INFO]  2022-06-09 fill sell 601998.SH vol=100 price=7.6037 amt=760.37
+[ERROR] 2022-06-09 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-06-09 unfilled_order code=002818.SZ reason=below_min_lot
+[INFO]  2022-06-09 fill sell 600350.SH vol=100 price=14.6881 amt=1468.81
+[INFO]  2022-06-09 fill sell 002267.SZ vol=100 price=19.6628 amt=1966.28
+[ERROR] 2022-06-09 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-06-09 unfilled_order code=600838.SH reason=below_min_lot
+[ERROR] 2022-06-09 unfilled_order code=600084.SH reason=below_min_lot
+[INFO]  2022-06-10 fill sell 601328.SH vol=100 price=10.3279 amt=1032.79
+[INFO]  2022-06-10 fill sell 601998.SH vol=200 price=7.6037 amt=1520.75
+[ERROR] 2022-06-10 unfilled_order code=000429.SZ reason=below_min_lot
+[INFO]  2022-06-10 fill sell 600350.SH vol=100 price=14.8126 amt=1481.26
+[ERROR] 2022-06-10 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-06-10 fill buy 600838.SH vol=100 price=69.2789 amt=6927.89
+[ERROR] 2022-06-10 unfilled_order code=600084.SH reason=below_min_lot
+[ERROR] 2022-06-10 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-06-10 unfilled_order code=002267.SZ reason=below_min_lot
+[INFO]  2022-06-13 fill sell 601328.SH vol=200 price=10.4536 amt=2090.71
+[INFO]  2022-06-13 fill sell 601998.SH vol=100 price=7.6360 amt=763.60
+[ERROR] 2022-06-13 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-06-13 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-06-13 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-06-13 unfilled_order code=600838.SH reason=below_min_lot
+[ERROR] 2022-06-13 unfilled_order code=600084.SH reason=below_min_lot
+[INFO]  2022-06-13 fill buy 002818.SZ vol=100 price=24.0324 amt=2403.24
+[ERROR] 2022-06-13 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-06-14 unfilled_order code=000429.SZ reason=below_min_lot
+[INFO]  2022-06-14 fill sell 002818.SZ vol=200 price=24.2579 amt=4851.58
+[ERROR] 2022-06-14 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-06-14 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-06-14 unfilled_order code=600838.SH reason=below_min_lot
+[INFO]  2022-06-14 fill buy 600084.SH vol=100 price=37.9081 amt=3790.81
+[ERROR] 2022-06-14 unfilled_order code=601328.SH reason=below_min_lot
+[ERROR] 2022-06-14 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-06-14 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-06-15 unfilled_order code=601328.SH reason=below_min_lot
+[ERROR] 2022-06-15 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-06-15 unfilled_order code=000429.SZ reason=below_min_lot
+[INFO]  2022-06-15 fill sell 002267.SZ vol=100 price=20.2305 amt=2023.05
+[ERROR] 2022-06-15 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-06-15 unfilled_order code=600838.SH reason=below_min_lot
+[ERROR] 2022-06-15 unfilled_order code=600084.SH reason=below_min_lot
+[ERROR] 2022-06-15 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-06-15 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-06-16 unfilled_order code=601328.SH reason=below_min_lot
+[INFO]  2022-06-16 fill sell 601998.SH vol=300 price=7.7975 amt=2339.24
+[ERROR] 2022-06-16 unfilled_order code=000429.SZ reason=below_min_lot
+[INFO]  2022-06-16 fill sell 002818.SZ vol=100 price=25.6885 amt=2568.85
+[ERROR] 2022-06-16 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-06-16 unfilled_order code=600838.SH reason=below_min_lot
+[ERROR] 2022-06-16 unfilled_order code=600084.SH reason=below_min_lot
+[INFO]  2022-06-16 fill buy 600350.SH vol=200 price=14.2999 amt=2859.97
+[ERROR] 2022-06-16 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-06-17 unfilled_order code=600084.SH reason=below_min_lot
+[ERROR] 2022-06-17 unfilled_order code=601328.SH reason=below_min_lot
+[ERROR] 2022-06-17 unfilled_order code=000429.SZ reason=below_min_lot
+[INFO]  2022-06-17 fill sell 002818.SZ vol=100 price=26.3408 amt=2634.08
+[ERROR] 2022-06-17 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-06-17 unfilled_order code=600838.SH reason=below_min_lot
+[ERROR] 2022-06-17 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-06-17 unfilled_order code=600350.SH reason=below_min_lot
+[INFO]  2022-06-17 fill buy 002267.SZ vol=200 price=19.3143 amt=3862.86
+[INFO]  2022-06-20 fill sell 600084.SH vol=100 price=41.2064 amt=4120.64
+[ERROR] 2022-06-20 unfilled_order code=601328.SH reason=below_min_lot
+[ERROR] 2022-06-20 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-06-20 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-06-20 fill buy 600838.SH vol=100 price=65.2361 amt=6523.61
+[ERROR] 2022-06-20 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-06-20 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-06-20 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-06-20 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-06-21 unfilled_order code=601328.SH reason=below_min_lot
+[ERROR] 2022-06-21 unfilled_order code=000429.SZ reason=below_min_lot
+[INFO]  2022-06-21 fill sell 002818.SZ vol=100 price=26.2356 amt=2623.56
+[ERROR] 2022-06-21 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-06-21 unfilled_order code=600838.SH reason=below_min_lot
+[ERROR] 2022-06-21 unfilled_order code=600084.SH reason=below_min_lot
+[ERROR] 2022-06-21 unfilled_order code=601998.SH reason=below_min_lot
+[INFO]  2022-06-21 fill buy 600350.SH vol=100 price=14.1392 amt=1413.92
+[INFO]  2022-06-21 fill buy 002267.SZ vol=100 price=19.2005 amt=1920.05
+[INFO]  2022-06-22 fill sell 601328.SH vol=200 price=10.4536 amt=2090.71
+[ERROR] 2022-06-22 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-06-22 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-06-22 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-06-22 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-06-22 unfilled_order code=600838.SH reason=below_min_lot
+[ERROR] 2022-06-22 unfilled_order code=600084.SH reason=below_min_lot
+[ERROR] 2022-06-22 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-06-22 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-06-23 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-06-23 fill sell 600838.SH vol=2000 price=63.9137 amt=127827.30
+[INFO]  2022-06-23 fill buy 600084.SH vol=500 price=38.8432 amt=19421.60
+[INFO]  2022-06-23 fill buy 601328.SH vol=1600 price=10.4535 amt=16725.60
+[INFO]  2022-06-23 fill buy 601998.SH vol=2300 price=7.6837 amt=17672.45
+[INFO]  2022-06-23 fill buy 000429.SZ vol=500 price=31.6983 amt=15849.17
+[INFO]  2022-06-23 fill buy 002818.SZ vol=900 price=25.1497 amt=22634.73
+[INFO]  2022-06-23 fill buy 600350.SH vol=1100 price=14.1124 amt=15523.64
+[INFO]  2022-06-23 fill buy 002267.SZ vol=900 price=18.7960 amt=16916.36
+[ERROR] 2022-06-24 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-06-24 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-06-24 fill sell 600084.SH vol=3800 price=39.8424 amt=151401.19
+[INFO]  2022-06-24 fill buy 601328.SH vol=200 price=10.4325 amt=2086.50
+[ERROR] 2022-06-24 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-06-24 unfilled_order code=002818.SZ reason=below_min_lot
+[INFO]  2022-06-24 fill buy 600350.SH vol=200 price=14.1124 amt=2822.48
+[ERROR] 2022-06-24 unfilled_order code=002267.SZ reason=below_min_lot
+[INFO]  2022-06-24 fill buy 002448.SZ vol=3600 price=41.3912 amt=149008.44
+[INFO]  2022-06-27 fill sell 601328.SH vol=1700 price=10.3698 amt=17628.61
+[INFO]  2022-06-27 fill sell 601998.SH vol=2400 price=7.7168 amt=18520.21
+[INFO]  2022-06-27 fill sell 000429.SZ vol=500 price=31.8310 amt=15915.51
+[INFO]  2022-06-27 fill sell 002818.SZ vol=700 price=25.1415 amt=17599.07
+[INFO]  2022-06-27 fill sell 600350.SH vol=1300 price=14.0308 amt=18239.98
+[INFO]  2022-06-27 fill sell 002267.SZ vol=900 price=19.1352 amt=17221.67
+[INFO]  2022-06-27 fill sell 002448.SZ vol=400 price=40.8457 amt=16338.28
+[ERROR] 2022-06-27 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-06-27 unfilled_order code=600519.SH reason=below_min_lot
+[ERROR] 2022-06-28 unfilled_order code=601328.SH reason=below_min_lot
+[INFO]  2022-06-28 fill sell 002818.SZ vol=100 price=25.9410 amt=2594.10
+[ERROR] 2022-06-28 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-06-28 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-06-28 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-06-28 fill buy 601998.SH vol=100 price=7.6999 amt=769.99
+[ERROR] 2022-06-28 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-06-28 unfilled_order code=600350.SH reason=below_min_lot
+[INFO]  2022-06-28 fill buy 603012.SH vol=10300 price=12.7138 amt=130952.36
+[ERROR] 2022-06-29 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-06-29 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-06-29 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-06-29 fill sell 603012.SH vol=100 price=13.0223 amt=1302.23
+[ERROR] 2022-06-29 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-06-29 unfilled_order code=601328.SH reason=below_min_lot
+[INFO]  2022-06-29 fill buy 601998.SH vol=200 price=7.6675 amt=1533.50
+[ERROR] 2022-06-29 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-06-29 unfilled_order code=600350.SH reason=below_min_lot
+[INFO]  2022-06-30 fill sell 601328.SH vol=100 price=10.4326 amt=1043.26
+[INFO]  2022-06-30 fill sell 601998.SH vol=200 price=7.6683 amt=1533.66
+[INFO]  2022-06-30 fill sell 002818.SZ vol=100 price=26.4039 amt=2640.39
+[ERROR] 2022-06-30 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-06-30 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-06-30 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-06-30 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-06-30 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-06-30 fill buy 603012.SH vol=100 price=12.7783 amt=1277.83
+[ERROR] 2022-07-01 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-07-01 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-07-01 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-07-01 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-07-01 fill sell 601328.SH vol=12500 price=10.4326 amt=130407.71
+[INFO]  2022-07-01 fill sell 601998.SH vol=17000 price=7.6683 amt=130361.51
+[ERROR] 2022-07-01 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-07-01 unfilled_order code=002267.SZ reason=below_min_lot
+[INFO]  2022-07-01 fill buy 603012.SH vol=100 price=12.5028 amt=1250.28
+[ERROR] 2022-07-01 unfilled_order code=600519.SH reason=below_min_lot
+[INFO]  2022-07-01 fill buy 002461.SZ vol=7100 price=18.2076 amt=129273.96
+[ERROR] 2022-07-04 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-07-04 unfilled_order code=002818.SZ reason=below_min_lot
+[INFO]  2022-07-04 fill sell 603012.SH vol=100 price=12.7316 amt=1273.16
+[ERROR] 2022-07-04 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-07-04 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-07-04 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-07-04 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-07-04 unfilled_order code=002461.SZ reason=below_min_lot
+[INFO]  2022-07-04 fill buy 600674.SH vol=500 price=249.6324 amt=124816.20
+[ERROR] 2022-07-05 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-07-05 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-07-05 unfilled_order code=002267.SZ reason=below_min_lot
+[INFO]  2022-07-05 fill sell 603012.SH vol=100 price=12.9642 amt=1296.42
+[ERROR] 2022-07-05 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-07-05 unfilled_order code=002818.SZ reason=below_min_lot
+[INFO]  2022-07-05 fill buy 002448.SZ vol=100 price=39.4202 amt=3942.02
+[INFO]  2022-07-05 fill buy 002461.SZ vol=100 price=18.1212 amt=1812.12
+[ERROR] 2022-07-05 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-07-06 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-07-06 unfilled_order code=600350.SH reason=below_min_lot
+[INFO]  2022-07-06 fill sell 002267.SZ vol=100 price=19.1890 amt=1918.90
+[ERROR] 2022-07-06 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-07-06 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-07-06 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-07-06 unfilled_order code=603012.SH reason=below_min_lot
+[INFO]  2022-07-06 fill buy 002461.SZ vol=100 price=17.8188 amt=1781.88
+[ERROR] 2022-07-06 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-07-07 unfilled_order code=000429.SZ reason=below_min_lot
+[INFO]  2022-07-07 fill sell 002448.SZ vol=100 price=40.9614 amt=4096.14
+[ERROR] 2022-07-07 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-07-07 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-07-07 fill buy 002818.SZ vol=100 price=25.4027 amt=2540.27
+[ERROR] 2022-07-07 unfilled_order code=600350.SH reason=below_min_lot
+[INFO]  2022-07-07 fill buy 002267.SZ vol=100 price=18.9038 amt=1890.38
+[INFO]  2022-07-07 fill buy 603012.SH vol=100 price=12.5876 amt=1258.76
+[INFO]  2022-07-07 fill buy 002461.SZ vol=200 price=17.3437 amt=3468.73
+[ERROR] 2022-07-08 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-07-08 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-07-08 unfilled_order code=603012.SH reason=below_min_lot
+[ERROR] 2022-07-08 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-07-08 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-07-08 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-07-08 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-07-08 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-07-08 unfilled_order code=002461.SZ reason=below_min_lot
+[ERROR] 2022-07-11 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-07-11 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-07-11 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-07-11 fill buy 000429.SZ vol=100 price=31.1733 amt=3117.33
+[INFO]  2022-07-11 fill buy 002818.SZ vol=100 price=25.1075 amt=2510.75
+[INFO]  2022-07-11 fill buy 600350.SH vol=100 price=13.9250 amt=1392.50
+[ERROR] 2022-07-11 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-07-11 unfilled_order code=603012.SH reason=below_min_lot
+[ERROR] 2022-07-11 unfilled_order code=002461.SZ reason=below_min_lot
+[ERROR] 2022-07-12 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-07-12 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-07-12 fill sell 603012.SH vol=200 price=13.0911 amt=2618.23
+[ERROR] 2022-07-12 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-07-12 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-07-12 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2022-07-12 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-07-12 unfilled_order code=600350.SH reason=limit_up_at_open
+[INFO]  2022-07-12 fill buy 002461.SZ vol=100 price=17.1493 amt=1714.93
+[ERROR] 2022-07-13 unfilled_order code=000429.SZ reason=below_min_lot
+[INFO]  2022-07-13 fill sell 600350.SH vol=400 price=14.3247 amt=5729.89
+[ERROR] 2022-07-13 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-07-13 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-07-13 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-07-13 fill buy 002818.SZ vol=100 price=25.0865 amt=2508.65
+[ERROR] 2022-07-13 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-07-13 fill buy 603012.SH vol=100 price=12.8842 amt=1288.42
+[INFO]  2022-07-13 fill buy 002461.SZ vol=200 price=16.9117 amt=3382.34
+[INFO]  2022-07-14 fill sell 000429.SZ vol=100 price=33.2581 amt=3325.81
+[INFO]  2022-07-14 fill sell 600350.SH vol=100 price=14.7256 amt=1472.56
+[ERROR] 2022-07-14 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-07-14 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-07-14 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-07-14 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-07-14 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-07-14 fill buy 603012.SH vol=100 price=12.9054 amt=1290.54
+[INFO]  2022-07-14 fill buy 002461.SZ vol=100 price=16.9117 amt=1691.17
+[INFO]  2022-07-15 fill sell 002267.SZ vol=100 price=19.5389 amt=1953.89
+[ERROR] 2022-07-15 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-07-15 fill sell 603012.SH vol=100 price=13.0277 amt=1302.77
+[ERROR] 2022-07-15 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-07-15 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-07-15 fill sell 002461.SZ vol=7900 price=16.6623 amt=131632.50
+[ERROR] 2022-07-15 unfilled_order code=000429.SZ reason=below_min_lot
+[INFO]  2022-07-15 fill buy 002818.SZ vol=100 price=24.6016 amt=2460.16
+[INFO]  2022-07-15 fill buy 600350.SH vol=400 price=14.2463 amt=5698.52
+[INFO]  2022-07-15 fill buy 000544.SZ vol=5100 price=25.6467 amt=130798.33
+[ERROR] 2022-07-18 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-07-18 fill sell 000429.SZ vol=4100 price=31.2374 amt=128073.15
+[INFO]  2022-07-18 fill buy 002818.SZ vol=700 price=24.7281 amt=17309.66
+[INFO]  2022-07-18 fill buy 600350.SH vol=1400 price=14.0053 amt=19607.40
+[INFO]  2022-07-18 fill buy 002267.SZ vol=1000 price=19.2005 amt=19200.46
+[INFO]  2022-07-18 fill buy 002448.SZ vol=300 price=42.6086 amt=12782.59
+[INFO]  2022-07-18 fill buy 603012.SH vol=1500 price=12.7359 amt=19103.84
+[ERROR] 2022-07-18 unfilled_order code=600674.SH reason=below_min_lot
+[INFO]  2022-07-18 fill buy 000544.SZ vol=300 price=28.5429 amt=8562.88
+[INFO]  2022-07-19 fill sell 002818.SZ vol=600 price=24.8891 amt=14933.44
+[INFO]  2022-07-19 fill sell 600350.SH vol=1100 price=14.3782 amt=15816.00
+[INFO]  2022-07-19 fill sell 002267.SZ vol=900 price=20.1310 amt=18117.87
+[INFO]  2022-07-19 fill sell 002448.SZ vol=300 price=42.2921 amt=12687.62
+[INFO]  2022-07-19 fill sell 603012.SH vol=1500 price=13.4295 amt=20144.26
+[ERROR] 2022-07-19 unfilled_order code=600674.SH reason=below_min_lot
+[INFO]  2022-07-19 fill sell 000544.SZ vol=700 price=33.0497 amt=23134.82
+[ERROR] 2022-07-19 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-07-19 fill buy 000598.SZ vol=900 price=139.8726 amt=125885.32
+[ERROR] 2022-07-20 unfilled_order code=002267.SZ reason=below_min_lot
+[INFO]  2022-07-20 fill sell 603012.SH vol=100 price=13.8313 amt=1383.13
+[ERROR] 2022-07-20 unfilled_order code=600674.SH reason=below_min_lot
+[INFO]  2022-07-20 fill sell 000544.SZ vol=500 price=31.9468 amt=15973.41
+[ERROR] 2022-07-20 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-07-20 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-07-20 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-07-20 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-07-20 fill buy 000598.SZ vol=100 price=138.0390 amt=13803.90
+[ERROR] 2022-07-21 unfilled_order code=002818.SZ reason=below_min_lot
+[INFO]  2022-07-21 fill sell 002267.SZ vol=200 price=20.3732 amt=4074.64
+[INFO]  2022-07-21 fill sell 603012.SH vol=300 price=13.9794 amt=4193.81
+[ERROR] 2022-07-21 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-07-21 unfilled_order code=000598.SZ reason=below_min_lot
+[ERROR] 2022-07-21 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-07-21 fill buy 600350.SH vol=100 price=14.1124 amt=1411.24
+[ERROR] 2022-07-21 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-07-21 fill buy 000544.SZ vol=300 price=29.5719 amt=8871.56
+[ERROR] 2022-07-22 unfilled_order code=002818.SZ reason=below_min_lot
+[INFO]  2022-07-22 fill sell 002267.SZ vol=100 price=20.6154 amt=2061.54
+[ERROR] 2022-07-22 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-07-22 unfilled_order code=000544.SZ reason=below_min_lot
+[ERROR] 2022-07-22 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-07-22 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-07-22 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-07-22 fill buy 603012.SH vol=100 price=13.7743 amt=1377.43
+[ERROR] 2022-07-22 unfilled_order code=000598.SZ reason=below_min_lot
+[ERROR] 2022-07-25 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-07-25 fill sell 000544.SZ vol=200 price=30.5016 amt=6100.32
+[ERROR] 2022-07-25 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-07-25 unfilled_order code=002818.SZ reason=below_min_lot
+[INFO]  2022-07-25 fill buy 600350.SH vol=100 price=14.0856 amt=1408.56
+[INFO]  2022-07-25 fill buy 002267.SZ vol=100 price=20.6297 amt=2062.97
+[ERROR] 2022-07-25 unfilled_order code=603012.SH reason=below_min_lot
+[ERROR] 2022-07-25 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-07-25 unfilled_order code=000598.SZ reason=below_min_lot
+[ERROR] 2022-07-26 unfilled_order code=002818.SZ reason=below_min_lot
+[INFO]  2022-07-26 fill sell 600350.SH vol=100 price=14.0308 amt=1403.08
+[INFO]  2022-07-26 fill sell 002267.SZ vol=100 price=20.6692 amt=2066.92
+[ERROR] 2022-07-26 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-07-26 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-07-26 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-07-26 fill buy 603012.SH vol=100 price=13.6047 amt=1360.47
+[INFO]  2022-07-26 fill buy 000544.SZ vol=100 price=30.1435 amt=3014.35
+[ERROR] 2022-07-26 unfilled_order code=000598.SZ reason=below_min_lot
+[ERROR] 2022-07-27 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-07-27 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-07-27 fill sell 000544.SZ vol=100 price=31.5665 amt=3156.65
+[ERROR] 2022-07-27 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-07-27 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-07-27 unfilled_order code=600350.SH reason=below_min_lot
+[INFO]  2022-07-27 fill buy 603012.SH vol=100 price=13.5200 amt=1352.00
+[ERROR] 2022-07-27 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-07-27 unfilled_order code=000598.SZ reason=below_min_lot
+[INFO]  2022-07-28 fill sell 002267.SZ vol=500 price=22.7146 amt=11357.31
+[ERROR] 2022-07-28 unfilled_order code=000544.SZ reason=below_min_lot
+[ERROR] 2022-07-28 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-07-28 fill buy 002818.SZ vol=100 price=24.7070 amt=2470.70
+[INFO]  2022-07-28 fill buy 600350.SH vol=100 price=14.0321 amt=1403.21
+[ERROR] 2022-07-28 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-07-28 fill buy 603012.SH vol=100 price=13.6047 amt=1360.47
+[ERROR] 2022-07-28 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-07-28 unfilled_order code=000598.SZ reason=below_min_lot
+[ERROR] 2022-07-29 unfilled_order code=002818.SZ reason=below_min_lot
+[ERROR] 2022-07-29 unfilled_order code=600350.SH reason=below_min_lot
+[INFO]  2022-07-29 fill sell 603012.SH vol=300 price=13.9794 amt=4193.81
+[ERROR] 2022-07-29 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-07-29 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-07-29 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-07-29 unfilled_order code=600674.SH reason=below_min_lot
+[INFO]  2022-07-29 fill buy 000544.SZ vol=200 price=30.1054 amt=6021.07
+[ERROR] 2022-07-29 unfilled_order code=000598.SZ reason=below_min_lot
+[INFO]  2022-08-01 fill sell 002818.SZ vol=100 price=24.6366 amt=2463.66
+[INFO]  2022-08-01 fill sell 600350.SH vol=100 price=14.0575 amt=1405.75
+[ERROR] 2022-08-01 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-08-01 unfilled_order code=603012.SH reason=below_min_lot
+[ERROR] 2022-08-01 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-08-01 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-08-01 unfilled_order code=600674.SH reason=below_min_lot
+[INFO]  2022-08-01 fill buy 000544.SZ vol=300 price=27.5902 amt=8277.07
+[ERROR] 2022-08-01 unfilled_order code=000598.SZ reason=below_min_lot
+[ERROR] 2022-08-02 unfilled_order code=002818.SZ reason=below_min_lot
+[INFO]  2022-08-02 fill sell 600350.SH vol=100 price=13.8971 amt=1389.71
+[ERROR] 2022-08-02 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-08-02 fill sell 603012.SH vol=100 price=13.5775 amt=1357.75
+[ERROR] 2022-08-02 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-08-02 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-08-02 unfilled_order code=002267.SZ reason=below_min_lot
+[INFO]  2022-08-02 fill buy 000544.SZ vol=200 price=26.2184 amt=5243.67
+[ERROR] 2022-08-02 unfilled_order code=000598.SZ reason=below_min_lot
+[ERROR] 2022-08-03 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-08-03 fill sell 000598.SZ vol=1000 price=127.5682 amt=127568.24
+[INFO]  2022-08-03 fill buy 002818.SZ vol=700 price=23.2946 amt=16306.20
+[INFO]  2022-08-03 fill buy 600350.SH vol=900 price=13.8178 amt=12436.05
+[INFO]  2022-08-03 fill buy 002267.SZ vol=900 price=21.0072 amt=18906.52
+[INFO]  2022-08-03 fill buy 002448.SZ vol=400 price=39.9420 amt=15976.78
+[INFO]  2022-08-03 fill buy 603012.SH vol=1400 price=13.1809 amt=18453.27
+[ERROR] 2022-08-03 unfilled_order code=600674.SH reason=below_min_lot
+[INFO]  2022-08-03 fill buy 000544.SZ vol=900 price=24.8084 amt=22327.52
+[INFO]  2022-08-04 fill sell 600350.SH vol=1000 price=13.7635 amt=13763.50
+[INFO]  2022-08-04 fill sell 002267.SZ vol=700 price=20.8038 amt=14562.66
+[INFO]  2022-08-04 fill sell 002448.SZ vol=300 price=40.2671 amt=12080.14
+[INFO]  2022-08-04 fill sell 603012.SH vol=1200 price=13.1123 amt=15734.73
+[ERROR] 2022-08-04 unfilled_order code=600674.SH reason=below_min_lot
+[INFO]  2022-08-04 fill sell 000544.SZ vol=500 price=24.3785 amt=12189.23
+[ERROR] 2022-08-04 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-08-04 fill sell 002818.SZ vol=6200 price=26.6774 amt=165399.73
+[INFO]  2022-08-04 fill buy 600879.SH vol=500 price=252.4886 amt=126244.32
+[INFO]  2022-08-04 fill buy 002722.SZ vol=7100 price=18.1605 amt=128939.85
+[ERROR] 2022-08-05 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-08-05 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-08-05 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-08-05 fill sell 603012.SH vol=100 price=13.2180 amt=1321.80
+[ERROR] 2022-08-05 unfilled_order code=600674.SH reason=below_min_lot
+[INFO]  2022-08-05 fill sell 000544.SZ vol=100 price=24.7208 amt=2472.08
+[ERROR] 2022-08-05 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-08-05 unfilled_order code=600879.SH reason=below_min_lot
+[INFO]  2022-08-05 fill buy 002722.SZ vol=700 price=15.8424 amt=11089.68
+[INFO]  2022-08-08 fill sell 600350.SH vol=200 price=13.8971 amt=2779.43
+[INFO]  2022-08-08 fill sell 002267.SZ vol=100 price=20.9653 amt=2096.53
+[INFO]  2022-08-08 fill sell 002448.SZ vol=100 price=39.9200 amt=3992.00
+[ERROR] 2022-08-08 unfilled_order code=603012.SH reason=below_min_lot
+[ERROR] 2022-08-08 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-08-08 unfilled_order code=000544.SZ reason=below_min_lot
+[ERROR] 2022-08-08 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-08-08 fill sell 002722.SZ vol=7800 price=15.5975 amt=121660.68
+[ERROR] 2022-08-08 unfilled_order code=600879.SH reason=below_min_lot
+[INFO]  2022-08-08 fill buy 600597.SH vol=4000 price=32.1024 amt=128409.53
+[ERROR] 2022-08-09 unfilled_order code=002267.SZ reason=below_min_lot
+[INFO]  2022-08-09 fill sell 002448.SZ vol=100 price=42.1185 amt=4211.85
+[ERROR] 2022-08-09 unfilled_order code=603012.SH reason=below_min_lot
+[ERROR] 2022-08-09 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-08-09 unfilled_order code=000544.SZ reason=below_min_lot
+[ERROR] 2022-08-09 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-08-09 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-08-09 unfilled_order code=600879.SH reason=below_min_lot
+[INFO]  2022-08-09 fill buy 600597.SH vol=200 price=30.8092 amt=6161.83
+[INFO]  2022-08-10 fill sell 002267.SZ vol=200 price=21.7727 amt=4354.53
+[ERROR] 2022-08-10 unfilled_order code=603012.SH reason=below_min_lot
+[ERROR] 2022-08-10 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-08-10 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-08-10 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-08-10 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-08-10 unfilled_order code=000544.SZ reason=below_min_lot
+[ERROR] 2022-08-10 unfilled_order code=600879.SH reason=below_min_lot
+[ERROR] 2022-08-10 unfilled_order code=600597.SH reason=below_min_lot
+[ERROR] 2022-08-11 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-08-11 fill sell 603012.SH vol=100 price=13.2392 amt=1323.92
+[ERROR] 2022-08-11 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-08-11 unfilled_order code=000544.SZ reason=below_min_lot
+[ERROR] 2022-08-11 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-08-11 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-08-11 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-08-11 unfilled_order code=600879.SH reason=below_min_lot
+[ERROR] 2022-08-11 unfilled_order code=600597.SH reason=below_min_lot
+[ERROR] 2022-08-12 unfilled_order code=002267.SZ reason=below_min_lot
+[INFO]  2022-08-12 fill sell 603012.SH vol=400 price=14.2543 amt=5701.72
+[ERROR] 2022-08-12 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-08-12 unfilled_order code=000544.SZ reason=below_min_lot
+[ERROR] 2022-08-12 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-08-12 fill buy 600350.SH vol=100 price=13.9517 amt=1395.17
+[ERROR] 2022-08-12 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-08-12 unfilled_order code=600879.SH reason=below_min_lot
+[ERROR] 2022-08-12 unfilled_order code=600597.SH reason=below_min_lot
+[INFO]  2022-08-15 fill sell 002267.SZ vol=100 price=22.4186 amt=2241.86
+[ERROR] 2022-08-15 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-08-15 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-08-15 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-08-15 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-08-15 unfilled_order code=603012.SH reason=below_min_lot
+[ERROR] 2022-08-15 unfilled_order code=000544.SZ reason=below_min_lot
+[ERROR] 2022-08-15 unfilled_order code=600879.SH reason=below_min_lot
+[ERROR] 2022-08-15 unfilled_order code=600597.SH reason=below_min_lot
+[ERROR] 2022-08-16 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-08-16 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-08-16 unfilled_order code=000544.SZ reason=below_min_lot
+[ERROR] 2022-08-16 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-08-16 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-08-16 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-08-16 unfilled_order code=603012.SH reason=below_min_lot
+[ERROR] 2022-08-16 unfilled_order code=600879.SH reason=below_min_lot
+[INFO]  2022-08-16 fill buy 600597.SH vol=100 price=30.2006 amt=3020.06
+[INFO]  2022-08-17 fill sell 603012.SH vol=100 price=14.2332 amt=1423.32
+[ERROR] 2022-08-17 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-08-17 unfilled_order code=000544.SZ reason=below_min_lot
+[ERROR] 2022-08-17 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-08-17 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-08-17 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-08-17 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-08-17 unfilled_order code=600879.SH reason=below_min_lot
+[ERROR] 2022-08-17 unfilled_order code=600597.SH reason=below_min_lot
+[ERROR] 2022-08-18 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-08-18 unfilled_order code=603012.SH reason=below_min_lot
+[ERROR] 2022-08-18 unfilled_order code=600674.SH reason=below_min_lot
+[INFO]  2022-08-18 fill sell 000544.SZ vol=100 price=25.5955 amt=2559.55
+[ERROR] 2022-08-18 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-08-18 fill buy 600350.SH vol=100 price=13.9250 amt=1392.50
+[ERROR] 2022-08-18 unfilled_order code=002267.SZ reason=below_min_lot
+[ERROR] 2022-08-18 unfilled_order code=600879.SH reason=below_min_lot
+[ERROR] 2022-08-18 unfilled_order code=600597.SH reason=below_min_lot
+[ERROR] 2022-08-19 unfilled_order code=600350.SH reason=below_min_lot
+[ERROR] 2022-08-19 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-08-19 fill sell 603012.SH vol=100 price=14.3812 amt=1438.12
+[ERROR] 2022-08-19 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-08-19 unfilled_order code=000544.SZ reason=below_min_lot
+[ERROR] 2022-08-19 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-08-19 fill buy 002267.SZ vol=100 price=21.7084 amt=2170.84
+[ERROR] 2022-08-19 unfilled_order code=600879.SH reason=below_min_lot
+[INFO]  2022-08-19 fill buy 600597.SH vol=100 price=29.5413 amt=2954.13
+[INFO]  2022-08-22 fill sell 002267.SZ vol=100 price=22.4455 amt=2244.55
+[ERROR] 2022-08-22 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-08-22 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-08-22 unfilled_order code=000544.SZ reason=below_min_lot
+[ERROR] 2022-08-22 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-08-22 fill sell 600350.SH vol=9500 price=13.8971 amt=132022.73
+[INFO]  2022-08-22 fill buy 603012.SH vol=200 price=14.0497 amt=2809.95
+[ERROR] 2022-08-22 unfilled_order code=600879.SH reason=below_min_lot
+[ERROR] 2022-08-22 unfilled_order code=600597.SH reason=below_min_lot
+[INFO]  2022-08-22 fill buy 603980.SH vol=14500 price=9.0593 amt=131359.42
+[ERROR] 2022-08-23 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-08-23 unfilled_order code=600597.SH reason=below_min_lot
+[ERROR] 2022-08-23 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-08-23 fill sell 002267.SZ vol=5900 price=23.0914 amt=136239.29
+[ERROR] 2022-08-23 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-08-23 unfilled_order code=603012.SH reason=below_min_lot
+[ERROR] 2022-08-23 unfilled_order code=000544.SZ reason=below_min_lot
+[ERROR] 2022-08-23 unfilled_order code=600879.SH reason=below_min_lot
+[INFO]  2022-08-23 fill buy 603980.SH vol=100 price=8.9270 amt=892.70
+[INFO]  2022-08-23 fill buy 000719.SZ vol=3500 price=36.7287 amt=128550.40
+[ERROR] 2022-08-24 unfilled_order code=600674.SH reason=below_min_lot
+[INFO]  2022-08-24 fill sell 603980.SH vol=300 price=9.1732 amt=2751.95
+[ERROR] 2022-08-24 unfilled_order code=000719.SZ reason=below_min_lot
+[ERROR] 2022-08-24 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-08-24 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-08-24 fill buy 603012.SH vol=100 price=14.0074 amt=1400.74
+[ERROR] 2022-08-24 unfilled_order code=000544.SZ reason=below_min_lot
+[ERROR] 2022-08-24 unfilled_order code=600879.SH reason=below_min_lot
+[INFO]  2022-08-24 fill buy 600597.SH vol=100 price=29.4652 amt=2946.52
+[ERROR] 2022-08-25 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-08-25 unfilled_order code=000719.SZ reason=below_min_lot
+[ERROR] 2022-08-25 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-08-25 fill sell 600597.SH vol=4500 price=29.0774 amt=130848.13
+[ERROR] 2022-08-25 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-08-25 fill buy 603012.SH vol=100 price=13.5623 amt=1356.23
+[INFO]  2022-08-25 fill buy 000544.SZ vol=100 price=24.4273 amt=2442.73
+[ERROR] 2022-08-25 unfilled_order code=600879.SH reason=below_min_lot
+[ERROR] 2022-08-25 unfilled_order code=603980.SH reason=below_min_lot
+[INFO]  2022-08-25 fill buy 002773.SZ vol=4100 price=31.3413 amt=128499.37
+[ERROR] 2022-08-26 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-08-26 unfilled_order code=000544.SZ reason=below_min_lot
+[ERROR] 2022-08-26 unfilled_order code=000719.SZ reason=below_min_lot
+[ERROR] 2022-08-26 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-08-26 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-08-26 unfilled_order code=603012.SH reason=below_min_lot
+[ERROR] 2022-08-26 unfilled_order code=600879.SH reason=below_min_lot
+[INFO]  2022-08-26 fill buy 603980.SH vol=400 price=8.8774 amt=3550.97
+[INFO]  2022-08-26 fill buy 002773.SZ vol=100 price=30.9773 amt=3097.73
+[INFO]  2022-08-29 fill sell 603012.SH vol=500 price=14.5081 amt=7254.05
+[ERROR] 2022-08-29 unfilled_order code=600674.SH reason=below_min_lot
+[INFO]  2022-08-29 fill sell 000719.SZ vol=100 price=38.5742 amt=3857.42
+[ERROR] 2022-08-29 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-08-29 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-08-29 fill buy 002448.SZ vol=100 price=40.1738 amt=4017.38
+[ERROR] 2022-08-29 unfilled_order code=000544.SZ reason=below_min_lot
+[ERROR] 2022-08-29 unfilled_order code=600879.SH reason=below_min_lot
+[INFO]  2022-08-29 fill buy 603980.SH vol=300 price=8.6790 amt=2603.71
+[ERROR] 2022-08-30 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-08-30 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-08-30 unfilled_order code=000544.SZ reason=below_min_lot
+[ERROR] 2022-08-30 unfilled_order code=603980.SH reason=below_min_lot
+[ERROR] 2022-08-30 unfilled_order code=000719.SZ reason=below_min_lot
+[ERROR] 2022-08-30 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-08-30 unfilled_order code=603012.SH reason=below_min_lot
+[ERROR] 2022-08-30 unfilled_order code=600879.SH reason=below_min_lot
+[INFO]  2022-08-30 fill buy 002773.SZ vol=100 price=30.5325 amt=3053.25
+[ERROR] 2022-08-31 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-08-31 unfilled_order code=603980.SH reason=below_min_lot
+[INFO]  2022-08-31 fill sell 000719.SZ vol=100 price=40.3454 amt=4034.54
+[ERROR] 2022-08-31 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-08-31 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-08-31 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-08-31 fill buy 603012.SH vol=100 price=14.2193 amt=1421.93
+[ERROR] 2022-08-31 unfilled_order code=000544.SZ reason=below_min_lot
+[ERROR] 2022-08-31 unfilled_order code=600879.SH reason=below_min_lot
+[ERROR] 2022-09-01 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-09-01 fill sell 000544.SZ vol=5300 price=23.6939 amt=125577.63
+[INFO]  2022-09-01 fill sell 600879.SH vol=500 price=231.1681 amt=115584.04
+[INFO]  2022-09-01 fill buy 002448.SZ vol=1100 price=39.3623 amt=43298.47
+[INFO]  2022-09-01 fill buy 603012.SH vol=3600 price=13.3928 amt=48214.15
+[INFO]  2022-09-01 fill buy 600674.SH vol=100 price=276.8435 amt=27684.35
+[INFO]  2022-09-01 fill buy 603980.SH vol=5000 price=8.5633 amt=42816.62
+[INFO]  2022-09-01 fill buy 000719.SZ vol=1000 price=39.5388 amt=39538.80
+[INFO]  2022-09-01 fill buy 002773.SZ vol=1100 price=31.5435 amt=34697.86
+[INFO]  2022-09-02 fill sell 002448.SZ vol=1000 price=39.6886 amt=39688.59
+[INFO]  2022-09-02 fill sell 603012.SH vol=2900 price=13.0700 amt=37902.93
+[INFO]  2022-09-02 fill sell 600674.SH vol=100 price=279.6598 amt=27965.98
+[INFO]  2022-09-02 fill sell 603980.SH vol=4900 price=8.5462 amt=41876.45
+[INFO]  2022-09-02 fill sell 000719.SZ vol=1000 price=39.3122 amt=39312.20
+[INFO]  2022-09-02 fill sell 002773.SZ vol=1400 price=31.6217 amt=44270.45
+[ERROR] 2022-09-02 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-09-02 fill buy 002697.SZ vol=2900 price=43.0558 amt=124861.86
+[INFO]  2022-09-02 fill buy 600713.SH vol=2100 price=58.6608 amt=123187.58
+[ERROR] 2022-09-05 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-09-05 fill sell 603012.SH vol=400 price=13.4507 amt=5380.26
+[ERROR] 2022-09-05 unfilled_order code=600674.SH reason=below_min_lot
+[INFO]  2022-09-05 fill sell 603980.SH vol=100 price=8.6452 amt=864.52
+[ERROR] 2022-09-05 unfilled_order code=000719.SZ reason=below_min_lot
+[ERROR] 2022-09-05 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-09-05 fill buy 002773.SZ vol=100 price=31.1593 amt=3115.93
+[INFO]  2022-09-05 fill buy 002697.SZ vol=100 price=39.4926 amt=3949.26
+[ERROR] 2022-09-05 unfilled_order code=600713.SH reason=below_min_lot
+[INFO]  2022-09-06 fill sell 002448.SZ vol=100 price=40.6721 amt=4067.21
+[ERROR] 2022-09-06 unfilled_order code=600674.SH reason=below_min_lot
+[INFO]  2022-09-06 fill sell 603980.SH vol=300 price=8.6947 amt=2608.41
+[INFO]  2022-09-06 fill sell 000719.SZ vol=100 price=41.0343 amt=4103.43
+[ERROR] 2022-09-06 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-09-06 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-09-06 fill sell 002697.SZ vol=3000 price=38.6728 amt=116018.42
+[ERROR] 2022-09-06 unfilled_order code=603012.SH reason=below_min_lot
+[ERROR] 2022-09-06 unfilled_order code=600713.SH reason=below_min_lot
+[INFO]  2022-09-06 fill buy 601998.SH vol=15900 price=8.0139 amt=127420.41
+[ERROR] 2022-09-07 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-09-07 unfilled_order code=600674.SH reason=below_min_lot
+[INFO]  2022-09-07 fill sell 603980.SH vol=200 price=8.8762 amt=1775.24
+[INFO]  2022-09-07 fill sell 000719.SZ vol=100 price=41.3787 amt=4137.87
+[ERROR] 2022-09-07 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-09-07 unfilled_order code=603012.SH reason=below_min_lot
+[ERROR] 2022-09-07 unfilled_order code=002773.SZ reason=below_min_lot
+[INFO]  2022-09-07 fill buy 600713.SH vol=100 price=58.6608 amt=5866.08
+[INFO]  2022-09-07 fill buy 601998.SH vol=200 price=8.0139 amt=1602.77
+[ERROR] 2022-09-08 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-09-08 fill sell 603012.SH vol=500 price=14.5927 amt=7296.35
+[ERROR] 2022-09-08 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-09-08 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-09-08 unfilled_order code=603980.SH reason=below_min_lot
+[ERROR] 2022-09-08 unfilled_order code=000719.SZ reason=below_min_lot
+[INFO]  2022-09-08 fill buy 002773.SZ vol=100 price=30.5325 amt=3053.25
+[ERROR] 2022-09-08 unfilled_order code=600713.SH reason=below_min_lot
+[ERROR] 2022-09-08 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-09-09 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-09-09 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-09-09 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-09-09 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-09-09 unfilled_order code=603012.SH reason=below_min_lot
+[INFO]  2022-09-09 fill buy 603980.SH vol=100 price=8.8113 amt=881.13
+[ERROR] 2022-09-09 unfilled_order code=000719.SZ reason=below_min_lot
+[ERROR] 2022-09-09 unfilled_order code=600713.SH reason=below_min_lot
+[ERROR] 2022-09-09 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-09-13 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-09-13 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-09-13 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-09-13 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-09-13 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-09-13 fill buy 603012.SH vol=200 price=13.9862 amt=2797.23
+[ERROR] 2022-09-13 unfilled_order code=603980.SH reason=below_min_lot
+[ERROR] 2022-09-13 unfilled_order code=000719.SZ reason=below_min_lot
+[ERROR] 2022-09-13 unfilled_order code=600713.SH reason=below_min_lot
+[ERROR] 2022-09-14 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-09-14 unfilled_order code=600674.SH reason=below_min_lot
+[INFO]  2022-09-14 fill sell 002773.SZ vol=100 price=31.4401 amt=3144.01
+[ERROR] 2022-09-14 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-09-14 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-09-14 unfilled_order code=603012.SH reason=below_min_lot
+[INFO]  2022-09-14 fill buy 603980.SH vol=100 price=8.6790 amt=867.90
+[INFO]  2022-09-14 fill buy 000719.SZ vol=100 price=39.4402 amt=3944.02
+[ERROR] 2022-09-14 unfilled_order code=600713.SH reason=below_min_lot
+[ERROR] 2022-09-15 unfilled_order code=002448.SZ reason=below_min_lot
+[ERROR] 2022-09-15 unfilled_order code=603012.SH reason=below_min_lot
+[ERROR] 2022-09-15 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-09-15 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-09-15 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-09-15 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-09-15 unfilled_order code=603980.SH reason=below_min_lot
+[ERROR] 2022-09-15 unfilled_order code=000719.SZ reason=below_min_lot
+[ERROR] 2022-09-15 unfilled_order code=600713.SH reason=below_min_lot
+[ERROR] 2022-09-16 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-09-16 unfilled_order code=000719.SZ reason=below_min_lot
+[INFO]  2022-09-16 fill sell 002773.SZ vol=100 price=31.6217 amt=3162.17
+[INFO]  2022-09-16 fill sell 601998.SH vol=300 price=7.9806 amt=2394.18
+[ERROR] 2022-09-16 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-09-16 unfilled_order code=002448.SZ reason=below_min_lot
+[INFO]  2022-09-16 fill buy 603012.SH vol=300 price=13.2445 amt=3973.34
+[INFO]  2022-09-16 fill buy 603980.SH vol=100 price=8.4641 amt=846.41
+[ERROR] 2022-09-16 unfilled_order code=600713.SH reason=below_min_lot
+[ERROR] 2022-09-19 unfilled_order code=600674.SH reason=below_min_lot
+[INFO]  2022-09-19 fill sell 000719.SZ vol=100 price=41.2311 amt=4123.11
+[INFO]  2022-09-19 fill sell 601998.SH vol=100 price=7.8772 amt=787.72
+[ERROR] 2022-09-19 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-09-19 fill sell 002448.SZ vol=3200 price=37.6058 amt=120338.58
+[INFO]  2022-09-19 fill sell 603980.SH vol=14800 price=8.3152 amt=123065.49
+[INFO]  2022-09-19 fill buy 603012.SH vol=100 price=12.6723 amt=1267.23
+[ERROR] 2022-09-19 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-09-19 unfilled_order code=600713.SH reason=below_min_lot
+[INFO]  2022-09-19 fill buy 603658.SH vol=1600 price=73.1217 amt=116994.77
+[INFO]  2022-09-19 fill buy 000419.SZ vol=1200 price=97.1076 amt=116529.13
+[ERROR] 2022-09-20 unfilled_order code=600674.SH reason=below_min_lot
+[INFO]  2022-09-20 fill sell 000719.SZ vol=200 price=42.1167 amt=8423.34
+[INFO]  2022-09-20 fill sell 601998.SH vol=200 price=7.8944 amt=1578.89
+[ERROR] 2022-09-20 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-09-20 fill buy 603012.SH vol=200 price=12.3968 amt=2479.37
+[INFO]  2022-09-20 fill buy 002773.SZ vol=100 price=29.4002 amt=2940.02
+[ERROR] 2022-09-20 unfilled_order code=600713.SH reason=below_min_lot
+[INFO]  2022-09-20 fill buy 603658.SH vol=100 price=71.6089 amt=7160.89
+[ERROR] 2022-09-20 unfilled_order code=000419.SZ reason=below_min_lot
+[ERROR] 2022-09-21 unfilled_order code=600674.SH reason=below_min_lot
+[INFO]  2022-09-21 fill sell 000719.SZ vol=100 price=44.2324 amt=4423.24
+[INFO]  2022-09-21 fill sell 002773.SZ vol=200 price=32.5298 amt=6505.97
+[ERROR] 2022-09-21 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-09-21 fill sell 603012.SH vol=9800 price=12.3932 amt=121453.50
+[ERROR] 2022-09-21 unfilled_order code=600713.SH reason=below_min_lot
+[INFO]  2022-09-21 fill buy 601998.SH vol=200 price=7.8239 amt=1564.78
+[ERROR] 2022-09-21 unfilled_order code=603658.SH reason=below_min_lot
+[INFO]  2022-09-21 fill buy 000419.SZ vol=100 price=91.8334 amt=9183.34
+[INFO]  2022-09-21 fill buy 603557.SH vol=28400 price=4.3633 amt=123918.26
+[ERROR] 2022-09-22 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-09-22 unfilled_order code=000719.SZ reason=below_min_lot
+[ERROR] 2022-09-22 unfilled_order code=002773.SZ reason=below_min_lot
+[INFO]  2022-09-22 fill sell 601998.SH vol=100 price=7.9117 amt=791.17
+[ERROR] 2022-09-22 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-09-22 unfilled_order code=600713.SH reason=below_min_lot
+[INFO]  2022-09-22 fill buy 603658.SH vol=100 price=68.6392 amt=6863.92
+[ERROR] 2022-09-22 unfilled_order code=000419.SZ reason=below_min_lot
+[INFO]  2022-09-22 fill buy 603557.SH vol=300 price=4.3104 amt=1293.11
+[ERROR] 2022-09-23 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-09-23 unfilled_order code=000719.SZ reason=below_min_lot
+[ERROR] 2022-09-23 unfilled_order code=002773.SZ reason=below_min_lot
+[INFO]  2022-09-23 fill sell 601998.SH vol=100 price=7.9117 amt=791.17
+[ERROR] 2022-09-23 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-09-23 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-09-23 unfilled_order code=600713.SH reason=below_min_lot
+[ERROR] 2022-09-23 unfilled_order code=000419.SZ reason=below_min_lot
+[INFO]  2022-09-23 fill buy 603557.SH vol=400 price=4.1939 amt=1677.55
+[ERROR] 2022-09-26 unfilled_order code=600674.SH reason=below_min_lot
+[ERROR] 2022-09-26 unfilled_order code=000719.SZ reason=below_min_lot
+[INFO]  2022-09-26 fill sell 002773.SZ vol=100 price=32.2473 amt=3224.73
+[INFO]  2022-09-26 fill sell 601998.SH vol=400 price=8.0496 amt=3219.82
+[ERROR] 2022-09-26 unfilled_order code=603658.SH reason=below_min_lot
+[INFO]  2022-09-26 fill sell 603557.SH vol=1000 price=4.3018 amt=4301.75
+[ERROR] 2022-09-26 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-09-26 fill sell 600713.SH vol=2200 price=53.0586 amt=116728.89
+[INFO]  2022-09-26 fill sell 000419.SZ vol=1300 price=84.2188 amt=109484.48
+[INFO]  2022-09-26 fill buy 600028.SH vol=6900 price=17.2886 amt=119291.28
+[INFO]  2022-09-26 fill buy 600941.SH vol=1600 price=72.3477 amt=115756.38
+[ERROR] 2022-09-27 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-09-27 fill sell 600674.SH vol=500 price=260.7070 amt=130353.48
+[INFO]  2022-09-27 fill buy 000719.SZ vol=400 price=40.7713 amt=16308.52
+[INFO]  2022-09-27 fill buy 002773.SZ vol=400 price=31.7659 amt=12706.37
+[INFO]  2022-09-27 fill buy 601998.SH vol=1900 price=7.8757 amt=14963.81
+[INFO]  2022-09-27 fill buy 603658.SH vol=100 price=67.0843 amt=6708.43
+[INFO]  2022-09-27 fill buy 603557.SH vol=4200 price=4.1091 amt=17258.41
+[INFO]  2022-09-27 fill buy 600028.SH vol=1100 price=16.7778 amt=18455.57
+[INFO]  2022-09-27 fill buy 600941.SH vol=300 price=70.5593 amt=21167.78
+[ERROR] 2022-09-28 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-09-28 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-09-28 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-09-28 fill buy 000719.SZ vol=100 price=40.9685 amt=4096.85
+[ERROR] 2022-09-28 unfilled_order code=002773.SZ reason=below_min_lot
+[INFO]  2022-09-28 fill buy 601998.SH vol=200 price=7.9275 amt=1585.50
+[INFO]  2022-09-28 fill buy 603557.SH vol=1200 price=4.0774 amt=4892.85
+[INFO]  2022-09-28 fill buy 600028.SH vol=100 price=16.8564 amt=1685.64
+[ERROR] 2022-09-29 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-09-29 fill sell 603557.SH vol=33500 price=3.9741 amt=133132.42
+[INFO]  2022-09-29 fill buy 000719.SZ vol=800 price=38.0598 amt=30447.84
+[INFO]  2022-09-29 fill buy 002773.SZ vol=700 price=32.1703 amt=22519.24
+[INFO]  2022-09-29 fill buy 601998.SH vol=2400 price=7.9793 amt=19150.37
+[INFO]  2022-09-29 fill buy 603658.SH vol=200 price=74.1023 amt=14820.46
+[INFO]  2022-09-29 fill buy 600028.SH vol=1200 price=16.8957 amt=20274.80
+[INFO]  2022-09-29 fill buy 600941.SH vol=200 price=71.3258 amt=14265.15
+[ERROR] 2022-09-30 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-09-30 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-09-30 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-09-30 fill buy 000719.SZ vol=100 price=37.2217 amt=3722.17
+[INFO]  2022-09-30 fill buy 601998.SH vol=500 price=7.8584 amt=3929.21
+[INFO]  2022-09-30 fill buy 600028.SH vol=100 price=16.7778 amt=1677.78
+[INFO]  2022-09-30 fill buy 600941.SH vol=100 price=71.3470 amt=7134.70
+[INFO]  2022-10-10 fill sell 000719.SZ vol=400 price=36.7537 amt=14701.48
+[INFO]  2022-10-10 fill sell 002773.SZ vol=800 price=33.8012 amt=27040.93
+[INFO]  2022-10-10 fill sell 601998.SH vol=2800 price=7.8082 amt=21863.09
+[INFO]  2022-10-10 fill sell 603658.SH vol=300 price=77.0438 amt=23113.14
+[INFO]  2022-10-10 fill sell 600028.SH vol=1300 price=17.0580 amt=22175.37
+[INFO]  2022-10-10 fill sell 600941.SH vol=300 price=72.4900 amt=21747.01
+[ERROR] 2022-10-10 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-10-10 fill buy 600985.SH vol=1900 price=69.8083 amt=132635.76
+[ERROR] 2022-10-11 unfilled_order code=000719.SZ reason=below_min_lot
+[ERROR] 2022-10-11 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-10-11 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-10-11 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-10-11 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-10-11 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-10-11 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-10-11 unfilled_order code=600985.SH reason=below_min_lot
+[INFO]  2022-10-12 fill sell 000719.SZ vol=500 price=36.1633 amt=18081.64
+[INFO]  2022-10-12 fill sell 002773.SZ vol=400 price=31.9446 amt=12777.85
+[INFO]  2022-10-12 fill sell 601998.SH vol=2200 price=7.8944 amt=17367.75
+[INFO]  2022-10-12 fill sell 603658.SH vol=200 price=76.8481 amt=15369.62
+[INFO]  2022-10-12 fill sell 600028.SH vol=1000 price=16.9011 amt=16901.12
+[INFO]  2022-10-12 fill sell 600941.SH vol=300 price=74.7849 amt=22435.47
+[INFO]  2022-10-12 fill sell 600985.SH vol=100 price=69.3816 amt=6938.16
+[ERROR] 2022-10-12 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-10-12 fill buy 002966.SZ vol=13900 price=8.5441 amt=118762.66
+[ERROR] 2022-10-13 unfilled_order code=000719.SZ reason=below_min_lot
+[INFO]  2022-10-13 fill sell 601998.SH vol=200 price=8.0496 amt=1609.91
+[INFO]  2022-10-13 fill sell 603658.SH vol=100 price=79.8957 amt=7989.57
+[ERROR] 2022-10-13 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-10-13 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-10-13 unfilled_order code=600985.SH reason=below_min_lot
+[ERROR] 2022-10-13 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-10-13 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-10-13 unfilled_order code=002966.SZ reason=below_min_lot
+[INFO]  2022-10-14 fill sell 002773.SZ vol=200 price=34.1039 amt=6820.77
+[ERROR] 2022-10-14 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-10-14 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-10-14 unfilled_order code=600985.SH reason=below_min_lot
+[ERROR] 2022-10-14 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-10-14 unfilled_order code=000719.SZ reason=below_min_lot
+[INFO]  2022-10-14 fill buy 601998.SH vol=100 price=8.0311 amt=803.11
+[ERROR] 2022-10-14 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-10-14 unfilled_order code=002966.SZ reason=below_min_lot
+[ERROR] 2022-10-17 unfilled_order code=002773.SZ reason=below_min_lot
+[INFO]  2022-10-17 fill sell 603658.SH vol=100 price=98.4332 amt=9843.32
+[ERROR] 2022-10-17 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-10-17 unfilled_order code=000719.SZ reason=below_min_lot
+[ERROR] 2022-10-17 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-10-17 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-10-17 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-10-17 unfilled_order code=600985.SH reason=below_min_lot
+[INFO]  2022-10-17 fill buy 002966.SZ vol=300 price=8.5562 amt=2566.85
+[ERROR] 2022-10-18 unfilled_order code=002773.SZ reason=below_min_lot
+[INFO]  2022-10-18 fill sell 603658.SH vol=100 price=101.7465 amt=10174.65
+[ERROR] 2022-10-18 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-10-18 fill buy 000719.SZ vol=100 price=36.3836 amt=3638.36
+[INFO]  2022-10-18 fill buy 601998.SH vol=300 price=8.0484 amt=2414.52
+[INFO]  2022-10-18 fill buy 600028.SH vol=200 price=16.8957 amt=3379.13
+[ERROR] 2022-10-18 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-10-18 fill buy 600985.SH vol=100 price=64.8337 amt=6483.37
+[ERROR] 2022-10-18 unfilled_order code=002966.SZ reason=below_min_lot
+[INFO]  2022-10-19 fill sell 002773.SZ vol=100 price=37.0098 amt=3700.98
+[INFO]  2022-10-19 fill sell 603658.SH vol=100 price=105.5630 amt=10556.30
+[ERROR] 2022-10-19 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-10-19 unfilled_order code=000719.SZ reason=below_min_lot
+[INFO]  2022-10-19 fill buy 601998.SH vol=500 price=7.8930 amt=3946.48
+[INFO]  2022-10-19 fill buy 600028.SH vol=100 price=16.8171 amt=1681.71
+[INFO]  2022-10-19 fill buy 600941.SH vol=100 price=72.7097 amt=7270.97
+[ERROR] 2022-10-19 unfilled_order code=600985.SH reason=below_min_lot
+[INFO]  2022-10-19 fill buy 002966.SZ vol=200 price=8.7135 amt=1742.70
+[INFO]  2022-10-20 fill sell 002773.SZ vol=100 price=37.2317 amt=3723.17
+[ERROR] 2022-10-20 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-10-20 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-10-20 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-10-20 unfilled_order code=000719.SZ reason=below_min_lot
+[ERROR] 2022-10-20 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-10-20 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-10-20 unfilled_order code=600985.SH reason=below_min_lot
+[INFO]  2022-10-20 fill buy 002966.SZ vol=200 price=8.5562 amt=1711.24
+[INFO]  2022-10-21 fill sell 601998.SH vol=100 price=7.8944 amt=789.44
+[ERROR] 2022-10-21 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-10-21 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-10-21 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-10-21 fill sell 002966.SZ vol=200 price=8.6599 amt=1731.97
+[ERROR] 2022-10-21 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-10-21 fill sell 600985.SH vol=1900 price=62.2014 amt=118182.61
+[ERROR] 2022-10-21 unfilled_order code=000719.SZ reason=below_min_lot
+[INFO]  2022-10-21 fill buy 002773.SZ vol=100 price=35.3854 amt=3538.53
+[INFO]  2022-10-21 fill buy 000028.SZ vol=900 price=129.0708 amt=116163.72
+[INFO]  2022-10-24 fill sell 601998.SH vol=100 price=7.9806 amt=798.06
+[ERROR] 2022-10-24 unfilled_order code=603658.SH reason=below_min_lot
+[INFO]  2022-10-24 fill sell 600028.SH vol=100 price=17.0580 amt=1705.80
+[ERROR] 2022-10-24 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-10-24 unfilled_order code=000719.SZ reason=below_min_lot
+[ERROR] 2022-10-24 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-10-24 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-10-24 unfilled_order code=002966.SZ reason=below_min_lot
+[ERROR] 2022-10-24 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-10-25 unfilled_order code=601998.SH reason=below_min_lot
+[INFO]  2022-10-25 fill sell 603658.SH vol=100 price=107.9256 amt=10792.56
+[INFO]  2022-10-25 fill sell 600028.SH vol=100 price=16.9796 amt=1697.96
+[INFO]  2022-10-25 fill sell 002966.SZ vol=100 price=8.5512 amt=855.12
+[ERROR] 2022-10-25 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-10-25 unfilled_order code=000719.SZ reason=below_min_lot
+[INFO]  2022-10-25 fill buy 002773.SZ vol=100 price=34.5563 amt=3455.63
+[ERROR] 2022-10-25 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-10-25 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-10-26 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-10-26 fill sell 000719.SZ vol=3400 price=34.6872 amt=117936.59
+[INFO]  2022-10-26 fill buy 002773.SZ vol=400 price=34.9405 amt=13976.20
+[INFO]  2022-10-26 fill buy 601998.SH vol=2300 price=7.7203 amt=17756.58
+[INFO]  2022-10-26 fill buy 603658.SH vol=200 price=102.5385 amt=20507.70
+[INFO]  2022-10-26 fill buy 600028.SH vol=1000 price=16.8171 amt=16817.08
+[INFO]  2022-10-26 fill buy 600941.SH vol=200 price=70.7828 amt=14156.57
+[INFO]  2022-10-26 fill buy 002966.SZ vol=1800 price=8.5925 amt=15466.47
+[INFO]  2022-10-26 fill buy 000028.SZ vol=200 price=122.8631 amt=24572.61
+[ERROR] 2022-10-27 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-10-27 unfilled_order code=002966.SZ reason=below_min_lot
+[ERROR] 2022-10-27 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-10-27 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-10-27 fill buy 601998.SH vol=300 price=7.6166 amt=2284.99
+[ERROR] 2022-10-27 unfilled_order code=603658.SH reason=below_min_lot
+[INFO]  2022-10-27 fill buy 600028.SH vol=100 price=16.6599 amt=1665.99
+[ERROR] 2022-10-27 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-10-28 fill sell 002773.SZ vol=500 price=35.9806 amt=17990.29
+[INFO]  2022-10-28 fill sell 601998.SH vol=2000 price=7.5842 amt=15168.34
+[INFO]  2022-10-28 fill sell 603658.SH vol=100 price=104.6124 amt=10461.24
+[INFO]  2022-10-28 fill sell 600028.SH vol=900 price=16.8227 amt=15140.43
+[INFO]  2022-10-28 fill sell 600941.SH vol=200 price=72.0332 amt=14406.64
+[INFO]  2022-10-28 fill sell 002966.SZ vol=1700 price=8.4787 amt=14413.78
+[INFO]  2022-10-28 fill sell 000028.SZ vol=100 price=131.6819 amt=13168.19
+[ERROR] 2022-10-28 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-10-28 fill buy 600998.SH vol=8900 price=13.7115 amt=122032.18
+[INFO]  2022-10-31 fill sell 601998.SH vol=100 price=7.5669 amt=756.69
+[ERROR] 2022-10-31 unfilled_order code=603658.SH reason=below_min_lot
+[INFO]  2022-10-31 fill sell 600028.SH vol=100 price=16.4698 amt=1646.98
+[INFO]  2022-10-31 fill sell 002966.SZ vol=200 price=8.5028 amt=1700.57
+[ERROR] 2022-10-31 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-10-31 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-10-31 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-10-31 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-10-31 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-11-01 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-11-01 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-11-01 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-11-01 unfilled_order code=000028.SZ reason=below_min_lot
+[INFO]  2022-11-01 fill sell 600998.SH vol=100 price=13.7717 amt=1377.17
+[ERROR] 2022-11-01 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-11-01 unfilled_order code=601998.SH reason=below_min_lot
+[INFO]  2022-11-01 fill buy 600028.SH vol=200 price=15.9527 amt=3190.53
+[INFO]  2022-11-01 fill buy 002966.SZ vol=300 price=8.3141 amt=2494.24
+[INFO]  2022-11-02 fill sell 601998.SH vol=300 price=7.6014 amt=2280.42
+[ERROR] 2022-11-02 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-11-02 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-11-02 fill sell 002966.SZ vol=100 price=8.2854 amt=828.54
+[ERROR] 2022-11-02 unfilled_order code=000028.SZ reason=below_min_lot
+[INFO]  2022-11-02 fill sell 600998.SH vol=100 price=13.9470 amt=1394.70
+[ERROR] 2022-11-02 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-11-02 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-11-02 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-11-03 unfilled_order code=601998.SH reason=below_min_lot
+[INFO]  2022-11-03 fill sell 600028.SH vol=100 price=16.0776 amt=1607.76
+[ERROR] 2022-11-03 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-11-03 unfilled_order code=000028.SZ reason=below_min_lot
+[INFO]  2022-11-03 fill sell 600998.SH vol=100 price=13.8046 amt=1380.46
+[ERROR] 2022-11-03 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-11-03 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-11-03 unfilled_order code=603658.SH reason=below_min_lot
+[INFO]  2022-11-03 fill buy 002966.SZ vol=200 price=8.1689 amt=1633.78
+[INFO]  2022-11-04 fill sell 600028.SH vol=100 price=16.4698 amt=1646.98
+[ERROR] 2022-11-04 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-11-04 unfilled_order code=002966.SZ reason=below_min_lot
+[ERROR] 2022-11-04 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-11-04 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-11-04 fill buy 002773.SZ vol=100 price=34.1721 amt=3417.21
+[ERROR] 2022-11-04 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-11-04 unfilled_order code=603658.SH reason=below_min_lot
+[INFO]  2022-11-04 fill buy 600998.SH vol=100 price=13.8322 amt=1383.22
+[ERROR] 2022-11-07 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-11-07 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-11-07 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-11-07 fill sell 002966.SZ vol=300 price=8.3700 amt=2511.00
+[ERROR] 2022-11-07 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-11-07 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-11-07 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-11-07 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-11-07 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-11-08 unfilled_order code=002773.SZ reason=below_min_lot
+[INFO]  2022-11-08 fill sell 601998.SH vol=100 price=7.6704 amt=767.04
+[INFO]  2022-11-08 fill sell 600028.SH vol=100 price=16.7443 amt=1674.43
+[ERROR] 2022-11-08 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-11-08 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-11-08 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-11-08 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-11-08 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-11-08 fill buy 002966.SZ vol=100 price=8.3262 amt=832.62
+[INFO]  2022-11-09 fill sell 002773.SZ vol=100 price=35.7384 amt=3573.84
+[INFO]  2022-11-09 fill sell 002966.SZ vol=100 price=8.3579 amt=835.79
+[ERROR] 2022-11-09 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-11-09 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-11-09 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-11-09 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-11-09 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-11-09 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-11-09 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-11-10 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-11-10 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-11-10 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-11-10 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-11-10 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-11-10 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-11-10 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-11-10 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-11-10 unfilled_order code=002966.SZ reason=below_min_lot
+[INFO]  2022-11-11 fill sell 601998.SH vol=100 price=7.7565 amt=775.65
+[ERROR] 2022-11-11 unfilled_order code=002966.SZ reason=below_min_lot
+[INFO]  2022-11-11 fill sell 000028.SZ vol=100 price=137.0041 amt=13700.41
+[ERROR] 2022-11-11 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-11-11 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-11-11 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-11-11 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-11-11 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-11-11 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-11-14 fill sell 601998.SH vol=300 price=7.9289 amt=2378.67
+[ERROR] 2022-11-14 unfilled_order code=600028.SH reason=below_min_lot
+[INFO]  2022-11-14 fill sell 002966.SZ vol=400 price=8.7927 amt=3517.09
+[ERROR] 2022-11-14 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-11-14 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-11-14 fill buy 002773.SZ vol=100 price=33.5049 amt=3350.49
+[INFO]  2022-11-14 fill buy 603658.SH vol=100 price=89.7212 amt=8972.12
+[ERROR] 2022-11-14 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-11-14 unfilled_order code=000028.SZ reason=below_min_lot
+[INFO]  2022-11-15 fill sell 601998.SH vol=100 price=8.1185 amt=811.85
+[ERROR] 2022-11-15 unfilled_order code=000028.SZ reason=below_min_lot
+[INFO]  2022-11-15 fill sell 600998.SH vol=200 price=14.5387 amt=2907.73
+[ERROR] 2022-11-15 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-11-15 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-11-15 unfilled_order code=603658.SH reason=below_min_lot
+[INFO]  2022-11-15 fill buy 600028.SH vol=100 price=16.7778 amt=1677.78
+[ERROR] 2022-11-15 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-11-15 fill buy 002966.SZ vol=100 price=8.7498 amt=874.98
+[ERROR] 2022-11-16 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-11-16 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-11-16 unfilled_order code=000028.SZ reason=below_min_lot
+[INFO]  2022-11-16 fill sell 600998.SH vol=100 price=14.5934 amt=1459.34
+[ERROR] 2022-11-16 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-11-16 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-11-16 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-11-16 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-11-16 fill buy 002966.SZ vol=300 price=8.5683 amt=2570.48
+[ERROR] 2022-11-17 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-11-17 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-11-17 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-11-17 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-11-17 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-11-17 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-11-17 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-11-17 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-11-17 unfilled_order code=002966.SZ reason=below_min_lot
+[ERROR] 2022-11-18 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-11-18 unfilled_order code=000028.SZ reason=below_min_lot
+[INFO]  2022-11-18 fill sell 600998.SH vol=100 price=14.8892 amt=1488.92
+[ERROR] 2022-11-18 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-11-18 unfilled_order code=002773.SZ reason=below_min_lot
+[INFO]  2022-11-18 fill buy 601998.SH vol=200 price=7.9793 amt=1595.86
+[ERROR] 2022-11-18 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-11-18 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-11-18 unfilled_order code=002966.SZ reason=below_min_lot
+[ERROR] 2022-11-21 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-11-21 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-11-21 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-11-21 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-11-21 fill buy 601998.SH vol=200 price=7.8584 amt=1571.68
+[ERROR] 2022-11-21 unfilled_order code=603658.SH reason=below_min_lot
+[INFO]  2022-11-21 fill buy 600028.SH vol=100 price=16.6599 amt=1665.99
+[ERROR] 2022-11-21 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-11-21 fill buy 002966.SZ vol=200 price=8.4231 amt=1684.61
+[ERROR] 2022-11-22 unfilled_order code=002773.SZ reason=below_min_lot
+[ERROR] 2022-11-22 unfilled_order code=002966.SZ reason=below_min_lot
+[ERROR] 2022-11-22 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-11-22 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-11-22 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-11-22 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-11-22 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-11-22 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-11-22 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-11-23 fill sell 601998.SH vol=500 price=8.2392 amt=4119.58
+[INFO]  2022-11-23 fill sell 600028.SH vol=100 price=16.9796 amt=1697.96
+[ERROR] 2022-11-23 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-11-23 fill sell 002966.SZ vol=300 price=8.6961 amt=2608.83
+[ERROR] 2022-11-23 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-11-23 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-11-23 unfilled_order code=002773.SZ reason=below_min_lot
+[INFO]  2022-11-23 fill buy 603658.SH vol=100 price=85.5888 amt=8558.88
+[INFO]  2022-11-23 fill buy 600998.SH vol=100 price=14.5019 amt=1450.19
+[INFO]  2022-11-24 fill sell 601998.SH vol=600 price=8.5667 amt=5140.00
+[INFO]  2022-11-24 fill sell 600028.SH vol=100 price=17.1756 amt=1717.56
+[ERROR] 2022-11-24 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-11-24 unfilled_order code=002966.SZ reason=below_min_lot
+[ERROR] 2022-11-24 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-11-24 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-11-24 fill buy 002773.SZ vol=100 price=33.7071 amt=3370.71
+[ERROR] 2022-11-24 unfilled_order code=603658.SH reason=below_min_lot
+[INFO]  2022-11-24 fill buy 600998.SH vol=100 price=14.4031 amt=1440.31
+[ERROR] 2022-11-25 unfilled_order code=600028.SH reason=below_min_lot
+[INFO]  2022-11-25 fill sell 002966.SZ vol=100 price=8.7444 amt=874.44
+[ERROR] 2022-11-25 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-11-25 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-11-25 fill sell 002773.SZ vol=3600 price=33.8819 amt=121974.78
+[ERROR] 2022-11-25 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-11-25 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-11-25 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-11-25 unfilled_order code=600998.SH reason=below_min_lot
+[INFO]  2022-11-25 fill buy 600377.SH vol=4800 price=25.5977 amt=122868.81
+[INFO]  2022-11-28 fill sell 601998.SH vol=100 price=8.5667 amt=856.67
+[ERROR] 2022-11-28 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-11-28 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-11-28 fill sell 002966.SZ vol=200 price=8.9497 amt=1789.95
+[ERROR] 2022-11-28 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-11-28 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-11-28 unfilled_order code=603658.SH reason=below_min_lot
+[INFO]  2022-11-28 fill buy 600998.SH vol=100 price=14.4031 amt=1440.31
+[ERROR] 2022-11-28 unfilled_order code=600377.SH reason=below_min_lot
+[ERROR] 2022-11-29 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-11-29 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-11-29 fill sell 002966.SZ vol=100 price=9.0826 amt=908.26
+[ERROR] 2022-11-29 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-11-29 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-11-29 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-11-29 fill buy 601998.SH vol=400 price=8.4629 amt=3385.17
+[ERROR] 2022-11-29 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-11-29 unfilled_order code=600377.SH reason=below_min_lot
+[INFO]  2022-11-30 fill sell 601998.SH vol=500 price=8.8080 amt=4403.99
+[ERROR] 2022-11-30 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-11-30 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-11-30 unfilled_order code=002966.SZ reason=below_min_lot
+[ERROR] 2022-11-30 unfilled_order code=000028.SZ reason=below_min_lot
+[INFO]  2022-11-30 fill sell 600998.SH vol=100 price=15.0098 amt=1500.98
+[ERROR] 2022-11-30 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-11-30 unfilled_order code=603658.SH reason=below_min_lot
+[INFO]  2022-11-30 fill buy 600377.SH vol=100 price=25.5977 amt=2559.77
+[ERROR] 2022-12-01 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-12-01 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-12-01 fill sell 002966.SZ vol=100 price=9.4208 amt=942.08
+[ERROR] 2022-12-01 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-12-01 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-12-01 fill buy 601998.SH vol=300 price=8.7738 amt=2632.14
+[ERROR] 2022-12-01 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-12-01 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-12-01 unfilled_order code=600377.SH reason=below_min_lot
+[ERROR] 2022-12-02 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-12-02 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-12-02 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-12-02 unfilled_order code=600377.SH reason=below_min_lot
+[ERROR] 2022-12-02 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-12-02 fill buy 601998.SH vol=100 price=8.5838 amt=858.38
+[INFO]  2022-12-02 fill buy 603658.SH vol=100 price=84.0480 amt=8404.80
+[INFO]  2022-12-02 fill buy 002966.SZ vol=200 price=9.1855 amt=1837.10
+[ERROR] 2022-12-02 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-12-05 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-12-05 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-12-05 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-12-05 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-12-05 unfilled_order code=600377.SH reason=below_min_lot
+[ERROR] 2022-12-05 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-12-05 fill buy 601998.SH vol=100 price=8.5838 amt=858.38
+[ERROR] 2022-12-05 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-12-05 unfilled_order code=002966.SZ reason=below_min_lot
+[ERROR] 2022-12-06 unfilled_order code=601998.SH reason=below_min_lot
+[ERROR] 2022-12-06 unfilled_order code=600028.SH reason=below_min_lot
+[INFO]  2022-12-06 fill sell 600941.SH vol=100 price=81.5951 amt=8159.51
+[ERROR] 2022-12-06 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-12-06 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-12-06 unfilled_order code=600377.SH reason=below_min_lot
+[ERROR] 2022-12-06 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-12-06 unfilled_order code=603658.SH reason=below_min_lot
+[INFO]  2022-12-06 fill buy 002966.SZ vol=100 price=9.2823 amt=928.23
+[INFO]  2022-12-07 fill sell 600028.SH vol=100 price=18.1952 amt=1819.52
+[ERROR] 2022-12-07 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-12-07 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-12-07 unfilled_order code=600377.SH reason=below_min_lot
+[ERROR] 2022-12-07 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-12-07 fill sell 601998.SH vol=14800 price=8.7735 amt=129847.86
+[ERROR] 2022-12-07 unfilled_order code=603658.SH reason=below_min_lot
+[INFO]  2022-12-07 fill buy 002966.SZ vol=100 price=9.1250 amt=912.50
+[ERROR] 2022-12-07 unfilled_order code=600998.SH reason=below_min_lot
+[INFO]  2022-12-07 fill buy 000425.SZ vol=500 price=219.9311 amt=109965.56
+[ERROR] 2022-12-08 unfilled_order code=000028.SZ reason=below_min_lot
+[INFO]  2022-12-08 fill sell 600998.SH vol=100 price=15.4480 amt=1544.80
+[ERROR] 2022-12-08 unfilled_order code=600377.SH reason=below_min_lot
+[ERROR] 2022-12-08 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-12-08 unfilled_order code=603658.SH reason=below_min_lot
+[INFO]  2022-12-08 fill buy 600028.SH vol=100 price=18.0351 amt=1803.51
+[ERROR] 2022-12-08 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-12-08 fill buy 002966.SZ vol=200 price=9.0766 amt=1815.31
+[ERROR] 2022-12-08 unfilled_order code=000425.SZ reason=below_min_lot
+[INFO]  2022-12-09 fill sell 002966.SZ vol=300 price=9.3966 amt=2818.98
+[ERROR] 2022-12-09 unfilled_order code=000028.SZ reason=below_min_lot
+[INFO]  2022-12-09 fill sell 600998.SH vol=100 price=15.7548 amt=1575.48
+[ERROR] 2022-12-09 unfilled_order code=600377.SH reason=below_min_lot
+[ERROR] 2022-12-09 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-12-09 unfilled_order code=603658.SH reason=below_min_lot
+[INFO]  2022-12-09 fill buy 600028.SH vol=100 price=17.7994 amt=1779.94
+[ERROR] 2022-12-09 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-12-09 unfilled_order code=000425.SZ reason=below_min_lot
+[INFO]  2022-12-12 fill sell 002966.SZ vol=200 price=9.3604 amt=1872.08
+[ERROR] 2022-12-12 unfilled_order code=000028.SZ reason=below_min_lot
+[INFO]  2022-12-12 fill sell 600998.SH vol=100 price=16.1382 amt=1613.82
+[ERROR] 2022-12-12 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-12-12 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-12-12 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-12-12 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-12-12 fill buy 600377.SH vol=100 price=26.4380 amt=2643.80
+[ERROR] 2022-12-12 unfilled_order code=000425.SZ reason=below_min_lot
+[INFO]  2022-12-13 fill sell 000028.SZ vol=100 price=165.1533 amt=16515.33
+[ERROR] 2022-12-13 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-12-13 unfilled_order code=600377.SH reason=below_min_lot
+[ERROR] 2022-12-13 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-12-13 unfilled_order code=603658.SH reason=below_min_lot
+[INFO]  2022-12-13 fill buy 600028.SH vol=100 price=17.6422 amt=1764.22
+[ERROR] 2022-12-13 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-12-13 fill buy 002966.SZ vol=300 price=9.3186 amt=2795.58
+[INFO]  2022-12-13 fill buy 000425.SZ vol=100 price=217.0642 amt=21706.42
+[INFO]  2022-12-14 fill sell 600377.SH vol=100 price=26.6432 amt=2664.32
+[ERROR] 2022-12-14 unfilled_order code=000425.SZ reason=below_min_lot
+[ERROR] 2022-12-14 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-12-14 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-12-14 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-12-14 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-12-14 unfilled_order code=002966.SZ reason=below_min_lot
+[ERROR] 2022-12-14 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-12-14 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-12-15 unfilled_order code=600028.SH reason=below_min_lot
+[INFO]  2022-12-15 fill sell 002966.SZ vol=100 price=9.1792 amt=917.92
+[ERROR] 2022-12-15 unfilled_order code=600377.SH reason=below_min_lot
+[ERROR] 2022-12-15 unfilled_order code=000425.SZ reason=below_min_lot
+[ERROR] 2022-12-15 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-12-15 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-12-15 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-12-15 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-12-15 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-12-16 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-12-16 unfilled_order code=600377.SH reason=below_min_lot
+[ERROR] 2022-12-16 unfilled_order code=000425.SZ reason=below_min_lot
+[ERROR] 2022-12-16 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-12-16 unfilled_order code=603658.SH reason=below_min_lot
+[ERROR] 2022-12-16 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-12-16 fill buy 002966.SZ vol=100 price=9.0766 amt=907.66
+[ERROR] 2022-12-16 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-12-16 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-12-19 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-12-19 unfilled_order code=600377.SH reason=below_min_lot
+[ERROR] 2022-12-19 unfilled_order code=000425.SZ reason=below_min_lot
+[ERROR] 2022-12-19 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-12-19 fill sell 603658.SH vol=1500 price=83.5305 amt=125295.80
+[INFO]  2022-12-19 fill buy 600941.SH vol=100 price=75.6905 amt=7569.05
+[ERROR] 2022-12-19 unfilled_order code=002966.SZ reason=below_min_lot
+[ERROR] 2022-12-19 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-12-19 unfilled_order code=600998.SH reason=below_min_lot
+[INFO]  2022-12-19 fill buy 002327.SZ vol=1400 price=86.5713 amt=121199.78
+[ERROR] 2022-12-20 unfilled_order code=600028.SH reason=below_min_lot
+[INFO]  2022-12-20 fill sell 002966.SZ vol=100 price=8.9377 amt=893.77
+[INFO]  2022-12-20 fill sell 600377.SH vol=100 price=26.3529 amt=2635.29
+[ERROR] 2022-12-20 unfilled_order code=000425.SZ reason=below_min_lot
+[ERROR] 2022-12-20 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-12-20 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-12-20 unfilled_order code=000028.SZ reason=below_min_lot
+[INFO]  2022-12-20 fill buy 600998.SH vol=100 price=14.8861 amt=1488.61
+[ERROR] 2022-12-20 unfilled_order code=002327.SZ reason=below_min_lot
+[ERROR] 2022-12-21 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2022-12-21 unfilled_order code=600377.SH reason=below_min_lot
+[ERROR] 2022-12-21 unfilled_order code=000425.SZ reason=below_min_lot
+[ERROR] 2022-12-21 unfilled_order code=002327.SZ reason=below_min_lot
+[ERROR] 2022-12-21 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-12-21 unfilled_order code=600941.SH reason=below_min_lot
+[INFO]  2022-12-21 fill buy 002966.SZ vol=100 price=8.8708 amt=887.08
+[ERROR] 2022-12-21 unfilled_order code=000028.SZ reason=below_min_lot
+[INFO]  2022-12-21 fill buy 600998.SH vol=200 price=14.5897 amt=2917.94
+[ERROR] 2022-12-22 unfilled_order code=600028.SH reason=below_min_lot
+[INFO]  2022-12-22 fill sell 002966.SZ vol=200 price=8.9980 amt=1799.61
+[ERROR] 2022-12-22 unfilled_order code=600377.SH reason=below_min_lot
+[ERROR] 2022-12-22 unfilled_order code=000425.SZ reason=below_min_lot
+[ERROR] 2022-12-22 unfilled_order code=002327.SZ reason=below_min_lot
+[ERROR] 2022-12-22 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-12-22 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-12-22 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-12-22 unfilled_order code=600998.SH reason=below_min_lot
+[INFO]  2022-12-23 fill sell 600028.SH vol=100 price=17.0580 amt=1705.80
+[ERROR] 2022-12-23 unfilled_order code=600941.SH reason=below_min_lot
+[ERROR] 2022-12-23 unfilled_order code=600377.SH reason=below_min_lot
+[ERROR] 2022-12-23 unfilled_order code=000425.SZ reason=below_min_lot
+[ERROR] 2022-12-23 unfilled_order code=002327.SZ reason=below_min_lot
+[ERROR] 2022-12-23 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-12-23 unfilled_order code=002966.SZ reason=below_min_lot
+[INFO]  2022-12-23 fill buy 000028.SZ vol=100 price=138.4449 amt=13844.49
+[INFO]  2022-12-23 fill buy 600998.SH vol=100 price=14.4031 amt=1440.31
+[ERROR] 2022-12-26 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-12-26 fill sell 600028.SH vol=7300 price=17.0972 amt=124809.52
+[INFO]  2022-12-26 fill sell 600941.SH vol=1700 price=73.4144 amt=124804.42
+[INFO]  2022-12-26 fill buy 002966.SZ vol=1900 price=8.8587 amt=16831.59
+[INFO]  2022-12-26 fill buy 000028.SZ vol=100 price=141.2363 amt=14123.63
+[INFO]  2022-12-26 fill buy 600998.SH vol=1000 price=14.7324 amt=14732.43
+[INFO]  2022-12-26 fill buy 600377.SH vol=600 price=25.9209 amt=15552.52
+[ERROR] 2022-12-26 unfilled_order code=000425.SZ reason=below_min_lot
+[INFO]  2022-12-26 fill buy 002327.SZ vol=200 price=83.4505 amt=16690.11
+[INFO]  2022-12-26 fill buy 002515.SZ vol=2500 price=54.6469 amt=136617.28
+[INFO]  2022-12-27 fill sell 002966.SZ vol=2100 price=8.9739 amt=18845.16
+[INFO]  2022-12-27 fill sell 000028.SZ vol=100 price=140.1641 amt=14016.41
+[INFO]  2022-12-27 fill sell 600998.SH vol=1100 price=14.5715 amt=16028.68
+[INFO]  2022-12-27 fill sell 600377.SH vol=700 price=26.1916 amt=18334.15
+[ERROR] 2022-12-27 unfilled_order code=000425.SZ reason=below_min_lot
+[INFO]  2022-12-27 fill sell 002327.SZ vol=100 price=84.2066 amt=8420.66
+[INFO]  2022-12-27 fill sell 002515.SZ vol=100 price=52.2099 amt=5220.99
+[ERROR] 2022-12-27 unfilled_order code=600068.SH reason=suspended
+[INFO]  2022-12-27 fill buy 000423.SZ vol=200 price=438.9215 amt=87784.30
+[INFO]  2022-12-28 fill sell 002966.SZ vol=200 price=9.1067 amt=1821.35
+[ERROR] 2022-12-28 unfilled_order code=600377.SH reason=below_min_lot
+[ERROR] 2022-12-28 unfilled_order code=000425.SZ reason=below_min_lot
+[ERROR] 2022-12-28 unfilled_order code=002327.SZ reason=below_min_lot
+[INFO]  2022-12-28 fill sell 002515.SZ vol=100 price=52.7641 amt=5276.41
+[ERROR] 2022-12-28 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-12-28 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-12-28 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-12-28 unfilled_order code=000423.SZ reason=below_min_lot
+[INFO]  2022-12-29 fill sell 002966.SZ vol=500 price=9.3725 amt=4686.23
+[ERROR] 2022-12-29 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-12-29 unfilled_order code=600377.SH reason=below_min_lot
+[ERROR] 2022-12-29 unfilled_order code=000425.SZ reason=below_min_lot
+[ERROR] 2022-12-29 unfilled_order code=002327.SZ reason=below_min_lot
+[ERROR] 2022-12-29 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-12-29 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-12-29 unfilled_order code=002515.SZ reason=below_min_lot
+[ERROR] 2022-12-29 unfilled_order code=000423.SZ reason=below_min_lot
+[ERROR] 2022-12-30 unfilled_order code=002966.SZ reason=below_min_lot
+[ERROR] 2022-12-30 unfilled_order code=000028.SZ reason=below_min_lot
+[ERROR] 2022-12-30 unfilled_order code=600998.SH reason=below_min_lot
+[ERROR] 2022-12-30 unfilled_order code=600377.SH reason=below_min_lot
+[ERROR] 2022-12-30 unfilled_order code=000425.SZ reason=below_min_lot
+[ERROR] 2022-12-30 unfilled_order code=600068.SH reason=suspended
+[ERROR] 2022-12-30 unfilled_order code=002327.SZ reason=below_min_lot
+[ERROR] 2022-12-30 unfilled_order code=002515.SZ reason=below_min_lot
+[ERROR] 2022-12-30 unfilled_order code=000423.SZ reason=below_min_lot

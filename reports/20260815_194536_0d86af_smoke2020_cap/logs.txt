@@ -1,0 +1,667 @@
+[WARN] SHORT_SAMPLE_PERIOD requested=2020-01-01..2020-12-31 actual=2020-01-02..2020-12-31 trading_days=243 message="样本期约 11.6 个月，仅用于 MVP 管线验证，不可作为策略最终定论"
+[WARN] BENCHMARK_DISABLED reason="benchmark 数据不可用"
+[WARN] SECTOR_HEAT_MODE_ZERO message="sector_heat_mode=zero, sector score forced to 0"
+
+[INFO]  2020-01-03 fill buy 600028.SH vol=7700 price=16.1144 amt=124081.19
+[INFO]  2020-01-03 fill buy 000429.SZ vol=4200 price=29.6930 amt=124710.76
+[INFO]  2020-01-03 fill buy 600820.SH vol=1100 price=112.5047 amt=123755.14
+[INFO]  2020-01-03 fill buy 600039.SH vol=4600 price=26.6760 amt=122709.53
+[INFO]  2020-01-03 fill buy 000709.SZ vol=4700 price=26.4603 amt=124363.19
+[INFO]  2020-01-03 fill buy 600834.SH vol=4200 price=29.4067 amt=123507.95
+[INFO]  2020-01-03 fill buy 000685.SZ vol=1000 price=118.9346 amt=118934.65
+[INFO]  2020-01-03 fill buy 600873.SH vol=4100 price=30.2177 amt=123892.38
+[INFO]  2020-01-03 hold
+[INFO]  2020-01-06 hold
+[INFO]  2020-01-07 hold
+[INFO]  2020-01-08 hold
+[INFO]  2020-01-09 hold
+[INFO]  2020-01-10 hold
+[INFO]  2020-01-13 hold
+[INFO]  2020-01-14 hold
+[INFO]  2020-01-15 hold
+[INFO]  2020-01-16 hold
+[INFO]  2020-01-17 hold
+[INFO]  2020-01-20 hold
+[INFO]  2020-01-21 hold
+[INFO]  2020-01-22 hold
+[ERROR] 2020-02-03 unfilled_order code=000429.SZ reason=below_min_lot
+[ERROR] 2020-02-03 unfilled_order code=600039.SH reason=below_min_lot
+[ERROR] 2020-02-03 unfilled_order code=600834.SH reason=limit_down_at_open
+[ERROR] 2020-02-03 unfilled_order code=600028.SH reason=below_min_lot
+[ERROR] 2020-02-03 unfilled_order code=600820.SH reason=below_min_lot
+[INFO]  2020-02-03 fill buy 000709.SZ vol=100 price=21.9995 amt=2199.95
+[ERROR] 2020-02-03 unfilled_order code=000685.SZ reason=below_min_lot
+[ERROR] 2020-02-03 unfilled_order code=600873.SH reason=below_min_lot
+[INFO]  2020-02-03 fill buy 600135.SH vol=5800 price=20.2450 amt=117420.73
+[INFO]  max_position_pct capped 2 weights to 0.20 (cash kept)
+[INFO]  2020-02-04 fill sell 600028.SH vol=7700 price=14.1920 amt=109278.69
+[INFO]  2020-02-04 fill sell 000429.SZ vol=4200 price=26.5461 amt=111493.73
+[INFO]  2020-02-04 fill sell 600820.SH vol=1100 price=91.6831 amt=100851.40
+[INFO]  2020-02-04 fill sell 600039.SH vol=4600 price=23.2949 amt=107156.31
+[INFO]  2020-02-04 fill sell 000709.SZ vol=4800 price=21.0450 amt=101015.84
+[INFO]  2020-02-04 fill sell 600834.SH vol=4200 price=23.1178 amt=97094.92
+[INFO]  2020-02-04 fill sell 000685.SZ vol=1000 price=105.2409 amt=105240.91
+[INFO]  2020-02-04 fill sell 600873.SH vol=4100 price=25.8966 amt=106176.26
+[INFO]  2020-02-04 fill buy 600135.SH vol=2700 price=20.4737 amt=55279.01
+[INFO]  2020-02-04 fill buy 601607.SH vol=800 price=195.6131 amt=156490.51
+[INFO]  max_position_pct capped 3 weights to 0.20 (cash kept)
+[INFO]  2020-02-05 fill sell 600135.SH vol=700 price=23.0297 amt=16120.80
+[ERROR] 2020-02-05 unfilled_order code=601607.SH reason=below_min_lot
+[INFO]  2020-02-05 fill buy 002661.SZ vol=3800 price=44.5430 amt=169263.47
+[INFO]  2020-02-06 fill sell 600135.SH vol=2400 price=23.5148 amt=56435.63
+[INFO]  2020-02-06 fill sell 601607.SH vol=100 price=201.8254 amt=20182.54
+[INFO]  2020-02-06 fill sell 002661.SZ vol=1000 price=44.8245 amt=44824.47
+[INFO]  2020-02-06 fill buy 002275.SZ vol=5300 price=23.8285 amt=126290.82
+[INFO]  2020-02-06 fill buy 002737.SZ vol=1600 price=76.2257 amt=121961.14
+[INFO]  2020-02-06 fill buy 002352.SZ vol=800 price=146.8794 amt=117503.52
+[INFO]  2020-02-06 fill buy 002900.SZ vol=5800 price=21.4654 amt=124499.18
+[INFO]  2020-02-06 hold
+[INFO]  2020-02-10 fill sell 600135.SH vol=800 price=24.5422 amt=19633.75
+[INFO]  2020-02-10 fill sell 601607.SH vol=100 price=196.1793 amt=19617.93
+[INFO]  2020-02-10 fill sell 002661.SZ vol=400 price=49.1015 amt=19640.59
+[INFO]  2020-02-10 fill sell 002275.SZ vol=500 price=23.3178 amt=11658.90
+[ERROR] 2020-02-10 unfilled_order code=002737.SZ reason=below_min_lot
+[ERROR] 2020-02-10 unfilled_order code=002352.SZ reason=below_min_lot
+[INFO]  2020-02-10 fill sell 002900.SZ vol=500 price=20.9273 amt=10463.63
+[INFO]  2020-02-10 fill buy 000028.SZ vol=500 price=221.0344 amt=110517.21
+[ERROR] 2020-02-11 unfilled_order code=002352.SZ reason=below_min_lot
+[INFO]  2020-02-11 fill sell 000028.SZ vol=500 price=200.8970 amt=100448.50
+[INFO]  2020-02-11 fill buy 600135.SH vol=300 price=24.5627 amt=7368.82
+[ERROR] 2020-02-11 unfilled_order code=601607.SH reason=below_min_lot
+[INFO]  2020-02-11 fill buy 002661.SZ vol=200 price=47.3776 amt=9475.51
+[INFO]  2020-02-11 fill buy 002275.SZ vol=500 price=23.1822 amt=11591.10
+[INFO]  2020-02-11 fill buy 002737.SZ vol=100 price=70.5531 amt=7055.31
+[INFO]  2020-02-11 fill buy 002900.SZ vol=700 price=20.3929 amt=14275.03
+[INFO]  2020-02-11 hold
+[INFO]  2020-02-12 hold
+[INFO]  2020-02-14 fill sell 002737.SZ vol=1700 price=67.1392 amt=114136.65
+[INFO]  2020-02-14 fill sell 002900.SZ vol=6000 price=19.5694 amt=117416.32
+[INFO]  2020-02-14 fill buy 600135.SH vol=1700 price=25.8209 amt=43895.52
+[INFO]  2020-02-14 fill buy 601607.SH vol=200 price=198.7775 amt=39755.49
+[INFO]  2020-02-14 fill buy 002661.SZ vol=1000 price=46.7364 amt=46736.43
+[INFO]  2020-02-14 fill buy 002275.SZ vol=2200 price=22.6685 amt=49870.74
+[INFO]  2020-02-14 fill buy 002352.SZ vol=300 price=148.6440 amt=44593.21
+[INFO]  2020-02-14 hold
+[INFO]  2020-02-17 hold
+[INFO]  2020-02-18 hold
+[INFO]  2020-02-20 fill sell 600135.SH vol=800 price=24.9132 amt=19930.54
+[ERROR] 2020-02-20 unfilled_order code=601607.SH reason=below_min_lot
+[INFO]  2020-02-20 fill sell 002661.SZ vol=600 price=48.3606 amt=29016.35
+[INFO]  2020-02-20 fill sell 002275.SZ vol=1100 price=22.7721 amt=25049.27
+[INFO]  2020-02-20 fill sell 002352.SZ vol=200 price=161.1927 amt=32238.55
+[INFO]  2020-02-20 fill buy 002415.SZ vol=100 price=780.8707 amt=78087.07
+[INFO]  2020-02-20 hold
+[INFO]  2020-02-21 hold
+[INFO]  2020-02-24 hold
+[INFO]  2020-02-25 hold
+[INFO]  2020-02-26 hold
+[INFO]  2020-02-27 hold
+[INFO]  max_position_pct capped 4 weights to 0.20 (cash kept)
+[INFO]  2020-03-02 fill sell 601607.SH vol=800 price=179.1452 amt=143316.14
+[INFO]  2020-03-02 fill sell 002415.SZ vol=100 price=717.1871 amt=71718.71
+[INFO]  2020-03-02 fill buy 600135.SH vol=1900 price=22.3038 amt=42377.15
+[INFO]  2020-03-02 fill buy 002661.SZ vol=200 price=53.5866 amt=10717.32
+[INFO]  2020-03-02 fill buy 002275.SZ vol=900 price=23.6628 amt=21296.48
+[INFO]  2020-03-02 fill buy 002352.SZ vol=100 price=170.7192 amt=17071.92
+[INFO]  2020-03-03 fill sell 600135.SH vol=1300 price=23.5434 amt=30606.40
+[INFO]  2020-03-03 fill sell 002661.SZ vol=400 price=53.8837 amt=21553.46
+[INFO]  2020-03-03 fill sell 002275.SZ vol=1100 price=23.7808 amt=26158.93
+[INFO]  2020-03-03 fill sell 002352.SZ vol=100 price=175.5923 amt=17559.23
+[INFO]  2020-03-03 fill buy 600039.SH vol=4700 price=30.4758 amt=143236.08
+[INFO]  2020-03-03 fill buy 600881.SH vol=800 price=162.9585 amt=130366.83
+[INFO]  2020-03-04 fill sell 600135.SH vol=1000 price=23.0297 amt=23029.71
+[INFO]  2020-03-04 fill sell 002661.SZ vol=500 price=60.3497 amt=30174.85
+[INFO]  2020-03-04 fill sell 002275.SZ vol=900 price=23.3343 amt=21000.90
+[INFO]  2020-03-04 fill sell 002352.SZ vol=100 price=166.7868 amt=16678.68
+[INFO]  2020-03-04 fill sell 600039.SH vol=600 price=29.7957 amt=17877.44
+[ERROR] 2020-03-04 unfilled_order code=600881.SH reason=below_min_lot
+[INFO]  2020-03-04 fill buy 002694.SZ vol=8500 price=14.5582 amt=123744.56
+[INFO]  2020-03-05 fill sell 600135.SH vol=600 price=23.5719 amt=14143.15
+[INFO]  2020-03-05 fill sell 002661.SZ vol=400 price=59.0363 amt=23614.52
+[INFO]  2020-03-05 fill sell 002275.SZ vol=500 price=23.3178 amt=11658.90
+[INFO]  2020-03-05 fill sell 002352.SZ vol=100 price=167.4775 amt=16747.75
+[INFO]  2020-03-05 fill sell 600039.SH vol=400 price=30.8792 amt=12351.69
+[INFO]  2020-03-05 fill sell 600881.SH vol=100 price=162.6329 amt=16263.29
+[INFO]  2020-03-05 fill sell 002694.SZ vol=1200 price=14.6928 amt=17631.36
+[INFO]  2020-03-05 fill buy 600873.SH vol=3400 price=32.0187 amt=108863.60
+[INFO]  2020-03-05 hold
+[INFO]  2020-03-06 hold
+[INFO]  2020-03-09 hold
+[INFO]  2020-03-10 hold
+[INFO]  2020-03-11 hold
+[INFO]  2020-03-13 fill sell 600135.SH vol=200 price=21.4887 amt=4297.74
+[INFO]  2020-03-13 fill sell 002275.SZ vol=100 price=21.5318 amt=2153.18
+[ERROR] 2020-03-13 unfilled_order code=002352.SZ reason=below_min_lot
+[ERROR] 2020-03-13 unfilled_order code=600881.SH reason=below_min_lot
+[ERROR] 2020-03-13 unfilled_order code=600873.SH reason=below_min_lot
+[INFO]  2020-03-13 fill sell 600039.SH vol=3700 price=27.0096 amt=99935.68
+[INFO]  2020-03-13 fill buy 002661.SZ vol=100 price=48.2212 amt=4822.12
+[INFO]  2020-03-13 fill buy 002694.SZ vol=100 price=13.0409 amt=1304.09
+[INFO]  2020-03-13 fill buy 600475.SH vol=3900 price=25.8050 amt=100639.57
+[ERROR] 2020-03-16 unfilled_order code=600135.SH reason=below_min_lot
+[ERROR] 2020-03-16 unfilled_order code=002275.SZ reason=below_min_lot
+[ERROR] 2020-03-16 unfilled_order code=002352.SZ reason=below_min_lot
+[ERROR] 2020-03-16 unfilled_order code=600475.SH reason=below_min_lot
+[INFO]  2020-03-16 fill sell 600881.SH vol=700 price=149.9785 amt=104984.96
+[INFO]  2020-03-16 fill sell 600873.SH vol=3400 price=29.0255 amt=98686.87
+[ERROR] 2020-03-16 unfilled_order code=002661.SZ reason=below_min_lot
+[ERROR] 2020-03-16 unfilled_order code=002694.SZ reason=below_min_lot
+[INFO]  2020-03-16 fill buy 002872.SZ vol=10900 price=9.1479 amt=99712.60
+[INFO]  2020-03-16 fill buy 000019.SZ vol=3600 price=27.4384 amt=98778.39
+[INFO]  2020-03-17 fill sell 002694.SZ vol=7400 price=12.8102 amt=94795.19
+[INFO]  2020-03-17 fill buy 600135.SH vol=700 price=21.1600 amt=14811.99
+[INFO]  2020-03-17 fill buy 002661.SZ vol=200 price=49.4360 amt=9887.20
+[INFO]  2020-03-17 fill buy 002275.SZ vol=400 price=21.5749 amt=8629.94
+[ERROR] 2020-03-17 unfilled_order code=002352.SZ reason=below_min_lot
+[INFO]  2020-03-17 fill buy 600475.SH vol=300 price=25.7795 amt=7733.84
+[INFO]  2020-03-17 fill buy 002872.SZ vol=1100 price=9.1479 amt=10062.74
+[INFO]  2020-03-17 fill buy 000019.SZ vol=700 price=26.2455 amt=18371.83
+[INFO]  2020-03-18 fill sell 600475.SH vol=100 price=27.6403 amt=2764.03
+[INFO]  2020-03-18 fill sell 002275.SZ vol=5100 price=21.3333 amt=108799.86
+[ERROR] 2020-03-18 unfilled_order code=600135.SH reason=below_min_lot
+[ERROR] 2020-03-18 unfilled_order code=002661.SZ reason=below_min_lot
+[ERROR] 2020-03-18 unfilled_order code=002352.SZ reason=below_min_lot
+[INFO]  2020-03-18 fill buy 002872.SZ vol=600 price=8.8587 amt=5315.25
+[ERROR] 2020-03-18 unfilled_order code=000019.SZ reason=below_min_lot
+[INFO]  2020-03-18 fill buy 000598.SZ vol=900 price=121.0451 amt=108940.58
+[ERROR] 2020-03-19 unfilled_order code=600135.SH reason=below_min_lot
+[ERROR] 2020-03-19 unfilled_order code=600475.SH reason=below_min_lot
+[INFO]  2020-03-19 fill sell 000019.SZ vol=4300 price=24.2224 amt=104156.29
+[ERROR] 2020-03-19 unfilled_order code=002661.SZ reason=below_min_lot
+[ERROR] 2020-03-19 unfilled_order code=002352.SZ reason=below_min_lot
+[INFO]  2020-03-19 fill buy 002872.SZ vol=100 price=8.2956 amt=829.56
+[ERROR] 2020-03-19 unfilled_order code=000598.SZ reason=below_min_lot
+[INFO]  2020-03-19 fill buy 002772.SZ vol=6800 price=15.7638 amt=107193.89
+[ERROR] 2020-03-20 unfilled_order code=600135.SH reason=below_min_lot
+[ERROR] 2020-03-20 unfilled_order code=600475.SH reason=below_min_lot
+[ERROR] 2020-03-20 unfilled_order code=002772.SZ reason=below_min_lot
+[INFO]  2020-03-20 fill sell 002872.SZ vol=12700 price=8.4005 amt=106686.46
+[ERROR] 2020-03-20 unfilled_order code=002661.SZ reason=below_min_lot
+[ERROR] 2020-03-20 unfilled_order code=002352.SZ reason=below_min_lot
+[ERROR] 2020-03-20 unfilled_order code=000598.SZ reason=below_min_lot
+[INFO]  2020-03-20 fill buy 601086.SH vol=17900 price=6.1036 amt=109255.12
+[INFO]  2020-03-23 fill sell 600135.SH vol=700 price=20.8323 amt=14582.63
+[INFO]  2020-03-23 fill sell 002661.SZ vol=100 price=46.9461 amt=4694.61
+[ERROR] 2020-03-23 unfilled_order code=002352.SZ reason=below_min_lot
+[INFO]  2020-03-23 fill sell 600475.SH vol=600 price=27.4619 amt=16477.12
+[ERROR] 2020-03-23 unfilled_order code=000598.SZ reason=below_min_lot
+[INFO]  2020-03-23 fill sell 002772.SZ vol=700 price=15.1840 amt=10628.80
+[INFO]  2020-03-23 fill sell 601086.SH vol=2400 price=5.8814 amt=14115.34
+[INFO]  2020-03-23 fill buy 002899.SZ vol=6800 price=14.1530 amt=96240.61
+[INFO]  2020-03-23 hold
+[INFO]  2020-03-25 fill sell 601086.SH vol=15500 price=5.4928 amt=85138.42
+[INFO]  2020-03-25 fill buy 600135.SH vol=200 price=23.0472 amt=4609.44
+[ERROR] 2020-03-25 unfilled_order code=002661.SZ reason=below_min_lot
+[ERROR] 2020-03-25 unfilled_order code=002352.SZ reason=below_min_lot
+[INFO]  2020-03-25 fill buy 600475.SH vol=200 price=29.5608 amt=5912.16
+[ERROR] 2020-03-25 unfilled_order code=000598.SZ reason=below_min_lot
+[INFO]  2020-03-25 fill buy 002772.SZ vol=1100 price=15.5102 amt=17061.26
+[INFO]  2020-03-25 fill buy 002899.SZ vol=800 price=14.8097 amt=11847.73
+[INFO]  2020-03-25 hold
+[INFO]  2020-03-27 fill sell 600135.SH vol=300 price=22.1736 amt=6652.08
+[INFO]  2020-03-27 fill sell 002661.SZ vol=200 price=53.6479 amt=10729.58
+[ERROR] 2020-03-27 unfilled_order code=002352.SZ reason=below_min_lot
+[INFO]  2020-03-27 fill sell 600475.SH vol=400 price=31.1081 amt=12443.26
+[ERROR] 2020-03-27 unfilled_order code=000598.SZ reason=below_min_lot
+[INFO]  2020-03-27 fill sell 002772.SZ vol=1400 price=17.2507 amt=24151.00
+[INFO]  2020-03-27 fill sell 002899.SZ vol=200 price=13.5098 amt=2701.95
+[INFO]  2020-03-27 fill buy 000582.SZ vol=2200 price=44.9291 amt=98843.93
+[INFO]  2020-03-27 hold
+[ERROR] 2020-03-31 unfilled_order code=002352.SZ reason=below_min_lot
+[INFO]  2020-03-31 fill sell 002899.SZ vol=7400 price=12.8343 amt=94973.59
+[INFO]  2020-03-31 fill buy 600135.SH vol=700 price=21.7319 amt=15212.31
+[ERROR] 2020-03-31 unfilled_order code=002661.SZ reason=below_min_lot
+[INFO]  2020-03-31 fill buy 600475.SH vol=300 price=30.6850 amt=9205.49
+[ERROR] 2020-03-31 unfilled_order code=000598.SZ reason=below_min_lot
+[INFO]  2020-03-31 fill buy 002772.SZ vol=1000 price=16.1019 amt=16101.91
+[INFO]  2020-03-31 fill buy 000582.SZ vol=300 price=44.2578 amt=13277.33
+[INFO]  2020-03-31 hold
+[INFO]  2020-04-01 hold
+[INFO]  2020-04-02 hold
+[INFO]  2020-04-03 hold
+[INFO]  2020-04-08 fill sell 600135.SH vol=500 price=21.6028 amt=10801.42
+[INFO]  2020-04-08 fill sell 002661.SZ vol=200 price=59.2047 amt=11840.93
+[INFO]  2020-04-08 fill sell 002352.SZ vol=100 price=168.0990 amt=16809.90
+[INFO]  2020-04-08 fill sell 600475.SH vol=100 price=28.9663 amt=2896.63
+[ERROR] 2020-04-08 unfilled_order code=000598.SZ reason=below_min_lot
+[INFO]  2020-04-08 fill sell 002772.SZ vol=900 price=16.9976 amt=15297.88
+[INFO]  2020-04-08 fill sell 000582.SZ vol=200 price=44.6957 amt=8939.15
+[INFO]  2020-04-08 fill buy 300218.SZ vol=5200 price=18.9991 amt=98795.22
+[INFO]  2020-04-08 hold
+[INFO]  2020-04-09 hold
+[INFO]  2020-04-10 hold
+[INFO]  2020-04-14 fill sell 600135.SH vol=200 price=21.9167 amt=4383.35
+[ERROR] 2020-04-14 unfilled_order code=002661.SZ reason=below_min_lot
+[ERROR] 2020-04-14 unfilled_order code=002352.SZ reason=below_min_lot
+[ERROR] 2020-04-14 unfilled_order code=000598.SZ reason=below_min_lot
+[INFO]  2020-04-14 fill sell 000582.SZ vol=100 price=45.2700 amt=4527.00
+[INFO]  2020-04-14 fill sell 300218.SZ vol=5200 price=17.2546 amt=89724.02
+[ERROR] 2020-04-14 unfilled_order code=600475.SH reason=below_min_lot
+[INFO]  2020-04-14 fill buy 002772.SZ vol=400 price=15.2778 amt=6111.12
+[INFO]  2020-04-14 fill buy 002809.SZ vol=3300 price=29.1399 amt=96161.64
+[INFO]  2020-04-14 hold
+[INFO]  2020-04-15 hold
+[INFO]  2020-04-16 hold
+[INFO]  2020-04-17 hold
+[INFO]  2020-04-20 hold
+[INFO]  2020-04-21 hold
+[INFO]  2020-04-22 hold
+[INFO]  2020-04-23 hold
+[INFO]  2020-04-24 hold
+[INFO]  2020-04-28 fill sell 002661.SZ vol=100 price=62.8418 amt=6284.18
+[ERROR] 2020-04-28 unfilled_order code=000598.SZ reason=below_min_lot
+[ERROR] 2020-04-28 unfilled_order code=000582.SZ reason=below_min_lot
+[INFO]  2020-04-28 fill sell 002809.SZ vol=300 price=32.7361 amt=9820.82
+[INFO]  2020-04-28 fill sell 600135.SH vol=4500 price=20.5755 amt=92589.71
+[ERROR] 2020-04-28 unfilled_order code=002352.SZ reason=below_min_lot
+[INFO]  2020-04-28 fill buy 600475.SH vol=100 price=27.1336 amt=2713.36
+[ERROR] 2020-04-28 unfilled_order code=002772.SZ reason=below_min_lot
+[ERROR] 2020-04-28 unfilled_order code=600519.SH reason=below_min_lot
+[ERROR] 2020-04-29 unfilled_order code=002661.SZ reason=below_min_lot
+[ERROR] 2020-04-29 unfilled_order code=002352.SZ reason=below_min_lot
+[ERROR] 2020-04-29 unfilled_order code=000598.SZ reason=below_min_lot
+[INFO]  2020-04-29 fill sell 002772.SZ vol=200 price=16.0908 amt=3218.16
+[ERROR] 2020-04-29 unfilled_order code=000582.SZ reason=below_min_lot
+[INFO]  2020-04-29 fill buy 600475.SH vol=100 price=26.8270 amt=2682.70
+[INFO]  2020-04-29 fill buy 002809.SZ vol=100 price=31.6939 amt=3169.39
+[INFO]  2020-04-29 fill buy 002327.SZ vol=1400 price=68.9981 amt=96597.29
+[INFO]  2020-04-30 fill sell 600475.SH vol=100 price=27.8953 amt=2789.53
+[ERROR] 2020-04-30 unfilled_order code=000598.SZ reason=below_min_lot
+[ERROR] 2020-04-30 unfilled_order code=000582.SZ reason=below_min_lot
+[ERROR] 2020-04-30 unfilled_order code=002809.SZ reason=below_min_lot
+[INFO]  2020-04-30 fill sell 002661.SZ vol=1600 price=62.7745 amt=100439.15
+[ERROR] 2020-04-30 unfilled_order code=002352.SZ reason=below_min_lot
+[ERROR] 2020-04-30 unfilled_order code=002772.SZ reason=below_min_lot
+[ERROR] 2020-04-30 unfilled_order code=002327.SZ reason=below_min_lot
+[INFO]  2020-04-30 fill buy 002039.SZ vol=2700 price=35.3820 amt=95531.39
+[ERROR] 2020-05-06 unfilled_order code=600475.SH reason=below_min_lot
+[ERROR] 2020-05-06 unfilled_order code=000598.SZ reason=below_min_lot
+[INFO]  2020-05-06 fill sell 000582.SZ vol=100 price=47.2320 amt=4723.20
+[INFO]  2020-05-06 fill sell 002352.SZ vol=600 price=161.2848 amt=96770.89
+[ERROR] 2020-05-06 unfilled_order code=002772.SZ reason=below_min_lot
+[ERROR] 2020-05-06 unfilled_order code=002809.SZ reason=below_min_lot
+[ERROR] 2020-05-06 unfilled_order code=002327.SZ reason=below_min_lot
+[ERROR] 2020-05-06 unfilled_order code=002039.SZ reason=below_min_lot
+[INFO]  2020-05-06 fill buy 600153.SH vol=700 price=126.2729 amt=88391.01
+[INFO]  2020-05-06 hold
+[INFO]  2020-05-07 hold
+[INFO]  2020-05-08 hold
+[INFO]  2020-05-11 hold
+[INFO]  2020-05-12 hold
+[INFO]  2020-05-13 hold
+[INFO]  2020-05-14 hold
+[INFO]  2020-05-15 hold
+[INFO]  2020-05-18 hold
+[INFO]  2020-05-19 hold
+[INFO]  2020-05-20 hold
+[INFO]  2020-05-21 hold
+[INFO]  2020-05-22 hold
+[INFO]  2020-05-25 hold
+[INFO]  2020-05-26 hold
+[INFO]  2020-05-27 hold
+[INFO]  2020-05-28 hold
+[INFO]  2020-05-29 hold
+[INFO]  2020-06-01 hold
+[INFO]  2020-06-02 hold
+[INFO]  2020-06-03 hold
+[INFO]  2020-06-04 hold
+[INFO]  2020-06-05 hold
+[INFO]  2020-06-08 hold
+[INFO]  2020-06-09 hold
+[INFO]  2020-06-11 fill sell 002772.SZ vol=400 price=18.7340 amt=7493.62
+[ERROR] 2020-06-11 unfilled_order code=002809.SZ reason=below_min_lot
+[INFO]  2020-06-11 fill sell 600475.SH vol=3600 price=29.4507 amt=106022.66
+[ERROR] 2020-06-11 unfilled_order code=000598.SZ reason=below_min_lot
+[ERROR] 2020-06-11 unfilled_order code=000582.SZ reason=below_min_lot
+[ERROR] 2020-06-11 unfilled_order code=002327.SZ reason=below_min_lot
+[ERROR] 2020-06-11 unfilled_order code=002039.SZ reason=below_min_lot
+[ERROR] 2020-06-11 unfilled_order code=600153.SH reason=below_min_lot
+[INFO]  2020-06-11 fill buy 600301.SH vol=8700 price=12.1512 amt=105715.54
+[INFO]  2020-06-11 hold
+[INFO]  2020-06-12 hold
+[INFO]  2020-06-16 fill sell 600301.SH vol=300 price=12.3208 amt=3696.25
+[INFO]  2020-06-16 fill sell 000598.SZ vol=900 price=114.6545 amt=103189.05
+[INFO]  2020-06-16 fill buy 002772.SZ vol=100 price=17.7263 amt=1772.63
+[ERROR] 2020-06-16 unfilled_order code=000582.SZ reason=below_min_lot
+[ERROR] 2020-06-16 unfilled_order code=002809.SZ reason=below_min_lot
+[ERROR] 2020-06-16 unfilled_order code=002327.SZ reason=below_min_lot
+[ERROR] 2020-06-16 unfilled_order code=002039.SZ reason=below_min_lot
+[ERROR] 2020-06-16 unfilled_order code=600153.SH reason=below_min_lot
+[INFO]  2020-06-16 fill buy 600976.SH vol=2000 price=49.3920 amt=98784.09
+[ERROR] 2020-06-17 unfilled_order code=000582.SZ reason=below_min_lot
+[ERROR] 2020-06-17 unfilled_order code=002809.SZ reason=below_min_lot
+[INFO]  2020-06-17 fill sell 002772.SZ vol=5800 price=17.8399 amt=103471.55
+[ERROR] 2020-06-17 unfilled_order code=002327.SZ reason=below_min_lot
+[ERROR] 2020-06-17 unfilled_order code=002039.SZ reason=below_min_lot
+[ERROR] 2020-06-17 unfilled_order code=600153.SH reason=below_min_lot
+[ERROR] 2020-06-17 unfilled_order code=600301.SH reason=below_min_lot
+[INFO]  2020-06-17 fill buy 600976.SH vol=100 price=49.8845 amt=4988.45
+[INFO]  2020-06-17 fill buy 603968.SH vol=3200 price=32.3393 amt=103485.78
+[INFO]  2020-06-17 hold
+[INFO]  2020-06-18 hold
+[INFO]  2020-06-19 hold
+[INFO]  2020-06-22 hold
+[INFO]  2020-06-23 hold
+[ERROR] 2020-06-29 unfilled_order code=002809.SZ reason=below_min_lot
+[INFO]  2020-06-29 fill sell 002039.SZ vol=100 price=41.4220 amt=4142.20
+[ERROR] 2020-06-29 unfilled_order code=600976.SH reason=below_min_lot
+[INFO]  2020-06-29 fill sell 000582.SZ vol=2100 price=52.9134 amt=111118.19
+[INFO]  2020-06-29 fill buy 002327.SZ vol=100 price=69.6146 amt=6961.46
+[ERROR] 2020-06-29 unfilled_order code=600153.SH reason=below_min_lot
+[INFO]  2020-06-29 fill buy 600301.SH vol=300 price=12.0629 amt=3618.87
+[INFO]  2020-06-29 fill buy 603968.SH vol=100 price=31.6721 amt=3167.21
+[INFO]  2020-06-29 fill buy 600642.SH vol=1900 price=53.5504 amt=101745.76
+[INFO]  2020-06-29 hold
+[INFO]  2020-06-30 hold
+[INFO]  2020-07-01 hold
+[INFO]  2020-07-02 hold
+[INFO]  2020-07-03 hold
+[INFO]  2020-07-06 hold
+[INFO]  2020-07-07 hold
+[INFO]  2020-07-08 hold
+[INFO]  2020-07-09 hold
+[INFO]  2020-07-10 hold
+[INFO]  2020-07-14 fill sell 600976.SH vol=300 price=70.0196 amt=21005.88
+[INFO]  2020-07-14 fill sell 603968.SH vol=100 price=38.3312 amt=3833.12
+[INFO]  2020-07-14 fill sell 002809.SZ vol=3100 price=39.7007 amt=123072.12
+[ERROR] 2020-07-14 unfilled_order code=002327.SZ reason=below_min_lot
+[INFO]  2020-07-14 fill buy 002039.SZ vol=100 price=43.6737 amt=4367.37
+[ERROR] 2020-07-14 unfilled_order code=600153.SH reason=below_min_lot
+[INFO]  2020-07-14 fill buy 600301.SH vol=1600 price=11.4624 amt=18339.85
+[INFO]  2020-07-14 fill buy 600642.SH vol=200 price=54.6340 amt=10926.81
+[INFO]  2020-07-14 fill buy 600969.SH vol=8500 price=14.0038 amt=119032.07
+[INFO]  2020-07-14 hold
+[INFO]  2020-07-15 hold
+[INFO]  2020-07-16 hold
+[INFO]  2020-07-17 hold
+[INFO]  2020-07-20 hold
+[INFO]  2020-07-21 hold
+[INFO]  2020-07-22 hold
+[INFO]  2020-07-23 hold
+[INFO]  2020-07-24 hold
+[ERROR] 2020-07-28 unfilled_order code=600976.SH reason=below_min_lot
+[ERROR] 2020-07-28 unfilled_order code=603968.SH reason=below_min_lot
+[ERROR] 2020-07-28 unfilled_order code=600969.SH reason=below_min_lot
+[INFO]  2020-07-28 fill sell 600301.SH vol=10300 price=10.9812 amt=113106.57
+[ERROR] 2020-07-28 unfilled_order code=002327.SZ reason=below_min_lot
+[INFO]  2020-07-28 fill buy 002039.SZ vol=100 price=39.3861 amt=3938.61
+[ERROR] 2020-07-28 unfilled_order code=600153.SH reason=below_min_lot
+[ERROR] 2020-07-28 unfilled_order code=600642.SH reason=below_min_lot
+[INFO]  2020-07-28 fill buy 002574.SZ vol=8900 price=12.5676 amt=111851.77
+[ERROR] 2020-07-29 unfilled_order code=002039.SZ reason=below_min_lot
+[ERROR] 2020-07-29 unfilled_order code=600976.SH reason=below_min_lot
+[INFO]  2020-07-29 fill sell 603968.SH vol=100 price=36.5950 amt=3659.50
+[INFO]  2020-07-29 fill sell 600969.SH vol=100 price=13.3601 amt=1336.01
+[INFO]  2020-07-29 fill sell 002327.SZ vol=1500 price=73.1109 amt=109666.36
+[ERROR] 2020-07-29 unfilled_order code=600153.SH reason=below_min_lot
+[ERROR] 2020-07-29 unfilled_order code=600642.SH reason=below_min_lot
+[INFO]  2020-07-29 fill buy 002574.SZ vol=400 price=11.7953 amt=4718.12
+[INFO]  2020-07-29 fill buy 600097.SH vol=7400 price=15.0986 amt=111729.88
+[ERROR] 2020-07-30 unfilled_order code=600976.SH reason=below_min_lot
+[INFO]  2020-07-30 fill sell 603968.SH vol=100 price=38.2199 amt=3821.99
+[INFO]  2020-07-30 fill sell 002039.SZ vol=2800 price=40.3274 amt=112916.71
+[ERROR] 2020-07-30 unfilled_order code=600153.SH reason=below_min_lot
+[ERROR] 2020-07-30 unfilled_order code=600642.SH reason=below_min_lot
+[ERROR] 2020-07-30 unfilled_order code=600969.SH reason=below_min_lot
+[INFO]  2020-07-30 fill buy 002574.SZ vol=200 price=11.9357 amt=2387.14
+[INFO]  2020-07-30 fill buy 600097.SH vol=100 price=15.1280 amt=1512.80
+[INFO]  2020-07-30 fill buy 601607.SH vol=500 price=201.6469 amt=100823.46
+[ERROR] 2020-07-31 unfilled_order code=600976.SH reason=below_min_lot
+[INFO]  2020-07-31 fill sell 603968.SH vol=100 price=40.7353 amt=4073.53
+[INFO]  2020-07-31 fill sell 600097.SH vol=100 price=15.4059 amt=1540.59
+[INFO]  2020-07-31 fill sell 600153.SH vol=700 price=150.3430 amt=105240.13
+[ERROR] 2020-07-31 unfilled_order code=600642.SH reason=below_min_lot
+[ERROR] 2020-07-31 unfilled_order code=600969.SH reason=below_min_lot
+[INFO]  2020-07-31 fill buy 002574.SZ vol=200 price=11.7953 amt=2359.06
+[ERROR] 2020-07-31 unfilled_order code=601607.SH reason=below_min_lot
+[INFO]  2020-07-31 fill buy 603789.SH vol=5300 price=21.3287 amt=113042.23
+[INFO]  2020-07-31 hold
+[INFO]  2020-08-03 hold
+[INFO]  2020-08-04 hold
+[INFO]  2020-08-05 hold
+[INFO]  2020-08-06 hold
+[INFO]  2020-08-07 hold
+[INFO]  2020-08-10 hold
+[INFO]  2020-08-11 hold
+[INFO]  2020-08-12 hold
+[INFO]  2020-08-13 hold
+[INFO]  2020-08-14 hold
+[INFO]  2020-08-17 hold
+[INFO]  2020-08-18 hold
+[INFO]  2020-08-20 fill sell 600976.SH vol=200 price=73.6448 amt=14728.96
+[INFO]  2020-08-20 fill sell 600969.SH vol=100 price=14.5094 amt=1450.94
+[INFO]  2020-08-20 fill sell 600097.SH vol=300 price=16.7411 amt=5022.33
+[INFO]  2020-08-20 fill sell 603789.SH vol=5300 price=19.0809 amt=101128.82
+[ERROR] 2020-08-20 unfilled_order code=603968.SH reason=below_min_lot
+[ERROR] 2020-08-20 unfilled_order code=600642.SH reason=below_min_lot
+[INFO]  2020-08-20 fill buy 002574.SZ vol=200 price=12.0527 amt=2410.55
+[ERROR] 2020-08-20 unfilled_order code=601607.SH reason=below_min_lot
+[INFO]  2020-08-20 fill buy 600795.SH vol=200 price=573.3549 amt=114670.99
+[INFO]  2020-08-20 hold
+[INFO]  2020-08-21 hold
+[INFO]  2020-08-24 hold
+[INFO]  2020-08-25 hold
+[INFO]  2020-08-26 hold
+[INFO]  2020-08-27 hold
+[INFO]  2020-08-28 hold
+[INFO]  2020-08-31 hold
+[INFO]  2020-09-01 hold
+[INFO]  2020-09-02 hold
+[INFO]  2020-09-03 hold
+[INFO]  2020-09-04 hold
+[INFO]  2020-09-07 hold
+[INFO]  2020-09-08 hold
+[INFO]  2020-09-10 fill sell 002574.SZ vol=200 price=11.9586 amt=2391.72
+[ERROR] 2020-09-10 unfilled_order code=600795.SH reason=below_min_lot
+[INFO]  2020-09-10 fill sell 600976.SH vol=1600 price=81.8601 amt=130976.09
+[INFO]  2020-09-10 fill buy 603968.SH vol=100 price=38.3857 amt=3838.57
+[ERROR] 2020-09-10 unfilled_order code=600642.SH reason=below_min_lot
+[INFO]  2020-09-10 fill buy 600969.SH vol=100 price=13.7570 amt=1375.70
+[INFO]  2020-09-10 fill buy 600097.SH vol=600 price=14.8487 amt=8909.22
+[ERROR] 2020-09-10 unfilled_order code=601607.SH reason=below_min_lot
+[INFO]  2020-09-10 fill buy 600022.SH vol=12900 price=8.8897 amt=114676.88
+[INFO]  2020-09-11 fill sell 603968.SH vol=3000 price=36.5282 amt=109584.59
+[ERROR] 2020-09-11 unfilled_order code=600642.SH reason=below_min_lot
+[ERROR] 2020-09-11 unfilled_order code=600969.SH reason=below_min_lot
+[ERROR] 2020-09-11 unfilled_order code=002574.SZ reason=below_min_lot
+[ERROR] 2020-09-11 unfilled_order code=600097.SH reason=below_min_lot
+[ERROR] 2020-09-11 unfilled_order code=601607.SH reason=below_min_lot
+[ERROR] 2020-09-11 unfilled_order code=600795.SH reason=below_min_lot
+[INFO]  2020-09-11 fill buy 600022.SH vol=700 price=8.0563 amt=5639.39
+[INFO]  2020-09-11 fill buy 002003.SZ vol=1000 price=104.2323 amt=104232.28
+[ERROR] 2020-09-14 unfilled_order code=600795.SH reason=below_min_lot
+[INFO]  2020-09-14 fill sell 600022.SH vol=13600 price=8.0402 amt=109346.41
+[ERROR] 2020-09-14 unfilled_order code=600642.SH reason=below_min_lot
+[ERROR] 2020-09-14 unfilled_order code=600969.SH reason=below_min_lot
+[ERROR] 2020-09-14 unfilled_order code=002574.SZ reason=below_min_lot
+[ERROR] 2020-09-14 unfilled_order code=600097.SH reason=below_min_lot
+[ERROR] 2020-09-14 unfilled_order code=601607.SH reason=below_min_lot
+[ERROR] 2020-09-14 unfilled_order code=002003.SZ reason=below_min_lot
+[INFO]  2020-09-14 fill buy 600376.SH vol=1600 price=68.4077 amt=109452.39
+[INFO]  2020-09-14 hold
+[INFO]  2020-09-15 hold
+[ERROR] 2020-09-17 unfilled_order code=600969.SH reason=below_min_lot
+[ERROR] 2020-09-17 unfilled_order code=600795.SH reason=below_min_lot
+[ERROR] 2020-09-17 unfilled_order code=600376.SH reason=below_min_lot
+[INFO]  2020-09-17 fill sell 002574.SZ vol=9700 price=11.4681 amt=111240.57
+[ERROR] 2020-09-17 unfilled_order code=600642.SH reason=below_min_lot
+[INFO]  2020-09-17 fill buy 600097.SH vol=100 price=14.3488 amt=1434.88
+[ERROR] 2020-09-17 unfilled_order code=601607.SH reason=below_min_lot
+[INFO]  2020-09-17 fill buy 002003.SZ vol=100 price=102.1315 amt=10213.15
+[INFO]  2020-09-17 fill buy 601111.SH vol=12200 price=9.2297 amt=112602.22
+[INFO]  2020-09-17 hold
+[INFO]  2020-09-21 fill sell 600969.SH vol=100 price=13.7090 amt=1370.90
+[ERROR] 2020-09-21 unfilled_order code=600795.SH reason=below_min_lot
+[ERROR] 2020-09-21 unfilled_order code=002003.SZ reason=below_min_lot
+[ERROR] 2020-09-21 unfilled_order code=601111.SH reason=below_min_lot
+[INFO]  2020-09-21 fill sell 600642.SH vol=2100 price=53.7834 amt=112945.17
+[ERROR] 2020-09-21 unfilled_order code=600097.SH reason=below_min_lot
+[ERROR] 2020-09-21 unfilled_order code=601607.SH reason=below_min_lot
+[ERROR] 2020-09-21 unfilled_order code=600376.SH reason=below_min_lot
+[INFO]  2020-09-21 fill buy 000528.SZ vol=1200 price=93.7029 amt=112443.42
+[INFO]  2020-09-21 hold
+[INFO]  2020-09-22 hold
+[INFO]  2020-09-23 hold
+[INFO]  2020-09-25 fill sell 601111.SH vol=12200 price=8.3302 amt=101628.11
+[INFO]  2020-09-25 fill sell 000528.SZ vol=1200 price=85.4398 amt=102527.78
+[INFO]  2020-09-25 fill buy 600969.SH vol=2300 price=13.5514 amt=31168.16
+[INFO]  2020-09-25 fill buy 600097.SH vol=2200 price=14.4077 amt=31696.84
+[INFO]  2020-09-25 fill buy 601607.SH vol=200 price=201.9413 amt=40388.26
+[ERROR] 2020-09-25 unfilled_order code=600795.SH reason=below_min_lot
+[INFO]  2020-09-25 fill buy 002003.SZ vol=300 price=97.9299 amt=29378.96
+[INFO]  2020-09-25 fill buy 600376.SH vol=500 price=66.6100 amt=33305.02
+[INFO]  2020-09-25 hold
+[INFO]  2020-09-29 fill sell 600969.SH vol=1400 price=13.2575 amt=18560.51
+[INFO]  2020-09-29 fill sell 600097.SH vol=1200 price=13.8213 amt=16585.58
+[ERROR] 2020-09-29 unfilled_order code=601607.SH reason=below_min_lot
+[INFO]  2020-09-29 fill sell 002003.SZ vol=100 price=96.1214 amt=9612.14
+[INFO]  2020-09-29 fill sell 600376.SH vol=200 price=64.3995 amt=12879.91
+[ERROR] 2020-09-29 unfilled_order code=600795.SH reason=below_min_lot
+[INFO]  2020-09-29 fill buy 002132.SZ vol=5800 price=20.7141 amt=120141.88
+[INFO]  2020-09-29 hold
+[INFO]  2020-09-30 hold
+[INFO]  2020-10-12 fill sell 600969.SH vol=900 price=13.2780 amt=11950.23
+[INFO]  2020-10-12 fill sell 600097.SH vol=900 price=14.0561 amt=12650.47
+[INFO]  2020-10-12 fill sell 601607.SH vol=100 price=204.5736 amt=20457.36
+[INFO]  2020-10-12 fill sell 002003.SZ vol=100 price=99.3470 amt=9934.70
+[INFO]  2020-10-12 fill sell 600376.SH vol=100 price=64.2107 amt=6421.07
+[INFO]  2020-10-12 fill sell 002132.SZ vol=1200 price=27.5052 amt=33006.29
+[ERROR] 2020-10-12 unfilled_order code=600795.SH reason=below_min_lot
+[INFO]  2020-10-12 fill buy 300679.SZ vol=1100 price=95.7209 amt=105292.97
+[INFO]  2020-10-12 hold
+[ERROR] 2020-10-14 unfilled_order code=601607.SH reason=below_min_lot
+[ERROR] 2020-10-14 unfilled_order code=002003.SZ reason=below_min_lot
+[ERROR] 2020-10-14 unfilled_order code=600376.SH reason=below_min_lot
+[INFO]  2020-10-14 fill sell 002132.SZ vol=700 price=33.2866 amt=23300.62
+[INFO]  2020-10-14 fill sell 600969.SH vol=8300 price=13.7911 amt=114466.06
+[INFO]  2020-10-14 fill buy 600097.SH vol=200 price=14.1430 amt=2828.60
+[ERROR] 2020-10-14 unfilled_order code=600795.SH reason=below_min_lot
+[ERROR] 2020-10-14 unfilled_order code=300679.SZ reason=below_min_lot
+[INFO]  2020-10-14 fill buy 601339.SH vol=11800 price=9.7814 amt=115419.95
+[INFO]  2020-10-14 hold
+[INFO]  2020-10-15 hold
+[INFO]  2020-10-16 hold
+[INFO]  2020-10-19 hold
+[INFO]  2020-10-20 hold
+[INFO]  2020-10-21 hold
+[INFO]  2020-10-22 hold
+[INFO]  2020-10-26 fill sell 601339.SH vol=600 price=11.5345 amt=6920.72
+[INFO]  2020-10-26 fill sell 600097.SH vol=8100 price=13.6159 amt=110288.84
+[ERROR] 2020-10-26 unfilled_order code=601607.SH reason=below_min_lot
+[ERROR] 2020-10-26 unfilled_order code=600795.SH reason=below_min_lot
+[ERROR] 2020-10-26 unfilled_order code=002003.SZ reason=below_min_lot
+[INFO]  2020-10-26 fill buy 600376.SH vol=200 price=63.4877 amt=12697.54
+[INFO]  2020-10-26 fill buy 002132.SZ vol=1800 price=22.6451 amt=40761.17
+[INFO]  2020-10-26 fill buy 300679.SZ vol=200 price=98.9394 amt=19787.88
+[INFO]  2020-10-26 hold
+[INFO]  2020-10-27 hold
+[INFO]  2020-10-29 fill sell 600795.SH vol=200 price=524.3035 amt=104860.69
+[INFO]  2020-10-29 fill sell 600376.SH vol=2000 price=62.3221 amt=124644.27
+[INFO]  2020-10-29 fill buy 601607.SH vol=300 price=196.3482 amt=58904.45
+[INFO]  2020-10-29 fill buy 002003.SZ vol=400 price=104.3939 amt=41757.55
+[INFO]  2020-10-29 fill buy 002132.SZ vol=2100 price=22.2940 amt=46817.42
+[INFO]  2020-10-29 fill buy 300679.SZ vol=400 price=99.2970 amt=39718.80
+[INFO]  2020-10-29 fill buy 601339.SH vol=6200 price=10.0656 amt=62406.44
+[INFO]  2020-10-30 fill sell 002003.SZ vol=200 price=112.2492 amt=22449.84
+[INFO]  2020-10-30 fill sell 002132.SZ vol=1200 price=23.1254 amt=27750.51
+[INFO]  2020-10-30 fill sell 300679.SZ vol=200 price=104.5472 amt=20909.45
+[INFO]  2020-10-30 fill sell 601339.SH vol=2500 price=10.1873 amt=25468.16
+[INFO]  2020-10-30 fill sell 601607.SH vol=900 price=199.9710 amt=179973.87
+[INFO]  2020-10-30 fill buy 000883.SZ vol=6800 price=22.1413 amt=150560.96
+[INFO]  2020-10-30 fill buy 600019.SH vol=10600 price=14.2430 amt=150976.32
+[INFO]  2020-11-02 fill sell 300679.SZ vol=1500 price=87.9158 amt=131873.72
+[INFO]  2020-11-02 fill buy 002003.SZ vol=100 price=112.1507 amt=11215.07
+[INFO]  2020-11-02 fill buy 002132.SZ vol=1400 price=21.5918 amt=30228.57
+[INFO]  2020-11-02 fill buy 601339.SH vol=2900 price=9.6393 amt=27953.83
+[INFO]  2020-11-02 fill buy 000883.SZ vol=1200 price=21.3871 amt=25664.53
+[INFO]  2020-11-02 fill buy 600019.SH vol=1700 price=13.8792 amt=23594.60
+[INFO]  2020-11-03 fill sell 002003.SZ vol=500 price=112.5717 amt=56285.87
+[INFO]  2020-11-03 fill sell 002132.SZ vol=2800 price=21.3735 amt=59845.80
+[INFO]  2020-11-03 fill sell 601339.SH vol=6500 price=9.6909 amt=62990.84
+[INFO]  2020-11-03 fill sell 000883.SZ vol=2900 price=21.6132 amt=62678.28
+[INFO]  2020-11-03 fill sell 600019.SH vol=4700 price=14.4740 amt=68027.72
+[INFO]  2020-11-03 fill buy 600507.SH vol=900 price=118.4485 amt=106603.65
+[INFO]  2020-11-03 fill buy 002230.SZ vol=100 price=541.9631 amt=54196.31
+[INFO]  2020-11-03 fill buy 002499.SZ vol=10300 price=10.4641 amt=107780.66
+[INFO]  2020-11-03 hold
+[INFO]  2020-11-04 hold
+[INFO]  2020-11-05 hold
+[INFO]  2020-11-06 hold
+[INFO]  2020-11-09 hold
+[INFO]  2020-11-10 hold
+[INFO]  2020-11-11 hold
+[INFO]  2020-11-12 hold
+[INFO]  2020-11-13 hold
+[INFO]  2020-11-16 hold
+[INFO]  2020-11-17 hold
+[INFO]  2020-11-18 hold
+[INFO]  2020-11-19 hold
+[INFO]  2020-11-20 hold
+[INFO]  2020-11-23 hold
+[INFO]  2020-11-24 hold
+[INFO]  2020-11-25 hold
+[INFO]  2020-11-26 hold
+[INFO]  2020-11-27 hold
+[INFO]  2020-11-30 hold
+[INFO]  2020-12-01 hold
+[INFO]  2020-12-02 hold
+[ERROR] 2020-12-04 unfilled_order code=002003.SZ reason=below_min_lot
+[INFO]  2020-12-04 fill sell 600019.SH vol=600 price=16.0044 amt=9602.63
+[ERROR] 2020-12-04 unfilled_order code=600507.SH reason=below_min_lot
+[ERROR] 2020-12-04 unfilled_order code=002499.SZ reason=below_min_lot
+[INFO]  2020-12-04 fill sell 002132.SZ vol=5200 price=19.7968 amt=102943.19
+[INFO]  2020-12-04 fill buy 601339.SH vol=300 price=9.7577 amt=2927.30
+[ERROR] 2020-12-04 unfilled_order code=000883.SZ reason=below_min_lot
+[INFO]  2020-12-04 fill buy 002230.SZ vol=100 price=528.4814 amt=52848.14
+[INFO]  2020-12-04 fill buy 601997.SH vol=8200 price=13.5657 amt=111238.67
+[INFO]  2020-12-04 hold
+[INFO]  2020-12-07 hold
+[INFO]  2020-12-08 hold
+[INFO]  2020-12-09 hold
+[INFO]  2020-12-10 hold
+[INFO]  2020-12-14 fill sell 601339.SH vol=100 price=9.6200 amt=962.00
+[ERROR] 2020-12-14 unfilled_order code=600019.SH reason=below_min_lot
+[ERROR] 2020-12-14 unfilled_order code=600507.SH reason=below_min_lot
+[INFO]  2020-12-14 fill sell 002499.SZ vol=1600 price=12.2952 amt=19672.38
+[INFO]  2020-12-14 fill sell 002003.SZ vol=1000 price=112.0879 amt=112087.90
+[INFO]  2020-12-14 fill sell 000883.SZ vol=5100 price=20.0540 amt=102275.60
+[ERROR] 2020-12-14 unfilled_order code=002230.SZ reason=below_min_lot
+[INFO]  2020-12-14 fill buy 601997.SH vol=400 price=12.6834 amt=5073.35
+[ERROR] 2020-12-14 unfilled_order code=002162.SZ reason=limit_up_at_open
+[INFO]  2020-12-14 fill buy 600249.SH vol=4700 price=22.9118 amt=107685.25
+[INFO]  2020-12-15 fill sell 601339.SH vol=100 price=9.4782 amt=947.82
+[ERROR] 2020-12-15 unfilled_order code=600019.SH reason=below_min_lot
+[INFO]  2020-12-15 fill sell 002499.SZ vol=200 price=12.6039 amt=2520.78
+[ERROR] 2020-12-15 unfilled_order code=601997.SH reason=below_min_lot
+[ERROR] 2020-12-15 unfilled_order code=600507.SH reason=below_min_lot
+[ERROR] 2020-12-15 unfilled_order code=002230.SZ reason=below_min_lot
+[INFO]  2020-12-15 fill buy 600249.SH vol=100 price=21.8944 amt=2189.44
+[INFO]  2020-12-15 fill buy 600098.SH vol=3100 price=34.2596 amt=106204.78
+[INFO]  2020-12-15 hold
+[INFO]  2020-12-16 hold
+[INFO]  2020-12-17 hold
+[INFO]  2020-12-21 fill sell 600019.SH vol=100 price=16.1860 amt=1618.60
+[ERROR] 2020-12-21 unfilled_order code=600507.SH reason=below_min_lot
+[ERROR] 2020-12-21 unfilled_order code=600098.SH reason=below_min_lot
+[INFO]  2020-12-21 fill sell 601997.SH vol=8600 price=12.4064 amt=106695.39
+[INFO]  2020-12-21 fill buy 601339.SH vol=500 price=9.2603 amt=4630.16
+[ERROR] 2020-12-21 unfilled_order code=002230.SZ reason=below_min_lot
+[INFO]  2020-12-21 fill buy 002499.SZ vol=300 price=12.7580 amt=3827.40
+[ERROR] 2020-12-21 unfilled_order code=600249.SH reason=below_min_lot
+[INFO]  2020-12-21 fill buy 600301.SH vol=9300 price=11.8510 amt=110213.96
+[INFO]  2020-12-21 hold
+[INFO]  2020-12-22 hold
+[INFO]  2020-12-23 hold
+[ERROR] 2020-12-25 unfilled_order code=601339.SH reason=below_min_lot
+[ERROR] 2020-12-25 unfilled_order code=600507.SH reason=below_min_lot
+[INFO]  2020-12-25 fill sell 002499.SZ vol=1400 price=15.2276 amt=21318.60
+[INFO]  2020-12-25 fill sell 600249.SH vol=4800 price=20.2616 amt=97255.44
+[INFO]  2020-12-25 fill buy 600019.SH vol=100 price=15.3867 amt=1538.67
+[ERROR] 2020-12-25 unfilled_order code=002230.SZ reason=below_min_lot
+[INFO]  2020-12-25 fill buy 600098.SH vol=100 price=33.7702 amt=3377.02
+[INFO]  2020-12-25 fill buy 600301.SH vol=300 price=11.3211 amt=3396.33
+[INFO]  2020-12-25 fill buy 002608.SZ vol=5800 price=18.8233 amt=109175.11
+[INFO]  2020-12-25 hold
+[INFO]  2020-12-28 hold
+[INFO]  2020-12-29 hold
+[INFO]  2020-12-30 hold

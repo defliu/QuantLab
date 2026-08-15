@@ -1,0 +1,144 @@
+{
+  "summary_schema_version": "0.2",
+  "run_id": "20260815_200747_6f88ce",
+  "run_started_at": "2026-08-15T20:07:47",
+  "runtime_seconds": 724.276,
+  "config_name": "baseline",
+  "results_dir": "D:/QuantLab/reports/20260815_200747_6f88ce_huang529_nocap_full",
+  "strategy_core_version": "0.2.0",
+  "config_hash": "",
+  "data_hash": "5b2ffa275dc535dbc33dd658bb3ec2dedc76970969404a423bb7e627c3de8667",
+  "universe_hash": "",
+  "data_source": "astock",
+  "data_path": "E:/astock/daily/stock_daily.parquet",
+  "data_mtime": "2026-08-08T23:09:14",
+  "data_adjustment": "hfq",
+  "data_coverage_actual": {
+    "min_date": "2009-01-05",
+    "max_date": "2026-08-07",
+    "n_codes": 5821,
+    "n_rows_after_dedup": 14485418,
+    "dedup_count": 0,
+    "universe_coverage": {
+      "universe_size": 5488,
+      "codes_with_data": 5443,
+      "codes_missing": [
+        "000022.SZ",
+        "000024.SZ",
+        "000033.SZ",
+        "000511.SZ",
+        "000515.SZ",
+        "000522.SZ",
+        "000527.SZ",
+        "000562.SZ",
+        "000569.SZ",
+        "000578.SZ",
+        "000594.SZ",
+        "000602.SZ",
+        "000748.SZ",
+        "000916.SZ",
+        "000979.SZ",
+        "001248.SZ",
+        "300186.SZ",
+        "300372.SZ",
+        "301583.SZ",
+        "301677.SZ",
+        "600001.SH",
+        "600003.SH",
+        "600005.SH",
+        "600087.SH",
+        "600102.SH",
+        "600253.SH",
+        "600263.SH",
+        "600270.SH",
+        "600357.SH",
+        "600432.SH",
+        "600553.SH",
+        "600591.SH",
+        "600607.SH",
+        "600631.SH",
+        "600656.SH",
+        "600680.SH",
+        "600806.SH",
+        "600832.SH",
+        "600840.SH",
+        "600842.SH",
+        "600991.SH",
+        "601268.SH",
+        "601299.SH",
+        "688806.SH",
+        "688825.SH"
+      ],
+      "missing_count": 45
+    }
+  },
+  "data_dedup_applied": false,
+  "data_concurrent_sync_warning": false,
+  "data_wal_detected": false,
+  "data_wal_warning_message": "",
+  "benchmark_code": null,
+  "benchmark_available": false,
+  "benchmark_note": "",
+  "sector_heat_available": false,
+  "sector_heat_mode": "zero",
+  "sector_heat_warning": "historical sector heat unavailable; sector score set to 0",
+  "sample_period_warning": {
+    "is_short_sample": true,
+    "requested_range": [
+      "2019-01-01",
+      "2026-06-30"
+    ],
+    "actual_range": [
+      "2019-01-02",
+      "2026-06-30"
+    ],
+    "trading_days": 1815,
+    "warning": "样本期约 86.4 个月，仅用于 MVP 管线验证，不可作为策略最终定论"
+  },
+  "execution": {
+    "price": "next_open",
+    "slippage": 0.001,
+    "commission_rate": 0.00025,
+    "tax_rate": 0.0005
+  },
+  "performance": {
+    "total_return": 0.567007,
+    "annual_return": 0.078725,
+    "max_drawdown": -0.237437,
+    "sharpe": 0.40478,
+    "calmar": 0.331561,
+    "win_rate": 0.515234,
+    "n_trades": 4671,
+    "n_buy": 2379,
+    "n_sell": 2292,
+    "n_open": 556,
+    "avg_holding_days": 29.524483,
+    "excess_return": null,
+    "information_ratio": null,
+    "tracking_error": null
+  },
+  "portfolio_end": {
+    "total_asset": 1567006.741441,
+    "cash": -173349.022459,
+    "market_value": 1740355.7639,
+    "n_positions": 9
+  },
+  "diagnostics_aggregate": {
+    "warnings_unique": [
+      "hold"
+    ],
+    "candidate_total_avg_per_day": 6.900275482093664,
+    "candidate_passed_avg_per_day": 5.452341597796143,
+    "unfilled_order_count": 6679,
+    "strategy_specific": {
+      "huang_529": {
+        "new_signals_avg_per_day": {
+          "count": 3.352066
+        }
+      }
+    }
+  },
+  "pit_universe": {
+    "enabled": false
+  }
+}

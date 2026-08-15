@@ -1,0 +1,350 @@
+[WARN] SHORT_SAMPLE_PERIOD requested=2022-01-01..2022-12-31 actual=2022-01-04..2022-12-30 trading_days=242 message="样本期约 11.5 个月，仅用于 MVP 管线验证，不可作为策略最终定论"
+[WARN] BENCHMARK_DISABLED reason="benchmark 数据不可用"
+[WARN] SECTOR_HEAT_MODE_ZERO message="sector_heat_mode=zero, sector score forced to 0"
+
+[INFO]  2022-01-04 buy: 600694.SH,600894.SH,601607.SH,603839.SH,601368.SH,603367.SH,002381.SZ,002033.SZ (per=125000)
+[INFO]  2022-01-05 fill buy 600694.SH vol=1200 price=100.7416 amt=120889.92
+[INFO]  2022-01-05 fill buy 600894.SH vol=4500 price=27.1939 amt=122372.49
+[INFO]  2022-01-05 fill buy 601607.SH vol=600 price=205.6052 amt=123363.12
+[INFO]  2022-01-05 fill buy 603839.SH vol=8600 price=14.4681 amt=124425.26
+[INFO]  2022-01-05 fill buy 601368.SH vol=20400 price=6.1164 amt=124774.56
+[INFO]  2022-01-05 fill buy 603367.SH vol=8600 price=14.4653 amt=124401.33
+[INFO]  2022-01-05 fill buy 002381.SZ vol=2600 price=46.7703 amt=121602.84
+[INFO]  2022-01-05 fill buy 002033.SZ vol=3400 price=35.8060 amt=121740.57
+[INFO]  2022-01-05 hold
+[INFO]  2022-01-06 hold
+[INFO]  2022-01-07 hold
+[INFO]  2022-01-10 hold
+[INFO]  2022-01-11 hold
+[INFO]  2022-01-12 hold
+[INFO]  2022-01-13 hold
+[INFO]  2022-01-14 hold
+[INFO]  2022-01-17 hold
+[INFO]  2022-01-18 hold
+[INFO]  2022-01-19 hold
+[INFO]  2022-01-20 hold
+[INFO]  2022-01-21 hold
+[INFO]  2022-01-24 hold
+[INFO]  2022-01-25 sell: 600894.SH(stop_loss),601368.SH(stop_loss),603367.SH(stop_loss),002381.SZ(stop_loss)
+[INFO]  2022-01-26 fill sell 600894.SH vol=4500 price=24.9913 amt=112460.87
+[INFO]  2022-01-26 fill sell 601368.SH vol=20400 price=5.5562 amt=113347.05
+[INFO]  2022-01-26 fill sell 603367.SH vol=8600 price=13.0690 amt=112393.81
+[INFO]  2022-01-26 fill sell 002381.SZ vol=2600 price=42.0092 amt=109223.89
+[INFO]  2022-01-26 buy: 600857.SH,601456.SH (per=118920)
+[INFO]  2022-01-27 fill buy 600857.SH vol=1800 price=64.6565 amt=116381.72
+[INFO]  2022-01-27 fill buy 601456.SH vol=7400 price=15.9423 amt=117973.21
+[INFO]  2022-01-27 buy: 603056.SH (per=116497)
+[INFO]  2022-01-28 fill buy 603056.SH vol=9900 price=11.7628 amt=116452.13
+[INFO]  2022-01-28 hold
+[INFO]  2022-02-07 sell: 603839.SH(stop_loss),601456.SH(stop_loss)
+[INFO]  2022-02-07 buy: 600377.SH (per=112379)
+[INFO]  2022-02-08 fill sell 603839.SH vol=8600 price=13.0277 amt=112038.04
+[INFO]  2022-02-08 fill sell 601456.SH vol=7400 price=14.4000 amt=106559.90
+[INFO]  2022-02-08 fill buy 600377.SH vol=4000 price=27.7617 amt=111046.62
+[INFO]  2022-02-08 buy: 601288.SH,601398.SH (per=109869)
+[INFO]  2022-02-09 fill buy 601288.SH vol=20500 price=5.3542 amt=109761.69
+[INFO]  2022-02-09 fill buy 601398.SH vol=11400 price=9.5689 amt=109085.56
+[INFO]  2022-02-09 hold
+[INFO]  2022-02-10 hold
+[INFO]  2022-02-11 hold
+[INFO]  2022-02-14 hold
+[INFO]  2022-02-15 hold
+[INFO]  2022-02-16 hold
+[INFO]  2022-02-17 hold
+[INFO]  2022-02-18 hold
+[INFO]  2022-02-21 hold
+[INFO]  2022-02-22 hold
+[INFO]  2022-02-23 hold
+[INFO]  2022-02-24 sell: 601607.SH(stop_loss)
+[INFO]  2022-02-25 fill sell 601607.SH vol=600 price=186.6316 amt=111978.95
+[INFO]  2022-02-25 buy: 600388.SH (per=112732)
+[INFO]  2022-02-28 fill buy 600388.SH vol=1200 price=87.5299 amt=105035.89
+[INFO]  2022-02-28 hold
+[INFO]  2022-03-01 hold
+[INFO]  2022-03-02 hold
+[INFO]  2022-03-03 hold
+[INFO]  2022-03-04 hold
+[INFO]  2022-03-07 hold
+[INFO]  2022-03-08 hold
+[INFO]  2022-03-09 hold
+[INFO]  2022-03-10 hold
+[INFO]  2022-03-11 hold
+[INFO]  2022-03-14 hold
+[INFO]  2022-03-15 sell: 600694.SH(stop_loss),600377.SH(stop_loss)
+[INFO]  2022-03-16 fill sell 600694.SH vol=1200 price=92.0785 amt=110494.21
+[INFO]  2022-03-16 fill sell 600377.SH vol=4000 price=25.3973 amt=101589.35
+[INFO]  2022-03-16 buy: 002787.SZ (per=117689)
+[INFO]  2022-03-17 fill buy 002787.SZ vol=8100 price=14.4221 amt=116818.91
+[INFO]  2022-03-17 hold
+[INFO]  2022-03-18 hold
+[INFO]  2022-03-21 buy: 002363.SZ (per=102746)
+[INFO]  2022-03-22 fill buy 002363.SZ vol=6100 price=16.6683 amt=101676.34
+[INFO]  2022-03-22 hold
+[INFO]  2022-03-23 hold
+[INFO]  2022-03-24 sell: 002787.SZ(stop_loss)
+[INFO]  2022-03-25 fill sell 002787.SZ vol=8100 price=12.8511 amt=104094.20
+[INFO]  2022-03-25 buy: 002087.SZ (per=105061)
+[INFO]  2022-03-28 fill buy 002087.SZ vol=11600 price=9.0166 amt=104592.19
+[INFO]  2022-03-28 hold
+[INFO]  2022-03-29 sell: 002363.SZ(stop_loss)
+[INFO]  2022-03-30 fill sell 002363.SZ vol=6100 price=15.3329 amt=93530.40
+[INFO]  2022-03-30 buy: 601328.SH (per=93902)
+[INFO]  2022-03-31 fill buy 601328.SH vol=8800 price=10.5585 amt=92914.43
+[INFO]  2022-03-31 hold
+[INFO]  2022-04-01 hold
+[INFO]  2022-04-06 hold
+[INFO]  2022-04-07 sell: 002033.SZ(holding_expired)
+[INFO]  2022-04-08 fill sell 002033.SZ vol=3400 price=39.2291 amt=133378.78
+[INFO]  2022-04-08 buy: 000900.SZ (per=115685)
+[INFO]  2022-04-11 fill buy 000900.SZ vol=1800 price=62.5306 amt=112555.02
+[INFO]  2022-04-11 hold
+[INFO]  2022-04-12 hold
+[INFO]  2022-04-13 hold
+[INFO]  2022-04-14 hold
+[INFO]  2022-04-15 hold
+[INFO]  2022-04-18 hold
+[INFO]  2022-04-19 hold
+[INFO]  2022-04-20 hold
+[INFO]  2022-04-21 sell: 600388.SH(stop_loss),000900.SZ(stop_loss)
+[INFO]  2022-04-22 fill sell 600388.SH vol=1200 price=76.1624 amt=91394.87
+[INFO]  2022-04-22 fill sell 000900.SZ vol=1800 price=56.3664 amt=101459.48
+[INFO]  2022-04-22 buy: 002394.SZ,603116.SH (per=107185)
+[INFO]  2022-04-25 fill buy 002394.SZ vol=2900 price=36.7123 amt=106465.60
+[INFO]  2022-04-25 fill buy 603116.SH vol=9800 price=10.8637 amt=106463.80
+[INFO]  2022-04-25 sell: 603116.SH(stop_loss)
+[ERROR] 2022-04-26 unfilled_order code=603116.SH reason=limit_down_at_open
+[INFO]  2022-04-26 sell: 002087.SZ(stop_loss),002394.SZ(stop_loss),603116.SH(stop_loss)
+[INFO]  2022-04-27 fill sell 002087.SZ vol=11600 price=7.5616 amt=87714.69
+[INFO]  2022-04-27 fill sell 002394.SZ vol=2900 price=30.8612 amt=89497.62
+[INFO]  2022-04-27 fill sell 603116.SH vol=9800 price=8.0677 amt=79063.30
+[INFO]  2022-04-27 hold
+[INFO]  2022-04-28 hold
+[INFO]  2022-04-29 sell: 600857.SH(holding_expired)
+[INFO]  2022-05-05 fill sell 600857.SH vol=1800 price=68.8596 amt=123947.19
+[INFO]  2022-05-05 sell: 603056.SH(holding_expired)
+[INFO]  2022-05-06 fill sell 603056.SH vol=9900 price=14.1266 amt=139853.83
+[INFO]  2022-05-06 hold
+[INFO]  2022-05-09 hold
+[INFO]  2022-05-10 sell: 601288.SH(holding_expired),601398.SH(holding_expired)
+[INFO]  2022-05-10 buy: 002818.SZ (per=103586)
+[INFO]  2022-05-11 fill sell 601288.SH vol=20500 price=5.3959 amt=110616.34
+[INFO]  2022-05-11 fill sell 601398.SH vol=11400 price=9.3135 amt=106173.98
+[INFO]  2022-05-11 fill buy 002818.SZ vol=4000 price=25.2866 amt=101146.32
+[INFO]  2022-05-11 hold
+[INFO]  2022-05-12 hold
+[INFO]  2022-05-13 hold
+[INFO]  2022-05-16 hold
+[INFO]  2022-05-17 hold
+[INFO]  2022-05-18 hold
+[INFO]  2022-05-19 hold
+[INFO]  2022-05-20 hold
+[INFO]  2022-05-23 hold
+[INFO]  2022-05-24 hold
+[INFO]  2022-05-25 hold
+[INFO]  2022-05-26 buy: 600350.SH (per=103387)
+[INFO]  2022-05-27 fill buy 600350.SH vol=7000 price=14.5678 amt=101974.83
+[INFO]  2022-05-27 buy: 002267.SZ,603605.SH (per=103451)
+[INFO]  2022-05-30 fill buy 002267.SZ vol=5200 price=19.8573 amt=103257.84
+[INFO]  2022-05-30 fill buy 603605.SH vol=400 price=218.8106 amt=87524.24
+[INFO]  2022-05-30 buy: 600648.SH,002430.SZ,000899.SZ (per=103719)
+[INFO]  2022-05-31 fill buy 600648.SH vol=1000 price=102.1472 amt=102147.20
+[INFO]  2022-05-31 fill buy 002430.SZ vol=1500 price=68.2750 amt=102412.54
+[INFO]  2022-05-31 fill buy 000899.SZ vol=4900 price=20.9330 amt=102571.46
+[INFO]  2022-05-31 hold
+[INFO]  2022-06-01 hold
+[INFO]  2022-06-02 hold
+[INFO]  2022-06-06 hold
+[INFO]  2022-06-07 hold
+[INFO]  2022-06-08 hold
+[INFO]  2022-06-09 hold
+[INFO]  2022-06-10 hold
+[INFO]  2022-06-13 hold
+[INFO]  2022-06-14 hold
+[INFO]  2022-06-15 hold
+[INFO]  2022-06-16 hold
+[INFO]  2022-06-17 hold
+[INFO]  2022-06-20 hold
+[INFO]  2022-06-21 hold
+[INFO]  2022-06-22 hold
+[INFO]  2022-06-23 hold
+[INFO]  2022-06-24 hold
+[INFO]  2022-06-27 hold
+[INFO]  2022-06-28 hold
+[INFO]  2022-06-29 hold
+[INFO]  2022-06-30 sell: 601328.SH(holding_expired)
+[INFO]  2022-07-01 fill sell 601328.SH vol=8800 price=10.4326 amt=91807.03
+[INFO]  2022-07-01 buy: 600674.SH (per=109920)
+[INFO]  2022-07-04 fill buy 600674.SH vol=400 price=249.6324 amt=99852.96
+[INFO]  2022-07-04 hold
+[INFO]  2022-07-05 hold
+[INFO]  2022-07-06 hold
+[INFO]  2022-07-07 hold
+[INFO]  2022-07-08 hold
+[INFO]  2022-07-11 hold
+[INFO]  2022-07-12 hold
+[INFO]  2022-07-13 hold
+[INFO]  2022-07-14 hold
+[INFO]  2022-07-15 sell: 600648.SH(stop_loss)
+[INFO]  2022-07-18 fill sell 600648.SH vol=1000 price=92.1479 amt=92147.86
+[INFO]  2022-07-18 buy: 000598.SZ (per=120431)
+[INFO]  2022-07-19 fill buy 000598.SZ vol=800 price=139.8726 amt=111898.06
+[INFO]  2022-07-19 hold
+[INFO]  2022-07-20 hold
+[INFO]  2022-07-21 hold
+[INFO]  2022-07-22 hold
+[INFO]  2022-07-25 hold
+[INFO]  2022-07-26 hold
+[INFO]  2022-07-27 hold
+[INFO]  2022-07-28 hold
+[INFO]  2022-07-29 hold
+[INFO]  2022-08-01 hold
+[INFO]  2022-08-02 sell: 000598.SZ(stop_loss)
+[INFO]  2022-08-03 fill sell 000598.SZ vol=800 price=127.5682 amt=102054.59
+[INFO]  2022-08-03 sell: 002818.SZ(holding_expired)
+[INFO]  2022-08-03 buy: 600879.SH (per=110483)
+[INFO]  2022-08-04 fill sell 002818.SZ vol=4000 price=26.6774 amt=106709.50
+[INFO]  2022-08-04 fill buy 600879.SH vol=400 price=252.4886 amt=100995.45
+[INFO]  2022-08-04 hold
+[INFO]  2022-08-05 buy: 600597.SH (per=116092)
+[INFO]  2022-08-08 fill buy 600597.SH vol=3600 price=32.1024 amt=115568.58
+[INFO]  2022-08-08 hold
+[INFO]  2022-08-09 hold
+[INFO]  2022-08-10 hold
+[INFO]  2022-08-11 hold
+[INFO]  2022-08-12 hold
+[INFO]  2022-08-15 hold
+[INFO]  2022-08-16 hold
+[INFO]  2022-08-17 hold
+[INFO]  2022-08-18 hold
+[INFO]  2022-08-19 sell: 600350.SH(holding_expired),600597.SH(stop_loss)
+[INFO]  2022-08-22 fill sell 600350.SH vol=7000 price=13.8971 amt=97279.90
+[INFO]  2022-08-22 fill sell 600597.SH vol=3600 price=29.5076 amt=106227.27
+[INFO]  2022-08-22 sell: 002267.SZ(holding_expired),603605.SH(holding_expired)
+[INFO]  2022-08-22 buy: 000719.SZ,600993.SH (per=101924)
+[INFO]  2022-08-23 fill sell 002267.SZ vol=5200 price=23.0914 amt=120075.31
+[INFO]  2022-08-23 fill sell 603605.SH vol=400 price=241.6781 amt=96671.23
+[INFO]  2022-08-23 fill buy 000719.SZ vol=2700 price=36.7287 amt=99167.45
+[INFO]  2022-08-23 fill buy 600993.SH vol=300 price=277.6581 amt=83297.43
+[INFO]  2022-08-23 sell: 002430.SZ(holding_expired),000899.SZ(holding_expired)
+[INFO]  2022-08-23 buy: 601928.SH,002321.SZ (per=117862)
+[INFO]  2022-08-24 fill sell 002430.SZ vol=1500 price=85.5011 amt=128251.61
+[INFO]  2022-08-24 fill sell 000899.SZ vol=4900 price=36.5414 amt=179052.87
+[INFO]  2022-08-24 fill buy 601928.SH vol=11400 price=10.2612 amt=116977.44
+[INFO]  2022-08-24 fill buy 002321.SZ vol=21200 price=5.5404 amt=117455.74
+[INFO]  2022-08-24 buy: 002773.SZ (per=118320)
+[INFO]  2022-08-25 fill buy 002773.SZ vol=3700 price=31.3413 amt=115962.85
+[INFO]  2022-08-25 buy: 600757.SH (per=119036)
+[INFO]  2022-08-26 fill buy 600757.SH vol=2600 price=44.4933 amt=115682.55
+[INFO]  2022-08-26 hold
+[INFO]  2022-08-29 hold
+[INFO]  2022-08-30 hold
+[INFO]  2022-08-31 sell: 600879.SH(stop_loss)
+[INFO]  2022-09-01 fill sell 600879.SH vol=400 price=231.1681 amt=92467.23
+[INFO]  2022-09-01 buy: 002697.SZ (per=120086)
+[INFO]  2022-09-02 fill buy 002697.SZ vol=2700 price=43.0558 amt=116250.70
+[INFO]  2022-09-02 hold
+[INFO]  2022-09-05 sell: 002697.SZ(stop_loss)
+[INFO]  2022-09-06 fill sell 002697.SZ vol=2700 price=38.6728 amt=104416.58
+[INFO]  2022-09-06 buy: 601298.SH (per=120418)
+[INFO]  2022-09-07 fill buy 601298.SH vol=17900 price=6.7064 amt=120044.06
+[INFO]  2022-09-07 hold
+[INFO]  2022-09-08 hold
+[INFO]  2022-09-09 hold
+[INFO]  2022-09-13 hold
+[INFO]  2022-09-14 hold
+[INFO]  2022-09-15 sell: 600993.SH(stop_loss)
+[INFO]  2022-09-16 fill sell 600993.SH vol=300 price=253.6442 amt=76093.27
+[INFO]  2022-09-16 buy: 603658.SH (per=115220)
+[INFO]  2022-09-19 fill buy 603658.SH vol=1500 price=73.1217 amt=109682.59
+[INFO]  2022-09-19 hold
+[INFO]  2022-09-20 hold
+[INFO]  2022-09-21 hold
+[INFO]  2022-09-22 hold
+[INFO]  2022-09-23 hold
+[INFO]  2022-09-26 sell: 600674.SH(holding_expired),002321.SZ(stop_loss),603658.SH(stop_loss)
+[INFO]  2022-09-27 fill sell 600674.SH vol=400 price=260.7070 amt=104282.78
+[INFO]  2022-09-27 fill sell 002321.SZ vol=21200 price=5.0810 amt=107716.65
+[INFO]  2022-09-27 fill sell 603658.SH vol=1500 price=66.9502 amt=100425.37
+[INFO]  2022-09-27 hold
+[INFO]  2022-09-28 hold
+[INFO]  2022-09-29 hold
+[INFO]  2022-09-30 buy: 600985.SH (per=112486)
+[INFO]  2022-10-10 fill buy 600985.SH vol=1600 price=69.8083 amt=111693.28
+[INFO]  2022-10-10 buy: 600941.SH (per=112868)
+[INFO]  2022-10-11 fill buy 600941.SH vol=1400 price=75.5627 amt=105787.80
+[INFO]  2022-10-11 buy: 002966.SZ (per=100165)
+[INFO]  2022-10-12 fill buy 002966.SZ vol=11700 price=8.5441 amt=99965.69
+[INFO]  2022-10-12 hold
+[INFO]  2022-10-13 hold
+[INFO]  2022-10-14 hold
+[INFO]  2022-10-17 hold
+[INFO]  2022-10-18 hold
+[INFO]  2022-10-19 hold
+[INFO]  2022-10-20 sell: 600985.SH(stop_loss)
+[INFO]  2022-10-21 fill sell 600985.SH vol=1600 price=62.2014 amt=99522.20
+[INFO]  2022-10-21 buy: 600846.SH (per=99622)
+[INFO]  2022-10-24 fill buy 600846.SH vol=600 price=147.9544 amt=88772.65
+[INFO]  2022-10-24 hold
+[INFO]  2022-10-25 hold
+[INFO]  2022-10-26 hold
+[INFO]  2022-10-27 hold
+[INFO]  2022-10-28 sell: 600757.SH(stop_loss)
+[INFO]  2022-10-31 fill sell 600757.SH vol=2600 price=38.7571 amt=100768.57
+[INFO]  2022-10-31 buy: 688009.SH (per=106401)
+[INFO]  2022-11-01 fill buy 688009.SH vol=21100 price=5.0210 amt=105943.90
+[INFO]  2022-11-01 hold
+[INFO]  2022-11-02 hold
+[INFO]  2022-11-03 hold
+[INFO]  2022-11-04 hold
+[INFO]  2022-11-07 hold
+[INFO]  2022-11-08 hold
+[INFO]  2022-11-09 hold
+[INFO]  2022-11-10 hold
+[INFO]  2022-11-11 hold
+[INFO]  2022-11-14 sell: 600941.SH(stop_loss)
+[INFO]  2022-11-15 fill sell 600941.SH vol=1400 price=68.5378 amt=95952.89
+[INFO]  2022-11-15 buy: 000623.SZ (per=101430)
+[INFO]  2022-11-16 fill buy 000623.SZ vol=200 price=338.3515 amt=67670.30
+[INFO]  2022-11-16 hold
+[INFO]  2022-11-17 hold
+[INFO]  2022-11-18 hold
+[INFO]  2022-11-21 hold
+[INFO]  2022-11-22 sell: 000719.SZ(holding_expired)
+[INFO]  2022-11-23 fill sell 000719.SZ vol=2700 price=38.2790 amt=103353.19
+[INFO]  2022-11-23 sell: 601928.SH(holding_expired)
+[INFO]  2022-11-23 buy: 688425.SH (per=107507)
+[INFO]  2022-11-24 fill sell 601928.SH vol=11400 price=10.5065 amt=119773.95
+[INFO]  2022-11-24 fill buy 688425.SH vol=25200 price=4.2522 amt=107155.14
+[INFO]  2022-11-24 sell: 002773.SZ(holding_expired)
+[INFO]  2022-11-24 buy: 600377.SH (per=107253)
+[INFO]  2022-11-25 fill sell 002773.SZ vol=3700 price=33.8819 amt=125362.97
+[INFO]  2022-11-25 fill buy 600377.SH vol=4100 price=25.5977 amt=104950.44
+[INFO]  2022-11-25 buy: 601988.SH (per=108448)
+[INFO]  2022-11-28 fill buy 601988.SH vol=16000 price=6.7682 amt=108291.39
+[INFO]  2022-11-28 hold
+[INFO]  2022-11-29 hold
+[INFO]  2022-11-30 hold
+[INFO]  2022-12-01 hold
+[INFO]  2022-12-02 hold
+[INFO]  2022-12-05 hold
+[INFO]  2022-12-06 hold
+[INFO]  2022-12-07 sell: 601298.SH(holding_expired)
+[INFO]  2022-12-08 fill sell 601298.SH vol=17900 price=6.8818 amt=123184.92
+[INFO]  2022-12-08 buy: 600611.SH (per=112360)
+[ERROR] 2022-12-09 unfilled_order code=600611.SH reason=below_min_lot
+[INFO]  2022-12-09 buy: 600966.SH (per=112405)
+[INFO]  2022-12-12 fill buy 600966.SH vol=1900 price=58.8772 amt=111866.64
+[INFO]  2022-12-12 hold
+[INFO]  2022-12-13 hold
+[INFO]  2022-12-14 hold
+[INFO]  2022-12-15 hold
+[INFO]  2022-12-16 hold
+[INFO]  2022-12-19 hold
+[INFO]  2022-12-20 hold
+[INFO]  2022-12-21 hold
+[INFO]  2022-12-22 hold
+[INFO]  2022-12-23 hold
+[INFO]  2022-12-26 hold
+[INFO]  2022-12-27 hold
+[INFO]  2022-12-28 hold
+[INFO]  2022-12-29 hold
