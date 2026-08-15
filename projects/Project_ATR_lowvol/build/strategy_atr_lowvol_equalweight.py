@@ -789,8 +789,9 @@ def _run_screening(C):
     if _QUALITY_GATE and eligible:
         print("[ATR_EW] 初筛通过 %d 只，批量取ROE..." % len(eligible))
         roe_map = _batch_get_roe([c for c, _ in eligible])
-        if _g_roe_api_ok is False:
-            print("[ATR_EW] 警告: ROE接口不可用，本次跳过ROE门控（保守降级，少一道质量过滤）")
+        if _g_roe_api_ok is False or not roe_map:
+            # R9(2026-08-15 诚哥拍板): 接口不可用 或 整批空结果 均 fail-open（防整季空仓）
+            print("[ATR_EW] 警告: ROE数据不可用或空结果，本次跳过ROE门控（R9 fail-open）")
         else:
             filtered = []
             for code, atr_pct in eligible:

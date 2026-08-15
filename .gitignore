@@ -36,3 +36,7 @@ data/etf_daily/
 *.bak_*
 tmp_*
 _tmp_*
+
+# Web 搜索 API 密钥（不入库）
+config/.web_search_keys.yaml
+config/web_search_keys.yaml

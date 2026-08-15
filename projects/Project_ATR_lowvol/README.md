@@ -18,16 +18,26 @@ Project_ATR_lowvol/
 ├── build/                       # QMT 部署构件（GBK 单文件，由 src 构建而来，QMT 直接加载）
 │   ├── strategy_atr_lowvol.py           # 标准尾盘版
 │   ├── strategy_atr_lowvol_allday.py    # 全天调试版
-│   └── strategy_atr_lowvol_equalweight.py  # 等权不杠杆版（当前实盘用这个，已含下单三坑修复）
-├── research/                    # 手写回测原稿 + 报告生成器（研究史料，不复用进实盘）
+│   └── strategy_atr_lowvol_equalweight.py  # 等权不杠杆版（当前实盘用这个，已含下单三坑修复+R9 ROE空结果fail-open）
+├── config/                      # 10万/8只+价<50 回测配置（2026-08-15 从 Project_12 迁入统一）
+│   ├── atr_10w_price50.yaml             # 部署基线（10万/8只/等权/无杠杆/真实价<50/2019-2026，208.8%/28.99%/-24.80%/0.894）
+│   ├── atr_10w_8.yaml / atr_100w_100.yaml        # 基线对照
+│   ├── atr_10w_price50_a_max.yaml       # ✅ MAX5 彩票过滤 0.20（首个全维度正优化：32.99%/-20.05%/0.951）
+│   └── atr_10w_price50_{aplus_mom,aplus_momval,e_buffer,ma200_exit,ma200_hold}.yaml  # 已证伪方向留档
+├── research/                    # 手写回测原稿 + 报告生成器 + 10万研究脚本（研究史料，不复用进实盘）
 │   ├── backtest_atr_lowvol.py / _v2.py / _v3.py   # 手写回测 v1/v2/v3（v3 被 strategy/atr_lowvol.py 框架版重写）
 │   ├── gen_*_report.py (×7)     # 各版本回测 HTML 报告生成器
 │   ├── bench_atr_factor.py / diag_atr.py / probe_*.py   # 因子基准/诊断/探针
-│   └── tests/test_turnover_fix.py  # 换手过滤修复单测
+│   ├── scan/report_10w_price50_voltarget.py / gen_voltarget_dashboard.py  # VT 扫描+看板（已证伪，留档）
+│   ├── analyze_atr_10w.py / compare_10w_*.py / ml_atr_hybrid.py           # 10万对比/ML-ATR
+│   └── tests/                   # 单测（test_turnover_fix.py / test_roe_r9_failopen.py）
+├── results/                     # 回测报告（10万价格过滤/真钱版/VT扫描/大盘门控/三方向优化/文献调研 + 看板HTML）
 └── README.md                    # 本文件
 ```
 
-**框架版策略**（不在本目录，在仓库 `strategy/atr_lowvol.py`）：把 v3 逻辑用通用回测框架重写成 `target_weights` 模式，组合层/风控全交给 `backtest/`。回测统一走 `backtest/`。
+**框架版策略**（不在本目录，在仓库 `strategy/atr_lowvol.py`）：把 v3 逻辑用通用回测框架重写成 `target_weights` 模式，组合层/风控全交给 `backtest/`。回测统一走 `backtest/`（`python -m scripts.run_backtest --config projects/Project_ATR_lowvol/config/atr_10w_price50.yaml`）。
+
+> **2026-08-15 结构统一**：10万/8只+价<50 及近两日全部优化研究（VT扫描/MA200门控/三方向优化）已从 `Project_12_RPS主升浪` 迁入本目录 `config/`+`research/`+`results/`，ATR 研究全资产现集中于此（详见看板 T-20260815-006）。
 
 ## 三、日常开发闭环（照这个走）
 1. 改策略逻辑 → 编辑 `src/strategy_atr.py`（纯函数，零 QMT 依赖）。

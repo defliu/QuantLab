@@ -13,7 +13,7 @@
 诚实红线：财务 PIT（ann_date 过滤）、滚动训练（无 look-ahead）、三段切分对比。
 
 用法：
-  python projects/Project_12_RPS主升浪/research/ml_atr_hybrid.py
+  python projects/Project_ATR_lowvol/research/ml_atr_hybrid.py
 """
 import sys
 import time

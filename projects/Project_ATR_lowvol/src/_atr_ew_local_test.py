@@ -184,8 +184,9 @@ def main():
     except Exception as e:
         log(u"[stops] 异常: %s" % e)
 
-    # 6) 复选：关 ROE 门控重跑（本地 miniQMT 无财务数据 -> 原逻辑会把空结果当'过滤全部'，
-    #    为验证选股管线，这里模拟 fail-open 关掉 ROE）
+    # 6) 复选：关 ROE 门控重跑。注：R9(2026-08-15 诚哥拍板) 已把"整批空结果"
+    #    也改为 fail-open，本地无财务数据时首轮选股(第3步)应已能出候选；
+    #    此复选保留作对照（直接关 ROE 门控）
     log(u"")
     log(u"=== 复选：QUALITY_GATE=0（本地无财务数据，模拟 ROE fail-open）===")
     ns["_QUALITY_GATE"] = 0

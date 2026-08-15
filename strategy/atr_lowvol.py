@@ -31,6 +31,9 @@ from strategy.schedule import is_rebalance_day
 from factors.atr import atr_pct
 from factors.roe import get_roe_asof
 
+import pandas as pd
+import numpy as np
+
 ALLOWED_TRADING_MODELS = ["next_open"]
 
 
@@ -75,6 +78,33 @@ def _hold_decision(current_date, positions, stop_loss):
     }
 
 
+def _market_ma_ok(market_window, current_date, ma_window, min_codes=100):
+    """大盘门控：全市场等权收盘指数 > MA(ma_window)。
+
+    P10 方向5 口径（run_variants.py）：代理指数 = 全市场等权 close，跌破 MA 即空仓。
+    数据不足时 fail-open（返回 True，不挡交易），避免数据缺口误杀。
+    """
+    frames = []
+    for c, df in (market_window or {}).items():
+        if df is None or "close" not in df.columns or "date" not in df.columns:
+            continue
+        frames.append(pd.DataFrame({
+            "d": df["date"].astype(str).values,
+            "cl": df["close"].astype(float).values,
+        }))
+    if len(frames) < min_codes:
+        return True  # 覆盖不足，fail-open
+    big = pd.concat(frames, ignore_index=True)
+    big = big[big["d"] <= current_date]
+    g = big.groupby("d")["cl"].mean()  # 每日全市场等权收盘
+    if len(g) < ma_window:
+        return True
+    ma = float(g.rolling(ma_window).mean().iloc[-1])
+    if ma != ma:  # NaN
+        return True
+    return float(g.iloc[-1]) > ma
+
+
 @register_strategy("atr_lowvol")
 def evaluate_day(current_date, market_window, positions, cash, universe,
                  account_state, strategy_config, aux_data):
@@ -95,10 +125,41 @@ def evaluate_day(current_date, market_window, positions, cash, universe,
     # 保证每只够买整手、避免现金闲置。用"真实收盘价 = 复权价/复权因子"，
     # 不能用复权价直接比（复权价是合成数，与真实成交价差一个 adj_factor）。
     max_price = float(cfg.get("max_price", 0) or 0)
+    # 大盘门控（P10 方向5 口径）：0=关；1=开。全市场等权收盘指数 vs MA(ma_window)。
+    # gate_mode: exit=跌破空仓（清仓等待转多）；hold=只挡买入/重进，不强制清仓。
+    market_gate = int(cfg.get("market_gate", 0) or 0)
+    ma_window = int(cfg.get("ma_window", 200))
+    gate_mode = str(cfg.get("gate_mode", "exit")).lower()
+    # 域内排序方式（Lowvol+ 方向，默认纯 ATR%）：atr | momentum | momentum_value
+    ranking = str(cfg.get("ranking", "atr")).lower()
+    # MAX 彩票效应过滤：剔除 eligible 内 MAX5（近 20 日最大单日收益）最高的 max_exclude_pct 分位（0=关）
+    max_exclude_pct = float(cfg.get("max_exclude_pct", 0) or 0)
+    # 换手/持仓缓冲：调仓时保留仍在 top(n_hold+buffer) 内的现有持仓，减少换手（0=关）
+    rebalance_buffer = int(cfg.get("rebalance_buffer", 0) or 0)
 
     if not is_rebalance_day(current_date, freq,
                             (aux_data or {}).get("trading_calendar")):
         return _hold_decision(current_date, positions, stop_loss)
+
+    # 大盘门控：仅调仓日检查。跌破 MA 时不建仓/不重进（exit 连持仓一并清空，
+    # hold 保留现有持仓但不再新买，直接等同"空仓/保持"语义，不做任何交易）。
+    if market_gate and not _market_ma_ok(market_window, current_date, ma_window):
+        diag = {"warnings": ["market_gate_closed_%s" % gate_mode],
+                "candidate_total": 0, "candidate_passed": 0}
+        if gate_mode == "exit":
+            return {
+                "sell_decisions": [], "buy_candidates": [],
+                "target_weights": {},  # 空 target -> 引擎 full exit（清仓到现金）
+                "target_positions": [], "blocked_candidates": [],
+                "diagnostics": diag,
+                "logs": ["%s market gate closed (MA%d) -> exit to cash" % (current_date, ma_window)],
+            }
+        return {
+            "sell_decisions": [], "buy_candidates": [],
+            "target_positions": [], "blocked_candidates": [],
+            "diagnostics": diag,
+            "logs": ["%s market gate closed (MA%d) -> hold, no re-enter" % (current_date, ma_window)],
+        }
 
     valid = [c for c in universe
              if c in market_window and len(market_window[c]) >= min_history]
@@ -111,7 +172,7 @@ def evaluate_day(current_date, market_window, positions, cash, universe,
             "logs": ["%s no valid universe" % current_date],
         }
 
-    eligible = []
+    eligible = []  # [code, atr_pct, ret_12_1, bp]
     price_filtered = 0
     for c in valid:
         df = market_window[c]
@@ -140,18 +201,54 @@ def evaluate_day(current_date, market_window, positions, cash, universe,
             roe = get_roe_asof(c, current_date)
             if roe is None or roe <= 0:
                 continue
-        # 动量门控：12-1 月收益 > 0（跳过最近 1 月）
-        if momentum_gate:
-            close = df["close"].astype(float).values
-            if len(close) >= 252:
-                ret_12_1 = close[-21] / close[-252] - 1.0 if close[-252] > 0 else 0.0
-                if ret_12_1 <= 0:
-                    continue
-        eligible.append((c, ap))
+        # 动量 12-1 月收益（同时用于门控与 momentum 排序）
+        close = df["close"].astype(float).values
+        ret_12_1 = 0.0
+        if len(close) >= 252:
+            ret_12_1 = (close[-21] / close[-252] - 1.0) if close[-252] > 0 else 0.0
+        if momentum_gate and ret_12_1 <= 0:
+            continue
+        # 价值 BP = 1/pb（缺失记 0，rank 时中性）
+        pbv = last.get("pb")
+        bp = (1.0 / float(pbv)) if (pbv is not None and float(pbv) > 0) else 0.0
+        eligible.append([c, ap, ret_12_1, bp])
 
-    # 按 ATR% 升序取前 n_hold（低波动优先）
-    eligible.sort(key=lambda x: x[1])
-    selected = [c for c, _ in eligible[:n_hold]]
+    # MAX5 彩票效应过滤：近 20 日最大单日收益（Bali 2011 近似口径），剔除最高 max_exclude_pct 分位
+    if max_exclude_pct > 0 and len(eligible) > n_hold:
+        for r in eligible:
+            df = market_window[r[0]]
+            rr = df["close"].astype(float).pct_change().dropna()
+            r.append(float(rr.tail(20).max()) if len(rr) > 0 else 0.0)  # [c, ap, ret, bp, max5]
+        maxs = sorted(r[4] for r in eligible)
+        thr = maxs[max(0, int(len(maxs) * (1.0 - max_exclude_pct)) - 1)]
+        eligible = [r for r in eligible if r[4] <= thr]
+
+    # 域内排序（Lowvol+）：atr=纯ATR升序；momentum=12-1动量降序；momentum_value=动量+BP 标准化等权
+    if ranking == "momentum":
+        eligible.sort(key=lambda r: r[2], reverse=True)
+    elif ranking == "momentum_value":
+        moms = np.array([r[2] for r in eligible], dtype=float)
+        bps = np.array([r[3] for r in eligible], dtype=float)
+        z_m = (moms - moms.mean()) / (moms.std() + 1e-12)
+        z_b = (bps - bps.mean()) / (bps.std() + 1e-12)
+        for i, r in enumerate(eligible):
+            r.append(z_m[i] + z_b[i])  # [c, ap, ret, bp, max5/score, score]
+        eligible.sort(key=lambda r: r[-1], reverse=True)
+    else:  # atr
+        eligible.sort(key=lambda r: r[1])
+
+    # 选择：缓冲模式下保留仍在 top(n_hold+buffer) 内的现有持仓，其余按排序补足到 n_hold
+    pool = eligible[:n_hold + rebalance_buffer]
+    if rebalance_buffer > 0 and pool:
+        held = {p["code"] for p in positions}
+        selected = [r[0] for r in pool if r[0] in held]
+        for r in pool:
+            if len(selected) >= n_hold:
+                break
+            if r[0] not in selected:
+                selected.append(r[0])
+    else:
+        selected = [r[0] for r in pool[:n_hold]]
 
     if not selected:
         return {

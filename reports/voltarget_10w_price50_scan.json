@@ -1,0 +1,102 @@
+[
+  {
+    "vt": 0.0,
+    "dir": "D:/QuantLab/reports/20260815_110119_ccfb82_atr_10w_price50",
+    "perf": {
+      "total_return": 2.088021,
+      "annual_return": 0.289907,
+      "max_drawdown": -0.247957,
+      "sharpe": 0.893883,
+      "calmar": 1.169184,
+      "win_rate": 0.738776,
+      "n_trades": 651,
+      "n_buy": 436,
+      "n_sell": 215,
+      "n_open": 221,
+      "avg_holding_days": 120.991837,
+      "excess_return": 1.479244,
+      "information_ratio": 0.502346,
+      "tracking_error": 0.183592
+    }
+  },
+  {
+    "vt": 0.1,
+    "dir": "D:/QuantLab/reports/20260815_111420_d8164f_atr_10w_price50_vt0.1",
+    "perf": {
+      "total_return": 0.705641,
+      "annual_return": 0.097973,
+      "max_drawdown": -0.152144,
+      "sharpe": 0.830535,
+      "calmar": 0.643951,
+      "win_rate": 0.712121,
+      "n_trades": 471,
+      "n_buy": 295,
+      "n_sell": 176,
+      "n_open": 121,
+      "avg_holding_days": 115.419192,
+      "excess_return": 0.096864,
+      "information_ratio": -0.031444,
+      "tracking_error": 0.166265
+    }
+  },
+  {
+    "vt": 0.15,
+    "dir": "D:/QuantLab/reports/20260815_112755_3aa944_atr_10w_price50_vt0.15",
+    "perf": {
+      "total_return": 1.027946,
+      "annual_return": 0.142723,
+      "max_drawdown": -0.208561,
+      "sharpe": 0.797053,
+      "calmar": 0.684322,
+      "win_rate": 0.718182,
+      "n_trades": 543,
+      "n_buy": 346,
+      "n_sell": 197,
+      "n_open": 152,
+      "avg_holding_days": 115.954545,
+      "excess_return": 0.419169,
+      "information_ratio": 0.139125,
+      "tracking_error": 0.168261
+    }
+  },
+  {
+    "vt": 0.18,
+    "dir": "D:/QuantLab/reports/20260815_114058_212113_atr_10w_price50_vt0.18",
+    "perf": {
+      "total_return": 1.465596,
+      "annual_return": 0.203488,
+      "max_drawdown": -0.210486,
+      "sharpe": 0.879646,
+      "calmar": 0.96675,
+      "win_rate": 0.729258,
+      "n_trades": 580,
+      "n_buy": 377,
+      "n_sell": 203,
+      "n_open": 176,
+      "avg_holding_days": 123.978166,
+      "excess_return": 0.856819,
+      "information_ratio": 0.313592,
+      "tracking_error": 0.171359
+    }
+  },
+  {
+    "vt": 0.2,
+    "dir": "D:/QuantLab/reports/20260815_115409_c96ed1_atr_10w_price50_vt0.2",
+    "perf": {
+      "total_return": 1.603356,
+      "annual_return": 0.222615,
+      "max_drawdown": -0.222032,
+      "sharpe": 0.86782,
+      "calmar": 1.002626,
+      "win_rate": 0.72766,
+      "n_trades": 604,
+      "n_buy": 398,
+      "n_sell": 206,
+      "n_open": 193,
+      "avg_holding_days": 121.540426,
+      "excess_return": 0.994579,
+      "information_ratio": 0.362815,
+      "tracking_error": 0.174945
+    }
+  }
+]
