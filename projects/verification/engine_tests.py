@@ -22,7 +22,7 @@ def test_1_known_result():
     # 取2023年数据做简单验证
     idx = daily.index
     dates = idx.get_level_values("trade_date")
-    mask = (dates >= pd.Timestamp("2023-01-01").date()) & (dates <= pd.Timestamp("2023-12-31").date())
+    mask = (dates >= pd.Timestamp("2023-01-01")) & (dates <= pd.Timestamp("2023-12-31"))
     daily_2023 = daily.loc[mask].copy()
     
     # 计算等权组合收益

@@ -56,7 +56,7 @@ def f2_liquidity():
     
     idx = daily.index
     dates = idx.get_level_values("trade_date")
-    mask = dates >= pd.Timestamp("2026-01-01").date()
+    mask = dates >= pd.Timestamp("2026-01-01")
     recent = daily.loc[mask]
     
     # 按股票统计日均成交额

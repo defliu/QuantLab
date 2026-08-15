@@ -1,0 +1,102 @@
+{
+  "summary_schema_version": "0.2",
+  "run_id": "20260815_234612_e99df4",
+  "run_started_at": "2026-08-15T23:46:12",
+  "runtime_seconds": 534.29,
+  "config_name": "atr_10w_price50_max020_liquid",
+  "results_dir": "D:/QuantLab/reports/20260815_234612_e99df4_atr_10w_price50_max020_liquid",
+  "strategy_core_version": "0.2.0",
+  "config_hash": "c41ba3fe1694e6d980af341e8f4ddb4d9529388f458b9b21ab4731ac28265309",
+  "data_hash": "9df026d6c59a4ca5f997e93f0bb3444fcfaa8772e77f2298ce4eb8310e768ce9",
+  "universe_hash": "84bd01746c233f8bddd2c1d6f4215100c78aeebd639a2076d13922f99438b165",
+  "data_source": "astock",
+  "data_path": "E:/astock/daily/stock_daily.parquet",
+  "data_mtime": "2026-08-08T23:09:14",
+  "data_adjustment": "hfq",
+  "data_coverage_actual": {
+    "min_date": "2009-01-05",
+    "max_date": "2026-08-07",
+    "n_codes": 5821,
+    "n_rows_after_dedup": 14485418,
+    "dedup_count": 0,
+    "universe_coverage": {
+      "universe_size": 3757,
+      "codes_with_data": 3754,
+      "codes_missing": [
+        "001248.SZ",
+        "301583.SZ",
+        "688825.SH"
+      ],
+      "missing_count": 3
+    }
+  },
+  "data_dedup_applied": false,
+  "data_concurrent_sync_warning": false,
+  "data_wal_detected": false,
+  "data_wal_warning_message": "",
+  "benchmark_code": "000300.SH",
+  "benchmark_available": true,
+  "benchmark_note": "",
+  "sector_heat_available": false,
+  "sector_heat_mode": "zero",
+  "sector_heat_warning": "historical sector heat unavailable; sector score set to 0",
+  "sample_period_warning": {
+    "is_short_sample": false,
+    "requested_range": [
+      "2019-01-01",
+      "2026-06-30"
+    ],
+    "actual_range": [
+      "2019-01-02",
+      "2026-06-30"
+    ],
+    "trading_days": 1815,
+    "warning": ""
+  },
+  "execution": {
+    "price": "next_open",
+    "slippage": 0.001,
+    "commission_rate": 0.00025,
+    "tax_rate": 0.0005
+  },
+  "performance": {
+    "total_return": 3.078733,
+    "annual_return": 0.42746,
+    "max_drawdown": -0.229638,
+    "sharpe": 1.052219,
+    "calmar": 1.86145,
+    "win_rate": 0.733068,
+    "n_trades": 672,
+    "n_buy": 455,
+    "n_sell": 217,
+    "n_open": 238,
+    "avg_holding_days": 160.179283,
+    "excess_return": 2.469956,
+    "information_ratio": 0.695231,
+    "tracking_error": 0.190831
+  },
+  "portfolio_end": {
+    "total_asset": 407873.32159,
+    "cash": 3392.63549,
+    "market_value": 404480.6861,
+    "n_positions": 5
+  },
+  "diagnostics_aggregate": {
+    "warnings_unique": [
+      "hold"
+    ],
+    "candidate_total_avg_per_day": 0.2898071625344353,
+    "candidate_passed_avg_per_day": 0.2898071625344353,
+    "unfilled_order_count": 66,
+    "strategy_specific": {
+      "atr_lowvol": {
+        "price_filtered_avg_per_day": {
+          "count": 4.310744
+        }
+      }
+    }
+  },
+  "pit_universe": {
+    "enabled": false
+  }
+}
