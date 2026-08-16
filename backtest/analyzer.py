@@ -134,6 +134,12 @@ def compute_metrics(equity_rows, trades, trading_calendar,
         end_total = float(initial_cash)
     total_return = (end_total / float(initial_cash)) - 1.0 if initial_cash > 0 else 0.0
     annual_return = total_return * _annualize_factor(n_days)
+    # CAGR（复利年化）：保留 annual_return 线性口径不动（下游兼容），新增 cagr
+    # 以复利为准。total_return <= -1 或样本过短时退化为线性口径兜底。
+    if n_days > 0 and (1.0 + total_return) > 0:
+        cagr = (1.0 + total_return) ** (252.0 / n_days) - 1.0
+    else:
+        cagr = annual_return
 
     equity_series = [float(r["total_asset"]) for r in equity_rows]
     daily_returns = [float(r["daily_return"]) for r in equity_rows[1:]]  # skip day 0
@@ -142,8 +148,10 @@ def compute_metrics(equity_rows, trades, trading_calendar,
     sharpe = _sharpe(daily_returns, n_days)
     if mdd != 0:
         calmar = annual_return / abs(mdd)
+        cagr_calmar = cagr / abs(mdd)
     else:
         calmar = None
+        cagr_calmar = None
 
     pairs, open_buys = _pair_trades(trades)
     n_buy = sum(1 for t in trades if t["side"] == "buy")
@@ -197,9 +205,11 @@ def compute_metrics(equity_rows, trades, trading_calendar,
     perf = {
         "total_return":     round(total_return, 6),
         "annual_return":    round(annual_return, 6),
+        "cagr":             cagr,
         "max_drawdown":     round(mdd, 6),
         "sharpe":           round(sharpe, 6),
         "calmar":           None if calmar is None else round(calmar, 6),
+        "cagr_calmar":      None if cagr_calmar is None else cagr_calmar,
         "win_rate":         round(win_rate, 6),
         "n_trades":         len(trades),
         "n_buy":            n_buy,

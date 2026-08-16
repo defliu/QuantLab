@@ -70,9 +70,10 @@ def main():
             )
             rd = report.write_all(result, config_name=name)
             p = result["summary"]["performance"]
+            ann = p.get("cagr", p["annual_return"])
             rows.append((vt, rd, p))
-            print("vt=%s  total=%.1f%%  annual=%.2f%%  dd=%.2f%%  sharpe=%.3f  n_trades=%d"
-                  % (vt, p["total_return"] * 100, p["annual_return"] * 100,
+            print("vt=%s  total=%.1f%%  cagr=%.2f%%(线性%.2f%%)  dd=%.2f%%  sharpe=%.3f  n_trades=%d"
+                  % (vt, p["total_return"] * 100, ann * 100, p["annual_return"] * 100,
                      p["max_drawdown"] * 100, p["sharpe"], p["n_trades"]))
     finally:
         reader.close()

@@ -82,7 +82,8 @@ def main():
     p = result["summary"]["performance"]
     print("results_dir:", rd)
     print("total_return  = %.4f" % p["total_return"])
-    print("annual_return = %.4f" % p["annual_return"])
+    print("cagr          = %.4f (线性 annual %.4f)" % (p.get("cagr", p["annual_return"]),
+                                                       p["annual_return"]))
     print("max_drawdown  = %.4f" % p["max_drawdown"])
     print("sharpe        = %.4f" % p["sharpe"])
     print("n_trades      = %d" % p["n_trades"])

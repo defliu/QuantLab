@@ -73,7 +73,8 @@ def run_one(config_path, results_dir):
     perf = result["summary"]["performance"]
     print("[%s] %s" % (bt["name"], rd))
     print("  total_return   = %.4f" % perf.get("total_return", 0))
-    print("  annual_return  = %.4f" % perf.get("annual_return", 0))
+    print("  cagr           = %.4f (线性 annual %.4f)"
+          % (perf.get("cagr", perf.get("annual_return", 0)), perf.get("annual_return", 0)))
     print("  max_drawdown   = %.4f" % perf.get("max_drawdown", 0))
     print("  sharpe         = %.4f" % perf.get("sharpe", 0))
     print("  n_trades       = %d" % perf.get("n_trades", 0))

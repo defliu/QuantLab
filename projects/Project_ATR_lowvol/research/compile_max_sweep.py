@@ -34,7 +34,7 @@ def find_report(tag):
 
 
 def main():
-    print("%-20s %8s %8s %9s %7s %6s %6s %7s" % ("版本", "总收益", "年化", "回撤", "夏普", "卡玛", "胜率", "交易"))
+    print("%-20s %8s %8s %9s %7s %6s %6s %7s" % ("版本", "总收益", "年化CAGR", "回撤", "夏普", "卡玛C", "胜率", "交易"))
     rows = []
     for label, tag, path in REPORTS:
         if path is None and tag:
@@ -45,11 +45,17 @@ def main():
             continue
         with open(os.path.join(path, "summary.json"), "r", encoding="utf-8") as f:
             p = json.load(f)["performance"]
-        calmar = p["annual_return"] / abs(p["max_drawdown"]) if p["max_drawdown"] else 0
+        # 新 summary 自带 cagr/cagr_calmar；旧报告无则回退线性口径（T1 双口径后应全部带 cagr）
+        ann = p.get("cagr", p["annual_return"])
+        cmar = p.get("cagr_calmar")
+        if cmar is None:
+            cmar = p["annual_return"] / abs(p["max_drawdown"]) if p["max_drawdown"] else 0
         print("%-20s %7.1f%% %7.2f%% %8.2f%% %6.3f %6.2f %6.1f%% %7d" % (
-            label, p["total_return"]*100, p["annual_return"]*100, p["max_drawdown"]*100,
-            p["sharpe"], calmar, p["win_rate"]*100, p["n_trades"]))
-        rows.append({"label": label, "done": True, "perf": p, "calmar": calmar, "dir": path})
+            label, p["total_return"]*100, ann*100, p["max_drawdown"]*100,
+            p["sharpe"], cmar, p["win_rate"]*100, p["n_trades"]))
+        rows.append({"label": label, "done": True, "perf": p, "cagr": ann,
+                     "cagr_calmar": cmar, "annual_return": p.get("annual_return"),
+                     "dir": path})
 
 
 if __name__ == "__main__":

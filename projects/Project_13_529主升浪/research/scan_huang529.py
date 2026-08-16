@@ -84,13 +84,16 @@ def run_one(name, overrides, results_dir):
     perf = result["summary"]["performance"]
     print("[%s] %s" % (name, rd))
     print("  total_return   = %.4f" % perf.get("total_return", 0))
-    print("  annual_return  = %.4f" % perf.get("annual_return", 0))
+    print("  cagr           = %.4f (线性 annual %.4f)"
+          % (perf.get("cagr", perf.get("annual_return", 0)), perf.get("annual_return", 0)))
     print("  max_drawdown   = %.4f" % perf.get("max_drawdown", 0))
     print("  sharpe         = %.4f" % perf.get("sharpe", 0))
     print("  n_trades       = %d" % perf.get("n_trades", 0))
     return {"name": name, "dir": rd,
             "total_return": perf.get("total_return", 0),
             "annual_return": perf.get("annual_return", 0),
+            "cagr": perf.get("cagr", perf.get("annual_return", 0)),
+            "cagr_calmar": perf.get("cagr_calmar"),
             "max_drawdown": perf.get("max_drawdown", 0),
             "sharpe": perf.get("sharpe", 0),
             "n_trades": perf.get("n_trades", 0)}
@@ -107,14 +110,14 @@ def main():
             summary.append({"name": name, "error": str(e)})
     with open(OUT_SUMMARY, "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)
-    print("\n=== 汇总 ===")
+    print("\n=== 汇总（年化=CAGR）===")
     for s in summary:
         if "error" in s:
             print("%-24s ERROR %s" % (s["name"], s["error"]))
         else:
-            print("%-24s total=%7.2f%% annual=%6.2f%% mdd=%7.2f%% sharpe=%.3f trades=%d"
-                  % (s["name"], 100 * s["total_return"], 100 * s["annual_return"],
-                     100 * s["max_drawdown"], s["sharpe"], s["n_trades"]))
+            print("%-24s total=%7.2f%% cagr=%6.2f%%(线性%6.2f%%) mdd=%7.2f%% sharpe=%.3f trades=%d"
+                  % (s["name"], 100 * s["total_return"], 100 * s.get("cagr", s["annual_return"]),
+                     100 * s["annual_return"], 100 * s["max_drawdown"], s["sharpe"], s["n_trades"]))
     print("汇总: %s" % OUT_SUMMARY)
 
 

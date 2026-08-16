@@ -23,12 +23,13 @@ def main():
     with open(SCAN_JSON, "r", encoding="utf-8") as f:
         rows = json.load(f)  # [{vt, dir, perf}]
 
-    print("=== 业绩指标 ===")
+    print("=== 业绩指标（年化=CAGR，括号为线性年化）===")
     for r in rows:
         p = r["perf"]
-        print("VT=%s  总收益 %6.1f%%  年化 %5.2f%%  回撤 %-6.2f%%  夏普 %.3f  卡玛 %.2f  胜率 %5.1f%%  交易 %d  未成交 %d"
-              % (r["vt"], p["total_return"] * 100, p["annual_return"] * 100,
-                 p["max_drawdown"] * 100, p["sharpe"], p["calmar"],
+        ann = p.get("cagr", p["annual_return"])
+        print("VT=%s  总收益 %6.1f%%  年化 %5.2f%%(线性%5.2f%%)  回撤 %-6.2f%%  夏普 %.3f  卡玛 %.2f  胜率 %5.1f%%  交易 %d  未成交 %d"
+              % (r["vt"], p["total_return"] * 100, ann * 100, p["annual_return"] * 100,
+                 p["max_drawdown"] * 100, p["sharpe"], p.get("cagr_calmar", p["calmar"]),
                  p["win_rate"] * 100, p["n_trades"], p.get("unfilled_order_count", 0)))
 
     # 分年度 + 持仓 + 资金利用率
@@ -65,17 +66,20 @@ def main():
     A("> **任务**: T-20260815-001 —— 在部署配置 `atr_10w_price50.yaml`（10万/8只/等权/无杠杆/真实价<50/2019-2026）")
     A("> 基础上叠加 vol_target 无杠杆 4 版扫描，看对 -24.8% 回撤的压降与收益代价。")
     A("> **口径**: 无杠杆时 target_leverage=1.0 为硬上限，vol_target 只能向下缩敞口（削回撤），不能加杠杆。")
+    A("> **年化口径**: 下表年化为 **CAGR（复利）**，括号内为线性年化（旧口径）；卡玛=CAGR/回撤。")
     A("")
     A("## 一、业绩指标")
     A("")
-    A("| 版本 | 总收益 | 年化 | 最大回撤 | 夏普 | 卡玛 | 胜率 | 交易数 | 平均持仓 | 资金利用率 |")
+    A("| 版本 | 总收益 | 年化(CAGR) | 最大回撤 | 夏普 | 卡玛 | 胜率 | 交易数 | 平均持仓 | 资金利用率 |")
     A("|---|---|---|---|---|---|---|---|---|---|")
     for r in rows:
         p = r["perf"]
         np_, nmax, nmin, util = extra[r["vt"]]
-        A("| VT%s | %6.1f%% | %5.2f%% | %-6.2f%% | %.3f | %.2f | %5.1f%% | %d | %.1f只 | %.1f%% |"
+        ann = p.get("cagr", p["annual_return"])
+        cmar = p.get("cagr_calmar", p["calmar"])
+        A("| VT%s | %6.1f%% | %5.2f%%(线性%5.2f%%) | %-6.2f%% | %.3f | %.2f | %5.1f%% | %d | %.1f只 | %.1f%% |"
           % ("%g" % r["vt"] if r["vt"] else "0(基线)", p["total_return"] * 100,
-             p["annual_return"] * 100, p["max_drawdown"] * 100, p["sharpe"], p["calmar"],
+             ann * 100, p["annual_return"] * 100, p["max_drawdown"] * 100, p["sharpe"], cmar,
              p["win_rate"] * 100, p["n_trades"], np_, util))
     A("")
     A("## 二、分年度")

@@ -12,7 +12,8 @@ ATR 低波动策略 - 等权 不杠杆 部署版（QMT 全闭环，零外部依赖）
 
 与旧版 deploy/strategy_atr_lowvol.py 的区别：
   旧版 = max_hold=3 + 止损止盈 + 条件失效退出（即回测 -5.85% 那套）。
-  本版 = 框架真实约束版：分散100只等权 + 季频再平衡（回测 +18.69% 那套）。
+  本版 = 框架真实约束版：8只等权 + 季频再平衡 + max_price50
+        + MAX5彩票过滤（回测 atr_10w_price50_a_max 那套）。
 
 数据来源：QMT 行情上下文 C（get_market_data_ex / get_turnover_rate / get_stock_list_in_sector）。
 ROE 质量门控走 xtdata.get_financial_data，若接口不可用则自动跳过该门控（不崩溃）。
@@ -42,6 +43,7 @@ CONFIG = {
         'quality_gate': 1,
         'momentum_gate': 1,
         'max_price': 50.0,          # 真实收盘价上限(元)：高价股小资金买不起整手
+        'max_exclude_pct': 0.20,    # MAX5彩票过滤：剔除近20日最大单日涨幅最高20%分位(0=关)
     },
     'rebalance': {
         'freq': 'quarterly',
@@ -53,6 +55,9 @@ CONFIG = {
         'trade_log_file': 'D:/QMT_POOL/atr_ew_trade_log.csv',
     },
 }
+
+# 构建版本标记（YYYYmmdd-HHMMSS），部署核对用
+BUILD_TAG = "20260816-141355"
 
 # ============================================================
 # 全局状态
@@ -84,6 +89,7 @@ _MIN_HISTORY = 252
 _QUALITY_GATE = 1
 _MOMENTUM_GATE = 1
 _MAX_PRICE = 50.0                 # 真实价上限(元)，0=关闭
+_MAX_EXCLUDE_PCT = 0.20           # MAX5彩票过滤：剔除近20日最大单日涨幅最高20%分位(0=关)
 _REBALANCE_FREQ = 'quarterly'
 _STOP_LOSS = -0.08
 _REBALANCE_RETRY_DAYS = 1   # 空仓兜底：未建仓时每隔几天重试一次（1=每天）
@@ -101,7 +107,7 @@ _TRADE_LOG_FILE = 'D:/QMT_POOL/atr_ew_trade_log.csv'
 def _load_config():
     global _STRATEGY_CAPITAL, _ACCOUNT_ID, _N_HOLD, _ATR_THRESHOLD
     global _MIN_TURNOVER, _MAX_TURNOVER, _MIN_HISTORY, _QUALITY_GATE
-    global _MOMENTUM_GATE, _MAX_PRICE, _REBALANCE_FREQ, _STOP_LOSS
+    global _MOMENTUM_GATE, _MAX_PRICE, _MAX_EXCLUDE_PCT, _REBALANCE_FREQ, _STOP_LOSS
     global _HOLDINGS_FILE, _NAV_FILE, _TRADE_LOG_FILE
 
     config_path = 'D:/QMT_STRATEGIES/config/atr_lowvol_equalweight_config.yaml'
@@ -152,6 +158,8 @@ def _load_config():
                         _MOMENTUM_GATE = int(float(v))
                     elif k == 'max_price':
                         _MAX_PRICE = float(v)
+                    elif k == 'max_exclude_pct':
+                        _MAX_EXCLUDE_PCT = float(v)
                 elif section == 'rebalance':
                     if k == 'freq':
                         _REBALANCE_FREQ = str(v).strip("'\"")
@@ -164,8 +172,8 @@ def _load_config():
                         _NAV_FILE = str(v).strip("'\"")
                     elif k == 'trade_log_file':
                         _TRADE_LOG_FILE = str(v).strip("'\"")
-        print("[ATR_EW] 配置加载完成: N_HOLD=%d ATR<%.2f%% turnover[%.1f,%.1f] max_price=%.0f freq=%s"
-              % (_N_HOLD, _ATR_THRESHOLD, _MIN_TURNOVER, _MAX_TURNOVER, _MAX_PRICE, _REBALANCE_FREQ))
+        print("[ATR_EW] 配置加载完成: N_HOLD=%d ATR<%.2f%% turnover[%.1f,%.1f] max_price=%.0f max_exclude_pct=%.2f freq=%s"
+              % (_N_HOLD, _ATR_THRESHOLD, _MIN_TURNOVER, _MAX_TURNOVER, _MAX_PRICE, _MAX_EXCLUDE_PCT, _REBALANCE_FREQ))
     except Exception as e:
         print("[ATR_EW] 配置加载失败: %s, 使用默认值" % e)
 
@@ -801,6 +809,23 @@ def _run_screening(C):
                 filtered.append((code, atr_pct))
             eligible = filtered
 
+    # MAX5 彩票效应过滤：近20日最大单日涨幅（pct_change tail(20).max，与策略侧
+    # strategy/atr_lowvol.py L216-224 同口径），剔除最高 _MAX_EXCLUDE_PCT 分位（0=关）
+    if _MAX_EXCLUDE_PCT > 0 and len(eligible) > _N_HOLD:
+        max5_list = []
+        for code, _ in eligible:
+            try:
+                df5 = _g_all_data[code]
+                rr = df5['close'].astype(float).pct_change().dropna()
+                max5_list.append(float(rr.tail(20).max()) if len(rr) > 0 else 0.0)
+            except Exception:
+                max5_list.append(0.0)
+        max5_sorted = sorted(max5_list)
+        thr = max5_sorted[max(0, int(len(max5_sorted) * (1.0 - _MAX_EXCLUDE_PCT)) - 1)]
+        eligible = [e for e, m5 in zip(eligible, max5_list) if m5 <= thr]
+        print("[ATR_EW] MAX5过滤: 剔除最高%.0f%%分位 -> 剩余%d只 (阈值%.2f)"
+              % (_MAX_EXCLUDE_PCT * 100, len(eligible), thr))
+
     # 按 ATR% 升序取前 N_HOLD（低波动优先）
     eligible.sort(key=lambda x: x[1])
     selected = [c for c, _ in eligible[:_N_HOLD]]
@@ -956,7 +981,7 @@ class StrategyRunner(object):
     def init(self, C):
         global _g_initialized, _g_cooling_until, _g_last_rebalance_key
         print("[ATR_EW] =============================================")
-        print("[ATR_EW] ATR低波动-等权不杠杆 初始化...")
+        print("[ATR_EW] ATR低波动-等权不杠杆 初始化... build=%s" % BUILD_TAG)
         print("[ATR_EW] =============================================")
 
         _load_config()
@@ -964,9 +989,9 @@ class StrategyRunner(object):
         _reconcile_own_holdings(C)
 
         print("[ATR_EW] 初始化完成 账号=%s" % _ACCOUNT_ID)
-        print("[ATR_EW] 本金=%d N_HOLD=%d 季频=%s ROE门控=%d 动量门控=%d 止损=%.2f"
+        print("[ATR_EW] 本金=%d N_HOLD=%d 季频=%s ROE门控=%d 动量门控=%d max_price=%.0f MAX5剔除=%.0f%% 止损=%.2f"
               % (_STRATEGY_CAPITAL, _N_HOLD, _REBALANCE_FREQ, _QUALITY_GATE,
-                 _MOMENTUM_GATE, _STOP_LOSS))
+                 _MOMENTUM_GATE, _MAX_PRICE, _MAX_EXCLUDE_PCT * 100, _STOP_LOSS))
 
         try:
             if C.do_back_test or C.do_backtest:

@@ -16,13 +16,14 @@ def load_perf(path):
         return json.load(f)["performance"]
 
 # 1) 业绩指标
-print("=== 业绩指标 ===")
+print("=== 业绩指标（年化=CAGR）===")
 perfs = {}
 for name, path in REPORTS.items():
     p = load_perf(path)
     perfs[name] = p
-    print("%-14s 总收益 %6.1f%%  年化 %5.2f%%  回撤 %-6.2f%%  夏普 %.3f  胜率 %5.1f%%  交易 %d"
-          % (name, p["total_return"] * 100, p["annual_return"] * 100,
+    ann = p.get("cagr", p["annual_return"])
+    print("%-14s 总收益 %6.1f%%  年化 %5.2f%%(线性%5.2f%%)  回撤 %-6.2f%%  夏普 %.3f  胜率 %5.1f%%  交易 %d"
+          % (name, p["total_return"] * 100, ann * 100, p["annual_return"] * 100,
              p["max_drawdown"] * 100, p["sharpe"], p["win_rate"] * 100, p["n_trades"]))
 
 # 2) 分年度 + 持仓数 + 资金利用率

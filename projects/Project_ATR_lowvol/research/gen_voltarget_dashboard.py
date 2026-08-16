@@ -232,7 +232,7 @@ def make_radar_svg(rows, W=560, H=560, cx=None, cy=None, R=210):
     def norm(v, lo, hi):
         return max(0.0, min(1.0, (v - lo) / (hi - lo)))
     perfs = [r["perf"] for r in rows]
-    annuals = [p["annual_return"] * 100 for p in perfs]
+    annuals = [p.get("cagr", p["annual_return"]) * 100 for p in perfs]
     sharpes = [p["sharpe"] for p in perfs]
     calmars = [p["calmar"] for p in perfs]
     dds = [p["max_drawdown"] * -100 for p in perfs]
@@ -313,10 +313,10 @@ def build_html(rows):
         <div class="card %s" style="--accent:%s">
           <div class="card-head"><span class="vt-name">%s</span>
             <span class="pill">%s</span></div>
-          <div class="metric"><span class="k">年化收益</span><span class="v">%s</span></div>
+          <div class="metric"><span class="k">年化(CAGR)</span><span class="v">%s</span></div>
           <div class="metric"><span class="k">最大回撤</span><span class="v neg">%s</span></div>
           <div class="metric"><span class="k">夏普</span><span class="v">%.3f</span></div>
-          <div class="metric"><span class="k">卡玛</span><span class="v">%.2f</span></div>
+          <div class="metric"><span class="k">卡玛(CAGR)</span><span class="v">%.2f</span></div>
           <div class="metric"><span class="k">总收益</span><span class="v">%s</span></div>
           <div class="metric"><span class="k">胜率 / 交易</span><span class="v">%.1f%% / %d</span></div>
           <div class="metric"><span class="k">平均持仓</span><span class="v">%.1f 只</span></div>
@@ -324,8 +324,8 @@ def build_html(rows):
         </div>""" % (
             "base" if is_base else "", r["color"], r["name"],
             "部署基线" if is_base else "",
-            fmt_pct(p["annual_return"]), fmt_pct(p["max_drawdown"]),
-            p["sharpe"], p["calmar"], fmt_pct(p["total_return"]),
+            fmt_pct(p.get("cagr", p["annual_return"])), fmt_pct(p["max_drawdown"]),
+            p["sharpe"], p.get("cagr_calmar", p["calmar"]), fmt_pct(p["total_return"]),
             p["win_rate"] * 100, p["n_trades"], r["n_pos"][0], r["util"] * 100))
     cards_html = "\n".join(cards)
     # 表格
@@ -338,8 +338,8 @@ def build_html(rows):
           <td>%s</td><td>%s</td><td>%s</td><td>%.3f</td><td>%.2f</td>
           <td>%.1f%%</td><td>%d</td><td>%.1f</td><td>%.1f%%</td>
         </tr>""" % ("row-base" if r["vt"] == 0.0 else "", r["color"], r["name"],
-                    fmt_pct(p["total_return"]), fmt_pct(p["annual_return"]),
-                    fmt_pct(p["max_drawdown"]), p["sharpe"], p["calmar"],
+                    fmt_pct(p["total_return"]), fmt_pct(p.get("cagr", p["annual_return"])),
+                    fmt_pct(p["max_drawdown"]), p["sharpe"], p.get("cagr_calmar", p["calmar"]),
                     p["win_rate"] * 100, p["n_trades"], r["n_pos"][0], r["util"] * 100))
     table = "\n".join(trs)
     # 图例
@@ -443,8 +443,8 @@ def build_html(rows):
   <h2 class="sec">六、明细对照表</h2>
   <div class="panel">
     <table>
-      <thead><tr><th>版本</th><th>总收益</th><th>年化</th><th>最大回撤</th><th>夏普</th>
-        <th>卡玛</th><th>胜率</th><th>交易数</th><th>平均持仓</th><th>资金利用率</th></tr></thead>
+      <thead><tr><th>版本</th><th>总收益</th><th>年化(CAGR)</th><th>最大回撤</th><th>夏普</th>
+        <th>卡玛(CAGR)</th><th>胜率</th><th>交易数</th><th>平均持仓</th><th>资金利用率</th></tr></thead>
       <tbody>__TABLE__</tbody>
     </table>
   </div>

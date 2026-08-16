@@ -54,6 +54,7 @@ for cfg_name in CONFIGS:
         "config": cfg_name,
         "total_return": perf.get("total_return"),
         "annual_return": perf.get("annual_return"),
+        "cagr": perf.get("cagr"),
         "max_drawdown": perf.get("max_drawdown"),
         "sharpe": perf.get("sharpe"),
         "n_trades": perf.get("n_trades"),

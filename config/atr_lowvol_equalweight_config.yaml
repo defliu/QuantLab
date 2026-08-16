@@ -17,6 +17,7 @@ screening:
   quality_gate: 1               # ROE>0 质量门控(1开/0关)
   momentum_gate: 1              # 12-1月动量>0 门控(1开/0关)
   max_price: 50.0               # 真实收盘价上限(元)：高价股小资金买不起整手；0=关闭
+  max_exclude_pct: 0.20         # MAX5彩票过滤：剔除近20日最大单日涨幅最高20%分位；0=关闭（与研究基线 atr_10w_price50_a_max.yaml 一致）
 
 rebalance:
   freq: quarterly               # weekly|monthly|quarterly（季频=每季度首个交易日）
