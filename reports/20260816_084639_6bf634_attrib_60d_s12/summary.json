@@ -1,0 +1,144 @@
+{
+  "summary_schema_version": "0.2",
+  "run_id": "20260816_084639_6bf634",
+  "run_started_at": "2026-08-16T08:46:39",
+  "runtime_seconds": 738.005,
+  "config_name": "attrib_60d_s12",
+  "results_dir": "D:/QuantLab/reports/20260816_084639_6bf634_attrib_60d_s12",
+  "strategy_core_version": "0.2.0",
+  "config_hash": "",
+  "data_hash": "5b2ffa275dc535dbc33dd658bb3ec2dedc76970969404a423bb7e627c3de8667",
+  "universe_hash": "",
+  "data_source": "astock",
+  "data_path": "E:/astock/daily/stock_daily.parquet",
+  "data_mtime": "2026-08-08T23:09:14",
+  "data_adjustment": "hfq",
+  "data_coverage_actual": {
+    "min_date": "2009-01-05",
+    "max_date": "2026-08-07",
+    "n_codes": 5821,
+    "n_rows_after_dedup": 14485418,
+    "dedup_count": 0,
+    "universe_coverage": {
+      "universe_size": 5488,
+      "codes_with_data": 5443,
+      "codes_missing": [
+        "000022.SZ",
+        "000024.SZ",
+        "000033.SZ",
+        "000511.SZ",
+        "000515.SZ",
+        "000522.SZ",
+        "000527.SZ",
+        "000562.SZ",
+        "000569.SZ",
+        "000578.SZ",
+        "000594.SZ",
+        "000602.SZ",
+        "000748.SZ",
+        "000916.SZ",
+        "000979.SZ",
+        "001248.SZ",
+        "300186.SZ",
+        "300372.SZ",
+        "301583.SZ",
+        "301677.SZ",
+        "600001.SH",
+        "600003.SH",
+        "600005.SH",
+        "600087.SH",
+        "600102.SH",
+        "600253.SH",
+        "600263.SH",
+        "600270.SH",
+        "600357.SH",
+        "600432.SH",
+        "600553.SH",
+        "600591.SH",
+        "600607.SH",
+        "600631.SH",
+        "600656.SH",
+        "600680.SH",
+        "600806.SH",
+        "600832.SH",
+        "600840.SH",
+        "600842.SH",
+        "600991.SH",
+        "601268.SH",
+        "601299.SH",
+        "688806.SH",
+        "688825.SH"
+      ],
+      "missing_count": 45
+    }
+  },
+  "data_dedup_applied": false,
+  "data_concurrent_sync_warning": false,
+  "data_wal_detected": false,
+  "data_wal_warning_message": "",
+  "benchmark_code": "000300.SH",
+  "benchmark_available": true,
+  "benchmark_note": "",
+  "sector_heat_available": false,
+  "sector_heat_mode": "zero",
+  "sector_heat_warning": "historical sector heat unavailable; sector score set to 0",
+  "sample_period_warning": {
+    "is_short_sample": false,
+    "requested_range": [
+      "2019-01-01",
+      "2026-06-30"
+    ],
+    "actual_range": [
+      "2019-01-02",
+      "2026-06-30"
+    ],
+    "trading_days": 1815,
+    "warning": ""
+  },
+  "execution": {
+    "price": "next_open",
+    "slippage": 0.001,
+    "commission_rate": 0.00025,
+    "tax_rate": 0.0005
+  },
+  "performance": {
+    "total_return": 0.32037,
+    "annual_return": 0.044481,
+    "max_drawdown": -0.328002,
+    "sharpe": 0.297496,
+    "calmar": 0.135612,
+    "win_rate": 0.451049,
+    "n_trades": 565,
+    "n_buy": 286,
+    "n_sell": 279,
+    "n_open": 7,
+    "avg_holding_days": 48.891608,
+    "excess_return": -0.288408,
+    "information_ratio": -0.145624,
+    "tracking_error": 0.183917
+  },
+  "portfolio_end": {
+    "total_asset": 1320369.502027,
+    "cash": 169172.977527,
+    "market_value": 1151196.5245,
+    "n_positions": 7
+  },
+  "diagnostics_aggregate": {
+    "warnings_unique": [
+      "hold"
+    ],
+    "candidate_total_avg_per_day": 6.956473829201102,
+    "candidate_passed_avg_per_day": 0.1630853994490358,
+    "unfilled_order_count": 15,
+    "strategy_specific": {
+      "huang_529": {
+        "new_signals_avg_per_day": {
+          "count": 1.592837
+        }
+      }
+    }
+  },
+  "pit_universe": {
+    "enabled": false
+  }
+}

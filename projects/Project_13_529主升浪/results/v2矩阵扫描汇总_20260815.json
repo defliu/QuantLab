@@ -1,0 +1,47 @@
+[
+  {
+    "name": "v3_n8_h60_s12",
+    "dir": "D:/QuantLab/reports/20260816_091053_178b19_v3_n8_h60_s12",
+    "total_return": 0.32037,
+    "annual_return": 0.044481,
+    "max_drawdown": -0.328002,
+    "sharpe": 0.297496,
+    "n_trades": 565
+  },
+  {
+    "name": "v3_n12_h60_s12",
+    "dir": "D:/QuantLab/reports/20260816_092113_30bf87_v3_n12_h60_s12",
+    "total_return": 0.398244,
+    "annual_return": 0.055293,
+    "max_drawdown": -0.310019,
+    "sharpe": 0.339859,
+    "n_trades": 835
+  },
+  {
+    "name": "v3_n16_h60_s12",
+    "dir": "D:/QuantLab/reports/20260816_093145_7071c2_v3_n16_h60_s12",
+    "total_return": 0.822635,
+    "annual_return": 0.114217,
+    "max_drawdown": -0.322595,
+    "sharpe": 0.53018,
+    "n_trades": 1104
+  },
+  {
+    "name": "v3_n8_gate_hold",
+    "dir": "D:/QuantLab/reports/20260816_094200_6dfa6d_v3_n8_gate_hold",
+    "total_return": 0.697269,
+    "annual_return": 0.096811,
+    "max_drawdown": -0.21761,
+    "sharpe": 0.517016,
+    "n_trades": 387
+  },
+  {
+    "name": "v3_n8_gate_exit_refill",
+    "dir": "D:/QuantLab/reports/20260816_095159_0d5913_v3_n8_gate_exit_refill",
+    "total_return": -0.064564,
+    "annual_return": -0.008964,
+    "max_drawdown": -0.442892,
+    "sharpe": 0.015841,
+    "n_trades": 702
+  }
+]

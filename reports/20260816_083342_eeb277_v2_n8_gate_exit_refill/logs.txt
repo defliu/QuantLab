@@ -1,0 +1,3214 @@
+[WARN] SECTOR_HEAT_MODE_ZERO message="sector_heat_mode=zero, sector score forced to 0"
+
+[INFO]  2019-01-02 buy: 300087.SZ,603663.SH,002155.SZ,600674.SH,600429.SH,600021.SH,600615.SH,603377.SH (per=125000)
+[INFO]  2019-01-03 fill buy 300087.SZ vol=1300 price=90.5392 amt=117701.02
+[INFO]  2019-01-03 fill buy 603663.SH vol=7000 price=17.7203 amt=124042.19
+[INFO]  2019-01-03 fill buy 002155.SZ vol=5900 price=20.9569 amt=123645.63
+[INFO]  2019-01-03 fill buy 600674.SH vol=700 price=156.5834 amt=109608.37
+[INFO]  2019-01-03 fill buy 600429.SH vol=16100 price=7.7475 amt=124734.75
+[INFO]  2019-01-03 fill buy 600021.SH vol=7300 price=16.9019 amt=123383.91
+[INFO]  2019-01-03 fill buy 600615.SH vol=200 price=567.1676 amt=113433.52
+[INFO]  2019-01-03 fill buy 603377.SH vol=6200 price=19.9080 amt=123429.40
+[INFO]  2019-01-03 hold
+[INFO]  2019-01-04 hold
+[INFO]  2019-01-07 hold
+[INFO]  2019-01-08 hold
+[INFO]  2019-01-09 hold
+[INFO]  2019-01-10 hold
+[INFO]  2019-01-11 hold
+[INFO]  2019-01-14 sell: 300087.SZ(stop_loss)
+[INFO]  2019-01-14 buy: 600169.SH (per=39781)
+[INFO]  2019-01-15 fill sell 300087.SZ vol=1300 price=76.7438 amt=99766.96
+[INFO]  2019-01-15 fill buy 600169.SH vol=1400 price=27.2131 amt=38098.35
+[INFO]  2019-01-15 hold
+[INFO]  2019-01-16 hold
+[INFO]  2019-01-17 hold
+[INFO]  2019-01-18 hold
+[INFO]  2019-01-21 hold
+[INFO]  2019-01-22 hold
+[INFO]  2019-01-23 hold
+[INFO]  2019-01-24 hold
+[INFO]  2019-01-25 hold
+[INFO]  2019-01-28 hold
+[INFO]  2019-01-29 sell: 600169.SH(stop_loss)
+[INFO]  2019-01-29 buy: 601006.SH (per=101365)
+[INFO]  2019-01-30 fill sell 600169.SH vol=1400 price=23.5105 amt=32914.76
+[INFO]  2019-01-30 fill buy 601006.SH vol=6900 price=14.6057 amt=100779.13
+[INFO]  2019-01-30 sell: 603663.SH(holding_expired),002155.SZ(holding_expired),600674.SH(holding_expired),600429.SH(holding_expired),600021.SH(holding_expired),600615.SH(holding_expired),603377.SH(holding_expired)
+[INFO]  2019-01-30 buy: 600352.SH,600325.SH,000951.SZ,000429.SZ,600383.SH,002731.SZ,002014.SZ (per=4779)
+[INFO]  2019-01-31 fill sell 603663.SH vol=7000 price=18.8464 amt=131924.77
+[INFO]  2019-01-31 fill sell 002155.SZ vol=5900 price=21.4479 amt=126542.50
+[INFO]  2019-01-31 fill sell 600674.SH vol=700 price=166.2689 amt=116388.22
+[INFO]  2019-01-31 fill sell 600429.SH vol=16100 price=7.1471 amt=115068.73
+[INFO]  2019-01-31 fill sell 600021.SH vol=7300 price=17.3881 amt=126933.23
+[INFO]  2019-01-31 fill sell 600615.SH vol=200 price=563.8447 amt=112768.94
+[INFO]  2019-01-31 fill sell 603377.SH vol=6200 price=19.4806 amt=120779.66
+[ERROR] 2019-01-31 unfilled_order code=600352.SH reason=below_min_lot
+[ERROR] 2019-01-31 unfilled_order code=600325.SH reason=below_min_lot
+[INFO]  2019-01-31 fill buy 000951.SZ vol=100 price=37.9353 amt=3793.53
+[INFO]  2019-01-31 fill buy 000429.SZ vol=100 price=28.7580 amt=2875.80
+[ERROR] 2019-01-31 unfilled_order code=600383.SH reason=below_min_lot
+[INFO]  2019-01-31 fill buy 002731.SZ vol=200 price=18.7526 amt=3750.51
+[ERROR] 2019-01-31 unfilled_order code=002014.SZ reason=below_min_lot
+[INFO]  2019-01-31 buy: 601328.SH,601398.SH,600900.SH,601166.SH (per=122799)
+[INFO]  2019-02-01 fill buy 601328.SH vol=11100 price=11.0387 amt=122529.66
+[INFO]  2019-02-01 fill buy 601398.SH vol=12600 price=9.6713 amt=121858.91
+[INFO]  2019-02-01 fill buy 600900.SH vol=2500 price=48.8329 amt=122082.31
+[INFO]  2019-02-01 fill buy 601166.SH vol=1800 price=65.6500 amt=118169.97
+[INFO]  2019-02-01 hold
+[INFO]  2019-02-11 hold
+[INFO]  2019-02-12 hold
+[INFO]  2019-02-13 hold
+[INFO]  2019-02-14 hold
+[INFO]  2019-02-15 hold
+[INFO]  2019-02-18 hold
+[INFO]  2019-02-19 hold
+[INFO]  2019-02-20 hold
+[INFO]  2019-02-21 hold
+[INFO]  2019-02-22 hold
+[INFO]  2019-02-25 hold
+[INFO]  2019-02-26 hold
+[INFO]  2019-02-27 hold
+[INFO]  2019-02-28 hold
+[INFO]  2019-03-01 hold
+[INFO]  2019-03-04 hold
+[INFO]  2019-03-05 sell: 601006.SH(holding_expired)
+[INFO]  2019-03-06 fill sell 601006.SH vol=6900 price=14.7948 amt=102084.12
+[INFO]  2019-03-06 sell: 000951.SZ(holding_expired),000429.SZ(holding_expired),002731.SZ(holding_expired)
+[INFO]  2019-03-06 buy: 600023.SH,600688.SH,603567.SH (per=127510)
+[INFO]  2019-03-07 fill sell 000951.SZ vol=100 price=47.1921 amt=4719.21
+[INFO]  2019-03-07 fill sell 000429.SZ vol=100 price=29.4322 amt=2943.22
+[INFO]  2019-03-07 fill sell 002731.SZ vol=200 price=19.6443 amt=3928.86
+[INFO]  2019-03-07 fill buy 600023.SH vol=16500 price=7.7255 amt=127470.39
+[INFO]  2019-03-07 fill buy 600688.SH vol=6400 price=19.9178 amt=127474.04
+[INFO]  2019-03-07 fill buy 603567.SH vol=4600 price=27.2082 amt=125157.86
+[INFO]  2019-03-07 sell: 601328.SH(holding_expired),601398.SH(holding_expired),600900.SH(holding_expired),601166.SH(holding_expired)
+[INFO]  2019-03-07 buy: 600461.SH,600033.SH,601158.SH (per=40476)
+[INFO]  2019-03-08 fill sell 601328.SH vol=11100 price=11.3850 amt=126373.99
+[INFO]  2019-03-08 fill sell 601398.SH vol=12600 price=9.6860 amt=122043.65
+[INFO]  2019-03-08 fill sell 600900.SH vol=2500 price=49.1200 amt=122800.08
+[INFO]  2019-03-08 fill sell 601166.SH vol=1800 price=73.2922 amt=131926.02
+[INFO]  2019-03-08 fill buy 600461.SH vol=1600 price=24.9899 amt=39983.85
+[INFO]  2019-03-08 fill buy 600033.SH vol=1700 price=23.1286 amt=39318.66
+[INFO]  2019-03-08 fill buy 601158.SH vol=4800 price=8.3934 amt=40288.39
+[INFO]  2019-03-08 hold
+[INFO]  2019-03-11 buy: 600998.SH,000919.SZ (per=124954)
+[INFO]  2019-03-12 fill buy 600998.SH vol=7400 price=16.7439 amt=123905.06
+[INFO]  2019-03-12 fill buy 000919.SZ vol=4600 price=26.9748 amt=124084.21
+[INFO]  2019-03-12 hold
+[INFO]  2019-03-13 hold
+[INFO]  2019-03-14 hold
+[INFO]  2019-03-15 hold
+[INFO]  2019-03-18 hold
+[INFO]  2019-03-19 hold
+[INFO]  2019-03-20 hold
+[INFO]  2019-03-21 hold
+[INFO]  2019-03-22 hold
+[INFO]  2019-03-25 hold
+[INFO]  2019-03-26 hold
+[INFO]  2019-03-27 hold
+[INFO]  2019-03-28 hold
+[INFO]  2019-03-29 hold
+[INFO]  2019-04-01 hold
+[INFO]  2019-04-02 hold
+[INFO]  2019-04-03 sell: 600023.SH(holding_expired),600688.SH(holding_expired),603567.SH(holding_expired)
+[INFO]  2019-04-03 buy: 600886.SH,002254.SZ,601225.SH (per=85507)
+[INFO]  2019-04-04 fill sell 600023.SH vol=16500 price=7.7722 amt=128241.63
+[INFO]  2019-04-04 fill sell 600688.SH vol=6400 price=19.7370 amt=126317.08
+[INFO]  2019-04-04 fill sell 603567.SH vol=4600 price=29.2808 amt=134691.45
+[INFO]  2019-04-04 fill buy 600886.SH vol=200 price=398.1531 amt=79630.61
+[INFO]  2019-04-04 fill buy 002254.SZ vol=1200 price=69.5128 amt=83415.41
+[INFO]  2019-04-04 fill buy 601225.SH vol=7800 price=10.8300 amt=84474.15
+[INFO]  2019-04-04 sell: 600461.SH(holding_expired),600033.SH(holding_expired),601158.SH(holding_expired)
+[INFO]  2019-04-04 buy: 002394.SZ,600642.SH,603035.SH (per=128291)
+[INFO]  2019-04-08 fill sell 600461.SH vol=1600 price=27.7157 amt=44345.10
+[INFO]  2019-04-08 fill sell 600033.SH vol=1700 price=23.8248 amt=40502.21
+[INFO]  2019-04-08 fill sell 601158.SH vol=4800 price=8.4853 amt=40729.23
+[INFO]  2019-04-08 fill buy 002394.SZ vol=2600 price=48.7327 amt=126704.98
+[INFO]  2019-04-08 fill buy 600642.SH vol=2500 price=50.9523 amt=127380.85
+[INFO]  2019-04-08 fill buy 603035.SH vol=8600 price=14.8571 amt=127771.42
+[INFO]  2019-04-08 hold
+[INFO]  2019-04-09 sell: 600998.SH(holding_expired),000919.SZ(holding_expired)
+[INFO]  2019-04-09 buy: 600085.SH,002880.SZ (per=70714)
+[INFO]  2019-04-10 fill sell 600998.SH vol=7400 price=16.2680 amt=120383.32
+[INFO]  2019-04-10 fill sell 000919.SZ vol=4600 price=29.2756 amt=134667.92
+[INFO]  2019-04-10 fill buy 600085.SH vol=100 price=356.7888 amt=35678.88
+[INFO]  2019-04-10 fill buy 002880.SZ vol=1300 price=51.6222 amt=67108.82
+[INFO]  2019-04-10 hold
+[INFO]  2019-04-11 hold
+[INFO]  2019-04-12 hold
+[INFO]  2019-04-15 hold
+[INFO]  2019-04-16 hold
+[INFO]  2019-04-17 hold
+[INFO]  2019-04-18 hold
+[INFO]  2019-04-19 hold
+[INFO]  2019-04-22 hold
+[INFO]  2019-04-23 hold
+[INFO]  2019-04-24 hold
+[INFO]  2019-04-25 hold
+[INFO]  2019-04-26 hold
+[INFO]  2019-04-29 sell: 603035.SH(stop_loss)
+[INFO]  2019-04-30 fill sell 603035.SH vol=8600 price=12.1624 amt=104596.85
+[INFO]  2019-04-30 buy: 600332.SH (per=119880)
+[INFO]  2019-05-06 fill buy 600332.SH vol=1800 price=64.3470 amt=115824.57
+[INFO]  2019-05-06 sell: 601225.SH(stop_loss),002394.SZ(stop_loss),002880.SZ(stop_loss)
+[INFO]  2019-05-07 fill sell 601225.SH vol=7800 price=9.5401 amt=74412.39
+[INFO]  2019-05-07 fill sell 002394.SZ vol=2600 price=42.0695 amt=109380.82
+[INFO]  2019-05-07 fill sell 002880.SZ vol=1300 price=42.9830 amt=55877.87
+[INFO]  2019-05-07 sell: 600886.SH(holding_expired),002254.SZ(holding_expired)
+[INFO]  2019-05-08 fill sell 600886.SH vol=200 price=351.6843 amt=70336.85
+[INFO]  2019-05-08 fill sell 002254.SZ vol=1200 price=61.4649 amt=73757.85
+[INFO]  2019-05-08 sell: 600642.SH(holding_expired)
+[INFO]  2019-05-09 fill sell 600642.SH vol=2500 price=51.3730 amt=128432.44
+[INFO]  2019-05-09 hold
+[INFO]  2019-05-10 sell: 600085.SH(holding_expired)
+[INFO]  2019-05-13 fill sell 600085.SH vol=100 price=322.9961 amt=32299.61
+[INFO]  2019-05-13 hold
+[INFO]  2019-05-14 hold
+[INFO]  2019-05-15 buy: 000403.SZ,002697.SZ,603699.SH,002911.SZ,000688.SZ,000534.SZ,601898.SH (per=117901)
+[INFO]  2019-05-16 fill buy 000403.SZ vol=900 price=129.2537 amt=116328.30
+[INFO]  2019-05-16 fill buy 002697.SZ vol=2700 price=43.4607 amt=117343.88
+[INFO]  2019-05-16 fill buy 603699.SH vol=8700 price=13.4402 amt=116929.54
+[INFO]  2019-05-16 fill buy 002911.SZ vol=7100 price=16.4578 amt=116850.10
+[INFO]  2019-05-16 fill buy 000688.SZ vol=2100 price=55.2637 amt=116053.83
+[INFO]  2019-05-16 fill buy 000534.SZ vol=2900 price=40.1716 amt=116497.53
+[INFO]  2019-05-16 fill buy 601898.SH vol=21000 price=5.6025 amt=117652.44
+[INFO]  2019-05-16 hold
+[INFO]  2019-05-17 hold
+[INFO]  2019-05-20 hold
+[INFO]  2019-05-21 hold
+[INFO]  2019-05-22 hold
+[INFO]  2019-05-23 hold
+[INFO]  2019-05-24 market gate closed (MA200) -> exit all
+[INFO]  2019-05-27 fill sell 600332.SH vol=1800 price=58.5607 amt=105409.32
+[INFO]  2019-05-27 fill sell 000403.SZ vol=900 price=120.4013 amt=108361.20
+[INFO]  2019-05-27 fill sell 002697.SZ vol=2700 price=42.0898 amt=113642.37
+[INFO]  2019-05-27 fill sell 603699.SH vol=8700 price=13.2200 amt=115014.15
+[INFO]  2019-05-27 fill sell 002911.SZ vol=7100 price=15.5762 amt=110591.08
+[INFO]  2019-05-27 fill sell 000688.SZ vol=2100 price=54.7579 amt=114991.69
+[INFO]  2019-05-27 fill sell 000534.SZ vol=2900 price=38.8526 amt=112672.65
+[INFO]  2019-05-27 fill sell 601898.SH vol=21000 price=5.4991 amt=115480.57
+[INFO]  2019-05-27 hold
+[INFO]  2019-05-28 buy: 600900.SH,000403.SZ,002697.SZ,600332.SH,603699.SH,002911.SZ,000688.SZ,000534.SZ (per=112982)
+[INFO]  2019-05-29 fill buy 600900.SH vol=2200 price=50.5230 amt=111150.49
+[INFO]  2019-05-29 fill buy 000403.SZ vol=900 price=121.4444 amt=109299.97
+[INFO]  2019-05-29 fill buy 002697.SZ vol=2600 price=41.8881 amt=108909.08
+[INFO]  2019-05-29 fill buy 600332.SH vol=1900 price=58.6043 amt=111348.26
+[INFO]  2019-05-29 fill buy 603699.SH vol=8400 price=13.3649 amt=112264.75
+[INFO]  2019-05-29 fill buy 002911.SZ vol=7100 price=15.7007 amt=111475.15
+[INFO]  2019-05-29 fill buy 000688.SZ vol=2000 price=54.7685 amt=109537.07
+[INFO]  2019-05-29 fill buy 000534.SZ vol=2900 price=38.7236 amt=112298.34
+[INFO]  2019-05-29 hold
+[INFO]  2019-05-30 hold
+[INFO]  2019-05-31 hold
+[INFO]  2019-06-03 hold
+[INFO]  2019-06-04 market gate closed (MA200) -> exit all
+[INFO]  2019-06-05 fill sell 600900.SH vol=2200 price=52.4046 amt=115290.04
+[INFO]  2019-06-05 fill sell 000403.SZ vol=900 price=98.9583 amt=89062.45
+[INFO]  2019-06-05 fill sell 002697.SZ vol=2600 price=42.9458 amt=111659.16
+[INFO]  2019-06-05 fill sell 600332.SH vol=1900 price=56.7238 amt=107775.26
+[INFO]  2019-06-05 fill sell 603699.SH vol=8400 price=13.5207 amt=113574.01
+[INFO]  2019-06-05 fill sell 002911.SZ vol=7100 price=15.6383 amt=111031.97
+[INFO]  2019-06-05 fill sell 000688.SZ vol=2000 price=54.3626 amt=108725.17
+[INFO]  2019-06-05 fill sell 000534.SZ vol=2900 price=34.3109 amt=99501.57
+[INFO]  2019-06-05 market gate closed (MA200) -> exit all
+[INFO]  2019-06-06 market gate closed (MA200) -> exit all
+[INFO]  2019-06-10 market gate closed (MA200) -> exit all
+[INFO]  2019-06-11 buy: 600642.SH,600900.SH,600377.SH,000403.SZ,002697.SZ,600332.SH,603699.SH,002911.SZ (per=109167)
+[INFO]  2019-06-12 fill buy 600642.SH vol=2000 price=54.1801 amt=108360.25
+[INFO]  2019-06-12 fill buy 600900.SH vol=2000 price=53.3693 amt=106738.63
+[INFO]  2019-06-12 fill buy 600377.SH vol=3800 price=28.2452 amt=107331.90
+[INFO]  2019-06-12 fill buy 000403.SZ vol=1000 price=107.9787 amt=107978.73
+[INFO]  2019-06-12 fill buy 002697.SZ vol=2400 price=44.3185 amt=106364.34
+[INFO]  2019-06-12 fill buy 600332.SH vol=1900 price=57.4264 amt=109110.10
+[INFO]  2019-06-12 fill buy 603699.SH vol=8100 price=13.3218 amt=107906.64
+[INFO]  2019-06-12 fill buy 002911.SZ vol=6800 price=15.8355 amt=107681.67
+[INFO]  2019-06-12 hold
+[INFO]  2019-06-13 hold
+[INFO]  2019-06-14 hold
+[INFO]  2019-06-17 market gate closed (MA200) -> exit all
+[INFO]  2019-06-18 fill sell 600642.SH vol=2000 price=53.7114 amt=107422.79
+[INFO]  2019-06-18 fill sell 600900.SH vol=2000 price=52.2566 amt=104513.22
+[INFO]  2019-06-18 fill sell 600377.SH vol=3800 price=27.9508 amt=106213.08
+[INFO]  2019-06-18 fill sell 000403.SZ vol=1000 price=107.9315 amt=107931.50
+[INFO]  2019-06-18 fill sell 002697.SZ vol=2400 price=43.0172 amt=103241.21
+[INFO]  2019-06-18 fill sell 600332.SH vol=1900 price=56.2683 amt=106909.70
+[INFO]  2019-06-18 fill sell 603699.SH vol=8100 price=12.9301 amt=104733.46
+[INFO]  2019-06-18 fill sell 002911.SZ vol=6800 price=15.4313 amt=104932.93
+[INFO]  2019-06-18 market gate closed (MA200) -> exit all
+[INFO]  2019-06-19 hold
+[INFO]  2019-06-20 buy: 601006.SH,600000.SH,600642.SH,600489.SH,600547.SH,600900.SH,600377.SH,000403.SZ (per=107114)
+[INFO]  2019-06-21 fill buy 601006.SH vol=7200 price=14.7235 amt=106008.90
+[INFO]  2019-06-21 fill buy 600000.SH vol=600 price=155.0114 amt=93006.83
+[INFO]  2019-06-21 fill buy 600642.SH vol=1900 price=55.3540 amt=105172.66
+[INFO]  2019-06-21 fill buy 600489.SH vol=1000 price=107.0192 amt=107019.21
+[INFO]  2019-06-21 fill buy 600547.SH vol=200 price=421.9349 amt=84386.98
+[INFO]  2019-06-21 fill buy 600900.SH vol=2000 price=53.3693 amt=106738.63
+[INFO]  2019-06-21 fill buy 600377.SH vol=3700 price=28.8547 amt=106762.23
+[INFO]  2019-06-21 fill buy 000403.SZ vol=900 price=115.6191 amt=104057.22
+[INFO]  2019-06-21 hold
+[INFO]  2019-06-24 hold
+[INFO]  2019-06-25 hold
+[INFO]  2019-06-26 hold
+[INFO]  2019-06-27 hold
+[INFO]  2019-06-28 hold
+[INFO]  2019-07-01 hold
+[INFO]  2019-07-02 hold
+[INFO]  2019-07-03 hold
+[INFO]  2019-07-04 hold
+[INFO]  2019-07-05 hold
+[INFO]  2019-07-08 hold
+[INFO]  2019-07-09 hold
+[INFO]  2019-07-10 hold
+[INFO]  2019-07-11 hold
+[INFO]  2019-07-12 hold
+[INFO]  2019-07-15 hold
+[INFO]  2019-07-16 hold
+[INFO]  2019-07-17 hold
+[INFO]  2019-07-18 sell: 601006.SH(holding_expired),600000.SH(holding_expired),600642.SH(holding_expired),600489.SH(holding_expired),600547.SH(holding_expired),600900.SH(holding_expired),600377.SH(holding_expired),000403.SZ(holding_expired)
+[INFO]  2019-07-19 fill sell 601006.SH vol=7200 price=13.8368 amt=99624.74
+[INFO]  2019-07-19 fill sell 600000.SH vol=600 price=146.1918 amt=87715.08
+[INFO]  2019-07-19 fill sell 600642.SH vol=1900 price=52.0892 amt=98969.55
+[INFO]  2019-07-19 fill sell 600489.SH vol=1000 price=111.3677 amt=111367.72
+[INFO]  2019-07-19 fill sell 600547.SH vol=200 price=463.9336 amt=92786.72
+[INFO]  2019-07-19 fill sell 600900.SH vol=2000 price=54.5799 amt=109159.73
+[INFO]  2019-07-19 fill sell 600377.SH vol=3700 price=27.7404 amt=102639.41
+[INFO]  2019-07-19 fill sell 000403.SZ vol=900 price=117.7473 amt=105972.56
+[INFO]  2019-07-19 buy: 600048.SH,002120.SZ,002179.SZ,600007.SH,002647.SZ,603326.SH,603506.SH,603043.SH (per=106398)
+[INFO]  2019-07-22 fill buy 600048.SH vol=300 price=295.1204 amt=88536.13
+[INFO]  2019-07-22 fill buy 002120.SZ vol=600 price=162.8421 amt=97705.25
+[INFO]  2019-07-22 fill buy 002179.SZ vol=300 price=269.9697 amt=80990.91
+[INFO]  2019-07-22 fill buy 600007.SH vol=3700 price=28.1799 amt=104265.45
+[INFO]  2019-07-22 fill buy 002647.SZ vol=1900 price=54.0097 amt=102618.38
+[INFO]  2019-07-22 fill buy 603326.SH vol=6100 price=17.3632 amt=105915.80
+[INFO]  2019-07-22 fill buy 603506.SH vol=3200 price=33.2029 amt=106249.38
+[INFO]  2019-07-22 fill buy 603043.SH vol=3400 price=31.2516 amt=106255.37
+[INFO]  2019-07-22 market gate closed (MA200) -> exit all
+[INFO]  2019-07-23 fill sell 600048.SH vol=300 price=296.1671 amt=88850.12
+[INFO]  2019-07-23 fill sell 002120.SZ vol=600 price=163.4303 amt=98058.17
+[INFO]  2019-07-23 fill sell 002179.SZ vol=300 price=263.9333 amt=79179.99
+[INFO]  2019-07-23 fill sell 600007.SH vol=3700 price=27.9658 amt=103473.63
+[INFO]  2019-07-23 fill sell 002647.SZ vol=1900 price=50.2993 amt=95568.57
+[INFO]  2019-07-23 fill sell 603326.SH vol=6100 price=17.1143 amt=104397.04
+[INFO]  2019-07-23 fill sell 603506.SH vol=3200 price=31.8621 amt=101958.74
+[INFO]  2019-07-23 fill sell 603043.SH vol=3400 price=30.8092 amt=104751.14
+[INFO]  2019-07-23 market gate closed (MA200) -> exit all
+[INFO]  2019-07-24 buy: 601939.SH,600236.SH,601601.SH,600900.SH,000002.SZ,600048.SH,603659.SH,002120.SZ (per=104263)
+[INFO]  2019-07-25 fill buy 601939.SH vol=8000 price=13.0004 amt=104003.50
+[INFO]  2019-07-25 fill buy 600236.SH vol=3300 price=31.5797 amt=104213.17
+[INFO]  2019-07-25 fill buy 601601.SH vol=2000 price=49.7644 amt=99528.89
+[INFO]  2019-07-25 fill buy 600900.SH vol=1800 price=55.4594 amt=99826.93
+[ERROR] 2019-07-25 unfilled_order code=000002.SZ reason=below_min_lot
+[INFO]  2019-07-25 fill buy 600048.SH vol=300 price=294.3006 amt=88290.19
+[INFO]  2019-07-25 fill buy 603659.SH vol=1900 price=53.6435 amt=101922.63
+[INFO]  2019-07-25 fill buy 002120.SZ vol=600 price=170.7433 amt=102445.98
+[INFO]  2019-07-25 buy: 002352.SZ (per=104865)
+[INFO]  2019-07-26 fill buy 002352.SZ vol=800 price=124.6457 amt=99716.53
+[INFO]  2019-07-26 hold
+[INFO]  2019-07-29 hold
+[INFO]  2019-07-30 hold
+[INFO]  2019-07-31 hold
+[INFO]  2019-08-01 hold
+[INFO]  2019-08-02 market gate closed (MA200) -> exit all
+[INFO]  2019-08-05 fill sell 601939.SH vol=8000 price=12.6567 amt=101253.77
+[INFO]  2019-08-05 fill sell 600236.SH vol=3300 price=32.0577 amt=105790.44
+[INFO]  2019-08-05 fill sell 601601.SH vol=2000 price=47.5057 amt=95011.33
+[INFO]  2019-08-05 fill sell 600900.SH vol=1800 price=57.1628 amt=102893.04
+[INFO]  2019-08-05 fill sell 600048.SH vol=300 price=280.4178 amt=84125.35
+[INFO]  2019-08-05 fill sell 603659.SH vol=1900 price=55.8459 amt=106107.24
+[INFO]  2019-08-05 fill sell 002120.SZ vol=600 price=164.4881 amt=98692.85
+[INFO]  2019-08-05 fill sell 002352.SZ vol=800 price=126.8832 amt=101506.54
+[INFO]  2019-08-05 market gate closed (MA200) -> exit all
+[INFO]  2019-08-06 market gate closed (MA200) -> exit all
+[INFO]  2019-08-07 market gate closed (MA200) -> exit all
+[INFO]  2019-08-08 market gate closed (MA200) -> exit all
+[INFO]  2019-08-09 market gate closed (MA200) -> exit all
+[INFO]  2019-08-12 market gate closed (MA200) -> exit all
+[INFO]  2019-08-13 market gate closed (MA200) -> exit all
+[INFO]  2019-08-14 market gate closed (MA200) -> exit all
+[INFO]  2019-08-15 market gate closed (MA200) -> exit all
+[INFO]  2019-08-16 market gate closed (MA200) -> exit all
+[INFO]  2019-08-19 market gate closed (MA200) -> exit all
+[INFO]  2019-08-20 market gate closed (MA200) -> exit all
+[INFO]  2019-08-21 buy: 600323.SH,603043.SH,600038.SH,603806.SH,300621.SZ,300703.SZ,600674.SH,600900.SH (per=103592)
+[INFO]  2019-08-22 fill buy 600323.SH vol=1500 price=67.6851 amt=101527.68
+[INFO]  2019-08-22 fill buy 603043.SH vol=2800 price=36.1086 amt=101104.06
+[INFO]  2019-08-22 fill buy 600038.SH vol=700 price=139.1242 amt=97386.93
+[INFO]  2019-08-22 fill buy 603806.SH vol=1600 price=63.2742 amt=101238.66
+[INFO]  2019-08-22 fill buy 300621.SZ vol=6400 price=16.1281 amt=103219.92
+[INFO]  2019-08-22 fill buy 300703.SZ vol=4300 price=23.9018 amt=102777.90
+[INFO]  2019-08-22 fill buy 600674.SH vol=500 price=181.8659 amt=90932.94
+[INFO]  2019-08-22 fill buy 600900.SH vol=1700 price=58.2632 amt=99047.41
+[INFO]  2019-08-22 hold
+[INFO]  2019-08-23 hold
+[INFO]  2019-08-26 hold
+[INFO]  2019-08-27 hold
+[INFO]  2019-08-28 hold
+[INFO]  2019-08-29 hold
+[INFO]  2019-08-30 hold
+[INFO]  2019-09-02 hold
+[INFO]  2019-09-03 hold
+[INFO]  2019-09-04 hold
+[INFO]  2019-09-05 hold
+[INFO]  2019-09-06 hold
+[INFO]  2019-09-09 hold
+[INFO]  2019-09-10 hold
+[INFO]  2019-09-11 hold
+[INFO]  2019-09-12 hold
+[INFO]  2019-09-16 hold
+[INFO]  2019-09-17 hold
+[INFO]  2019-09-18 hold
+[INFO]  2019-09-19 sell: 600323.SH(holding_expired),603043.SH(holding_expired),600038.SH(holding_expired),603806.SH(holding_expired),300621.SZ(holding_expired),300703.SZ(holding_expired),600674.SH(holding_expired),600900.SH(holding_expired)
+[INFO]  2019-09-19 buy: 600603.SH,300523.SZ,300753.SZ,002190.SZ,603538.SH,603369.SH,603586.SH (per=4472)
+[INFO]  2019-09-20 fill sell 600323.SH vol=1500 price=65.6147 amt=98422.01
+[INFO]  2019-09-20 fill sell 603043.SH vol=2800 price=34.0544 amt=95352.30
+[INFO]  2019-09-20 fill sell 600038.SH vol=700 price=143.6862 amt=100580.32
+[INFO]  2019-09-20 fill sell 603806.SH vol=1600 price=63.4144 amt=101463.08
+[INFO]  2019-09-20 fill sell 300621.SZ vol=6400 price=17.7358 amt=113509.41
+[INFO]  2019-09-20 fill sell 300703.SZ vol=4300 price=24.1317 amt=103766.41
+[INFO]  2019-09-20 fill sell 600674.SH vol=500 price=188.3950 amt=94197.51
+[INFO]  2019-09-20 fill sell 600900.SH vol=1700 price=57.6240 amt=97960.86
+[ERROR] 2019-09-20 unfilled_order code=600603.SH reason=below_min_lot
+[ERROR] 2019-09-20 unfilled_order code=300523.SZ reason=below_min_lot
+[INFO]  2019-09-20 fill buy 300753.SZ vol=100 price=41.2391 amt=4123.91
+[ERROR] 2019-09-20 unfilled_order code=002190.SZ reason=below_min_lot
+[INFO]  2019-09-20 fill buy 603538.SH vol=100 price=27.9106 amt=2791.06
+[ERROR] 2019-09-20 unfilled_order code=603369.SH reason=below_min_lot
+[INFO]  2019-09-20 fill buy 603586.SH vol=200 price=19.3822 amt=3876.44
+[INFO]  2019-09-20 buy: 600628.SH,603111.SH,300523.SZ,603023.SH,603033.SH (per=104483)
+[INFO]  2019-09-23 fill buy 600628.SH vol=200 price=387.1670 amt=77433.40
+[INFO]  2019-09-23 fill buy 603111.SH vol=6900 price=15.0331 amt=103728.38
+[INFO]  2019-09-23 fill buy 300523.SZ vol=900 price=109.8466 amt=98861.97
+[ERROR] 2019-09-23 unfilled_order code=603023.SH reason=limit_up_at_open
+[INFO]  2019-09-23 fill buy 603033.SH vol=2700 price=38.2956 amt=103398.00
+[INFO]  2019-09-23 buy: 000899.SZ (per=104096)
+[INFO]  2019-09-24 fill buy 000899.SZ vol=5700 price=18.1158 amt=103260.28
+[INFO]  2019-09-24 hold
+[INFO]  2019-09-25 hold
+[INFO]  2019-09-26 hold
+[INFO]  2019-09-27 hold
+[INFO]  2019-09-30 hold
+[INFO]  2019-10-08 hold
+[INFO]  2019-10-09 hold
+[INFO]  2019-10-10 hold
+[INFO]  2019-10-11 hold
+[INFO]  2019-10-14 hold
+[INFO]  2019-10-15 hold
+[INFO]  2019-10-16 sell: 603111.SH(stop_loss)
+[INFO]  2019-10-16 buy: 002083.SZ (per=103502)
+[INFO]  2019-10-17 fill sell 603111.SH vol=6900 price=13.1759 amt=90913.92
+[INFO]  2019-10-17 fill buy 002083.SZ vol=6700 price=15.2658 amt=102280.93
+[INFO]  2019-10-17 hold
+[INFO]  2019-10-18 hold
+[INFO]  2019-10-21 hold
+[INFO]  2019-10-22 hold
+[INFO]  2019-10-23 market gate closed (MA200) -> exit all
+[INFO]  2019-10-24 fill sell 300753.SZ vol=100 price=41.2677 amt=4126.77
+[INFO]  2019-10-24 fill sell 603538.SH vol=100 price=27.7937 amt=2779.37
+[INFO]  2019-10-24 fill sell 603586.SH vol=200 price=16.9527 amt=3390.54
+[INFO]  2019-10-24 fill sell 600628.SH vol=200 price=409.6530 amt=81930.60
+[INFO]  2019-10-24 fill sell 300523.SZ vol=900 price=112.1842 amt=100965.80
+[INFO]  2019-10-24 fill sell 603033.SH vol=2700 price=38.5592 amt=104109.87
+[INFO]  2019-10-24 fill sell 000899.SZ vol=5700 price=16.5211 amt=94170.00
+[INFO]  2019-10-24 fill sell 002083.SZ vol=6700 price=15.2353 amt=102076.57
+[INFO]  2019-10-24 market gate closed (MA200) -> exit all
+[INFO]  2019-10-25 buy: 300457.SZ,002393.SZ,603298.SH,002244.SZ,002521.SZ,603955.SH,300318.SZ,000798.SZ (per=102509)
+[INFO]  2019-10-28 fill buy 300457.SZ vol=1000 price=97.6290 amt=97629.03
+[INFO]  2019-10-28 fill buy 002393.SZ vol=3400 price=30.0022 amt=102007.55
+[INFO]  2019-10-28 fill buy 603298.SH vol=7600 price=13.4097 amt=101914.07
+[INFO]  2019-10-28 fill buy 002244.SZ vol=4000 price=25.2270 amt=100907.97
+[INFO]  2019-10-28 fill buy 002521.SZ vol=5000 price=20.2810 amt=101405.10
+[INFO]  2019-10-28 fill buy 603955.SH vol=4700 price=21.7511 amt=102230.31
+[INFO]  2019-10-28 fill buy 300318.SZ vol=3700 price=27.4789 amt=101671.90
+[INFO]  2019-10-28 fill buy 000798.SZ vol=7100 price=14.3097 amt=101598.98
+[INFO]  2019-10-28 hold
+[INFO]  2019-10-29 hold
+[INFO]  2019-10-30 market gate closed (MA200) -> exit all
+[INFO]  2019-10-31 fill sell 300457.SZ vol=1000 price=99.7087 amt=99708.69
+[INFO]  2019-10-31 fill sell 002393.SZ vol=3400 price=30.1615 amt=102549.13
+[INFO]  2019-10-31 fill sell 603298.SH vol=7600 price=13.7215 amt=104283.36
+[INFO]  2019-10-31 fill sell 002244.SZ vol=4000 price=24.4276 amt=97710.51
+[INFO]  2019-10-31 fill sell 002521.SZ vol=5000 price=19.7105 amt=98552.35
+[INFO]  2019-10-31 fill sell 603955.SH vol=4700 price=20.9231 amt=98338.36
+[INFO]  2019-10-31 fill sell 300318.SZ vol=3700 price=27.8746 amt=103136.08
+[INFO]  2019-10-31 fill sell 000798.SZ vol=7100 price=14.9020 amt=105804.51
+[INFO]  2019-10-31 market gate closed (MA200) -> exit all
+[INFO]  2019-11-01 buy: 600814.SH,000333.SZ,601997.SH,600690.SH,603196.SH,600926.SH,600993.SH,000651.SZ (per=102498)
+[INFO]  2019-11-04 fill buy 600814.SH vol=3100 price=32.2627 amt=100014.50
+[INFO]  2019-11-04 fill buy 000333.SZ vol=300 price=269.0179 amt=80705.37
+[INFO]  2019-11-04 fill buy 601997.SH vol=7200 price=14.0779 amt=101361.20
+[INFO]  2019-11-04 fill buy 600690.SH vol=100 price=639.9024 amt=63990.24
+[INFO]  2019-11-04 fill buy 603196.SH vol=10500 price=9.7296 amt=102161.22
+[INFO]  2019-11-04 fill buy 600926.SH vol=5200 price=19.6078 amt=101960.71
+[INFO]  2019-11-04 fill buy 600993.SH vol=400 price=210.4640 amt=84185.59
+[ERROR] 2019-11-04 unfilled_order code=000651.SZ reason=below_min_lot
+[INFO]  2019-11-04 buy: 000581.SZ (per=102200)
+[INFO]  2019-11-05 fill buy 000581.SZ vol=1100 price=86.8336 amt=95517.01
+[INFO]  2019-11-05 hold
+[INFO]  2019-11-06 market gate closed (MA200) -> exit all
+[INFO]  2019-11-07 fill sell 600814.SH vol=3100 price=31.5338 amt=97754.70
+[INFO]  2019-11-07 fill sell 000333.SZ vol=300 price=269.1567 amt=80747.00
+[INFO]  2019-11-07 fill sell 601997.SH vol=7200 price=14.3664 amt=103438.00
+[INFO]  2019-11-07 fill sell 600690.SH vol=100 price=673.3438 amt=67334.38
+[INFO]  2019-11-07 fill sell 603196.SH vol=10500 price=10.2916 amt=108061.67
+[INFO]  2019-11-07 fill sell 600926.SH vol=5200 price=19.8629 amt=103287.17
+[INFO]  2019-11-07 fill sell 600993.SH vol=400 price=215.4351 amt=86174.04
+[INFO]  2019-11-07 fill sell 000581.SZ vol=1100 price=86.3730 amt=95010.35
+[INFO]  2019-11-07 market gate closed (MA200) -> exit all
+[INFO]  2019-11-08 market gate closed (MA200) -> exit all
+[INFO]  2019-11-11 market gate closed (MA200) -> exit all
+[INFO]  2019-11-12 market gate closed (MA200) -> exit all
+[INFO]  2019-11-13 market gate closed (MA200) -> exit all
+[INFO]  2019-11-14 market gate closed (MA200) -> exit all
+[INFO]  2019-11-15 market gate closed (MA200) -> exit all
+[INFO]  2019-11-18 market gate closed (MA200) -> exit all
+[INFO]  2019-11-19 market gate closed (MA200) -> exit all
+[INFO]  2019-11-20 market gate closed (MA200) -> exit all
+[INFO]  2019-11-21 market gate closed (MA200) -> exit all
+[INFO]  2019-11-22 market gate closed (MA200) -> exit all
+[INFO]  2019-11-25 market gate closed (MA200) -> exit all
+[INFO]  2019-11-26 market gate closed (MA200) -> exit all
+[INFO]  2019-11-27 market gate closed (MA200) -> exit all
+[INFO]  2019-11-28 market gate closed (MA200) -> exit all
+[INFO]  2019-11-29 market gate closed (MA200) -> exit all
+[INFO]  2019-12-02 market gate closed (MA200) -> exit all
+[INFO]  2019-12-03 market gate closed (MA200) -> exit all
+[INFO]  2019-12-04 market gate closed (MA200) -> exit all
+[INFO]  2019-12-05 market gate closed (MA200) -> exit all
+[INFO]  2019-12-06 market gate closed (MA200) -> exit all
+[INFO]  2019-12-09 market gate closed (MA200) -> exit all
+[INFO]  2019-12-10 market gate closed (MA200) -> exit all
+[INFO]  2019-12-11 market gate closed (MA200) -> exit all
+[INFO]  2019-12-12 market gate closed (MA200) -> exit all
+[INFO]  2019-12-13 market gate closed (MA200) -> exit all
+[INFO]  2019-12-16 buy: 000002.SZ,300138.SZ,600252.SH,603167.SH,600193.SH,600399.SH,000042.SZ,600808.SH (per=103894)
+[ERROR] 2019-12-17 unfilled_order code=000002.SZ reason=below_min_lot
+[INFO]  2019-12-17 fill buy 300138.SZ vol=2800 price=36.5601 amt=102368.40
+[INFO]  2019-12-17 fill buy 600252.SH vol=900 price=113.8520 amt=102466.78
+[INFO]  2019-12-17 fill buy 603167.SH vol=8000 price=12.8326 amt=102660.80
+[INFO]  2019-12-17 fill buy 600193.SH vol=3900 price=26.0852 amt=101732.16
+[INFO]  2019-12-17 fill buy 600399.SH vol=10000 price=10.3333 amt=103333.23
+[INFO]  2019-12-17 fill buy 000042.SZ vol=700 price=138.2520 amt=96776.37
+[INFO]  2019-12-17 fill buy 600808.SH vol=16500 price=6.2589 amt=103271.40
+[INFO]  2019-12-17 buy: 000776.SZ (per=105246)
+[INFO]  2019-12-18 fill buy 000776.SZ vol=1300 price=80.5454 amt=104709.04
+[INFO]  2019-12-18 hold
+[INFO]  2019-12-19 hold
+[INFO]  2019-12-20 hold
+[INFO]  2019-12-23 hold
+[INFO]  2019-12-24 hold
+[INFO]  2019-12-25 hold
+[INFO]  2019-12-26 hold
+[INFO]  2019-12-27 hold
+[INFO]  2019-12-30 hold
+[INFO]  2019-12-31 hold
+[INFO]  2020-01-02 hold
+[INFO]  2020-01-03 hold
+[INFO]  2020-01-06 hold
+[INFO]  2020-01-07 hold
+[INFO]  2020-01-08 hold
+[INFO]  2020-01-09 hold
+[INFO]  2020-01-10 hold
+[INFO]  2020-01-13 hold
+[INFO]  2020-01-14 sell: 300138.SZ(holding_expired),600252.SH(holding_expired),603167.SH(holding_expired),600193.SH(holding_expired),600399.SH(holding_expired),000042.SZ(holding_expired),600808.SH(holding_expired)
+[INFO]  2020-01-14 buy: 002533.SZ,002532.SZ,603657.SH,603889.SH,600535.SH,000967.SZ (per=2272)
+[INFO]  2020-01-15 fill sell 300138.SZ vol=2800 price=36.9830 amt=103552.39
+[INFO]  2020-01-15 fill sell 600252.SH vol=900 price=119.5264 amt=107573.78
+[INFO]  2020-01-15 fill sell 603167.SH vol=8000 price=12.7949 amt=102359.30
+[INFO]  2020-01-15 fill sell 600193.SH vol=3900 price=25.8311 amt=100741.39
+[INFO]  2020-01-15 fill sell 600399.SH vol=10000 price=12.8901 amt=128900.97
+[INFO]  2020-01-15 fill sell 000042.SZ vol=700 price=140.2150 amt=98150.48
+[INFO]  2020-01-15 fill sell 600808.SH vol=16500 price=6.5028 amt=107296.22
+[ERROR] 2020-01-15 unfilled_order code=002533.SZ reason=below_min_lot
+[ERROR] 2020-01-15 unfilled_order code=002532.SZ reason=below_min_lot
+[ERROR] 2020-01-15 unfilled_order code=603657.SH reason=below_min_lot
+[ERROR] 2020-01-15 unfilled_order code=603889.SH reason=below_min_lot
+[ERROR] 2020-01-15 unfilled_order code=600535.SH reason=below_min_lot
+[ERROR] 2020-01-15 unfilled_order code=000967.SZ reason=below_min_lot
+[INFO]  2020-01-15 sell: 000776.SZ(holding_expired)
+[INFO]  2020-01-15 buy: 600676.SH,600995.SH,603359.SH,002327.SZ,000858.SZ,600869.SH,000423.SZ (per=108806)
+[INFO]  2020-01-16 fill sell 000776.SZ vol=1300 price=84.1044 amt=109335.75
+[INFO]  2020-01-16 fill buy 600676.SH vol=1600 price=64.0066 amt=102410.56
+[INFO]  2020-01-16 fill buy 600995.SH vol=1500 price=69.7695 amt=104654.22
+[INFO]  2020-01-16 fill buy 603359.SH vol=4400 price=24.3221 amt=107017.34
+[INFO]  2020-01-16 fill buy 002327.SZ vol=1500 price=69.7552 amt=104632.87
+[ERROR] 2020-01-16 unfilled_order code=000858.SZ reason=below_min_lot
+[INFO]  2020-01-16 fill buy 600869.SH vol=1800 price=57.6583 amt=103784.98
+[INFO]  2020-01-16 fill buy 000423.SZ vol=200 price=376.6585 amt=75331.71
+[INFO]  2020-01-16 buy: 002595.SZ,600436.SH (per=109422)
+[INFO]  2020-01-17 fill buy 002595.SZ vol=1100 price=95.4302 amt=104973.21
+[INFO]  2020-01-17 fill buy 600436.SH vol=100 price=773.7933 amt=77379.33
+[INFO]  2020-01-17 hold
+[INFO]  2020-01-20 hold
+[INFO]  2020-01-21 hold
+[INFO]  2020-01-22 hold
+[INFO]  2020-01-23 hold
+[INFO]  2020-02-03 market gate closed (MA200) -> exit all
+[INFO]  2020-02-04 fill sell 600676.SH vol=1600 price=50.1708 amt=80273.34
+[INFO]  2020-02-04 fill sell 600995.SH vol=1500 price=58.9310 amt=88396.56
+[INFO]  2020-02-04 fill sell 603359.SH vol=4400 price=21.1946 amt=93256.17
+[INFO]  2020-02-04 fill sell 002327.SZ vol=1500 price=60.8312 amt=91246.86
+[ERROR] 2020-02-04 unfilled_order code=600869.SH reason=limit_down_at_open
+[INFO]  2020-02-04 fill sell 000423.SZ vol=200 price=310.0193 amt=62003.87
+[INFO]  2020-02-04 fill sell 002595.SZ vol=1100 price=86.7072 amt=95377.88
+[INFO]  2020-02-04 fill sell 600436.SH vol=100 price=781.2193 amt=78121.93
+[INFO]  2020-02-04 market gate closed (MA200) -> exit all
+[INFO]  2020-02-05 fill sell 600869.SH vol=1800 price=43.2639 amt=77875.02
+[INFO]  2020-02-05 market gate closed (MA200) -> exit all
+[INFO]  2020-02-06 market gate closed (MA200) -> exit all
+[INFO]  2020-02-07 market gate closed (MA200) -> exit all
+[INFO]  2020-02-10 hold
+[INFO]  2020-02-11 hold
+[INFO]  2020-02-12 hold
+[INFO]  2020-02-13 hold
+[INFO]  2020-02-14 hold
+[INFO]  2020-02-17 hold
+[INFO]  2020-02-18 hold
+[INFO]  2020-02-19 buy: 002415.SZ,000028.SZ,002275.SZ,002737.SZ,002352.SZ,002900.SZ,002661.SZ,601607.SH (per=94571)
+[INFO]  2020-02-20 fill buy 002415.SZ vol=100 price=780.8707 amt=78087.07
+[INFO]  2020-02-20 fill buy 000028.SZ vol=500 price=183.5375 amt=91768.75
+[INFO]  2020-02-20 fill buy 002275.SZ vol=4100 price=22.8177 amt=93552.38
+[INFO]  2020-02-20 fill buy 002737.SZ vol=1400 price=66.6975 amt=93376.49
+[INFO]  2020-02-20 fill buy 002352.SZ vol=500 price=161.5154 amt=80757.72
+[INFO]  2020-02-20 fill buy 002900.SZ vol=4800 price=19.5605 amt=93890.61
+[INFO]  2020-02-20 fill buy 002661.SZ vol=1900 price=48.4574 amt=92069.07
+[INFO]  2020-02-20 fill buy 601607.SH vol=400 price=193.3118 amt=77324.72
+[INFO]  2020-02-20 hold
+[INFO]  2020-02-21 hold
+[INFO]  2020-02-24 hold
+[INFO]  2020-02-25 hold
+[INFO]  2020-02-26 hold
+[INFO]  2020-02-27 hold
+[INFO]  2020-02-28 hold
+[INFO]  2020-03-02 hold
+[INFO]  2020-03-03 hold
+[INFO]  2020-03-04 hold
+[INFO]  2020-03-05 hold
+[INFO]  2020-03-06 hold
+[INFO]  2020-03-09 sell: 002415.SZ(stop_loss)
+[INFO]  2020-03-09 buy: 002928.SZ (per=55568)
+[INFO]  2020-03-10 fill sell 002415.SZ vol=100 price=676.7967 amt=67679.67
+[INFO]  2020-03-10 fill buy 002928.SZ vol=2600 price=20.6866 amt=53785.24
+[INFO]  2020-03-10 hold
+[INFO]  2020-03-11 hold
+[INFO]  2020-03-12 hold
+[INFO]  2020-03-13 sell: 000028.SZ(stop_loss),601607.SH(stop_loss)
+[INFO]  2020-03-13 buy: 002872.SZ,000019.SZ (per=34699)
+[INFO]  2020-03-16 fill sell 000028.SZ vol=500 price=161.0327 amt=80516.37
+[INFO]  2020-03-16 fill sell 601607.SH vol=400 price=168.6185 amt=67447.39
+[INFO]  2020-03-16 fill buy 002872.SZ vol=3700 price=9.1479 amt=33847.40
+[INFO]  2020-03-16 fill buy 000019.SZ vol=1200 price=27.4384 amt=32926.13
+[INFO]  2020-03-16 sell: 002928.SZ(stop_loss)
+[INFO]  2020-03-17 fill sell 002928.SZ vol=2600 price=17.6030 amt=45767.78
+[INFO]  2020-03-17 buy: 000598.SZ (per=85794)
+[INFO]  2020-03-18 fill buy 000598.SZ vol=700 price=121.0451 amt=84731.56
+[INFO]  2020-03-18 market gate closed (MA200) -> exit all
+[INFO]  2020-03-19 fill sell 002275.SZ vol=4100 price=20.8041 amt=85296.84
+[INFO]  2020-03-19 fill sell 002737.SZ vol=1400 price=59.2665 amt=82973.09
+[INFO]  2020-03-19 fill sell 002352.SZ vol=500 price=153.5268 amt=76763.38
+[INFO]  2020-03-19 fill sell 002900.SZ vol=4800 price=17.6204 amt=84578.09
+[INFO]  2020-03-19 fill sell 002661.SZ vol=1900 price=47.7207 amt=90669.37
+[INFO]  2020-03-19 fill sell 002872.SZ vol=3700 price=8.2790 amt=30632.24
+[INFO]  2020-03-19 fill sell 000019.SZ vol=1200 price=24.2224 amt=29066.87
+[INFO]  2020-03-19 fill sell 000598.SZ vol=700 price=115.8725 amt=81110.74
+[INFO]  2020-03-19 market gate closed (MA200) -> exit all
+[INFO]  2020-03-20 market gate closed (MA200) -> exit all
+[INFO]  2020-03-23 market gate closed (MA200) -> exit all
+[INFO]  2020-03-24 market gate closed (MA200) -> exit all
+[INFO]  2020-03-25 hold
+[INFO]  2020-03-26 market gate closed (MA200) -> exit all
+[INFO]  2020-03-27 market gate closed (MA200) -> exit all
+[INFO]  2020-03-30 market gate closed (MA200) -> exit all
+[INFO]  2020-03-31 market gate closed (MA200) -> exit all
+[INFO]  2020-04-01 market gate closed (MA200) -> exit all
+[INFO]  2020-04-02 market gate closed (MA200) -> exit all
+[INFO]  2020-04-03 market gate closed (MA200) -> exit all
+[INFO]  2020-04-07 buy: 300218.SZ,600526.SH,000582.SZ,002899.SZ,601086.SH,002772.SZ,000598.SZ,002872.SZ (per=84014)
+[INFO]  2020-04-08 fill buy 300218.SZ vol=4400 price=18.9991 amt=83595.95
+[INFO]  2020-04-08 fill buy 600526.SH vol=3400 price=24.1360 amt=82062.40
+[INFO]  2020-04-08 fill buy 000582.SZ vol=1800 price=44.7852 amt=80613.37
+[INFO]  2020-04-08 fill buy 002899.SZ vol=6300 price=13.1731 amt=82990.71
+[INFO]  2020-04-08 fill buy 601086.SH vol=15900 price=5.2618 amt=83661.92
+[INFO]  2020-04-08 fill buy 002772.SZ vol=4900 price=17.0317 amt=83455.21
+[INFO]  2020-04-08 fill buy 000598.SZ vol=700 price=119.0688 amt=83348.19
+[INFO]  2020-04-08 fill buy 002872.SZ vol=9800 price=8.5695 amt=83981.48
+[INFO]  2020-04-08 hold
+[INFO]  2020-04-09 hold
+[INFO]  2020-04-10 hold
+[INFO]  2020-04-13 hold
+[INFO]  2020-04-14 hold
+[INFO]  2020-04-15 hold
+[INFO]  2020-04-16 sell: 300218.SZ(stop_loss)
+[INFO]  2020-04-16 buy: 603926.SH (per=8236)
+[INFO]  2020-04-17 fill sell 300218.SZ vol=4400 price=16.3066 amt=71748.88
+[INFO]  2020-04-17 fill buy 603926.SH vol=400 price=18.2831 amt=7313.24
+[INFO]  2020-04-17 hold
+[INFO]  2020-04-20 hold
+[INFO]  2020-04-21 sell: 002772.SZ(stop_loss),603926.SH(stop_loss)
+[INFO]  2020-04-21 buy: 000631.SZ,603856.SH (per=36308)
+[INFO]  2020-04-22 fill sell 002772.SZ vol=4900 price=14.7622 amt=72334.89
+[INFO]  2020-04-22 fill sell 603926.SH vol=400 price=15.1778 amt=6071.13
+[INFO]  2020-04-22 fill buy 000631.SZ vol=600 price=54.3241 amt=32594.48
+[INFO]  2020-04-22 fill buy 603856.SH vol=2200 price=15.9699 amt=35133.87
+[INFO]  2020-04-22 hold
+[INFO]  2020-04-23 hold
+[INFO]  2020-04-24 hold
+[INFO]  2020-04-27 hold
+[INFO]  2020-04-28 market gate closed (MA200) -> exit all
+[INFO]  2020-04-29 fill sell 600526.SH vol=3400 price=20.3460 amt=69176.35
+[INFO]  2020-04-29 fill sell 000582.SZ vol=1800 price=46.6577 amt=83983.94
+[INFO]  2020-04-29 fill sell 002899.SZ vol=6300 price=12.2294 amt=77044.93
+[INFO]  2020-04-29 fill sell 601086.SH vol=15900 price=4.9047 amt=77984.11
+[INFO]  2020-04-29 fill sell 000598.SZ vol=700 price=120.8032 amt=84562.27
+[INFO]  2020-04-29 fill sell 002872.SZ vol=9800 price=8.2030 amt=80389.68
+[INFO]  2020-04-29 fill sell 000631.SZ vol=600 price=53.1398 amt=31883.88
+[INFO]  2020-04-29 fill sell 603856.SH vol=2200 price=15.4437 amt=33976.20
+[INFO]  2020-04-29 market gate closed (MA200) -> exit all
+[INFO]  2020-04-30 market gate closed (MA200) -> exit all
+[INFO]  2020-05-06 buy: 002039.SZ,600519.SH,600153.SH,601200.SH,002225.SZ,000544.SZ,600326.SH,600760.SH (per=77727)
+[INFO]  2020-05-07 fill buy 002039.SZ vol=2100 price=36.6509 amt=76966.82
+[ERROR] 2020-05-07 unfilled_order code=600519.SH reason=below_min_lot
+[INFO]  2020-05-07 fill buy 600153.SH vol=500 price=130.0947 amt=65047.34
+[INFO]  2020-05-07 fill buy 601200.SH vol=4500 price=17.2398 amt=77579.24
+[INFO]  2020-05-07 fill buy 002225.SZ vol=9500 price=8.1409 amt=77338.37
+[INFO]  2020-05-07 fill buy 000544.SZ vol=3100 price=24.5880 amt=76222.95
+[INFO]  2020-05-07 fill buy 600326.SH vol=1200 price=60.6174 amt=72740.83
+[INFO]  2020-05-07 fill buy 600760.SH vol=400 price=170.4159 amt=68166.34
+[INFO]  2020-05-07 buy: 600859.SH (per=77927)
+[INFO]  2020-05-08 fill buy 600859.SH vol=1200 price=62.9402 amt=75528.30
+[INFO]  2020-05-08 hold
+[INFO]  2020-05-11 hold
+[INFO]  2020-05-12 market gate closed (MA200) -> exit all
+[INFO]  2020-05-13 fill sell 002039.SZ vol=2100 price=37.0160 amt=77733.57
+[INFO]  2020-05-13 fill sell 600153.SH vol=500 price=133.1912 amt=66595.62
+[INFO]  2020-05-13 fill sell 601200.SH vol=4500 price=16.7460 amt=75357.22
+[INFO]  2020-05-13 fill sell 002225.SZ vol=9500 price=7.8501 amt=74576.28
+[INFO]  2020-05-13 fill sell 000544.SZ vol=3100 price=23.5925 amt=73136.80
+[INFO]  2020-05-13 fill sell 600326.SH vol=1200 price=58.1082 amt=69729.88
+[INFO]  2020-05-13 fill sell 600760.SH vol=400 price=168.9484 amt=67579.35
+[INFO]  2020-05-13 fill sell 600859.SH vol=1200 price=65.9304 amt=79116.46
+[INFO]  2020-05-13 buy: 002293.SZ,000729.SZ,603685.SH,002327.SZ,600132.SH,603855.SH,002283.SZ,000333.SZ (per=76933)
+[INFO]  2020-05-14 fill buy 002293.SZ vol=1100 price=64.2172 amt=70638.87
+[INFO]  2020-05-14 fill buy 000729.SZ vol=1400 price=51.3146 amt=71840.44
+[INFO]  2020-05-14 fill buy 603685.SH vol=3200 price=23.7695 amt=76062.37
+[INFO]  2020-05-14 fill buy 002327.SZ vol=1000 price=72.6893 amt=72689.32
+[INFO]  2020-05-14 fill buy 600132.SH vol=200 price=314.6328 amt=62926.57
+[INFO]  2020-05-14 fill buy 603855.SH vol=5900 price=12.9541 amt=76428.96
+[INFO]  2020-05-14 fill buy 002283.SZ vol=4200 price=18.3047 amt=76879.68
+[INFO]  2020-05-14 fill buy 000333.SZ vol=200 price=260.8979 amt=52179.59
+[INFO]  2020-05-14 hold
+[INFO]  2020-05-15 hold
+[INFO]  2020-05-18 hold
+[INFO]  2020-05-19 hold
+[INFO]  2020-05-20 hold
+[INFO]  2020-05-21 hold
+[INFO]  2020-05-22 market gate closed (MA200) -> exit all
+[INFO]  2020-05-25 fill sell 002293.SZ vol=1100 price=63.6928 amt=70062.11
+[INFO]  2020-05-25 fill sell 000729.SZ vol=1400 price=48.3849 amt=67738.87
+[INFO]  2020-05-25 fill sell 603685.SH vol=3200 price=24.4503 amt=78240.98
+[INFO]  2020-05-25 fill sell 002327.SZ vol=1000 price=69.9937 amt=69993.71
+[INFO]  2020-05-25 fill sell 600132.SH vol=200 price=317.1841 amt=63436.83
+[INFO]  2020-05-25 fill sell 603855.SH vol=5900 price=13.8235 amt=81558.90
+[INFO]  2020-05-25 fill sell 002283.SZ vol=4200 price=17.7284 amt=74459.17
+[INFO]  2020-05-25 fill sell 000333.SZ vol=200 price=262.8564 amt=52571.29
+[INFO]  2020-05-25 market gate closed (MA200) -> exit all
+[INFO]  2020-05-26 buy: 600611.SH,600993.SH,603908.SH,600655.SH,603166.SH,300257.SZ,603043.SH,000541.SZ (per=76665)
+[ERROR] 2020-05-27 unfilled_order code=600611.SH reason=below_min_lot
+[INFO]  2020-05-27 fill buy 600993.SH vol=300 price=205.4064 amt=61621.92
+[INFO]  2020-05-27 fill buy 603908.SH vol=2900 price=25.9814 amt=75346.10
+[ERROR] 2020-05-27 unfilled_order code=600655.SH reason=below_min_lot
+[INFO]  2020-05-27 fill buy 603166.SH vol=7400 price=10.2500 amt=75849.88
+[INFO]  2020-05-27 fill buy 300257.SZ vol=1000 price=70.0628 amt=70062.82
+[INFO]  2020-05-27 fill buy 603043.SH vol=2200 price=33.4976 amt=73694.72
+[INFO]  2020-05-27 fill buy 000541.SZ vol=400 price=171.2893 amt=68515.72
+[INFO]  2020-05-27 buy: 600917.SH,002294.SZ (per=78298)
+[INFO]  2020-05-28 fill buy 600917.SH vol=10000 price=7.7663 amt=77663.03
+[INFO]  2020-05-28 fill buy 002294.SZ vol=300 price=227.4309 amt=68229.28
+[INFO]  2020-05-28 hold
+[INFO]  2020-05-29 hold
+[INFO]  2020-06-01 hold
+[INFO]  2020-06-02 hold
+[INFO]  2020-06-03 sell: 603166.SH(stop_loss)
+[INFO]  2020-06-03 buy: 600900.SH (per=42196)
+[INFO]  2020-06-04 fill sell 603166.SH vol=7400 price=8.9375 amt=66137.48
+[INFO]  2020-06-04 fill buy 600900.SH vol=700 price=55.9524 amt=39166.66
+[INFO]  2020-06-04 hold
+[INFO]  2020-06-05 hold
+[INFO]  2020-06-08 hold
+[INFO]  2020-06-09 hold
+[INFO]  2020-06-10 hold
+[INFO]  2020-06-11 hold
+[INFO]  2020-06-12 hold
+[INFO]  2020-06-15 hold
+[INFO]  2020-06-16 hold
+[INFO]  2020-06-17 hold
+[INFO]  2020-06-18 hold
+[INFO]  2020-06-19 hold
+[INFO]  2020-06-22 hold
+[INFO]  2020-06-23 sell: 600993.SH(holding_expired),603908.SH(holding_expired),300257.SZ(holding_expired),603043.SH(holding_expired),000541.SZ(holding_expired)
+[INFO]  2020-06-23 buy: 002558.SZ (per=69107)
+[INFO]  2020-06-24 fill sell 600993.SH vol=300 price=240.3283 amt=72098.48
+[INFO]  2020-06-24 fill sell 603908.SH vol=2900 price=28.6052 amt=82955.20
+[INFO]  2020-06-24 fill sell 300257.SZ vol=1000 price=85.4826 amt=85482.59
+[INFO]  2020-06-24 fill sell 603043.SH vol=2200 price=32.5637 amt=71640.24
+[INFO]  2020-06-24 fill sell 000541.SZ vol=400 price=153.7626 amt=61505.04
+[INFO]  2020-06-24 fill buy 002558.SZ vol=900 price=75.6592 amt=68093.30
+[INFO]  2020-06-24 sell: 600917.SH(holding_expired),002294.SZ(holding_expired)
+[INFO]  2020-06-24 buy: 600642.SH,002701.SZ,002039.SZ,601877.SH,000538.SZ (per=74880)
+[INFO]  2020-06-29 fill sell 600917.SH vol=10000 price=7.7071 amt=77071.35
+[INFO]  2020-06-29 fill sell 002294.SZ vol=300 price=304.5026 amt=91350.78
+[INFO]  2020-06-29 fill buy 600642.SH vol=1300 price=53.5504 amt=69615.52
+[INFO]  2020-06-29 fill buy 002701.SZ vol=2000 price=37.1063 amt=74212.59
+[INFO]  2020-06-29 fill buy 002039.SZ vol=1800 price=41.5050 amt=74708.92
+[INFO]  2020-06-29 fill buy 601877.SH vol=1500 price=47.2163 amt=70824.49
+[ERROR] 2020-06-29 unfilled_order code=000538.SZ reason=below_min_lot
+[INFO]  2020-06-29 buy: 600025.SH,603757.SH (per=81426)
+[INFO]  2020-06-30 fill buy 600025.SH vol=19300 price=4.2008 amt=81076.39
+[INFO]  2020-06-30 fill buy 603757.SH vol=2500 price=32.4489 amt=81122.36
+[INFO]  2020-06-30 hold
+[INFO]  2020-07-01 hold
+[INFO]  2020-07-02 hold
+[INFO]  2020-07-03 sell: 600900.SH(holding_expired)
+[INFO]  2020-07-03 buy: 601988.SH (per=83477)
+[INFO]  2020-07-06 fill sell 600900.SH vol=700 price=58.8848 amt=41219.33
+[INFO]  2020-07-06 fill buy 601988.SH vol=12600 price=6.5815 amt=82926.99
+[INFO]  2020-07-06 hold
+[INFO]  2020-07-07 hold
+[INFO]  2020-07-08 hold
+[INFO]  2020-07-09 hold
+[INFO]  2020-07-10 hold
+[INFO]  2020-07-13 hold
+[INFO]  2020-07-14 hold
+[INFO]  2020-07-15 hold
+[INFO]  2020-07-16 hold
+[INFO]  2020-07-17 hold
+[INFO]  2020-07-20 hold
+[INFO]  2020-07-21 hold
+[INFO]  2020-07-22 hold
+[INFO]  2020-07-23 sell: 002558.SZ(holding_expired)
+[INFO]  2020-07-23 buy: 002598.SZ (per=49262)
+[INFO]  2020-07-24 fill sell 002558.SZ vol=900 price=89.5328 amt=80579.49
+[INFO]  2020-07-24 fill buy 002598.SZ vol=3000 price=16.1734 amt=48520.32
+[INFO]  2020-07-24 sell: 600642.SH(holding_expired),002701.SZ(holding_expired),002039.SZ(holding_expired),601877.SH(holding_expired)
+[INFO]  2020-07-24 buy: 000537.SZ,603789.SH,300733.SZ,603586.SH (per=20312)
+[INFO]  2020-07-27 fill sell 600642.SH vol=1300 price=52.3804 amt=68094.48
+[INFO]  2020-07-27 fill sell 002701.SZ vol=2000 price=45.6401 amt=91280.24
+[INFO]  2020-07-27 fill sell 002039.SZ vol=1800 price=39.3074 amt=70753.31
+[INFO]  2020-07-27 fill sell 601877.SH vol=1500 price=50.0137 amt=75020.53
+[INFO]  2020-07-27 fill buy 000537.SZ vol=400 price=50.7406 amt=20296.26
+[INFO]  2020-07-27 fill buy 603789.SH vol=1000 price=20.0718 amt=20071.76
+[INFO]  2020-07-27 fill buy 300733.SZ vol=1800 price=11.1049 amt=19988.74
+[INFO]  2020-07-27 fill buy 603586.SH vol=1000 price=18.6001 amt=18600.13
+[INFO]  2020-07-27 sell: 600025.SH(holding_expired),603757.SH(holding_expired)
+[INFO]  2020-07-27 buy: 002574.SZ,600420.SH (per=85302)
+[INFO]  2020-07-28 fill sell 600025.SH vol=19300 price=4.1595 amt=80278.93
+[INFO]  2020-07-28 fill sell 603757.SH vol=2500 price=35.9684 amt=89920.89
+[INFO]  2020-07-28 fill buy 002574.SZ vol=6700 price=12.5676 amt=84203.02
+[INFO]  2020-07-28 fill buy 600420.SH vol=800 price=99.2743 amt=79419.47
+[INFO]  2020-07-28 hold
+[INFO]  2020-07-29 hold
+[INFO]  2020-07-30 hold
+[INFO]  2020-07-31 sell: 601988.SH(holding_expired)
+[INFO]  2020-07-31 buy: 600202.SH (per=85869)
+[INFO]  2020-08-03 fill sell 601988.SH vol=12600 price=6.3560 amt=80085.65
+[INFO]  2020-08-03 fill buy 600202.SH vol=3700 price=22.9436 amt=84891.31
+[INFO]  2020-08-03 hold
+[INFO]  2020-08-04 hold
+[INFO]  2020-08-05 hold
+[INFO]  2020-08-06 hold
+[INFO]  2020-08-07 hold
+[INFO]  2020-08-10 hold
+[INFO]  2020-08-11 hold
+[INFO]  2020-08-12 hold
+[INFO]  2020-08-13 hold
+[INFO]  2020-08-14 hold
+[INFO]  2020-08-17 hold
+[INFO]  2020-08-18 hold
+[INFO]  2020-08-19 hold
+[INFO]  2020-08-20 sell: 002598.SZ(holding_expired)
+[INFO]  2020-08-20 buy: 600398.SH (per=85839)
+[INFO]  2020-08-21 fill sell 002598.SZ vol=3000 price=17.2379 amt=51713.59
+[INFO]  2020-08-21 fill buy 600398.SH vol=1500 price=57.1900 amt=85784.94
+[INFO]  2020-08-21 sell: 000537.SZ(holding_expired),603789.SH(holding_expired),300733.SZ(holding_expired),603586.SH(holding_expired)
+[INFO]  2020-08-21 buy: 600917.SH,600817.SH,300172.SZ (per=86628)
+[INFO]  2020-08-24 fill sell 000537.SZ vol=400 price=46.4865 amt=18594.59
+[INFO]  2020-08-24 fill sell 603789.SH vol=1000 price=18.7112 amt=18711.18
+[INFO]  2020-08-24 fill sell 300733.SZ vol=1800 price=15.5773 amt=28039.15
+[INFO]  2020-08-24 fill sell 603586.SH vol=1000 price=20.4471 amt=20447.09
+[INFO]  2020-08-24 fill buy 600917.SH vol=10500 price=8.2410 amt=86530.53
+[INFO]  2020-08-24 fill buy 600817.SH vol=1700 price=50.0167 amt=85028.35
+[INFO]  2020-08-24 fill buy 300172.SZ vol=2800 price=30.8353 amt=86338.88
+[INFO]  2020-08-24 sell: 002574.SZ(holding_expired),600420.SH(holding_expired)
+[INFO]  2020-08-24 buy: 600582.SH,300425.SZ (per=51173)
+[INFO]  2020-08-25 fill sell 002574.SZ vol=6700 price=12.0287 amt=80592.02
+[INFO]  2020-08-25 fill sell 600420.SH vol=800 price=95.2372 amt=76189.80
+[INFO]  2020-08-25 fill buy 600582.SH vol=400 price=126.3240 amt=50529.62
+[INFO]  2020-08-25 fill buy 300425.SZ vol=1100 price=43.0919 amt=47401.05
+[INFO]  2020-08-25 buy: 002722.SZ (per=86033)
+[INFO]  2020-08-26 fill buy 002722.SZ vol=5600 price=15.1952 amt=85093.29
+[INFO]  2020-08-26 hold
+[INFO]  2020-08-27 hold
+[INFO]  2020-08-28 sell: 600202.SH(holding_expired)
+[INFO]  2020-08-28 buy: 600023.SH (per=75941)
+[INFO]  2020-08-31 fill sell 600202.SH vol=3700 price=23.5888 amt=87278.72
+[INFO]  2020-08-31 fill buy 600023.SH vol=11500 price=6.5839 amt=75715.05
+[INFO]  2020-08-31 hold
+[INFO]  2020-09-01 hold
+[INFO]  2020-09-02 hold
+[INFO]  2020-09-03 hold
+[INFO]  2020-09-04 hold
+[INFO]  2020-09-07 hold
+[INFO]  2020-09-08 hold
+[INFO]  2020-09-09 hold
+[INFO]  2020-09-10 sell: 002722.SZ(stop_loss)
+[INFO]  2020-09-10 buy: 002003.SZ (per=86571)
+[INFO]  2020-09-11 fill sell 002722.SZ vol=5600 price=13.1150 amt=73443.99
+[INFO]  2020-09-11 fill buy 002003.SZ vol=800 price=104.2323 amt=83385.83
+[INFO]  2020-09-11 hold
+[INFO]  2020-09-14 hold
+[INFO]  2020-09-15 hold
+[INFO]  2020-09-16 hold
+[INFO]  2020-09-17 sell: 600398.SH(holding_expired)
+[INFO]  2020-09-18 fill sell 600398.SH vol=1500 price=55.2453 amt=82867.91
+[INFO]  2020-09-18 sell: 600917.SH(holding_expired),600817.SH(holding_expired),300172.SZ(holding_expired)
+[INFO]  2020-09-18 buy: 000528.SZ,600054.SH,601225.SH (per=53403)
+[INFO]  2020-09-21 fill sell 600917.SH vol=10500 price=8.1491 amt=85565.37
+[INFO]  2020-09-21 fill sell 600817.SH vol=1700 price=54.8683 amt=93276.05
+[INFO]  2020-09-21 fill sell 300172.SZ vol=2800 price=39.7899 amt=111411.61
+[INFO]  2020-09-21 fill buy 000528.SZ vol=500 price=93.7029 amt=46851.43
+[INFO]  2020-09-21 fill buy 600054.SH vol=1200 price=44.4107 amt=53292.83
+[INFO]  2020-09-21 fill buy 601225.SH vol=4900 price=10.8920 amt=53370.57
+[INFO]  2020-09-21 sell: 600582.SH(holding_expired),300425.SZ(holding_expired)
+[INFO]  2020-09-21 buy: 000548.SZ,600817.SH (per=88074)
+[INFO]  2020-09-22 fill sell 600582.SH vol=400 price=123.4135 amt=49365.41
+[INFO]  2020-09-22 fill sell 300425.SZ vol=1100 price=44.9007 amt=49390.72
+[INFO]  2020-09-22 fill buy 000548.SZ vol=5200 price=16.8826 amt=87789.69
+[INFO]  2020-09-22 fill buy 600817.SH vol=1600 price=53.6372 amt=85819.49
+[INFO]  2020-09-22 buy: 600385.SH (per=87494)
+[INFO]  2020-09-23 fill buy 600385.SH vol=5200 price=16.6663 amt=86664.50
+[INFO]  2020-09-23 hold
+[INFO]  2020-09-24 hold
+[INFO]  2020-09-25 sell: 600023.SH(holding_expired)
+[INFO]  2020-09-28 fill sell 600023.SH vol=11500 price=6.2636 amt=72030.92
+[INFO]  2020-09-28 buy: 002132.SZ (per=83470)
+[INFO]  2020-09-29 fill buy 002132.SZ vol=4000 price=20.7141 amt=82856.47
+[INFO]  2020-09-29 hold
+[INFO]  2020-09-30 hold
+[INFO]  2020-10-09 hold
+[INFO]  2020-10-12 hold
+[INFO]  2020-10-13 hold
+[INFO]  2020-10-14 sell: 600054.SH(stop_loss)
+[INFO]  2020-10-14 buy: 603028.SH (per=89514)
+[INFO]  2020-10-15 fill sell 600054.SH vol=1200 price=38.6101 amt=46332.16
+[INFO]  2020-10-15 fill buy 603028.SH vol=6400 price=13.8973 amt=88942.45
+[INFO]  2020-10-15 hold
+[INFO]  2020-10-16 sell: 002003.SZ(holding_expired)
+[INFO]  2020-10-16 buy: 601166.SH (per=81467)
+[INFO]  2020-10-19 fill sell 002003.SZ vol=800 price=105.6368 amt=84509.44
+[INFO]  2020-10-19 fill buy 601166.SH vol=1000 price=77.4976 amt=77497.57
+[INFO]  2020-10-19 hold
+[INFO]  2020-10-20 hold
+[INFO]  2020-10-21 sell: 000548.SZ(stop_loss)
+[INFO]  2020-10-21 buy: 600104.SH (per=86228)
+[INFO]  2020-10-22 fill sell 000548.SZ vol=5200 price=14.7649 amt=76777.29
+[INFO]  2020-10-22 fill buy 600104.SH vol=400 price=207.4989 amt=82999.56
+[INFO]  2020-10-22 hold
+[INFO]  2020-10-23 hold
+[INFO]  2020-10-26 sell: 000528.SZ(holding_expired),601225.SH(holding_expired)
+[INFO]  2020-10-27 fill sell 000528.SZ vol=500 price=83.0990 amt=41549.50
+[INFO]  2020-10-27 fill sell 601225.SH vol=4900 price=10.5245 amt=51570.24
+[INFO]  2020-10-27 sell: 600817.SH(holding_expired)
+[INFO]  2020-10-28 fill sell 600817.SH vol=1600 price=51.7457 amt=82793.09
+[INFO]  2020-10-28 sell: 600385.SH(holding_expired)
+[INFO]  2020-10-29 fill sell 600385.SH vol=5200 price=15.4725 amt=80457.06
+[INFO]  2020-10-29 buy: 000883.SZ,600019.SH,601939.SH,000001.SZ (per=84568)
+[INFO]  2020-10-30 fill buy 000883.SZ vol=3800 price=22.1413 amt=84137.00
+[INFO]  2020-10-30 fill buy 600019.SH vol=5900 price=14.2430 amt=84033.99
+[INFO]  2020-10-30 fill buy 601939.SH vol=7200 price=11.6098 amt=83590.88
+[ERROR] 2020-10-30 unfilled_order code=000001.SZ reason=below_min_lot
+[INFO]  2020-10-30 hold
+[INFO]  2020-11-02 buy: 600507.SH (per=84256)
+[INFO]  2020-11-03 fill buy 600507.SH vol=700 price=118.4485 amt=82913.95
+[INFO]  2020-11-03 sell: 002132.SZ(holding_expired)
+[INFO]  2020-11-04 fill sell 002132.SZ vol=4000 price=21.4903 amt=85961.18
+[INFO]  2020-11-04 buy: 000651.SZ (per=85996)
+[ERROR] 2020-11-05 unfilled_order code=000651.SZ reason=below_min_lot
+[INFO]  2020-11-05 buy: 600012.SH (per=87855)
+[INFO]  2020-11-06 fill buy 600012.SH vol=6700 price=13.0037 amt=87125.04
+[INFO]  2020-11-06 hold
+[INFO]  2020-11-09 hold
+[INFO]  2020-11-10 hold
+[INFO]  2020-11-11 sell: 603028.SH(holding_expired)
+[INFO]  2020-11-11 buy: 600319.SH (per=2263)
+[INFO]  2020-11-12 fill sell 603028.SH vol=6400 price=12.3968 amt=79339.55
+[INFO]  2020-11-12 fill buy 600319.SH vol=300 price=7.2613 amt=2178.38
+[INFO]  2020-11-12 hold
+[INFO]  2020-11-13 sell: 601166.SH(holding_expired)
+[INFO]  2020-11-13 buy: 000635.SZ (per=79364)
+[INFO]  2020-11-16 fill sell 601166.SH vol=1000 price=76.9549 amt=76954.93
+[INFO]  2020-11-16 fill buy 000635.SZ vol=2100 price=36.8316 amt=77346.27
+[INFO]  2020-11-16 hold
+[INFO]  2020-11-17 hold
+[INFO]  2020-11-18 sell: 600104.SH(holding_expired)
+[INFO]  2020-11-18 buy: 600897.SH (per=78896)
+[INFO]  2020-11-19 fill sell 600104.SH vol=400 price=253.7512 amt=101500.48
+[INFO]  2020-11-19 fill buy 600897.SH vol=800 price=95.9737 amt=76778.95
+[INFO]  2020-11-19 hold
+[INFO]  2020-11-20 hold
+[INFO]  2020-11-23 hold
+[INFO]  2020-11-24 hold
+[INFO]  2020-11-25 hold
+[INFO]  2020-11-26 sell: 000883.SZ(holding_expired),600019.SH(holding_expired),601939.SH(holding_expired)
+[INFO]  2020-11-26 buy: 600025.SH,000966.SZ,601318.SH (per=34507)
+[INFO]  2020-11-27 fill sell 000883.SZ vol=3800 price=22.3121 amt=84786.12
+[INFO]  2020-11-27 fill sell 600019.SH vol=5900 price=16.4972 amt=97333.63
+[INFO]  2020-11-27 fill sell 601939.SH vol=7200 price=12.4552 amt=89677.32
+[INFO]  2020-11-27 fill buy 600025.SH vol=7000 price=4.8717 amt=34101.65
+[INFO]  2020-11-27 fill buy 000966.SZ vol=2000 price=16.5141 amt=33028.20
+[INFO]  2020-11-27 fill buy 601318.SH vol=100 price=221.5996 amt=22159.96
+[INFO]  2020-11-27 hold
+[INFO]  2020-11-30 sell: 600507.SH(holding_expired)
+[INFO]  2020-11-30 buy: 601988.SH (per=89576)
+[INFO]  2020-12-01 fill sell 600507.SH vol=700 price=137.6952 amt=96386.67
+[INFO]  2020-12-01 fill buy 601988.SH vol=14200 price=6.2734 amt=89082.11
+[INFO]  2020-12-01 hold
+[INFO]  2020-12-02 hold
+[INFO]  2020-12-03 sell: 600012.SH(holding_expired)
+[INFO]  2020-12-03 buy: 601997.SH (per=90173)
+[INFO]  2020-12-04 fill sell 600012.SH vol=6700 price=15.1095 amt=101233.52
+[INFO]  2020-12-04 fill buy 601997.SH vol=6600 price=13.5657 amt=89533.57
+[INFO]  2020-12-04 hold
+[INFO]  2020-12-07 hold
+[INFO]  2020-12-08 hold
+[INFO]  2020-12-09 sell: 600319.SH(holding_expired)
+[INFO]  2020-12-10 fill sell 600319.SH vol=300 price=6.9675 amt=2090.24
+[INFO]  2020-12-10 buy: 000919.SZ (per=88867)
+[INFO]  2020-12-11 fill buy 000919.SZ vol=3200 price=27.1893 amt=87005.75
+[INFO]  2020-12-11 sell: 000635.SZ(holding_expired),000966.SZ(stop_loss)
+[INFO]  2020-12-11 buy: 002162.SZ,600249.SH (per=89169)
+[INFO]  2020-12-14 fill sell 000635.SZ vol=2100 price=38.0455 amt=79895.62
+[INFO]  2020-12-14 fill sell 000966.SZ vol=2000 price=14.4013 amt=28802.69
+[ERROR] 2020-12-14 unfilled_order code=002162.SZ reason=limit_up_at_open
+[INFO]  2020-12-14 fill buy 600249.SH vol=3800 price=22.9118 amt=87064.67
+[INFO]  2020-12-14 buy: 600098.SH (per=89038)
+[INFO]  2020-12-15 fill buy 600098.SH vol=2500 price=34.2596 amt=85649.01
+[INFO]  2020-12-15 hold
+[INFO]  2020-12-16 sell: 600897.SH(holding_expired)
+[INFO]  2020-12-16 buy: 000631.SZ (per=90950)
+[INFO]  2020-12-17 fill sell 600897.SH vol=800 price=86.7612 amt=69408.96
+[INFO]  2020-12-17 fill buy 000631.SZ vol=1600 price=56.4732 amt=90357.17
+[INFO]  2020-12-17 hold
+[INFO]  2020-12-18 hold
+[INFO]  2020-12-21 hold
+[INFO]  2020-12-22 hold
+[INFO]  2020-12-23 hold
+[INFO]  2020-12-24 sell: 600025.SH(holding_expired),601318.SH(holding_expired)
+[INFO]  2020-12-24 buy: 002608.SZ,300616.SZ (per=67257)
+[INFO]  2020-12-25 fill sell 600025.SH vol=7000 price=4.9058 amt=34340.82
+[INFO]  2020-12-25 fill sell 601318.SH vol=100 price=206.5778 amt=20657.78
+[INFO]  2020-12-25 fill buy 002608.SZ vol=3500 price=18.8233 amt=65881.53
+[INFO]  2020-12-25 fill buy 300616.SZ vol=400 price=144.7109 amt=57884.35
+[INFO]  2020-12-25 hold
+[INFO]  2020-12-28 sell: 601988.SH(holding_expired)
+[INFO]  2020-12-29 fill sell 601988.SH vol=14200 price=6.0325 amt=85661.41
+[INFO]  2020-12-29 hold
+[INFO]  2020-12-30 buy: 600519.SH (per=88169)
+[ERROR] 2020-12-31 unfilled_order code=600519.SH reason=below_min_lot
+[INFO]  2020-12-31 sell: 601997.SH(holding_expired)
+[INFO]  2020-12-31 buy: 600519.SH,000965.SZ (per=75635)
+[INFO]  2021-01-04 fill sell 601997.SH vol=6600 price=12.4693 amt=82297.63
+[ERROR] 2021-01-04 unfilled_order code=600519.SH reason=below_min_lot
+[INFO]  2021-01-04 fill buy 000965.SZ vol=7800 price=9.6636 amt=75376.19
+[INFO]  2021-01-04 buy: 600212.SH (per=89076)
+[ERROR] 2021-01-05 unfilled_order code=600212.SH reason=limit_up_at_open
+[INFO]  2021-01-05 buy: 600519.SH (per=88420)
+[ERROR] 2021-01-06 unfilled_order code=600519.SH reason=below_min_lot
+[INFO]  2021-01-06 buy: 600519.SH (per=88350)
+[ERROR] 2021-01-07 unfilled_order code=600519.SH reason=below_min_lot
+[INFO]  2021-01-07 sell: 600249.SH(stop_loss)
+[INFO]  2021-01-07 buy: 000825.SZ,002032.SZ (per=79056)
+[INFO]  2021-01-08 fill sell 600249.SH vol=3800 price=19.7773 amt=75153.83
+[INFO]  2021-01-08 fill buy 000825.SZ vol=2800 price=27.6803 amt=77504.71
+[INFO]  2021-01-08 fill buy 002032.SZ vol=100 price=676.4767 amt=67647.67
+[INFO]  2021-01-08 sell: 000919.SZ(holding_expired)
+[INFO]  2021-01-08 buy: 002860.SZ (per=86146)
+[INFO]  2021-01-11 fill sell 000919.SZ vol=3200 price=26.9840 amt=86348.92
+[INFO]  2021-01-11 fill buy 002860.SZ vol=2000 price=41.2847 amt=82569.45
+[INFO]  2021-01-11 hold
+[INFO]  2021-01-12 sell: 600098.SH(holding_expired)
+[INFO]  2021-01-12 buy: 600030.SH (per=87342)
+[INFO]  2021-01-13 fill sell 600098.SH vol=2500 price=35.0078 amt=87519.52
+[INFO]  2021-01-13 fill buy 600030.SH vol=400 price=177.7730 amt=71109.20
+[INFO]  2021-01-13 sell: 000965.SZ(stop_loss)
+[INFO]  2021-01-13 buy: 600522.SH (per=85688)
+[INFO]  2021-01-14 fill sell 000965.SZ vol=7800 price=8.4801 amt=66144.94
+[INFO]  2021-01-14 fill buy 600522.SH vol=800 price=100.7071 amt=80565.68
+[INFO]  2021-01-14 sell: 000631.SZ(holding_expired)
+[INFO]  2021-01-14 buy: 601390.SH (per=84071)
+[INFO]  2021-01-15 fill sell 000631.SZ vol=1600 price=52.6027 amt=84164.39
+[INFO]  2021-01-15 fill buy 601390.SH vol=11600 price=7.2432 amt=84020.61
+[INFO]  2021-01-15 hold
+[INFO]  2021-01-18 hold
+[INFO]  2021-01-19 hold
+[INFO]  2021-01-20 hold
+[INFO]  2021-01-21 hold
+[INFO]  2021-01-22 sell: 002608.SZ(holding_expired),300616.SZ(holding_expired)
+[INFO]  2021-01-22 buy: 600998.SH,002521.SZ (per=46805)
+[INFO]  2021-01-25 fill sell 002608.SZ vol=3500 price=17.1172 amt=59910.15
+[INFO]  2021-01-25 fill sell 300616.SZ vol=400 price=148.5233 amt=59409.33
+[INFO]  2021-01-25 fill buy 600998.SH vol=2300 price=19.9703 amt=45931.71
+[INFO]  2021-01-25 fill buy 002521.SZ vol=2200 price=20.3679 amt=44809.49
+[INFO]  2021-01-25 hold
+[INFO]  2021-01-26 hold
+[INFO]  2021-01-27 hold
+[INFO]  2021-01-28 sell: 600522.SH(stop_loss),601390.SH(stop_loss)
+[INFO]  2021-01-28 buy: 002376.SZ,600674.SH (per=61038)
+[INFO]  2021-01-29 fill sell 600522.SH vol=800 price=88.7166 amt=70973.28
+[INFO]  2021-01-29 fill sell 601390.SH vol=11600 price=6.3670 amt=73857.05
+[INFO]  2021-01-29 fill buy 002376.SZ vol=1300 price=46.6644 amt=60663.74
+[INFO]  2021-01-29 fill buy 600674.SH vol=200 price=215.5010 amt=43100.20
+[INFO]  2021-01-29 market gate closed (MA200) -> exit all
+[INFO]  2021-02-01 fill sell 000825.SZ vol=2800 price=25.9529 amt=72668.15
+[INFO]  2021-02-01 fill sell 002032.SZ vol=100 price=665.9598 amt=66595.98
+[INFO]  2021-02-01 fill sell 002860.SZ vol=2000 price=40.1846 amt=80369.15
+[INFO]  2021-02-01 fill sell 600030.SH vol=400 price=158.5021 amt=63400.86
+[INFO]  2021-02-01 fill sell 600998.SH vol=2300 price=19.7126 amt=45339.09
+[INFO]  2021-02-01 fill sell 002521.SZ vol=2200 price=19.6857 amt=43308.53
+[INFO]  2021-02-01 fill sell 002376.SZ vol=1300 price=45.7121 amt=59425.73
+[INFO]  2021-02-01 fill sell 600674.SH vol=200 price=217.2509 amt=43450.17
+[INFO]  2021-02-01 buy: 600674.SH,603300.SH,300441.SZ,000690.SZ,600054.SH,002739.SZ,002376.SZ,600538.SH (per=79651)
+[INFO]  2021-02-02 fill buy 600674.SH vol=300 price=220.2678 amt=66080.35
+[INFO]  2021-02-02 fill buy 603300.SH vol=4200 price=18.5364 amt=77852.96
+[INFO]  2021-02-02 fill buy 300441.SZ vol=1100 price=66.9737 amt=73671.07
+[INFO]  2021-02-02 fill buy 000690.SZ vol=200 price=335.6129 amt=67122.59
+[INFO]  2021-02-02 fill buy 600054.SH vol=1900 price=40.8152 amt=77548.83
+[INFO]  2021-02-02 fill buy 002739.SZ vol=1100 price=69.3205 amt=76252.50
+[INFO]  2021-02-02 fill buy 002376.SZ vol=1700 price=44.6257 amt=75863.66
+[INFO]  2021-02-02 fill buy 600538.SH vol=3900 price=20.2073 amt=78808.42
+[INFO]  2021-02-02 hold
+[INFO]  2021-02-03 sell: 000690.SZ(stop_loss)
+[INFO]  2021-02-04 fill sell 000690.SZ vol=200 price=282.3025 amt=56460.50
+[INFO]  2021-02-04 market gate closed (MA200) -> exit all
+[INFO]  2021-02-05 fill sell 600674.SH vol=300 price=209.5202 amt=62856.06
+[INFO]  2021-02-05 fill sell 603300.SH vol=4200 price=18.5275 amt=77815.31
+[INFO]  2021-02-05 fill sell 300441.SZ vol=1100 price=66.0450 amt=72649.45
+[INFO]  2021-02-05 fill sell 600054.SH vol=1900 price=40.4680 amt=76889.15
+[INFO]  2021-02-05 fill sell 002739.SZ vol=1100 price=66.7220 amt=73394.21
+[INFO]  2021-02-05 fill sell 002376.SZ vol=1700 price=43.4966 amt=73944.19
+[INFO]  2021-02-05 fill sell 600538.SH vol=3900 price=20.0745 amt=78290.73
+[INFO]  2021-02-05 market gate closed (MA200) -> exit all
+[INFO]  2021-02-08 market gate closed (MA200) -> exit all
+[INFO]  2021-02-09 buy: 002254.SZ,601229.SH,600000.SH,002142.SZ,600674.SH,603300.SH,300441.SZ,000690.SZ (per=76966)
+[INFO]  2021-02-10 fill buy 002254.SZ vol=700 price=107.4403 amt=75208.22
+[INFO]  2021-02-10 fill buy 601229.SH vol=3300 price=23.1621 amt=76435.06
+[INFO]  2021-02-10 fill buy 600000.SH vol=500 price=143.1851 amt=71592.53
+[INFO]  2021-02-10 fill buy 002142.SZ vol=800 price=89.6032 amt=71682.53
+[INFO]  2021-02-10 fill buy 600674.SH vol=300 price=214.9051 amt=64471.54
+[INFO]  2021-02-10 fill buy 603300.SH vol=4100 price=18.7052 amt=76691.26
+[INFO]  2021-02-10 fill buy 300441.SZ vol=1100 price=67.0401 amt=73744.08
+[INFO]  2021-02-10 fill buy 000690.SZ vol=300 price=246.7117 amt=74013.50
+[INFO]  2021-02-10 hold
+[INFO]  2021-02-18 hold
+[INFO]  2021-02-19 hold
+[INFO]  2021-02-22 hold
+[INFO]  2021-02-23 hold
+[INFO]  2021-02-24 market gate closed (MA200) -> exit all
+[INFO]  2021-02-25 fill sell 002254.SZ vol=700 price=119.8271 amt=83878.95
+[INFO]  2021-02-25 fill sell 601229.SH vol=3300 price=22.9810 amt=75837.29
+[INFO]  2021-02-25 fill sell 600000.SH vol=500 price=142.7651 amt=71382.53
+[INFO]  2021-02-25 fill sell 002142.SZ vol=800 price=87.1285 amt=69702.83
+[INFO]  2021-02-25 fill sell 600674.SH vol=300 price=208.7273 amt=62618.20
+[INFO]  2021-02-25 fill sell 603300.SH vol=4100 price=19.8749 amt=81487.11
+[INFO]  2021-02-25 fill sell 300441.SZ vol=1100 price=68.4960 amt=75345.57
+[INFO]  2021-02-25 fill sell 000690.SZ vol=300 price=264.4729 amt=79341.86
+[INFO]  2021-02-25 market gate closed (MA200) -> exit all
+[INFO]  2021-02-26 market gate closed (MA200) -> exit all
+[INFO]  2021-03-01 market gate closed (MA200) -> exit all
+[INFO]  2021-03-02 market gate closed (MA200) -> exit all
+[INFO]  2021-03-03 market gate closed (MA200) -> exit all
+[INFO]  2021-03-04 market gate closed (MA200) -> exit all
+[INFO]  2021-03-05 market gate closed (MA200) -> exit all
+[INFO]  2021-03-08 market gate closed (MA200) -> exit all
+[INFO]  2021-03-09 market gate closed (MA200) -> exit all
+[INFO]  2021-03-10 market gate closed (MA200) -> exit all
+[INFO]  2021-03-11 market gate closed (MA200) -> exit all
+[INFO]  2021-03-12 market gate closed (MA200) -> exit all
+[INFO]  2021-03-15 market gate closed (MA200) -> exit all
+[INFO]  2021-03-16 market gate closed (MA200) -> exit all
+[INFO]  2021-03-17 market gate closed (MA200) -> exit all
+[INFO]  2021-03-18 market gate closed (MA200) -> exit all
+[INFO]  2021-03-19 market gate closed (MA200) -> exit all
+[INFO]  2021-03-22 market gate closed (MA200) -> exit all
+[INFO]  2021-03-23 market gate closed (MA200) -> exit all
+[INFO]  2021-03-24 market gate closed (MA200) -> exit all
+[INFO]  2021-03-25 market gate closed (MA200) -> exit all
+[INFO]  2021-03-26 market gate closed (MA200) -> exit all
+[INFO]  2021-03-29 market gate closed (MA200) -> exit all
+[INFO]  2021-03-30 market gate closed (MA200) -> exit all
+[INFO]  2021-03-31 market gate closed (MA200) -> exit all
+[INFO]  2021-04-01 market gate closed (MA200) -> exit all
+[INFO]  2021-04-02 market gate closed (MA200) -> exit all
+[INFO]  2021-04-06 market gate closed (MA200) -> exit all
+[INFO]  2021-04-07 market gate closed (MA200) -> exit all
+[INFO]  2021-04-08 market gate closed (MA200) -> exit all
+[INFO]  2021-04-09 market gate closed (MA200) -> exit all
+[INFO]  2021-04-12 market gate closed (MA200) -> exit all
+[INFO]  2021-04-13 market gate closed (MA200) -> exit all
+[INFO]  2021-04-14 market gate closed (MA200) -> exit all
+[INFO]  2021-04-15 market gate closed (MA200) -> exit all
+[INFO]  2021-04-16 market gate closed (MA200) -> exit all
+[INFO]  2021-04-19 market gate closed (MA200) -> exit all
+[INFO]  2021-04-20 market gate closed (MA200) -> exit all
+[INFO]  2021-04-21 market gate closed (MA200) -> exit all
+[INFO]  2021-04-22 market gate closed (MA200) -> exit all
+[INFO]  2021-04-23 market gate closed (MA200) -> exit all
+[INFO]  2021-04-26 market gate closed (MA200) -> exit all
+[INFO]  2021-04-27 market gate closed (MA200) -> exit all
+[INFO]  2021-04-28 market gate closed (MA200) -> exit all
+[INFO]  2021-04-29 market gate closed (MA200) -> exit all
+[INFO]  2021-04-30 market gate closed (MA200) -> exit all
+[INFO]  2021-05-06 market gate closed (MA200) -> exit all
+[INFO]  2021-05-07 market gate closed (MA200) -> exit all
+[INFO]  2021-05-10 market gate closed (MA200) -> exit all
+[INFO]  2021-05-11 market gate closed (MA200) -> exit all
+[INFO]  2021-05-12 market gate closed (MA200) -> exit all
+[INFO]  2021-05-13 market gate closed (MA200) -> exit all
+[INFO]  2021-05-14 market gate closed (MA200) -> exit all
+[INFO]  2021-05-17 market gate closed (MA200) -> exit all
+[INFO]  2021-05-18 market gate closed (MA200) -> exit all
+[INFO]  2021-05-19 market gate closed (MA200) -> exit all
+[INFO]  2021-05-20 market gate closed (MA200) -> exit all
+[INFO]  2021-05-21 market gate closed (MA200) -> exit all
+[INFO]  2021-05-24 market gate closed (MA200) -> exit all
+[INFO]  2021-05-25 market gate closed (MA200) -> exit all
+[INFO]  2021-05-26 market gate closed (MA200) -> exit all
+[INFO]  2021-05-27 market gate closed (MA200) -> exit all
+[INFO]  2021-05-28 market gate closed (MA200) -> exit all
+[INFO]  2021-05-31 buy: 600479.SH,000973.SZ,002462.SZ,600755.SH,600663.SH,601010.SH,300305.SZ,601211.SH (per=78862)
+[INFO]  2021-06-01 fill buy 600479.SH vol=600 price=122.4796 amt=73487.73
+[INFO]  2021-06-01 fill buy 000973.SZ vol=4600 price=16.8492 amt=77506.19
+[INFO]  2021-06-01 fill buy 002462.SZ vol=3200 price=24.2624 amt=77639.74
+[INFO]  2021-06-01 fill buy 600755.SH vol=400 price=159.2455 amt=63698.22
+[INFO]  2021-06-01 fill buy 600663.SH vol=500 price=154.6801 amt=77340.06
+[INFO]  2021-06-01 fill buy 601010.SH vol=5000 price=15.4976 amt=77488.06
+[INFO]  2021-06-01 fill buy 300305.SZ vol=1800 price=43.0249 amt=77444.77
+[INFO]  2021-06-01 fill buy 601211.SH vol=3900 price=20.0355 amt=78138.59
+[INFO]  2021-06-01 hold
+[INFO]  2021-06-02 hold
+[INFO]  2021-06-03 hold
+[INFO]  2021-06-04 hold
+[INFO]  2021-06-07 hold
+[INFO]  2021-06-08 hold
+[INFO]  2021-06-09 hold
+[INFO]  2021-06-10 hold
+[INFO]  2021-06-11 hold
+[INFO]  2021-06-15 hold
+[INFO]  2021-06-16 market gate closed (MA200) -> exit all
+[INFO]  2021-06-17 fill sell 600479.SH vol=600 price=119.6209 amt=71772.52
+[INFO]  2021-06-17 fill sell 000973.SZ vol=4600 price=16.2012 amt=74525.72
+[INFO]  2021-06-17 fill sell 002462.SZ vol=3200 price=22.9150 amt=73327.94
+[INFO]  2021-06-17 fill sell 600755.SH vol=400 price=167.9909 amt=67196.35
+[INFO]  2021-06-17 fill sell 600663.SH vol=500 price=181.5351 amt=90767.54
+[INFO]  2021-06-17 fill sell 601010.SH vol=5000 price=15.1788 amt=75893.88
+[INFO]  2021-06-17 fill sell 300305.SZ vol=1800 price=42.2747 amt=76094.47
+[INFO]  2021-06-17 fill sell 601211.SH vol=3900 price=18.9372 amt=73855.02
+[INFO]  2021-06-17 market gate closed (MA200) -> exit all
+[INFO]  2021-06-18 buy: 000631.SZ,002550.SZ,603766.SH,300585.SZ,600130.SH,600060.SH,002180.SZ,600619.SH (per=78872)
+[INFO]  2021-06-21 fill buy 000631.SZ vol=1300 price=57.9071 amt=75279.29
+[INFO]  2021-06-21 fill buy 002550.SZ vol=1800 price=42.4691 amt=76444.46
+[INFO]  2021-06-21 fill buy 603766.SH vol=6900 price=11.3667 amt=78429.92
+[INFO]  2021-06-21 fill buy 300585.SZ vol=2900 price=26.9728 amt=78221.02
+[INFO]  2021-06-21 fill buy 600130.SH vol=3500 price=22.3974 amt=78390.85
+[INFO]  2021-06-21 fill buy 600060.SH vol=900 price=79.9300 amt=71937.01
+[INFO]  2021-06-21 fill buy 002180.SZ vol=500 price=137.0419 amt=68520.96
+[INFO]  2021-06-21 fill buy 600619.SH vol=100 price=505.8644 amt=50586.44
+[INFO]  2021-06-21 hold
+[INFO]  2021-06-22 hold
+[INFO]  2021-06-23 hold
+[INFO]  2021-06-24 hold
+[INFO]  2021-06-25 hold
+[INFO]  2021-06-28 hold
+[INFO]  2021-06-29 hold
+[INFO]  2021-06-30 hold
+[INFO]  2021-07-01 hold
+[INFO]  2021-07-02 hold
+[INFO]  2021-07-05 hold
+[INFO]  2021-07-06 hold
+[INFO]  2021-07-07 hold
+[INFO]  2021-07-08 hold
+[INFO]  2021-07-09 hold
+[INFO]  2021-07-12 hold
+[INFO]  2021-07-13 hold
+[INFO]  2021-07-14 hold
+[INFO]  2021-07-15 hold
+[INFO]  2021-07-16 sell: 000631.SZ(holding_expired),002550.SZ(holding_expired),603766.SH(holding_expired),300585.SZ(holding_expired),600130.SH(holding_expired),600060.SH(holding_expired),002180.SZ(holding_expired),600619.SH(holding_expired)
+[INFO]  2021-07-16 buy: 002963.SZ (per=53024)
+[INFO]  2021-07-19 fill sell 000631.SZ vol=1300 price=55.4655 amt=72105.12
+[INFO]  2021-07-19 fill sell 002550.SZ vol=1800 price=40.2258 amt=72406.50
+[INFO]  2021-07-19 fill sell 603766.SH vol=6900 price=10.5468 amt=72772.94
+[INFO]  2021-07-19 fill sell 300585.SZ vol=2900 price=26.4488 amt=76701.42
+[INFO]  2021-07-19 fill sell 600130.SH vol=3500 price=20.7259 amt=72540.63
+[INFO]  2021-07-19 fill sell 600060.SH vol=900 price=92.6025 amt=83342.25
+[INFO]  2021-07-19 fill sell 002180.SZ vol=500 price=154.0858 amt=77042.88
+[INFO]  2021-07-19 fill sell 600619.SH vol=100 price=556.4609 amt=55646.09
+[INFO]  2021-07-19 fill buy 002963.SZ vol=3000 price=17.3549 amt=52064.81
+[INFO]  2021-07-19 buy: 600400.SH,002393.SZ,000099.SZ,300441.SZ,002986.SZ,300107.SZ,002611.SZ (per=79325)
+[INFO]  2021-07-20 fill buy 600400.SH vol=2000 price=38.3753 amt=76750.67
+[INFO]  2021-07-20 fill buy 002393.SZ vol=3200 price=24.7281 amt=79129.87
+[INFO]  2021-07-20 fill buy 000099.SZ vol=2900 price=27.3268 amt=79247.72
+[INFO]  2021-07-20 fill buy 300441.SZ vol=1000 price=74.2087 amt=74208.71
+[INFO]  2021-07-20 fill buy 002986.SZ vol=1900 price=40.9961 amt=77892.58
+[INFO]  2021-07-20 fill buy 300107.SZ vol=1400 price=55.3440 amt=77481.60
+[INFO]  2021-07-20 fill buy 002611.SZ vol=2300 price=34.4866 amt=79319.21
+[INFO]  2021-07-20 hold
+[INFO]  2021-07-21 hold
+[INFO]  2021-07-22 hold
+[INFO]  2021-07-23 hold
+[INFO]  2021-07-26 hold
+[INFO]  2021-07-27 market gate closed (MA200) -> exit all
+[INFO]  2021-07-28 fill sell 002963.SZ vol=3000 price=16.6859 amt=50057.57
+[INFO]  2021-07-28 fill sell 600400.SH vol=2000 price=37.5327 amt=75065.38
+[INFO]  2021-07-28 fill sell 002393.SZ vol=3200 price=23.0498 amt=73759.48
+[INFO]  2021-07-28 fill sell 000099.SZ vol=2900 price=28.1557 amt=81651.43
+[INFO]  2021-07-28 fill sell 300441.SZ vol=1000 price=72.0069 amt=72006.89
+[INFO]  2021-07-28 fill sell 002986.SZ vol=1900 price=40.1698 amt=76322.56
+[INFO]  2021-07-28 fill sell 300107.SZ vol=1400 price=52.4670 amt=73453.77
+[INFO]  2021-07-28 fill sell 002611.SZ vol=2300 price=34.8341 amt=80118.32
+[INFO]  2021-07-28 market gate closed (MA200) -> exit all
+[INFO]  2021-07-29 market gate closed (MA200) -> exit all
+[INFO]  2021-07-30 market gate closed (MA200) -> exit all
+[INFO]  2021-08-02 buy: 002790.SZ,600098.SH,002465.SZ,601869.SH,300284.SZ,600523.SH,300780.SZ,603011.SH (per=77612)
+[INFO]  2021-08-03 fill buy 002790.SZ vol=4700 price=16.4885 amt=77495.82
+[INFO]  2021-08-03 fill buy 600098.SH vol=2100 price=35.8530 amt=75291.29
+[INFO]  2021-08-03 fill buy 002465.SZ vol=1100 price=69.1811 amt=76099.18
+[INFO]  2021-08-03 fill buy 601869.SH vol=2800 price=27.6791 amt=77501.40
+[INFO]  2021-08-03 fill buy 300284.SZ vol=3200 price=23.8301 amt=76256.18
+[INFO]  2021-08-03 fill buy 600523.SH vol=2400 price=31.1411 amt=74738.66
+[INFO]  2021-08-03 fill buy 300780.SZ vol=4600 price=16.5346 amt=76059.06
+[INFO]  2021-08-03 fill buy 603011.SH vol=6700 price=11.4283 amt=76569.46
+[INFO]  2021-08-03 hold
+[INFO]  2021-08-04 hold
+[INFO]  2021-08-05 hold
+[INFO]  2021-08-06 hold
+[INFO]  2021-08-09 hold
+[INFO]  2021-08-10 hold
+[INFO]  2021-08-11 hold
+[INFO]  2021-08-12 hold
+[INFO]  2021-08-13 hold
+[INFO]  2021-08-16 hold
+[INFO]  2021-08-17 market gate closed (MA200) -> exit all
+[INFO]  2021-08-18 fill sell 002790.SZ vol=4700 price=16.5714 amt=77885.64
+[INFO]  2021-08-18 fill sell 600098.SH vol=2100 price=35.5584 amt=74672.69
+[INFO]  2021-08-18 fill sell 002465.SZ vol=1100 price=66.5161 amt=73167.66
+[INFO]  2021-08-18 fill sell 601869.SH vol=2800 price=26.3331 amt=73732.60
+[INFO]  2021-08-18 fill sell 300284.SZ vol=3200 price=27.7018 amt=88645.73
+[INFO]  2021-08-18 fill sell 600523.SH vol=2400 price=31.6590 amt=75981.67
+[INFO]  2021-08-18 fill sell 300780.SZ vol=4600 price=15.3467 amt=70594.99
+[INFO]  2021-08-18 fill sell 603011.SH vol=6700 price=10.9041 amt=73057.50
+[INFO]  2021-08-18 market gate closed (MA200) -> exit all
+[INFO]  2021-08-19 market gate closed (MA200) -> exit all
+[INFO]  2021-08-20 market gate closed (MA200) -> exit all
+[INFO]  2021-08-23 buy: 603689.SH,600795.SH,605050.SH,600561.SH,603095.SH,002246.SZ,603199.SH,002871.SZ (per=77252)
+[INFO]  2021-08-24 fill buy 603689.SH vol=7100 price=10.7762 amt=76511.06
+[INFO]  2021-08-24 fill buy 600795.SH vol=100 price=694.1181 amt=69411.81
+[INFO]  2021-08-24 fill buy 605050.SH vol=6600 price=11.6396 amt=76821.54
+[INFO]  2021-08-24 fill buy 600561.SH vol=5900 price=12.9679 amt=76510.34
+[INFO]  2021-08-24 fill buy 603095.SH vol=3100 price=24.6446 amt=76398.26
+[INFO]  2021-08-24 fill buy 002246.SZ vol=6200 price=12.2635 amt=76033.40
+[INFO]  2021-08-24 fill buy 603199.SH vol=3500 price=21.7996 amt=76298.52
+[INFO]  2021-08-24 fill buy 002871.SZ vol=2700 price=27.7572 amt=74944.41
+[INFO]  2021-08-24 hold
+[INFO]  2021-08-25 hold
+[INFO]  2021-08-26 hold
+[INFO]  2021-08-27 hold
+[INFO]  2021-08-30 hold
+[INFO]  2021-08-31 hold
+[INFO]  2021-09-01 hold
+[INFO]  2021-09-02 hold
+[INFO]  2021-09-03 hold
+[INFO]  2021-09-06 hold
+[INFO]  2021-09-07 hold
+[INFO]  2021-09-08 hold
+[INFO]  2021-09-09 hold
+[INFO]  2021-09-10 hold
+[INFO]  2021-09-13 hold
+[INFO]  2021-09-14 hold
+[INFO]  2021-09-15 hold
+[INFO]  2021-09-16 hold
+[INFO]  2021-09-17 hold
+[INFO]  2021-09-22 sell: 603689.SH(holding_expired),600795.SH(holding_expired),605050.SH(holding_expired),600561.SH(holding_expired),603095.SH(holding_expired),002246.SZ(holding_expired),603199.SH(holding_expired),002871.SZ(holding_expired)
+[INFO]  2021-09-22 buy: 603967.SH,000952.SZ,600987.SH (per=4980)
+[INFO]  2021-09-23 fill sell 603689.SH vol=7100 price=12.9419 amt=91887.38
+[INFO]  2021-09-23 fill sell 600795.SH vol=100 price=971.4473 amt=97144.73
+[INFO]  2021-09-23 fill sell 605050.SH vol=6600 price=11.2088 amt=73977.95
+[INFO]  2021-09-23 fill sell 600561.SH vol=5900 price=14.2501 amt=84075.33
+[INFO]  2021-09-23 fill sell 603095.SH vol=3100 price=25.2896 amt=78397.84
+[INFO]  2021-09-23 fill sell 002246.SZ vol=6200 price=13.1730 amt=81672.44
+[INFO]  2021-09-23 fill sell 603199.SH vol=3500 price=21.1210 amt=73923.63
+[INFO]  2021-09-23 fill sell 002871.SZ vol=2700 price=26.5629 amt=71719.94
+[INFO]  2021-09-23 fill buy 603967.SH vol=300 price=14.1621 amt=4248.64
+[INFO]  2021-09-23 fill buy 000952.SZ vol=200 price=21.7986 amt=4359.73
+[INFO]  2021-09-23 fill buy 600987.SH vol=100 price=40.6378 amt=4063.78
+[INFO]  2021-09-23 buy: 600356.SH,605500.SH,000900.SZ,000544.SZ,000885.SZ (per=83390)
+[INFO]  2021-09-24 fill buy 600356.SH vol=4900 price=16.9671 amt=83138.94
+[INFO]  2021-09-24 fill buy 605500.SH vol=4300 price=19.0234 amt=81800.42
+[INFO]  2021-09-24 fill buy 000900.SZ vol=1300 price=61.7237 amt=80240.84
+[INFO]  2021-09-24 fill buy 000544.SZ vol=3200 price=25.8537 amt=82731.74
+[INFO]  2021-09-24 fill buy 000885.SZ vol=3700 price=22.1319 amt=81887.99
+[INFO]  2021-09-24 hold
+[INFO]  2021-09-27 market gate closed (MA200) -> exit all
+[INFO]  2021-09-28 fill sell 603967.SH vol=300 price=13.2707 amt=3981.21
+[INFO]  2021-09-28 fill sell 000952.SZ vol=200 price=19.6686 amt=3933.72
+[INFO]  2021-09-28 fill sell 600987.SH vol=100 price=35.9859 amt=3598.59
+[INFO]  2021-09-28 fill sell 600356.SH vol=4900 price=15.3786 amt=75354.97
+[INFO]  2021-09-28 fill sell 605500.SH vol=4300 price=17.7536 amt=76340.43
+[INFO]  2021-09-28 fill sell 000900.SZ vol=1300 price=58.7821 amt=76416.70
+[INFO]  2021-09-28 fill sell 000544.SZ vol=3200 price=24.3807 amt=78018.29
+[INFO]  2021-09-28 fill sell 000885.SZ vol=3700 price=21.3091 amt=78843.56
+[INFO]  2021-09-28 market gate closed (MA200) -> exit all
+[INFO]  2021-09-29 market gate closed (MA200) -> exit all
+[INFO]  2021-09-30 market gate closed (MA200) -> exit all
+[INFO]  2021-10-08 market gate closed (MA200) -> exit all
+[INFO]  2021-10-11 market gate closed (MA200) -> exit all
+[INFO]  2021-10-12 market gate closed (MA200) -> exit all
+[INFO]  2021-10-13 market gate closed (MA200) -> exit all
+[INFO]  2021-10-14 market gate closed (MA200) -> exit all
+[INFO]  2021-10-15 market gate closed (MA200) -> exit all
+[INFO]  2021-10-18 market gate closed (MA200) -> exit all
+[INFO]  2021-10-19 market gate closed (MA200) -> exit all
+[INFO]  2021-10-20 market gate closed (MA200) -> exit all
+[INFO]  2021-10-21 market gate closed (MA200) -> exit all
+[INFO]  2021-10-22 market gate closed (MA200) -> exit all
+[INFO]  2021-10-25 market gate closed (MA200) -> exit all
+[INFO]  2021-10-26 market gate closed (MA200) -> exit all
+[INFO]  2021-10-27 market gate closed (MA200) -> exit all
+[INFO]  2021-10-28 market gate closed (MA200) -> exit all
+[INFO]  2021-10-29 market gate closed (MA200) -> exit all
+[INFO]  2021-11-01 market gate closed (MA200) -> exit all
+[INFO]  2021-11-02 market gate closed (MA200) -> exit all
+[INFO]  2021-11-03 market gate closed (MA200) -> exit all
+[INFO]  2021-11-04 market gate closed (MA200) -> exit all
+[INFO]  2021-11-05 market gate closed (MA200) -> exit all
+[INFO]  2021-11-08 market gate closed (MA200) -> exit all
+[INFO]  2021-11-09 market gate closed (MA200) -> exit all
+[INFO]  2021-11-10 market gate closed (MA200) -> exit all
+[INFO]  2021-11-11 buy: 002376.SZ,601801.SH,600229.SH,002449.SZ,600775.SH,603506.SH,002308.SZ,000716.SZ (per=80108)
+[INFO]  2021-11-12 fill buy 002376.SZ vol=1900 price=40.2335 amt=76443.60
+[INFO]  2021-11-12 fill buy 601801.SH vol=6600 price=11.9573 amt=78918.41
+[INFO]  2021-11-12 fill buy 600229.SH vol=7600 price=10.5133 amt=79901.10
+[INFO]  2021-11-12 fill buy 002449.SZ vol=2300 price=33.4210 amt=76868.32
+[INFO]  2021-11-12 fill buy 600775.SH vol=6800 price=11.6810 amt=79431.00
+[INFO]  2021-11-12 fill buy 603506.SH vol=2000 price=38.3014 amt=76602.87
+[INFO]  2021-11-12 fill buy 002308.SZ vol=4200 price=18.8284 amt=79079.15
+[INFO]  2021-11-12 fill buy 000716.SZ vol=6200 price=12.8372 amt=79590.60
+[INFO]  2021-11-12 hold
+[INFO]  2021-11-15 hold
+[INFO]  2021-11-16 hold
+[INFO]  2021-11-17 hold
+[INFO]  2021-11-18 hold
+[INFO]  2021-11-19 hold
+[INFO]  2021-11-22 hold
+[INFO]  2021-11-23 hold
+[INFO]  2021-11-24 hold
+[INFO]  2021-11-25 hold
+[INFO]  2021-11-26 hold
+[INFO]  2021-11-29 hold
+[INFO]  2021-11-30 hold
+[INFO]  2021-12-01 hold
+[INFO]  2021-12-02 hold
+[INFO]  2021-12-03 hold
+[INFO]  2021-12-06 hold
+[INFO]  2021-12-07 hold
+[INFO]  2021-12-08 hold
+[INFO]  2021-12-09 sell: 002376.SZ(holding_expired),601801.SH(holding_expired),600229.SH(holding_expired),002449.SZ(holding_expired),600775.SH(holding_expired),603506.SH(holding_expired),002308.SZ(holding_expired),000716.SZ(holding_expired)
+[INFO]  2021-12-09 buy: 002719.SZ,300059.SZ (per=6935)
+[INFO]  2021-12-10 fill sell 002376.SZ vol=1900 price=40.3855 amt=76732.36
+[INFO]  2021-12-10 fill sell 601801.SH vol=6600 price=11.6672 amt=77003.39
+[INFO]  2021-12-10 fill sell 600229.SH vol=7600 price=10.3231 amt=78455.31
+[INFO]  2021-12-10 fill sell 002449.SZ vol=2300 price=33.0811 amt=76086.50
+[INFO]  2021-12-10 fill sell 600775.SH vol=6800 price=12.6682 amt=86143.89
+[INFO]  2021-12-10 fill sell 603506.SH vol=2000 price=36.1793 amt=72358.69
+[INFO]  2021-12-10 fill sell 002308.SZ vol=4200 price=18.2712 amt=76739.00
+[INFO]  2021-12-10 fill sell 000716.SZ vol=6200 price=12.2825 amt=76151.22
+[INFO]  2021-12-10 fill buy 002719.SZ vol=300 price=18.0333 amt=5409.99
+[ERROR] 2021-12-10 unfilled_order code=300059.SZ reason=below_min_lot
+[INFO]  2021-12-10 buy: 000729.SZ,600051.SH,002864.SZ,603608.SH,603813.SH,605003.SH,603778.SH (per=79172)
+[INFO]  2021-12-13 fill buy 000729.SZ vol=1300 price=60.7993 amt=79039.10
+[INFO]  2021-12-13 fill buy 600051.SH vol=2200 price=34.5027 amt=75906.05
+[INFO]  2021-12-13 fill buy 002864.SZ vol=2700 price=28.3620 amt=76577.28
+[INFO]  2021-12-13 fill buy 603608.SH vol=8300 price=9.4938 amt=78798.41
+[INFO]  2021-12-13 fill buy 603813.SH vol=5100 price=15.4298 amt=78692.15
+[INFO]  2021-12-13 fill buy 605003.SH vol=2400 price=31.7686 amt=76244.66
+[INFO]  2021-12-13 fill buy 603778.SH vol=2600 price=29.7640 amt=77386.31
+[INFO]  2021-12-13 hold
+[INFO]  2021-12-14 hold
+[INFO]  2021-12-15 hold
+[INFO]  2021-12-16 hold
+[INFO]  2021-12-17 hold
+[INFO]  2021-12-20 hold
+[INFO]  2021-12-21 hold
+[INFO]  2021-12-22 hold
+[INFO]  2021-12-23 hold
+[INFO]  2021-12-24 hold
+[INFO]  2021-12-27 hold
+[INFO]  2021-12-28 hold
+[INFO]  2021-12-29 hold
+[INFO]  2021-12-30 hold
+[INFO]  2021-12-31 hold
+[INFO]  2022-01-04 hold
+[INFO]  2022-01-05 hold
+[INFO]  2022-01-06 hold
+[INFO]  2022-01-07 sell: 002719.SZ(holding_expired)
+[INFO]  2022-01-07 buy: 601988.SH (per=84884)
+[INFO]  2022-01-10 fill sell 002719.SZ vol=300 price=16.1651 amt=4849.54
+[INFO]  2022-01-10 fill buy 601988.SH vol=13300 price=6.3680 amt=84694.43
+[INFO]  2022-01-10 sell: 000729.SZ(holding_expired),600051.SH(holding_expired),002864.SZ(holding_expired),603608.SH(holding_expired),603813.SH(holding_expired),605003.SH(holding_expired),603778.SH(holding_expired)
+[INFO]  2022-01-10 buy: 600820.SH,601668.SH (per=2507)
+[INFO]  2022-01-11 fill sell 000729.SZ vol=1300 price=67.3386 amt=87540.16
+[INFO]  2022-01-11 fill sell 600051.SH vol=2200 price=36.5800 amt=80475.92
+[INFO]  2022-01-11 fill sell 002864.SZ vol=2700 price=31.7495 amt=85723.57
+[INFO]  2022-01-11 fill sell 603608.SH vol=8300 price=10.4462 amt=86703.32
+[INFO]  2022-01-11 fill sell 603813.SH vol=5100 price=17.1774 amt=87604.71
+[INFO]  2022-01-11 fill sell 605003.SH vol=2400 price=36.7840 amt=88281.72
+[INFO]  2022-01-11 fill sell 603778.SH vol=2600 price=32.8578 amt=85430.38
+[ERROR] 2022-01-11 unfilled_order code=600820.SH reason=below_min_lot
+[INFO]  2022-01-11 fill buy 601668.SH vol=200 price=10.6056 amt=2121.12
+[INFO]  2022-01-11 buy: 601169.SH,601077.SH,601328.SH,688338.SH,600898.SH,601166.SH (per=86367)
+[INFO]  2022-01-12 fill buy 601169.SH vol=4800 price=17.7443 amt=85172.67
+[INFO]  2022-01-12 fill buy 601077.SH vol=19600 price=4.4023 amt=86285.04
+[INFO]  2022-01-12 fill buy 601328.SH vol=8600 price=10.0337 amt=86289.68
+[INFO]  2022-01-12 fill buy 688338.SH vol=1800 price=47.8602 amt=86148.31
+[INFO]  2022-01-12 fill buy 600898.SH vol=5900 price=14.4481 amt=85243.64
+[INFO]  2022-01-12 fill buy 601166.SH vol=800 price=96.4283 amt=77142.63
+[INFO]  2022-01-12 hold
+[INFO]  2022-01-13 hold
+[INFO]  2022-01-14 hold
+[INFO]  2022-01-17 hold
+[INFO]  2022-01-18 hold
+[INFO]  2022-01-19 hold
+[INFO]  2022-01-20 market gate closed (MA200) -> exit all
+[INFO]  2022-01-21 fill sell 601988.SH vol=13300 price=6.3148 amt=83986.83
+[INFO]  2022-01-21 fill sell 601668.SH vol=200 price=10.6435 amt=2128.71
+[INFO]  2022-01-21 fill sell 601169.SH vol=4800 price=17.7474 amt=85187.69
+[INFO]  2022-01-21 fill sell 601077.SH vol=19600 price=4.3935 amt=86112.64
+[INFO]  2022-01-21 fill sell 601328.SH vol=8600 price=10.1184 amt=87018.08
+[INFO]  2022-01-21 fill sell 688338.SH vol=1800 price=45.2697 amt=81485.43
+[INFO]  2022-01-21 fill sell 600898.SH vol=5900 price=13.7429 amt=81083.01
+[INFO]  2022-01-21 fill sell 601166.SH vol=800 price=98.7032 amt=78962.56
+[INFO]  2022-01-21 market gate closed (MA200) -> exit all
+[INFO]  2022-01-24 market gate closed (MA200) -> exit all
+[INFO]  2022-01-25 market gate closed (MA200) -> exit all
+[INFO]  2022-01-26 market gate closed (MA200) -> exit all
+[INFO]  2022-01-27 market gate closed (MA200) -> exit all
+[INFO]  2022-01-28 market gate closed (MA200) -> exit all
+[INFO]  2022-02-07 market gate closed (MA200) -> exit all
+[INFO]  2022-02-08 market gate closed (MA200) -> exit all
+[INFO]  2022-02-09 market gate closed (MA200) -> exit all
+[INFO]  2022-02-10 market gate closed (MA200) -> exit all
+[INFO]  2022-02-11 market gate closed (MA200) -> exit all
+[INFO]  2022-02-14 market gate closed (MA200) -> exit all
+[INFO]  2022-02-15 market gate closed (MA200) -> exit all
+[INFO]  2022-02-16 market gate closed (MA200) -> exit all
+[INFO]  2022-02-17 market gate closed (MA200) -> exit all
+[INFO]  2022-02-18 market gate closed (MA200) -> exit all
+[INFO]  2022-02-21 market gate closed (MA200) -> exit all
+[INFO]  2022-02-22 market gate closed (MA200) -> exit all
+[INFO]  2022-02-23 market gate closed (MA200) -> exit all
+[INFO]  2022-02-24 market gate closed (MA200) -> exit all
+[INFO]  2022-02-25 market gate closed (MA200) -> exit all
+[INFO]  2022-02-28 market gate closed (MA200) -> exit all
+[INFO]  2022-03-01 market gate closed (MA200) -> exit all
+[INFO]  2022-03-02 market gate closed (MA200) -> exit all
+[INFO]  2022-03-03 market gate closed (MA200) -> exit all
+[INFO]  2022-03-04 market gate closed (MA200) -> exit all
+[INFO]  2022-03-07 market gate closed (MA200) -> exit all
+[INFO]  2022-03-08 market gate closed (MA200) -> exit all
+[INFO]  2022-03-09 market gate closed (MA200) -> exit all
+[INFO]  2022-03-10 market gate closed (MA200) -> exit all
+[INFO]  2022-03-11 market gate closed (MA200) -> exit all
+[INFO]  2022-03-14 market gate closed (MA200) -> exit all
+[INFO]  2022-03-15 market gate closed (MA200) -> exit all
+[INFO]  2022-03-16 market gate closed (MA200) -> exit all
+[INFO]  2022-03-17 market gate closed (MA200) -> exit all
+[INFO]  2022-03-18 market gate closed (MA200) -> exit all
+[INFO]  2022-03-21 market gate closed (MA200) -> exit all
+[INFO]  2022-03-22 market gate closed (MA200) -> exit all
+[INFO]  2022-03-23 market gate closed (MA200) -> exit all
+[INFO]  2022-03-24 market gate closed (MA200) -> exit all
+[INFO]  2022-03-25 market gate closed (MA200) -> exit all
+[INFO]  2022-03-28 market gate closed (MA200) -> exit all
+[INFO]  2022-03-29 market gate closed (MA200) -> exit all
+[INFO]  2022-03-30 market gate closed (MA200) -> exit all
+[INFO]  2022-03-31 market gate closed (MA200) -> exit all
+[INFO]  2022-04-01 market gate closed (MA200) -> exit all
+[INFO]  2022-04-06 market gate closed (MA200) -> exit all
+[INFO]  2022-04-07 market gate closed (MA200) -> exit all
+[INFO]  2022-04-08 market gate closed (MA200) -> exit all
+[INFO]  2022-04-11 market gate closed (MA200) -> exit all
+[INFO]  2022-04-12 market gate closed (MA200) -> exit all
+[INFO]  2022-04-13 market gate closed (MA200) -> exit all
+[INFO]  2022-04-14 market gate closed (MA200) -> exit all
+[INFO]  2022-04-15 market gate closed (MA200) -> exit all
+[INFO]  2022-04-18 market gate closed (MA200) -> exit all
+[INFO]  2022-04-19 market gate closed (MA200) -> exit all
+[INFO]  2022-04-20 market gate closed (MA200) -> exit all
+[INFO]  2022-04-21 market gate closed (MA200) -> exit all
+[INFO]  2022-04-22 market gate closed (MA200) -> exit all
+[INFO]  2022-04-25 market gate closed (MA200) -> exit all
+[INFO]  2022-04-26 market gate closed (MA200) -> exit all
+[INFO]  2022-04-27 market gate closed (MA200) -> exit all
+[INFO]  2022-04-28 market gate closed (MA200) -> exit all
+[INFO]  2022-04-29 market gate closed (MA200) -> exit all
+[INFO]  2022-05-05 market gate closed (MA200) -> exit all
+[INFO]  2022-05-06 market gate closed (MA200) -> exit all
+[INFO]  2022-05-09 market gate closed (MA200) -> exit all
+[INFO]  2022-05-10 market gate closed (MA200) -> exit all
+[INFO]  2022-05-11 market gate closed (MA200) -> exit all
+[INFO]  2022-05-12 market gate closed (MA200) -> exit all
+[INFO]  2022-05-13 market gate closed (MA200) -> exit all
+[INFO]  2022-05-16 market gate closed (MA200) -> exit all
+[INFO]  2022-05-17 market gate closed (MA200) -> exit all
+[INFO]  2022-05-18 market gate closed (MA200) -> exit all
+[INFO]  2022-05-19 market gate closed (MA200) -> exit all
+[INFO]  2022-05-20 market gate closed (MA200) -> exit all
+[INFO]  2022-05-23 market gate closed (MA200) -> exit all
+[INFO]  2022-05-24 market gate closed (MA200) -> exit all
+[INFO]  2022-05-25 market gate closed (MA200) -> exit all
+[INFO]  2022-05-26 market gate closed (MA200) -> exit all
+[INFO]  2022-05-27 market gate closed (MA200) -> exit all
+[INFO]  2022-05-30 market gate closed (MA200) -> exit all
+[INFO]  2022-05-31 market gate closed (MA200) -> exit all
+[INFO]  2022-06-01 market gate closed (MA200) -> exit all
+[INFO]  2022-06-02 market gate closed (MA200) -> exit all
+[INFO]  2022-06-06 market gate closed (MA200) -> exit all
+[INFO]  2022-06-07 market gate closed (MA200) -> exit all
+[INFO]  2022-06-08 market gate closed (MA200) -> exit all
+[INFO]  2022-06-09 market gate closed (MA200) -> exit all
+[INFO]  2022-06-10 market gate closed (MA200) -> exit all
+[INFO]  2022-06-13 market gate closed (MA200) -> exit all
+[INFO]  2022-06-14 market gate closed (MA200) -> exit all
+[INFO]  2022-06-15 market gate closed (MA200) -> exit all
+[INFO]  2022-06-16 market gate closed (MA200) -> exit all
+[INFO]  2022-06-17 market gate closed (MA200) -> exit all
+[INFO]  2022-06-20 market gate closed (MA200) -> exit all
+[INFO]  2022-06-21 market gate closed (MA200) -> exit all
+[INFO]  2022-06-22 market gate closed (MA200) -> exit all
+[INFO]  2022-06-23 market gate closed (MA200) -> exit all
+[INFO]  2022-06-24 market gate closed (MA200) -> exit all
+[INFO]  2022-06-27 market gate closed (MA200) -> exit all
+[INFO]  2022-06-28 market gate closed (MA200) -> exit all
+[INFO]  2022-06-29 market gate closed (MA200) -> exit all
+[INFO]  2022-06-30 market gate closed (MA200) -> exit all
+[INFO]  2022-07-01 market gate closed (MA200) -> exit all
+[INFO]  2022-07-04 market gate closed (MA200) -> exit all
+[INFO]  2022-07-05 market gate closed (MA200) -> exit all
+[INFO]  2022-07-06 market gate closed (MA200) -> exit all
+[INFO]  2022-07-07 market gate closed (MA200) -> exit all
+[INFO]  2022-07-08 market gate closed (MA200) -> exit all
+[INFO]  2022-07-11 market gate closed (MA200) -> exit all
+[INFO]  2022-07-12 market gate closed (MA200) -> exit all
+[INFO]  2022-07-13 market gate closed (MA200) -> exit all
+[INFO]  2022-07-14 market gate closed (MA200) -> exit all
+[INFO]  2022-07-15 market gate closed (MA200) -> exit all
+[INFO]  2022-07-18 market gate closed (MA200) -> exit all
+[INFO]  2022-07-19 market gate closed (MA200) -> exit all
+[INFO]  2022-07-20 market gate closed (MA200) -> exit all
+[INFO]  2022-07-21 market gate closed (MA200) -> exit all
+[INFO]  2022-07-22 market gate closed (MA200) -> exit all
+[INFO]  2022-07-25 market gate closed (MA200) -> exit all
+[INFO]  2022-07-26 market gate closed (MA200) -> exit all
+[INFO]  2022-07-27 market gate closed (MA200) -> exit all
+[INFO]  2022-07-28 market gate closed (MA200) -> exit all
+[INFO]  2022-07-29 market gate closed (MA200) -> exit all
+[INFO]  2022-08-01 market gate closed (MA200) -> exit all
+[INFO]  2022-08-02 market gate closed (MA200) -> exit all
+[INFO]  2022-08-03 market gate closed (MA200) -> exit all
+[INFO]  2022-08-04 market gate closed (MA200) -> exit all
+[INFO]  2022-08-05 market gate closed (MA200) -> exit all
+[INFO]  2022-08-08 market gate closed (MA200) -> exit all
+[INFO]  2022-08-09 market gate closed (MA200) -> exit all
+[INFO]  2022-08-10 market gate closed (MA200) -> exit all
+[INFO]  2022-08-11 market gate closed (MA200) -> exit all
+[INFO]  2022-08-12 market gate closed (MA200) -> exit all
+[INFO]  2022-08-15 market gate closed (MA200) -> exit all
+[INFO]  2022-08-16 market gate closed (MA200) -> exit all
+[INFO]  2022-08-17 market gate closed (MA200) -> exit all
+[INFO]  2022-08-18 market gate closed (MA200) -> exit all
+[INFO]  2022-08-19 market gate closed (MA200) -> exit all
+[INFO]  2022-08-22 market gate closed (MA200) -> exit all
+[INFO]  2022-08-23 market gate closed (MA200) -> exit all
+[INFO]  2022-08-24 market gate closed (MA200) -> exit all
+[INFO]  2022-08-25 market gate closed (MA200) -> exit all
+[INFO]  2022-08-26 market gate closed (MA200) -> exit all
+[INFO]  2022-08-29 market gate closed (MA200) -> exit all
+[INFO]  2022-08-30 market gate closed (MA200) -> exit all
+[INFO]  2022-08-31 market gate closed (MA200) -> exit all
+[INFO]  2022-09-01 market gate closed (MA200) -> exit all
+[INFO]  2022-09-02 market gate closed (MA200) -> exit all
+[INFO]  2022-09-05 market gate closed (MA200) -> exit all
+[INFO]  2022-09-06 market gate closed (MA200) -> exit all
+[INFO]  2022-09-07 market gate closed (MA200) -> exit all
+[INFO]  2022-09-08 market gate closed (MA200) -> exit all
+[INFO]  2022-09-09 market gate closed (MA200) -> exit all
+[INFO]  2022-09-13 market gate closed (MA200) -> exit all
+[INFO]  2022-09-14 market gate closed (MA200) -> exit all
+[INFO]  2022-09-15 market gate closed (MA200) -> exit all
+[INFO]  2022-09-16 market gate closed (MA200) -> exit all
+[INFO]  2022-09-19 market gate closed (MA200) -> exit all
+[INFO]  2022-09-20 market gate closed (MA200) -> exit all
+[INFO]  2022-09-21 market gate closed (MA200) -> exit all
+[INFO]  2022-09-22 market gate closed (MA200) -> exit all
+[INFO]  2022-09-23 market gate closed (MA200) -> exit all
+[INFO]  2022-09-26 market gate closed (MA200) -> exit all
+[INFO]  2022-09-27 market gate closed (MA200) -> exit all
+[INFO]  2022-09-28 market gate closed (MA200) -> exit all
+[INFO]  2022-09-29 market gate closed (MA200) -> exit all
+[INFO]  2022-09-30 market gate closed (MA200) -> exit all
+[INFO]  2022-10-10 market gate closed (MA200) -> exit all
+[INFO]  2022-10-11 market gate closed (MA200) -> exit all
+[INFO]  2022-10-12 market gate closed (MA200) -> exit all
+[INFO]  2022-10-13 market gate closed (MA200) -> exit all
+[INFO]  2022-10-14 market gate closed (MA200) -> exit all
+[INFO]  2022-10-17 market gate closed (MA200) -> exit all
+[INFO]  2022-10-18 market gate closed (MA200) -> exit all
+[INFO]  2022-10-19 market gate closed (MA200) -> exit all
+[INFO]  2022-10-20 market gate closed (MA200) -> exit all
+[INFO]  2022-10-21 market gate closed (MA200) -> exit all
+[INFO]  2022-10-24 market gate closed (MA200) -> exit all
+[INFO]  2022-10-25 market gate closed (MA200) -> exit all
+[INFO]  2022-10-26 market gate closed (MA200) -> exit all
+[INFO]  2022-10-27 market gate closed (MA200) -> exit all
+[INFO]  2022-10-28 market gate closed (MA200) -> exit all
+[INFO]  2022-10-31 market gate closed (MA200) -> exit all
+[INFO]  2022-11-01 market gate closed (MA200) -> exit all
+[INFO]  2022-11-02 market gate closed (MA200) -> exit all
+[INFO]  2022-11-03 market gate closed (MA200) -> exit all
+[INFO]  2022-11-04 market gate closed (MA200) -> exit all
+[INFO]  2022-11-07 market gate closed (MA200) -> exit all
+[INFO]  2022-11-08 market gate closed (MA200) -> exit all
+[INFO]  2022-11-09 market gate closed (MA200) -> exit all
+[INFO]  2022-11-10 market gate closed (MA200) -> exit all
+[INFO]  2022-11-11 market gate closed (MA200) -> exit all
+[INFO]  2022-11-14 market gate closed (MA200) -> exit all
+[INFO]  2022-11-15 market gate closed (MA200) -> exit all
+[INFO]  2022-11-16 market gate closed (MA200) -> exit all
+[INFO]  2022-11-17 market gate closed (MA200) -> exit all
+[INFO]  2022-11-18 market gate closed (MA200) -> exit all
+[INFO]  2022-11-21 market gate closed (MA200) -> exit all
+[INFO]  2022-11-22 market gate closed (MA200) -> exit all
+[INFO]  2022-11-23 market gate closed (MA200) -> exit all
+[INFO]  2022-11-24 market gate closed (MA200) -> exit all
+[INFO]  2022-11-25 market gate closed (MA200) -> exit all
+[INFO]  2022-11-28 market gate closed (MA200) -> exit all
+[INFO]  2022-11-29 market gate closed (MA200) -> exit all
+[INFO]  2022-11-30 market gate closed (MA200) -> exit all
+[INFO]  2022-12-01 market gate closed (MA200) -> exit all
+[INFO]  2022-12-02 market gate closed (MA200) -> exit all
+[INFO]  2022-12-05 market gate closed (MA200) -> exit all
+[INFO]  2022-12-06 market gate closed (MA200) -> exit all
+[INFO]  2022-12-07 market gate closed (MA200) -> exit all
+[INFO]  2022-12-08 market gate closed (MA200) -> exit all
+[INFO]  2022-12-09 market gate closed (MA200) -> exit all
+[INFO]  2022-12-12 market gate closed (MA200) -> exit all
+[INFO]  2022-12-13 market gate closed (MA200) -> exit all
+[INFO]  2022-12-14 market gate closed (MA200) -> exit all
+[INFO]  2022-12-15 market gate closed (MA200) -> exit all
+[INFO]  2022-12-16 market gate closed (MA200) -> exit all
+[INFO]  2022-12-19 market gate closed (MA200) -> exit all
+[INFO]  2022-12-20 market gate closed (MA200) -> exit all
+[INFO]  2022-12-21 market gate closed (MA200) -> exit all
+[INFO]  2022-12-22 market gate closed (MA200) -> exit all
+[INFO]  2022-12-23 market gate closed (MA200) -> exit all
+[INFO]  2022-12-26 market gate closed (MA200) -> exit all
+[INFO]  2022-12-27 market gate closed (MA200) -> exit all
+[INFO]  2022-12-28 market gate closed (MA200) -> exit all
+[INFO]  2022-12-29 market gate closed (MA200) -> exit all
+[INFO]  2022-12-30 market gate closed (MA200) -> exit all
+[INFO]  2023-01-03 buy: 600229.SH,300770.SZ,300294.SZ,601366.SH,600824.SH,002712.SZ,002252.SZ,603630.SH (per=85415)
+[INFO]  2023-01-04 fill buy 600229.SH vol=7500 price=11.3658 amt=85243.51
+[INFO]  2023-01-04 fill buy 300770.SZ vol=1100 price=72.1276 amt=79340.32
+[INFO]  2023-01-04 fill buy 300294.SZ vol=400 price=178.2443 amt=71297.71
+[INFO]  2023-01-04 fill buy 601366.SH vol=12200 price=6.9534 amt=84831.99
+[INFO]  2023-01-04 fill buy 600824.SH vol=800 price=101.3801 amt=81104.05
+[INFO]  2023-01-04 fill buy 002712.SZ vol=3200 price=26.2174 amt=83895.68
+[INFO]  2023-01-04 fill buy 002252.SZ vol=500 price=161.3511 amt=80675.54
+[INFO]  2023-01-04 fill buy 603630.SH vol=4000 price=20.9617 amt=83846.88
+[INFO]  2023-01-04 hold
+[INFO]  2023-01-05 hold
+[INFO]  2023-01-06 hold
+[INFO]  2023-01-09 hold
+[INFO]  2023-01-10 hold
+[INFO]  2023-01-11 hold
+[INFO]  2023-01-12 hold
+[INFO]  2023-01-13 hold
+[INFO]  2023-01-16 hold
+[INFO]  2023-01-17 hold
+[INFO]  2023-01-18 hold
+[INFO]  2023-01-19 hold
+[INFO]  2023-01-20 hold
+[INFO]  2023-01-30 hold
+[INFO]  2023-01-31 hold
+[INFO]  2023-02-01 hold
+[INFO]  2023-02-02 hold
+[INFO]  2023-02-03 hold
+[INFO]  2023-02-06 hold
+[INFO]  2023-02-07 sell: 600229.SH(holding_expired),300770.SZ(holding_expired),300294.SZ(holding_expired),601366.SH(holding_expired),600824.SH(holding_expired),002712.SZ(holding_expired),002252.SZ(holding_expired),603630.SH(holding_expired)
+[INFO]  2023-02-07 buy: 601827.SH (per=32919)
+[INFO]  2023-02-08 fill sell 600229.SH vol=7500 price=11.5482 amt=86611.38
+[INFO]  2023-02-08 fill sell 300770.SZ vol=1100 price=77.7202 amt=85492.18
+[INFO]  2023-02-08 fill sell 300294.SZ vol=400 price=168.1816 amt=67272.66
+[INFO]  2023-02-08 fill sell 601366.SH vol=12200 price=6.6829 amt=81531.89
+[INFO]  2023-02-08 fill sell 600824.SH vol=800 price=96.0784 amt=76862.70
+[INFO]  2023-02-08 fill sell 002712.SZ vol=3200 price=28.1937 amt=90219.90
+[INFO]  2023-02-08 fill sell 002252.SZ vol=500 price=149.3705 amt=74685.26
+[INFO]  2023-02-08 fill sell 603630.SH vol=4000 price=20.1966 amt=80786.33
+[INFO]  2023-02-08 fill buy 601827.SH vol=4200 price=7.6727 amt=32225.19
+[INFO]  2023-02-08 buy: 300983.SZ,002215.SZ,600637.SH,300371.SZ,600210.SH,603829.SH,300743.SZ (per=84444)
+[INFO]  2023-02-09 fill buy 300983.SZ vol=1600 price=52.0037 amt=83205.91
+[INFO]  2023-02-09 fill buy 002215.SZ vol=1700 price=49.3084 amt=83824.27
+[INFO]  2023-02-09 fill buy 600637.SH vol=2200 price=37.3367 amt=82140.70
+[INFO]  2023-02-09 fill buy 300371.SZ vol=1600 price=51.0548 amt=81687.70
+[INFO]  2023-02-09 fill buy 600210.SH vol=1600 price=50.5005 amt=80800.73
+[INFO]  2023-02-09 fill buy 603829.SH vol=6400 price=13.0760 amt=83686.43
+[INFO]  2023-02-09 fill buy 300743.SZ vol=2800 price=29.3592 amt=82205.82
+[INFO]  2023-02-09 hold
+[INFO]  2023-02-10 hold
+[INFO]  2023-02-13 hold
+[INFO]  2023-02-14 hold
+[INFO]  2023-02-15 hold
+[INFO]  2023-02-16 hold
+[INFO]  2023-02-17 hold
+[INFO]  2023-02-20 hold
+[INFO]  2023-02-21 hold
+[INFO]  2023-02-22 hold
+[INFO]  2023-02-23 hold
+[INFO]  2023-02-24 hold
+[INFO]  2023-02-27 hold
+[INFO]  2023-02-28 hold
+[INFO]  2023-03-01 hold
+[INFO]  2023-03-02 hold
+[INFO]  2023-03-03 hold
+[INFO]  2023-03-06 hold
+[INFO]  2023-03-07 sell: 601827.SH(holding_expired)
+[INFO]  2023-03-08 fill sell 601827.SH vol=4200 price=7.3951 amt=31059.41
+[INFO]  2023-03-08 sell: 300983.SZ(holding_expired),002215.SZ(holding_expired),600637.SH(holding_expired),300371.SZ(holding_expired),600210.SH(holding_expired),603829.SH(holding_expired),300743.SZ(holding_expired)
+[INFO]  2023-03-08 buy: 605081.SH,002039.SZ,300815.SZ (per=32335)
+[INFO]  2023-03-09 fill sell 300983.SZ vol=1600 price=55.1497 amt=88239.59
+[INFO]  2023-03-09 fill sell 002215.SZ vol=1700 price=58.7692 amt=99907.69
+[INFO]  2023-03-09 fill sell 600637.SH vol=2200 price=37.9367 amt=83460.84
+[INFO]  2023-03-09 fill sell 300371.SZ vol=1600 price=52.0328 amt=83252.49
+[INFO]  2023-03-09 fill sell 600210.SH vol=1600 price=48.7598 amt=78015.75
+[INFO]  2023-03-09 fill sell 603829.SH vol=6400 price=12.8934 amt=82517.80
+[INFO]  2023-03-09 fill sell 300743.SZ vol=2800 price=29.6773 amt=83096.57
+[INFO]  2023-03-09 fill buy 605081.SH vol=1200 price=26.0682 amt=31281.89
+[INFO]  2023-03-09 fill buy 002039.SZ vol=500 price=57.4543 amt=28727.16
+[INFO]  2023-03-09 fill buy 300815.SZ vol=700 price=43.4397 amt=30407.80
+[INFO]  2023-03-09 buy: 601518.SH,300929.SZ,301043.SZ,300983.SZ,301167.SZ (per=87129)
+[INFO]  2023-03-10 fill buy 601518.SH vol=24200 price=3.5910 amt=86901.30
+[INFO]  2023-03-10 fill buy 300929.SZ vol=4100 price=20.9773 amt=86006.83
+[INFO]  2023-03-10 fill buy 301043.SZ vol=3200 price=27.0131 amt=86441.81
+[INFO]  2023-03-10 fill buy 300983.SZ vol=1500 price=57.5862 amt=86379.30
+[INFO]  2023-03-10 fill buy 301167.SZ vol=3200 price=26.5950 amt=85104.09
+[INFO]  2023-03-10 hold
+[INFO]  2023-03-13 hold
+[INFO]  2023-03-14 hold
+[INFO]  2023-03-15 hold
+[INFO]  2023-03-16 hold
+[INFO]  2023-03-17 hold
+[INFO]  2023-03-20 hold
+[INFO]  2023-03-21 hold
+[INFO]  2023-03-22 hold
+[INFO]  2023-03-23 hold
+[INFO]  2023-03-24 hold
+[INFO]  2023-03-27 hold
+[INFO]  2023-03-28 hold
+[INFO]  2023-03-29 hold
+[INFO]  2023-03-30 hold
+[INFO]  2023-03-31 hold
+[INFO]  2023-04-03 hold
+[INFO]  2023-04-04 hold
+[INFO]  2023-04-06 sell: 605081.SH(holding_expired),002039.SZ(holding_expired),300815.SZ(holding_expired)
+[INFO]  2023-04-06 buy: 600299.SH,000061.SZ (per=82605)
+[INFO]  2023-04-07 fill sell 605081.SH vol=1200 price=28.8149 amt=34577.86
+[INFO]  2023-04-07 fill sell 002039.SZ vol=500 price=52.6543 amt=26327.16
+[INFO]  2023-04-07 fill sell 300815.SZ vol=700 price=40.8158 amt=28571.05
+[INFO]  2023-04-07 fill buy 600299.SH vol=2800 price=28.7531 amt=80508.70
+[INFO]  2023-04-07 fill buy 000061.SZ vol=600 price=135.3250 amt=81195.01
+[INFO]  2023-04-07 sell: 601518.SH(holding_expired),300929.SZ(holding_expired),301043.SZ(holding_expired),300983.SZ(holding_expired),301167.SZ(holding_expired)
+[INFO]  2023-04-07 buy: 601827.SH,600203.SH (per=50666)
+[INFO]  2023-04-10 fill sell 601518.SH vol=24200 price=3.3081 amt=80056.33
+[INFO]  2023-04-10 fill sell 300929.SZ vol=4100 price=19.1746 amt=78615.84
+[INFO]  2023-04-10 fill sell 301043.SZ vol=3200 price=25.5861 amt=81875.47
+[INFO]  2023-04-10 fill sell 300983.SZ vol=1500 price=51.1039 amt=76655.82
+[INFO]  2023-04-10 fill sell 301167.SZ vol=3200 price=25.0043 amt=80013.60
+[INFO]  2023-04-10 fill buy 601827.SH vol=6400 price=7.8829 amt=50450.40
+[INFO]  2023-04-10 fill buy 600203.SH vol=4400 price=11.4695 amt=50465.62
+[INFO]  2023-04-10 buy: 600208.SH,301138.SZ,002880.SZ,301222.SZ (per=82449)
+[INFO]  2023-04-11 fill buy 600208.SH vol=4000 price=20.4015 amt=81605.84
+[INFO]  2023-04-11 fill buy 301138.SZ vol=2900 price=28.1252 amt=81563.12
+[INFO]  2023-04-11 fill buy 002880.SZ vol=1100 price=69.3561 amt=76291.70
+[INFO]  2023-04-11 fill buy 301222.SZ vol=2700 price=30.5153 amt=82391.30
+[INFO]  2023-04-11 hold
+[INFO]  2023-04-12 hold
+[INFO]  2023-04-13 hold
+[INFO]  2023-04-14 hold
+[INFO]  2023-04-17 hold
+[INFO]  2023-04-18 hold
+[INFO]  2023-04-19 hold
+[INFO]  2023-04-20 hold
+[INFO]  2023-04-21 hold
+[INFO]  2023-04-24 hold
+[INFO]  2023-04-25 market gate closed (MA200) -> exit all
+[INFO]  2023-04-26 fill sell 600299.SH vol=2800 price=27.5206 amt=77057.74
+[INFO]  2023-04-26 fill sell 000061.SZ vol=600 price=135.7124 amt=81427.42
+[INFO]  2023-04-26 fill sell 601827.SH vol=6400 price=7.6993 amt=49275.48
+[INFO]  2023-04-26 fill sell 600203.SH vol=4400 price=10.3187 amt=45402.37
+[INFO]  2023-04-26 fill sell 600208.SH vol=4000 price=19.7353 amt=78941.14
+[INFO]  2023-04-26 fill sell 301138.SZ vol=2900 price=32.0964 amt=93079.44
+[INFO]  2023-04-26 fill sell 002880.SZ vol=1100 price=67.2647 amt=73991.13
+[INFO]  2023-04-26 fill sell 301222.SZ vol=2700 price=25.9305 amt=70012.35
+[INFO]  2023-04-26 buy: 600323.SH,600835.SH,601330.SH,600642.SH,300815.SZ,603215.SH,601991.SH,002546.SZ (per=80517)
+[INFO]  2023-04-27 fill buy 600323.SH vol=1000 price=75.7949 amt=75794.93
+[INFO]  2023-04-27 fill buy 600835.SH vol=1100 price=72.9449 amt=80239.40
+[INFO]  2023-04-27 fill buy 601330.SH vol=9700 price=8.2814 amt=80329.46
+[INFO]  2023-04-27 fill buy 600642.SH vol=1200 price=67.0627 amt=80475.18
+[INFO]  2023-04-27 fill buy 300815.SZ vol=1700 price=46.7717 amt=79511.96
+[INFO]  2023-04-27 fill buy 603215.SH vol=4400 price=18.0469 amt=79406.58
+[INFO]  2023-04-27 fill buy 601991.SH vol=9000 price=8.8749 amt=79873.79
+[INFO]  2023-04-27 fill buy 002546.SZ vol=1700 price=46.4527 amt=78969.60
+[INFO]  2023-04-27 hold
+[INFO]  2023-04-28 hold
+[INFO]  2023-05-04 hold
+[INFO]  2023-05-05 hold
+[INFO]  2023-05-08 hold
+[INFO]  2023-05-09 hold
+[INFO]  2023-05-10 hold
+[INFO]  2023-05-11 hold
+[INFO]  2023-05-12 hold
+[INFO]  2023-05-15 hold
+[INFO]  2023-05-16 hold
+[INFO]  2023-05-17 hold
+[INFO]  2023-05-18 hold
+[INFO]  2023-05-19 hold
+[INFO]  2023-05-22 hold
+[INFO]  2023-05-23 hold
+[INFO]  2023-05-24 hold
+[INFO]  2023-05-25 hold
+[INFO]  2023-05-26 hold
+[INFO]  2023-05-29 sell: 600323.SH(holding_expired),600835.SH(holding_expired),601330.SH(holding_expired),600642.SH(holding_expired),300815.SZ(holding_expired),603215.SH(holding_expired),601991.SH(holding_expired),002546.SZ(holding_expired)
+[INFO]  2023-05-29 buy: 000559.SZ,600726.SH,601126.SH,000883.SZ (per=2345)
+[INFO]  2023-05-30 fill sell 600323.SH vol=1000 price=73.3090 amt=73309.05
+[INFO]  2023-05-30 fill sell 600835.SH vol=1100 price=76.6335 amt=84296.85
+[INFO]  2023-05-30 fill sell 601330.SH vol=9700 price=7.9174 amt=76798.81
+[INFO]  2023-05-30 fill sell 600642.SH vol=1200 price=73.9152 amt=88698.19
+[INFO]  2023-05-30 fill sell 300815.SZ vol=1700 price=46.9246 amt=79771.84
+[INFO]  2023-05-30 fill sell 603215.SH vol=4400 price=17.6735 amt=77763.55
+[INFO]  2023-05-30 fill sell 601991.SH vol=9000 price=10.0835 amt=90751.55
+[INFO]  2023-05-30 fill sell 002546.SZ vol=1700 price=65.4050 amt=111188.45
+[ERROR] 2023-05-30 unfilled_order code=000559.SZ reason=below_min_lot
+[INFO]  2023-05-30 fill buy 600726.SH vol=200 price=10.4057 amt=2081.14
+[ERROR] 2023-05-30 unfilled_order code=601126.SH reason=below_min_lot
+[ERROR] 2023-05-30 unfilled_order code=000883.SZ reason=below_min_lot
+[INFO]  2023-05-30 buy: 600575.SH,601126.SH,605298.SH,600505.SH,002211.SZ,600382.SH,000888.SZ (per=86430)
+[INFO]  2023-05-31 fill buy 600575.SH vol=1600 price=51.9455 amt=83112.85
+[INFO]  2023-05-31 fill buy 601126.SH vol=1900 price=43.5357 amt=82717.91
+[INFO]  2023-05-31 fill buy 605298.SH vol=3900 price=21.9598 amt=85643.13
+[INFO]  2023-05-31 fill buy 600505.SH vol=2700 price=31.2259 amt=84309.82
+[INFO]  2023-05-31 fill buy 002211.SZ vol=16900 price=5.1105 amt=86367.53
+[ERROR] 2023-05-31 unfilled_order code=600382.SH reason=suspended
+[INFO]  2023-05-31 fill buy 000888.SZ vol=1300 price=64.4361 amt=83766.97
+[INFO]  2023-05-31 buy: 002321.SZ (per=85424)
+[INFO]  2023-06-01 fill buy 002321.SZ vol=14000 price=6.0965 amt=85351.56
+[INFO]  2023-06-01 hold
+[INFO]  2023-06-02 hold
+[INFO]  2023-06-05 hold
+[INFO]  2023-06-06 market gate closed (MA200) -> exit all
+[INFO]  2023-06-07 fill sell 600726.SH vol=200 price=10.3131 amt=2062.61
+[INFO]  2023-06-07 fill sell 600575.SH vol=1600 price=47.7974 amt=76475.77
+[INFO]  2023-06-07 fill sell 601126.SH vol=1900 price=42.4868 amt=80724.88
+[INFO]  2023-06-07 fill sell 605298.SH vol=3900 price=22.1377 amt=86336.84
+[INFO]  2023-06-07 fill sell 600505.SH vol=2700 price=28.9956 amt=78288.05
+[INFO]  2023-06-07 fill sell 002211.SZ vol=16900 price=4.8719 amt=82335.50
+[INFO]  2023-06-07 fill sell 000888.SZ vol=1300 price=78.5097 amt=102062.55
+[INFO]  2023-06-07 fill sell 002321.SZ vol=14000 price=6.1911 amt=86675.44
+[INFO]  2023-06-07 market gate closed (MA200) -> exit all
+[INFO]  2023-06-08 market gate closed (MA200) -> exit all
+[INFO]  2023-06-09 buy: 603033.SH,002891.SZ,000663.SZ,600630.SH,002038.SZ,603006.SH,301207.SZ,300597.SZ (per=86558)
+[INFO]  2023-06-12 fill buy 603033.SH vol=700 price=108.6295 amt=76040.66
+[INFO]  2023-06-12 fill buy 002891.SZ vol=1300 price=64.1990 amt=83458.72
+[INFO]  2023-06-12 fill buy 000663.SZ vol=1900 price=43.3676 amt=82398.49
+[INFO]  2023-06-12 fill buy 600630.SH vol=4700 price=18.1244 amt=85184.90
+[INFO]  2023-06-12 fill buy 002038.SZ vol=300 price=223.1843 amt=66955.28
+[INFO]  2023-06-12 fill buy 603006.SH vol=3300 price=25.9116 amt=85508.30
+[INFO]  2023-06-12 fill buy 301207.SZ vol=1500 price=54.6306 amt=81945.86
+[INFO]  2023-06-12 fill buy 300597.SZ vol=8700 price=9.8573 amt=85758.92
+[INFO]  2023-06-12 hold
+[INFO]  2023-06-13 market gate closed (MA200) -> exit all
+[INFO]  2023-06-14 fill sell 603033.SH vol=700 price=107.1705 amt=75019.37
+[INFO]  2023-06-14 fill sell 002891.SZ vol=1300 price=65.0259 amt=84533.63
+[INFO]  2023-06-14 fill sell 000663.SZ vol=1900 price=43.6450 amt=82925.54
+[INFO]  2023-06-14 fill sell 600630.SH vol=4700 price=18.4398 amt=86666.93
+[INFO]  2023-06-14 fill sell 002038.SZ vol=300 price=217.4612 amt=65238.37
+[INFO]  2023-06-14 fill sell 603006.SH vol=3300 price=32.3708 amt=106823.66
+[INFO]  2023-06-14 fill sell 301207.SZ vol=1500 price=53.0221 amt=79533.13
+[INFO]  2023-06-14 fill sell 300597.SZ vol=8700 price=9.6964 amt=84358.63
+[INFO]  2023-06-14 buy: 300172.SZ,600929.SH,000030.SZ,603630.SH,600784.SH,002521.SZ,688448.SH,002456.SZ (per=88706)
+[INFO]  2023-06-15 fill buy 300172.SZ vol=2400 price=35.4968 amt=85192.23
+[INFO]  2023-06-15 fill buy 600929.SH vol=10000 price=8.8543 amt=88542.85
+[INFO]  2023-06-15 fill buy 000030.SZ vol=4600 price=19.2157 amt=88392.02
+[INFO]  2023-06-15 fill buy 603630.SH vol=3500 price=24.6633 amt=86321.48
+[INFO]  2023-06-15 fill buy 600784.SH vol=1700 price=51.6275 amt=87766.78
+[INFO]  2023-06-15 fill buy 002521.SZ vol=4000 price=21.9068 amt=87627.38
+[INFO]  2023-06-15 fill buy 688448.SH vol=3000 price=29.3293 amt=87987.90
+[INFO]  2023-06-15 fill buy 002456.SZ vol=700 price=118.8984 amt=83228.89
+[INFO]  2023-06-15 hold
+[INFO]  2023-06-16 hold
+[INFO]  2023-06-19 hold
+[INFO]  2023-06-20 hold
+[INFO]  2023-06-21 sell: 603630.SH(stop_loss)
+[INFO]  2023-06-21 buy: 002249.SZ (per=14415)
+[INFO]  2023-06-26 fill sell 603630.SH vol=3500 price=21.5441 amt=75404.47
+[INFO]  2023-06-26 fill buy 002249.SZ vol=200 price=70.6592 amt=14131.84
+[INFO]  2023-06-26 market gate closed (MA200) -> exit all
+[INFO]  2023-06-27 fill sell 300172.SZ vol=2400 price=33.6184 amt=80684.16
+[INFO]  2023-06-27 fill sell 600929.SH vol=10000 price=8.0786 amt=80785.53
+[INFO]  2023-06-27 fill sell 000030.SZ vol=4600 price=18.9381 amt=87115.27
+[INFO]  2023-06-27 fill sell 600784.SH vol=1700 price=50.5823 amt=85989.89
+[INFO]  2023-06-27 fill sell 002521.SZ vol=4000 price=21.5806 amt=86322.55
+[INFO]  2023-06-27 fill sell 688448.SH vol=3000 price=32.5674 amt=97702.20
+[INFO]  2023-06-27 fill sell 002456.SZ vol=700 price=112.3296 amt=78630.69
+[INFO]  2023-06-27 fill sell 002249.SZ vol=200 price=69.7501 amt=13950.03
+[INFO]  2023-06-27 buy: 301106.SZ,002223.SZ,002674.SZ,000880.SZ,600647.SH,002899.SZ,301020.SZ,002911.SZ (per=85794)
+[INFO]  2023-06-28 fill buy 301106.SZ vol=2300 price=36.5397 amt=84041.32
+[INFO]  2023-06-28 fill buy 002223.SZ vol=200 price=336.0148 amt=67202.97
+[INFO]  2023-06-28 fill buy 002674.SZ vol=5400 price=15.7672 amt=85142.83
+[INFO]  2023-06-28 fill buy 000880.SZ vol=1900 price=43.5787 amt=82799.44
+[INFO]  2023-06-28 fill buy 600647.SH vol=300 price=233.5573 amt=70067.20
+[INFO]  2023-06-28 fill buy 002899.SZ vol=5300 price=15.9578 amt=84576.46
+[INFO]  2023-06-28 fill buy 301020.SZ vol=3800 price=22.1051 amt=83999.32
+[INFO]  2023-06-28 fill buy 002911.SZ vol=3200 price=26.7594 amt=85630.12
+[INFO]  2023-06-28 hold
+[INFO]  2023-06-29 hold
+[INFO]  2023-06-30 hold
+[INFO]  2023-07-03 hold
+[INFO]  2023-07-04 hold
+[INFO]  2023-07-05 hold
+[INFO]  2023-07-06 hold
+[INFO]  2023-07-07 hold
+[INFO]  2023-07-10 hold
+[INFO]  2023-07-11 hold
+[INFO]  2023-07-12 hold
+[INFO]  2023-07-13 hold
+[INFO]  2023-07-14 hold
+[INFO]  2023-07-17 hold
+[INFO]  2023-07-18 hold
+[INFO]  2023-07-19 hold
+[INFO]  2023-07-20 hold
+[INFO]  2023-07-21 hold
+[INFO]  2023-07-24 hold
+[INFO]  2023-07-25 sell: 301106.SZ(holding_expired),002223.SZ(holding_expired),002674.SZ(holding_expired),000880.SZ(holding_expired),600647.SH(holding_expired),002899.SZ(holding_expired),301020.SZ(holding_expired),002911.SZ(holding_expired)
+[INFO]  2023-07-25 buy: 600519.SH (per=42729)
+[INFO]  2023-07-26 fill sell 301106.SZ vol=2300 price=37.0121 amt=85127.72
+[INFO]  2023-07-26 fill sell 002223.SZ vol=200 price=325.9064 amt=65181.28
+[INFO]  2023-07-26 fill sell 002674.SZ vol=5400 price=17.3773 amt=93837.55
+[INFO]  2023-07-26 fill sell 000880.SZ vol=1900 price=42.1642 amt=80111.97
+[INFO]  2023-07-26 fill sell 600647.SH vol=300 price=228.4481 amt=68534.42
+[INFO]  2023-07-26 fill sell 002899.SZ vol=5300 price=16.3226 amt=86509.57
+[INFO]  2023-07-26 fill sell 301020.SZ vol=3800 price=22.0303 amt=83715.32
+[INFO]  2023-07-26 fill sell 002911.SZ vol=3200 price=26.6449 amt=85263.77
+[ERROR] 2023-07-26 unfilled_order code=600519.SH reason=below_min_lot
+[INFO]  2023-07-26 buy: 600177.SH,600527.SH,600300.SH,600051.SH,605122.SH,600231.SH,600663.SH,600618.SH (per=86316)
+[INFO]  2023-07-27 fill buy 600177.SH vol=200 price=320.6557 amt=64131.15
+[INFO]  2023-07-27 fill buy 600527.SH vol=1500 price=57.3322 amt=85998.34
+[INFO]  2023-07-27 fill buy 600300.SH vol=3600 price=23.7943 amt=85659.37
+[INFO]  2023-07-27 fill buy 600051.SH vol=2200 price=37.9835 amt=83563.80
+[INFO]  2023-07-27 fill buy 605122.SH vol=3700 price=22.7263 amt=84087.21
+[INFO]  2023-07-27 fill buy 600231.SH vol=3700 price=23.0981 amt=85462.88
+[INFO]  2023-07-27 fill buy 600663.SH vol=500 price=151.6465 amt=75823.27
+[INFO]  2023-07-27 fill buy 600618.SH vol=300 price=252.2258 amt=75667.75
+[INFO]  2023-07-27 hold
+[INFO]  2023-07-28 hold
+[INFO]  2023-07-31 hold
+[INFO]  2023-08-01 hold
+[INFO]  2023-08-02 hold
+[INFO]  2023-08-03 hold
+[INFO]  2023-08-04 hold
+[INFO]  2023-08-07 hold
+[INFO]  2023-08-08 hold
+[INFO]  2023-08-09 hold
+[INFO]  2023-08-10 hold
+[INFO]  2023-08-11 market gate closed (MA200) -> exit all
+[INFO]  2023-08-14 fill sell 600177.SH vol=200 price=326.5843 amt=65316.86
+[INFO]  2023-08-14 fill sell 600527.SH vol=1500 price=55.8221 amt=83733.18
+[INFO]  2023-08-14 fill sell 600300.SH vol=3600 price=23.2987 amt=83875.24
+[INFO]  2023-08-14 fill sell 600051.SH vol=2200 price=37.0215 amt=81447.30
+[INFO]  2023-08-14 fill sell 605122.SH vol=3700 price=21.5832 amt=79857.75
+[INFO]  2023-08-14 fill sell 600231.SH vol=3700 price=21.5766 amt=79833.43
+[INFO]  2023-08-14 fill sell 600663.SH vol=500 price=148.3788 amt=74189.40
+[INFO]  2023-08-14 fill sell 600618.SH vol=300 price=241.3920 amt=72417.61
+[INFO]  2023-08-14 market gate closed (MA200) -> exit all
+[INFO]  2023-08-15 market gate closed (MA200) -> exit all
+[INFO]  2023-08-16 market gate closed (MA200) -> exit all
+[INFO]  2023-08-17 market gate closed (MA200) -> exit all
+[INFO]  2023-08-18 market gate closed (MA200) -> exit all
+[INFO]  2023-08-21 market gate closed (MA200) -> exit all
+[INFO]  2023-08-22 market gate closed (MA200) -> exit all
+[INFO]  2023-08-23 market gate closed (MA200) -> exit all
+[INFO]  2023-08-24 market gate closed (MA200) -> exit all
+[INFO]  2023-08-25 market gate closed (MA200) -> exit all
+[INFO]  2023-08-28 market gate closed (MA200) -> exit all
+[INFO]  2023-08-29 market gate closed (MA200) -> exit all
+[INFO]  2023-08-30 market gate closed (MA200) -> exit all
+[INFO]  2023-08-31 market gate closed (MA200) -> exit all
+[INFO]  2023-09-01 market gate closed (MA200) -> exit all
+[INFO]  2023-09-04 market gate closed (MA200) -> exit all
+[INFO]  2023-09-05 market gate closed (MA200) -> exit all
+[INFO]  2023-09-06 market gate closed (MA200) -> exit all
+[INFO]  2023-09-07 market gate closed (MA200) -> exit all
+[INFO]  2023-09-08 market gate closed (MA200) -> exit all
+[INFO]  2023-09-11 market gate closed (MA200) -> exit all
+[INFO]  2023-09-12 market gate closed (MA200) -> exit all
+[INFO]  2023-09-13 market gate closed (MA200) -> exit all
+[INFO]  2023-09-14 market gate closed (MA200) -> exit all
+[INFO]  2023-09-15 market gate closed (MA200) -> exit all
+[INFO]  2023-09-18 market gate closed (MA200) -> exit all
+[INFO]  2023-09-19 market gate closed (MA200) -> exit all
+[INFO]  2023-09-20 market gate closed (MA200) -> exit all
+[INFO]  2023-09-21 market gate closed (MA200) -> exit all
+[INFO]  2023-09-22 market gate closed (MA200) -> exit all
+[INFO]  2023-09-25 market gate closed (MA200) -> exit all
+[INFO]  2023-09-26 market gate closed (MA200) -> exit all
+[INFO]  2023-09-27 market gate closed (MA200) -> exit all
+[INFO]  2023-09-28 market gate closed (MA200) -> exit all
+[INFO]  2023-10-09 market gate closed (MA200) -> exit all
+[INFO]  2023-10-10 market gate closed (MA200) -> exit all
+[INFO]  2023-10-11 market gate closed (MA200) -> exit all
+[INFO]  2023-10-12 market gate closed (MA200) -> exit all
+[INFO]  2023-10-13 market gate closed (MA200) -> exit all
+[INFO]  2023-10-16 market gate closed (MA200) -> exit all
+[INFO]  2023-10-17 market gate closed (MA200) -> exit all
+[INFO]  2023-10-18 market gate closed (MA200) -> exit all
+[INFO]  2023-10-19 market gate closed (MA200) -> exit all
+[INFO]  2023-10-20 market gate closed (MA200) -> exit all
+[INFO]  2023-10-23 market gate closed (MA200) -> exit all
+[INFO]  2023-10-24 market gate closed (MA200) -> exit all
+[INFO]  2023-10-25 market gate closed (MA200) -> exit all
+[INFO]  2023-10-26 market gate closed (MA200) -> exit all
+[INFO]  2023-10-27 market gate closed (MA200) -> exit all
+[INFO]  2023-10-30 market gate closed (MA200) -> exit all
+[INFO]  2023-10-31 market gate closed (MA200) -> exit all
+[INFO]  2023-11-01 market gate closed (MA200) -> exit all
+[INFO]  2023-11-02 market gate closed (MA200) -> exit all
+[INFO]  2023-11-03 market gate closed (MA200) -> exit all
+[INFO]  2023-11-06 market gate closed (MA200) -> exit all
+[INFO]  2023-11-07 market gate closed (MA200) -> exit all
+[INFO]  2023-11-08 market gate closed (MA200) -> exit all
+[INFO]  2023-11-09 market gate closed (MA200) -> exit all
+[INFO]  2023-11-10 market gate closed (MA200) -> exit all
+[INFO]  2023-11-13 market gate closed (MA200) -> exit all
+[INFO]  2023-11-14 market gate closed (MA200) -> exit all
+[INFO]  2023-11-15 market gate closed (MA200) -> exit all
+[INFO]  2023-11-16 market gate closed (MA200) -> exit all
+[INFO]  2023-11-17 market gate closed (MA200) -> exit all
+[INFO]  2023-11-20 market gate closed (MA200) -> exit all
+[INFO]  2023-11-21 market gate closed (MA200) -> exit all
+[INFO]  2023-11-22 market gate closed (MA200) -> exit all
+[INFO]  2023-11-23 market gate closed (MA200) -> exit all
+[INFO]  2023-11-24 market gate closed (MA200) -> exit all
+[INFO]  2023-11-27 market gate closed (MA200) -> exit all
+[INFO]  2023-11-28 market gate closed (MA200) -> exit all
+[INFO]  2023-11-29 market gate closed (MA200) -> exit all
+[INFO]  2023-11-30 market gate closed (MA200) -> exit all
+[INFO]  2023-12-01 market gate closed (MA200) -> exit all
+[INFO]  2023-12-04 market gate closed (MA200) -> exit all
+[INFO]  2023-12-05 market gate closed (MA200) -> exit all
+[INFO]  2023-12-06 market gate closed (MA200) -> exit all
+[INFO]  2023-12-07 market gate closed (MA200) -> exit all
+[INFO]  2023-12-08 market gate closed (MA200) -> exit all
+[INFO]  2023-12-11 market gate closed (MA200) -> exit all
+[INFO]  2023-12-12 market gate closed (MA200) -> exit all
+[INFO]  2023-12-13 market gate closed (MA200) -> exit all
+[INFO]  2023-12-14 market gate closed (MA200) -> exit all
+[INFO]  2023-12-15 market gate closed (MA200) -> exit all
+[INFO]  2023-12-18 market gate closed (MA200) -> exit all
+[INFO]  2023-12-19 market gate closed (MA200) -> exit all
+[INFO]  2023-12-20 market gate closed (MA200) -> exit all
+[INFO]  2023-12-21 market gate closed (MA200) -> exit all
+[INFO]  2023-12-22 market gate closed (MA200) -> exit all
+[INFO]  2023-12-25 market gate closed (MA200) -> exit all
+[INFO]  2023-12-26 market gate closed (MA200) -> exit all
+[INFO]  2023-12-27 market gate closed (MA200) -> exit all
+[INFO]  2023-12-28 market gate closed (MA200) -> exit all
+[INFO]  2023-12-29 market gate closed (MA200) -> exit all
+[INFO]  2024-01-02 market gate closed (MA200) -> exit all
+[INFO]  2024-01-03 market gate closed (MA200) -> exit all
+[INFO]  2024-01-04 market gate closed (MA200) -> exit all
+[INFO]  2024-01-05 market gate closed (MA200) -> exit all
+[INFO]  2024-01-08 market gate closed (MA200) -> exit all
+[INFO]  2024-01-09 market gate closed (MA200) -> exit all
+[INFO]  2024-01-10 market gate closed (MA200) -> exit all
+[INFO]  2024-01-11 market gate closed (MA200) -> exit all
+[INFO]  2024-01-12 market gate closed (MA200) -> exit all
+[INFO]  2024-01-15 market gate closed (MA200) -> exit all
+[INFO]  2024-01-16 market gate closed (MA200) -> exit all
+[INFO]  2024-01-17 market gate closed (MA200) -> exit all
+[INFO]  2024-01-18 market gate closed (MA200) -> exit all
+[INFO]  2024-01-19 market gate closed (MA200) -> exit all
+[INFO]  2024-01-22 market gate closed (MA200) -> exit all
+[INFO]  2024-01-23 market gate closed (MA200) -> exit all
+[INFO]  2024-01-24 market gate closed (MA200) -> exit all
+[INFO]  2024-01-25 market gate closed (MA200) -> exit all
+[INFO]  2024-01-26 market gate closed (MA200) -> exit all
+[INFO]  2024-01-29 market gate closed (MA200) -> exit all
+[INFO]  2024-01-30 market gate closed (MA200) -> exit all
+[INFO]  2024-01-31 market gate closed (MA200) -> exit all
+[INFO]  2024-02-01 market gate closed (MA200) -> exit all
+[INFO]  2024-02-02 market gate closed (MA200) -> exit all
+[INFO]  2024-02-05 market gate closed (MA200) -> exit all
+[INFO]  2024-02-06 market gate closed (MA200) -> exit all
+[INFO]  2024-02-07 market gate closed (MA200) -> exit all
+[INFO]  2024-02-08 market gate closed (MA200) -> exit all
+[INFO]  2024-02-19 market gate closed (MA200) -> exit all
+[INFO]  2024-02-20 market gate closed (MA200) -> exit all
+[INFO]  2024-02-21 market gate closed (MA200) -> exit all
+[INFO]  2024-02-22 market gate closed (MA200) -> exit all
+[INFO]  2024-02-23 market gate closed (MA200) -> exit all
+[INFO]  2024-02-26 market gate closed (MA200) -> exit all
+[INFO]  2024-02-27 market gate closed (MA200) -> exit all
+[INFO]  2024-02-28 market gate closed (MA200) -> exit all
+[INFO]  2024-02-29 market gate closed (MA200) -> exit all
+[INFO]  2024-03-01 market gate closed (MA200) -> exit all
+[INFO]  2024-03-04 market gate closed (MA200) -> exit all
+[INFO]  2024-03-05 market gate closed (MA200) -> exit all
+[INFO]  2024-03-06 market gate closed (MA200) -> exit all
+[INFO]  2024-03-07 market gate closed (MA200) -> exit all
+[INFO]  2024-03-08 market gate closed (MA200) -> exit all
+[INFO]  2024-03-11 market gate closed (MA200) -> exit all
+[INFO]  2024-03-12 market gate closed (MA200) -> exit all
+[INFO]  2024-03-13 market gate closed (MA200) -> exit all
+[INFO]  2024-03-14 market gate closed (MA200) -> exit all
+[INFO]  2024-03-15 market gate closed (MA200) -> exit all
+[INFO]  2024-03-18 market gate closed (MA200) -> exit all
+[INFO]  2024-03-19 market gate closed (MA200) -> exit all
+[INFO]  2024-03-20 market gate closed (MA200) -> exit all
+[INFO]  2024-03-21 market gate closed (MA200) -> exit all
+[INFO]  2024-03-22 market gate closed (MA200) -> exit all
+[INFO]  2024-03-25 market gate closed (MA200) -> exit all
+[INFO]  2024-03-26 market gate closed (MA200) -> exit all
+[INFO]  2024-03-27 market gate closed (MA200) -> exit all
+[INFO]  2024-03-28 market gate closed (MA200) -> exit all
+[INFO]  2024-03-29 market gate closed (MA200) -> exit all
+[INFO]  2024-04-01 market gate closed (MA200) -> exit all
+[INFO]  2024-04-02 market gate closed (MA200) -> exit all
+[INFO]  2024-04-03 market gate closed (MA200) -> exit all
+[INFO]  2024-04-08 market gate closed (MA200) -> exit all
+[INFO]  2024-04-09 market gate closed (MA200) -> exit all
+[INFO]  2024-04-10 market gate closed (MA200) -> exit all
+[INFO]  2024-04-11 market gate closed (MA200) -> exit all
+[INFO]  2024-04-12 market gate closed (MA200) -> exit all
+[INFO]  2024-04-15 market gate closed (MA200) -> exit all
+[INFO]  2024-04-16 market gate closed (MA200) -> exit all
+[INFO]  2024-04-17 market gate closed (MA200) -> exit all
+[INFO]  2024-04-18 market gate closed (MA200) -> exit all
+[INFO]  2024-04-19 market gate closed (MA200) -> exit all
+[INFO]  2024-04-22 market gate closed (MA200) -> exit all
+[INFO]  2024-04-23 market gate closed (MA200) -> exit all
+[INFO]  2024-04-24 market gate closed (MA200) -> exit all
+[INFO]  2024-04-25 market gate closed (MA200) -> exit all
+[INFO]  2024-04-26 market gate closed (MA200) -> exit all
+[INFO]  2024-04-29 market gate closed (MA200) -> exit all
+[INFO]  2024-04-30 market gate closed (MA200) -> exit all
+[INFO]  2024-05-06 market gate closed (MA200) -> exit all
+[INFO]  2024-05-07 market gate closed (MA200) -> exit all
+[INFO]  2024-05-08 market gate closed (MA200) -> exit all
+[INFO]  2024-05-09 market gate closed (MA200) -> exit all
+[INFO]  2024-05-10 market gate closed (MA200) -> exit all
+[INFO]  2024-05-13 market gate closed (MA200) -> exit all
+[INFO]  2024-05-14 market gate closed (MA200) -> exit all
+[INFO]  2024-05-15 market gate closed (MA200) -> exit all
+[INFO]  2024-05-16 market gate closed (MA200) -> exit all
+[INFO]  2024-05-17 market gate closed (MA200) -> exit all
+[INFO]  2024-05-20 market gate closed (MA200) -> exit all
+[INFO]  2024-05-21 market gate closed (MA200) -> exit all
+[INFO]  2024-05-22 market gate closed (MA200) -> exit all
+[INFO]  2024-05-23 market gate closed (MA200) -> exit all
+[INFO]  2024-05-24 market gate closed (MA200) -> exit all
+[INFO]  2024-05-27 market gate closed (MA200) -> exit all
+[INFO]  2024-05-28 market gate closed (MA200) -> exit all
+[INFO]  2024-05-29 market gate closed (MA200) -> exit all
+[INFO]  2024-05-30 market gate closed (MA200) -> exit all
+[INFO]  2024-05-31 market gate closed (MA200) -> exit all
+[INFO]  2024-06-03 market gate closed (MA200) -> exit all
+[INFO]  2024-06-04 market gate closed (MA200) -> exit all
+[INFO]  2024-06-05 market gate closed (MA200) -> exit all
+[INFO]  2024-06-06 market gate closed (MA200) -> exit all
+[INFO]  2024-06-07 market gate closed (MA200) -> exit all
+[INFO]  2024-06-11 market gate closed (MA200) -> exit all
+[INFO]  2024-06-12 market gate closed (MA200) -> exit all
+[INFO]  2024-06-13 market gate closed (MA200) -> exit all
+[INFO]  2024-06-14 market gate closed (MA200) -> exit all
+[INFO]  2024-06-17 market gate closed (MA200) -> exit all
+[INFO]  2024-06-18 market gate closed (MA200) -> exit all
+[INFO]  2024-06-19 market gate closed (MA200) -> exit all
+[INFO]  2024-06-20 market gate closed (MA200) -> exit all
+[INFO]  2024-06-21 market gate closed (MA200) -> exit all
+[INFO]  2024-06-24 market gate closed (MA200) -> exit all
+[INFO]  2024-06-25 market gate closed (MA200) -> exit all
+[INFO]  2024-06-26 market gate closed (MA200) -> exit all
+[INFO]  2024-06-27 market gate closed (MA200) -> exit all
+[INFO]  2024-06-28 market gate closed (MA200) -> exit all
+[INFO]  2024-07-01 market gate closed (MA200) -> exit all
+[INFO]  2024-07-02 market gate closed (MA200) -> exit all
+[INFO]  2024-07-03 market gate closed (MA200) -> exit all
+[INFO]  2024-07-04 market gate closed (MA200) -> exit all
+[INFO]  2024-07-05 market gate closed (MA200) -> exit all
+[INFO]  2024-07-08 market gate closed (MA200) -> exit all
+[INFO]  2024-07-09 market gate closed (MA200) -> exit all
+[INFO]  2024-07-10 market gate closed (MA200) -> exit all
+[INFO]  2024-07-11 market gate closed (MA200) -> exit all
+[INFO]  2024-07-12 market gate closed (MA200) -> exit all
+[INFO]  2024-07-15 market gate closed (MA200) -> exit all
+[INFO]  2024-07-16 market gate closed (MA200) -> exit all
+[INFO]  2024-07-17 market gate closed (MA200) -> exit all
+[INFO]  2024-07-18 market gate closed (MA200) -> exit all
+[INFO]  2024-07-19 market gate closed (MA200) -> exit all
+[INFO]  2024-07-22 market gate closed (MA200) -> exit all
+[INFO]  2024-07-23 market gate closed (MA200) -> exit all
+[INFO]  2024-07-24 market gate closed (MA200) -> exit all
+[INFO]  2024-07-25 market gate closed (MA200) -> exit all
+[INFO]  2024-07-26 market gate closed (MA200) -> exit all
+[INFO]  2024-07-29 market gate closed (MA200) -> exit all
+[INFO]  2024-07-30 market gate closed (MA200) -> exit all
+[INFO]  2024-07-31 market gate closed (MA200) -> exit all
+[INFO]  2024-08-01 market gate closed (MA200) -> exit all
+[INFO]  2024-08-02 market gate closed (MA200) -> exit all
+[INFO]  2024-08-05 market gate closed (MA200) -> exit all
+[INFO]  2024-08-06 market gate closed (MA200) -> exit all
+[INFO]  2024-08-07 market gate closed (MA200) -> exit all
+[INFO]  2024-08-08 market gate closed (MA200) -> exit all
+[INFO]  2024-08-09 market gate closed (MA200) -> exit all
+[INFO]  2024-08-12 market gate closed (MA200) -> exit all
+[INFO]  2024-08-13 market gate closed (MA200) -> exit all
+[INFO]  2024-08-14 market gate closed (MA200) -> exit all
+[INFO]  2024-08-15 market gate closed (MA200) -> exit all
+[INFO]  2024-08-16 market gate closed (MA200) -> exit all
+[INFO]  2024-08-19 market gate closed (MA200) -> exit all
+[INFO]  2024-08-20 market gate closed (MA200) -> exit all
+[INFO]  2024-08-21 market gate closed (MA200) -> exit all
+[INFO]  2024-08-22 market gate closed (MA200) -> exit all
+[INFO]  2024-08-23 market gate closed (MA200) -> exit all
+[INFO]  2024-08-26 market gate closed (MA200) -> exit all
+[INFO]  2024-08-27 market gate closed (MA200) -> exit all
+[INFO]  2024-08-28 market gate closed (MA200) -> exit all
+[INFO]  2024-08-29 market gate closed (MA200) -> exit all
+[INFO]  2024-08-30 market gate closed (MA200) -> exit all
+[INFO]  2024-09-02 market gate closed (MA200) -> exit all
+[INFO]  2024-09-03 market gate closed (MA200) -> exit all
+[INFO]  2024-09-04 market gate closed (MA200) -> exit all
+[INFO]  2024-09-05 market gate closed (MA200) -> exit all
+[INFO]  2024-09-06 market gate closed (MA200) -> exit all
+[INFO]  2024-09-09 market gate closed (MA200) -> exit all
+[INFO]  2024-09-10 market gate closed (MA200) -> exit all
+[INFO]  2024-09-11 market gate closed (MA200) -> exit all
+[INFO]  2024-09-12 market gate closed (MA200) -> exit all
+[INFO]  2024-09-13 market gate closed (MA200) -> exit all
+[INFO]  2024-09-18 market gate closed (MA200) -> exit all
+[INFO]  2024-09-19 market gate closed (MA200) -> exit all
+[INFO]  2024-09-20 market gate closed (MA200) -> exit all
+[INFO]  2024-09-23 market gate closed (MA200) -> exit all
+[INFO]  2024-09-24 market gate closed (MA200) -> exit all
+[INFO]  2024-09-25 market gate closed (MA200) -> exit all
+[INFO]  2024-09-26 market gate closed (MA200) -> exit all
+[INFO]  2024-09-27 buy: 600681.SH,601366.SH,600897.SH,600917.SH,000905.SZ,601368.SH,000731.SZ,600279.SH (per=83772)
+[INFO]  2024-09-30 fill buy 600681.SH vol=2000 price=41.1440 amt=82288.09
+[INFO]  2024-09-30 fill buy 601366.SH vol=13500 price=6.1663 amt=83244.51
+[INFO]  2024-09-30 fill buy 600897.SH vol=700 price=104.7407 amt=73318.52
+[INFO]  2024-09-30 fill buy 600917.SH vol=12400 price=6.7518 amt=83722.26
+[INFO]  2024-09-30 fill buy 000905.SZ vol=5000 price=16.6818 amt=83409.18
+[INFO]  2024-09-30 fill buy 601368.SH vol=16000 price=5.2240 amt=83584.78
+[INFO]  2024-09-30 fill buy 000731.SZ vol=900 price=88.1553 amt=79339.74
+[INFO]  2024-09-30 fill buy 600279.SH vol=8200 price=10.1698 amt=83392.28
+[INFO]  2024-09-30 hold
+[INFO]  2024-10-08 hold
+[INFO]  2024-10-09 hold
+[INFO]  2024-10-10 hold
+[INFO]  2024-10-11 hold
+[INFO]  2024-10-14 hold
+[INFO]  2024-10-15 hold
+[INFO]  2024-10-16 hold
+[INFO]  2024-10-17 hold
+[INFO]  2024-10-18 hold
+[INFO]  2024-10-21 hold
+[INFO]  2024-10-22 hold
+[INFO]  2024-10-23 hold
+[INFO]  2024-10-24 hold
+[INFO]  2024-10-25 hold
+[INFO]  2024-10-28 hold
+[INFO]  2024-10-29 hold
+[INFO]  2024-10-30 hold
+[INFO]  2024-10-31 hold
+[INFO]  2024-11-01 sell: 600681.SH(holding_expired),601366.SH(holding_expired),600897.SH(holding_expired),600917.SH(holding_expired),000905.SZ(holding_expired),601368.SH(holding_expired),000731.SZ(holding_expired),600279.SH(holding_expired)
+[INFO]  2024-11-01 buy: 000711.SZ,002200.SZ,600925.SH,000782.SZ,605167.SH,601816.SH,603235.SH,000513.SZ (per=2214)
+[INFO]  2024-11-04 fill sell 600681.SH vol=2000 price=41.8918 amt=83783.65
+[INFO]  2024-11-04 fill sell 601366.SH vol=13500 price=6.0167 amt=81225.14
+[INFO]  2024-11-04 fill sell 600897.SH vol=700 price=107.3486 amt=75144.04
+[INFO]  2024-11-04 fill sell 600917.SH vol=12400 price=6.8994 amt=85552.51
+[INFO]  2024-11-04 fill sell 000905.SZ vol=5000 price=17.5439 amt=87719.27
+[INFO]  2024-11-04 fill sell 601368.SH vol=16000 price=5.3613 amt=85780.37
+[INFO]  2024-11-04 fill sell 000731.SZ vol=900 price=87.6368 amt=78873.12
+[INFO]  2024-11-04 fill sell 600279.SH vol=8200 price=10.9806 amt=90040.66
+[INFO]  2024-11-04 fill buy 000711.SZ vol=100 price=17.5838 amt=1758.38
+[INFO]  2024-11-04 fill buy 002200.SZ vol=200 price=10.7010 amt=2140.21
+[INFO]  2024-11-04 fill buy 600925.SH vol=300 price=5.7785 amt=1733.56
+[INFO]  2024-11-04 fill buy 000782.SZ vol=100 price=16.0012 amt=1600.12
+[INFO]  2024-11-04 fill buy 605167.SH vol=200 price=9.0476 amt=1809.51
+[INFO]  2024-11-04 fill buy 601816.SH vol=300 price=5.7941 amt=1738.22
+[ERROR] 2024-11-04 unfilled_order code=603235.SH reason=below_min_lot
+[ERROR] 2024-11-04 unfilled_order code=000513.SZ reason=below_min_lot
+[INFO]  2024-11-04 hold
+[INFO]  2024-11-05 buy: 600168.SH,600681.SH (per=85706)
+[INFO]  2024-11-06 fill buy 600168.SH vol=5400 price=15.8372 amt=85520.83
+[INFO]  2024-11-06 fill buy 600681.SH vol=1900 price=43.1682 amt=82019.55
+[INFO]  2024-11-06 hold
+[INFO]  2024-11-07 hold
+[INFO]  2024-11-08 hold
+[INFO]  2024-11-11 hold
+[INFO]  2024-11-12 hold
+[INFO]  2024-11-13 hold
+[INFO]  2024-11-14 hold
+[INFO]  2024-11-15 hold
+[INFO]  2024-11-18 hold
+[INFO]  2024-11-19 hold
+[INFO]  2024-11-20 hold
+[INFO]  2024-11-21 hold
+[INFO]  2024-11-22 hold
+[INFO]  2024-11-25 hold
+[INFO]  2024-11-26 hold
+[INFO]  2024-11-27 hold
+[INFO]  2024-11-28 hold
+[INFO]  2024-11-29 sell: 000711.SZ(holding_expired),002200.SZ(holding_expired),600925.SH(holding_expired),000782.SZ(holding_expired),605167.SH(holding_expired),601816.SH(holding_expired)
+[INFO]  2024-11-29 buy: 603321.SH,002492.SZ,605050.SH,600080.SH,603337.SH,600182.SH (per=84494)
+[INFO]  2024-12-02 fill sell 000711.SZ vol=100 price=17.8411 amt=1784.11
+[INFO]  2024-12-02 fill sell 002200.SZ vol=200 price=11.6769 amt=2335.38
+[INFO]  2024-12-02 fill sell 600925.SH vol=300 price=5.8422 amt=1752.65
+[INFO]  2024-12-02 fill sell 000782.SZ vol=100 price=17.1790 amt=1717.90
+[INFO]  2024-12-02 fill sell 605167.SH vol=200 price=10.0882 amt=2017.64
+[INFO]  2024-12-02 fill sell 601816.SH vol=300 price=6.1282 amt=1838.45
+[INFO]  2024-12-02 fill buy 603321.SH vol=10200 price=8.2604 amt=84256.10
+[INFO]  2024-12-02 fill buy 002492.SZ vol=4500 price=18.7055 amt=84174.92
+[INFO]  2024-12-02 fill buy 605050.SH vol=7500 price=11.1934 amt=83950.16
+[INFO]  2024-12-02 fill buy 600080.SH vol=2200 price=37.6504 amt=82830.91
+[INFO]  2024-12-02 fill buy 603337.SH vol=1100 price=73.3255 amt=80658.02
+[INFO]  2024-12-02 fill buy 600182.SH vol=4200 price=20.0930 amt=84390.48
+[INFO]  2024-12-02 hold
+[INFO]  2024-12-03 sell: 600168.SH(holding_expired),600681.SH(holding_expired)
+[INFO]  2024-12-03 buy: 601229.SH,605378.SH (per=9009)
+[INFO]  2024-12-04 fill sell 600168.SH vol=5400 price=16.5645 amt=89448.19
+[INFO]  2024-12-04 fill sell 600681.SH vol=1900 price=44.6291 amt=84795.24
+[INFO]  2024-12-04 fill buy 601229.SH vol=300 price=29.9978 amt=8999.34
+[INFO]  2024-12-04 fill buy 605378.SH vol=200 price=30.4752 amt=6095.04
+[INFO]  2024-12-04 hold
+[INFO]  2024-12-05 hold
+[INFO]  2024-12-06 hold
+[INFO]  2024-12-09 hold
+[INFO]  2024-12-10 hold
+[INFO]  2024-12-11 hold
+[INFO]  2024-12-12 hold
+[INFO]  2024-12-13 hold
+[INFO]  2024-12-16 hold
+[INFO]  2024-12-17 hold
+[INFO]  2024-12-18 hold
+[INFO]  2024-12-19 hold
+[INFO]  2024-12-20 hold
+[INFO]  2024-12-23 sell: 002492.SZ(stop_loss),605378.SH(stop_loss)
+[INFO]  2024-12-23 buy: 002879.SZ,000429.SZ (per=84223)
+[INFO]  2024-12-24 fill sell 002492.SZ vol=4500 price=16.5491 amt=74470.83
+[INFO]  2024-12-24 fill sell 605378.SH vol=200 price=27.2192 amt=5443.84
+[INFO]  2024-12-24 fill buy 002879.SZ vol=3500 price=23.6781 amt=82873.19
+[INFO]  2024-12-24 fill buy 000429.SZ vol=1300 price=62.6790 amt=81482.65
+[INFO]  2024-12-24 hold
+[INFO]  2024-12-25 hold
+[INFO]  2024-12-26 hold
+[INFO]  2024-12-27 sell: 603321.SH(holding_expired),605050.SH(holding_expired),600080.SH(holding_expired),603337.SH(holding_expired),600182.SH(holding_expired)
+[INFO]  2024-12-27 buy: 001965.SZ,600919.SH,601988.SH,601398.SH,601288.SH (per=18498)
+[INFO]  2024-12-30 fill sell 603321.SH vol=10200 price=7.9818 amt=81414.77
+[INFO]  2024-12-30 fill sell 605050.SH vol=7500 price=11.3960 amt=85469.90
+[INFO]  2024-12-30 fill sell 600080.SH vol=2200 price=41.4893 amt=91276.39
+[INFO]  2024-12-30 fill sell 603337.SH vol=1100 price=69.5068 amt=76457.51
+[INFO]  2024-12-30 fill sell 600182.SH vol=4200 price=21.6019 amt=90727.84
+[INFO]  2024-12-30 fill buy 001965.SZ vol=1000 price=17.8356 amt=17835.57
+[INFO]  2024-12-30 fill buy 600919.SH vol=1200 price=14.9666 amt=17959.95
+[INFO]  2024-12-30 fill buy 601988.SH vol=1300 price=13.2608 amt=17239.10
+[INFO]  2024-12-30 fill buy 601398.SH vol=1100 price=16.2096 amt=17830.61
+[INFO]  2024-12-30 fill buy 601288.SH vol=1600 price=11.1889 amt=17902.32
+[INFO]  2024-12-30 hold
+[INFO]  2024-12-31 sell: 601229.SH(holding_expired)
+[INFO]  2024-12-31 buy: 600299.SH (per=87323)
+[INFO]  2025-01-02 fill sell 601229.SH vol=300 price=32.7891 amt=9836.73
+[INFO]  2025-01-02 fill buy 600299.SH vol=2200 price=39.6379 amt=87203.37
+[INFO]  2025-01-02 hold
+[INFO]  2025-01-03 hold
+[INFO]  2025-01-06 hold
+[INFO]  2025-01-07 hold
+[INFO]  2025-01-08 hold
+[INFO]  2025-01-09 hold
+[INFO]  2025-01-10 hold
+[INFO]  2025-01-13 hold
+[INFO]  2025-01-14 hold
+[INFO]  2025-01-15 hold
+[INFO]  2025-01-16 hold
+[INFO]  2025-01-17 hold
+[INFO]  2025-01-20 hold
+[INFO]  2025-01-21 sell: 002879.SZ(holding_expired),000429.SZ(holding_expired)
+[INFO]  2025-01-21 buy: 603638.SH,002938.SZ (per=85600)
+[INFO]  2025-01-22 fill sell 002879.SZ vol=3500 price=24.4440 amt=85554.04
+[INFO]  2025-01-22 fill sell 000429.SZ vol=1300 price=60.7705 amt=79001.65
+[INFO]  2025-01-22 fill buy 603638.SH vol=1000 price=83.1684 amt=83168.38
+[INFO]  2025-01-22 fill buy 002938.SZ vol=1900 price=44.5645 amt=84672.59
+[INFO]  2025-01-22 hold
+[INFO]  2025-01-23 hold
+[INFO]  2025-01-24 hold
+[INFO]  2025-01-27 sell: 001965.SZ(holding_expired),600919.SH(holding_expired),601988.SH(holding_expired),601398.SH(holding_expired),601288.SH(holding_expired)
+[INFO]  2025-01-27 buy: 601077.SH,301263.SZ,000582.SZ,002032.SZ,601939.SH (per=69576)
+[INFO]  2025-02-05 fill sell 001965.SZ vol=1000 price=16.4919 amt=16491.87
+[INFO]  2025-02-05 fill sell 600919.SH vol=1200 price=15.7877 amt=18945.30
+[INFO]  2025-02-05 fill sell 601988.SH vol=1300 price=13.5404 amt=17602.46
+[INFO]  2025-02-05 fill sell 601398.SH vol=1100 price=16.3762 amt=18013.77
+[INFO]  2025-02-05 fill sell 601288.SH vol=1600 price=11.1679 amt=17868.66
+[INFO]  2025-02-05 fill buy 601077.SH vol=8200 price=8.3889 amt=68788.82
+[INFO]  2025-02-05 fill buy 301263.SZ vol=2200 price=30.9983 amt=68196.17
+[INFO]  2025-02-05 fill buy 000582.SZ vol=1400 price=47.1472 amt=66006.07
+[INFO]  2025-02-05 fill buy 002032.SZ vol=100 price=540.0528 amt=54005.28
+[INFO]  2025-02-05 fill buy 601939.SH vol=3400 price=20.3712 amt=69262.16
+[INFO]  2025-02-05 hold
+[INFO]  2025-02-06 sell: 600299.SH(holding_expired)
+[INFO]  2025-02-07 fill sell 600299.SH vol=2200 price=36.2648 amt=79782.51
+[INFO]  2025-02-07 buy: 605117.SH (per=84959)
+[INFO]  2025-02-10 fill buy 605117.SH vol=200 price=361.5855 amt=72317.11
+[INFO]  2025-02-10 hold
+[INFO]  2025-02-11 hold
+[INFO]  2025-02-12 hold
+[INFO]  2025-02-13 hold
+[INFO]  2025-02-14 hold
+[INFO]  2025-02-17 hold
+[INFO]  2025-02-18 hold
+[INFO]  2025-02-19 hold
+[INFO]  2025-02-20 hold
+[INFO]  2025-02-21 hold
+[INFO]  2025-02-24 hold
+[INFO]  2025-02-25 hold
+[INFO]  2025-02-26 sell: 603638.SH(holding_expired),002938.SZ(holding_expired)
+[INFO]  2025-02-26 buy: 000895.SZ,002475.SZ (per=58892)
+[INFO]  2025-02-27 fill sell 603638.SH vol=1000 price=102.5129 amt=102512.87
+[INFO]  2025-02-27 fill sell 002938.SZ vol=1900 price=47.7000 amt=90629.91
+[ERROR] 2025-02-27 unfilled_order code=000895.SZ reason=below_min_lot
+[ERROR] 2025-02-27 unfilled_order code=002475.SZ reason=below_min_lot
+[INFO]  2025-02-27 buy: 601311.SH,000895.SZ (per=88571)
+[INFO]  2025-02-28 fill buy 601311.SH vol=3100 price=28.3722 amt=87953.71
+[INFO]  2025-02-28 fill buy 000895.SZ vol=100 price=735.7560 amt=73575.60
+[INFO]  2025-02-28 hold
+[INFO]  2025-03-03 hold
+[INFO]  2025-03-04 sell: 601077.SH(holding_expired),301263.SZ(holding_expired),000582.SZ(holding_expired),002032.SZ(holding_expired),601939.SH(holding_expired)
+[INFO]  2025-03-04 buy: 600346.SH,000739.SZ (per=74606)
+[INFO]  2025-03-05 fill sell 601077.SH vol=8200 price=7.8454 amt=64332.26
+[INFO]  2025-03-05 fill sell 301263.SZ vol=2200 price=37.3743 amt=82223.39
+[INFO]  2025-03-05 fill sell 000582.SZ vol=1400 price=44.3845 amt=62138.27
+[INFO]  2025-03-05 fill sell 002032.SZ vol=100 price=531.5892 amt=53158.92
+[INFO]  2025-03-05 fill sell 601939.SH vol=3400 price=20.1637 amt=68556.53
+[INFO]  2025-03-05 fill buy 600346.SH vol=400 price=179.3289 amt=71731.56
+[INFO]  2025-03-05 fill buy 000739.SZ vol=300 price=226.8373 amt=68051.20
+[INFO]  2025-03-05 buy: 601717.SH,000766.SZ,001333.SZ (per=88089)
+[INFO]  2025-03-06 fill buy 601717.SH vol=2200 price=39.6323 amt=87191.13
+[INFO]  2025-03-06 fill buy 000766.SZ vol=1500 price=56.0368 amt=84055.23
+[INFO]  2025-03-06 fill buy 001333.SZ vol=4000 price=21.6536 amt=86614.45
+[INFO]  2025-03-06 hold
+[INFO]  2025-03-07 sell: 605117.SH(holding_expired)
+[INFO]  2025-03-10 fill sell 605117.SH vol=200 price=335.4093 amt=67081.85
+[INFO]  2025-03-10 buy: 002773.SZ (per=91209)
+[INFO]  2025-03-11 fill buy 002773.SZ vol=2000 price=44.4659 amt=88931.70
+[INFO]  2025-03-11 hold
+[INFO]  2025-03-12 sell: 000739.SZ(stop_loss)
+[INFO]  2025-03-12 buy: 688334.SH (per=59709)
+[INFO]  2025-03-13 fill sell 000739.SZ vol=300 price=198.9279 amt=59678.37
+[INFO]  2025-03-13 fill buy 688334.SH vol=3200 price=18.5092 amt=59229.41
+[INFO]  2025-03-13 hold
+[INFO]  2025-03-14 hold
+[INFO]  2025-03-17 hold
+[INFO]  2025-03-18 hold
+[INFO]  2025-03-19 hold
+[INFO]  2025-03-20 hold
+[INFO]  2025-03-21 hold
+[INFO]  2025-03-24 hold
+[INFO]  2025-03-25 hold
+[INFO]  2025-03-26 hold
+[INFO]  2025-03-27 sell: 601311.SH(holding_expired),000895.SZ(holding_expired)
+[INFO]  2025-03-27 buy: 002539.SZ (per=60098)
+[INFO]  2025-03-28 fill sell 601311.SH vol=3100 price=27.4594 amt=85123.99
+[INFO]  2025-03-28 fill sell 000895.SZ vol=100 price=725.2847 amt=72528.47
+[INFO]  2025-03-28 fill buy 002539.SZ vol=1100 price=54.6062 amt=60066.77
+[INFO]  2025-03-28 buy: 600475.SH (per=90686)
+[INFO]  2025-03-31 fill buy 600475.SH vol=1800 price=48.4908 amt=87283.52
+[INFO]  2025-03-31 hold
+[INFO]  2025-04-01 sell: 600346.SH(holding_expired)
+[INFO]  2025-04-02 fill sell 600346.SH vol=400 price=170.5537 amt=68221.47
+[INFO]  2025-04-02 sell: 601717.SH(holding_expired),000766.SZ(holding_expired),001333.SZ(holding_expired)
+[INFO]  2025-04-02 buy: 601577.SH,002958.SZ,301039.SZ (per=46139)
+[INFO]  2025-04-03 fill sell 601717.SH vol=2200 price=42.5596 amt=93631.18
+[INFO]  2025-04-03 fill sell 000766.SZ vol=1500 price=58.9611 amt=88441.59
+[INFO]  2025-04-03 fill sell 001333.SZ vol=4000 price=24.9590 amt=99836.06
+[INFO]  2025-04-03 fill buy 601577.SH vol=3800 price=11.9814 amt=45529.33
+[INFO]  2025-04-03 fill buy 002958.SZ vol=12400 price=3.7063 amt=45957.81
+[INFO]  2025-04-03 fill buy 301039.SZ vol=4400 price=10.3058 amt=45345.42
+[INFO]  2025-04-03 buy: 601169.SH (per=91232)
+[INFO]  2025-04-07 fill buy 601169.SH vol=3100 price=29.3023 amt=90837.08
+[INFO]  2025-04-07 sell: 688334.SH(stop_loss),002539.SZ(stop_loss),600475.SH(stop_loss)
+[INFO]  2025-04-07 buy: 601952.SH,000019.SZ,600161.SH (per=64129)
+[INFO]  2025-04-08 fill sell 688334.SH vol=3200 price=15.7375 amt=50359.99
+[INFO]  2025-04-08 fill sell 002539.SZ vol=1100 price=47.9681 amt=52764.87
+[INFO]  2025-04-08 fill sell 600475.SH vol=1800 price=42.8414 amt=77114.50
+[INFO]  2025-04-08 fill buy 601952.SH vol=3900 price=16.0913 amt=62756.25
+[INFO]  2025-04-08 fill buy 000019.SZ vol=1900 price=32.1283 amt=61043.86
+[INFO]  2025-04-08 fill buy 600161.SH vol=100 price=421.0978 amt=42109.78
+[INFO]  2025-04-08 sell: 002773.SZ(holding_expired)
+[INFO]  2025-04-09 fill sell 002773.SZ vol=2000 price=51.0945 amt=102189.07
+[INFO]  2025-04-09 buy: 600900.SH (per=87749)
+[INFO]  2025-04-10 fill buy 600900.SH vol=800 price=108.2352 amt=86588.13
+[INFO]  2025-04-10 hold
+[INFO]  2025-04-11 hold
+[INFO]  2025-04-14 hold
+[INFO]  2025-04-15 hold
+[INFO]  2025-04-16 hold
+[INFO]  2025-04-17 hold
+[INFO]  2025-04-18 hold
+[INFO]  2025-04-21 hold
+[INFO]  2025-04-22 hold
+[INFO]  2025-04-23 hold
+[INFO]  2025-04-24 hold
+[INFO]  2025-04-25 hold
+[INFO]  2025-04-28 sell: 301039.SZ(stop_loss),600161.SH(stop_loss)
+[INFO]  2025-04-28 buy: 601997.SH,600919.SH (per=86037)
+[INFO]  2025-04-29 fill sell 301039.SZ vol=4400 price=8.9087 amt=39198.23
+[INFO]  2025-04-29 fill sell 600161.SH vol=100 price=363.9295 amt=36392.95
+[INFO]  2025-04-29 fill buy 601997.SH vol=7500 price=11.3334 amt=85000.66
+[INFO]  2025-04-29 fill buy 600919.SH vol=5300 price=16.1861 amt=85786.52
+[INFO]  2025-04-29 hold
+[INFO]  2025-04-30 hold
+[INFO]  2025-05-06 sell: 601577.SH(holding_expired),002958.SZ(holding_expired)
+[INFO]  2025-05-06 buy: 002267.SZ,600875.SH (per=63373)
+[INFO]  2025-05-07 fill sell 601577.SH vol=3800 price=11.5500 amt=43889.87
+[INFO]  2025-05-07 fill sell 002958.SZ vol=12400 price=3.6403 amt=45140.25
+[INFO]  2025-05-07 fill buy 002267.SZ vol=2300 price=26.9305 amt=61940.05
+[INFO]  2025-05-07 fill buy 600875.SH vol=1100 price=54.2638 amt=59690.13
+[INFO]  2025-05-07 sell: 601169.SH(holding_expired)
+[INFO]  2025-05-07 buy: 000937.SZ (per=85143)
+[INFO]  2025-05-08 fill sell 601169.SH vol=3100 price=28.9087 amt=89616.98
+[INFO]  2025-05-08 fill buy 000937.SZ vol=1000 price=79.8609 amt=79860.89
+[INFO]  2025-05-08 sell: 601952.SH(holding_expired),000019.SZ(holding_expired)
+[INFO]  2025-05-08 buy: 002958.SZ,600000.SH (per=51859)
+[INFO]  2025-05-09 fill sell 601952.SH vol=3900 price=15.0938 amt=58865.84
+[INFO]  2025-05-09 fill sell 000019.SZ vol=1900 price=32.5392 amt=61824.44
+[INFO]  2025-05-09 fill buy 002958.SZ vol=13200 price=3.9057 amt=51554.75
+[INFO]  2025-05-09 fill buy 600000.SH vol=200 price=187.8120 amt=37562.41
+[INFO]  2025-05-09 hold
+[INFO]  2025-05-12 sell: 600900.SH(holding_expired)
+[INFO]  2025-05-12 buy: 601919.SH (per=86658)
+[INFO]  2025-05-13 fill sell 600900.SH vol=800 price=107.8722 amt=86297.80
+[INFO]  2025-05-13 fill buy 601919.SH vol=2500 price=34.1289 amt=85322.29
+[INFO]  2025-05-13 hold
+[INFO]  2025-05-14 hold
+[INFO]  2025-05-15 hold
+[INFO]  2025-05-16 hold
+[INFO]  2025-05-19 hold
+[INFO]  2025-05-20 hold
+[INFO]  2025-05-21 hold
+[INFO]  2025-05-22 hold
+[INFO]  2025-05-23 hold
+[INFO]  2025-05-26 hold
+[INFO]  2025-05-27 hold
+[INFO]  2025-05-28 hold
+[INFO]  2025-05-29 sell: 601997.SH(holding_expired),600919.SH(holding_expired)
+[INFO]  2025-05-29 buy: 600551.SH,603797.SH (per=68034)
+[INFO]  2025-05-30 fill sell 601997.SH vol=7500 price=11.5600 amt=86699.99
+[INFO]  2025-05-30 fill sell 600919.SH vol=5300 price=17.3315 amt=91857.00
+[ERROR] 2025-05-30 unfilled_order code=600551.SH reason=limit_up_at_open
+[INFO]  2025-05-30 fill buy 603797.SH vol=6400 price=10.5387 amt=67447.67
+[INFO]  2025-05-30 buy: 601009.SH (per=85891)
+[INFO]  2025-06-03 fill buy 601009.SH vol=1100 price=77.8210 amt=85603.05
+[INFO]  2025-06-03 hold
+[INFO]  2025-06-04 sell: 002267.SZ(holding_expired),600875.SH(holding_expired)
+[INFO]  2025-06-04 buy: 000598.SZ,601827.SH (per=80701)
+[INFO]  2025-06-05 fill sell 002267.SZ vol=2300 price=24.7669 amt=56963.82
+[INFO]  2025-06-05 fill sell 600875.SH vol=1100 price=53.0596 amt=58365.57
+[INFO]  2025-06-05 fill buy 000598.SZ vol=300 price=204.6927 amt=61407.82
+[INFO]  2025-06-05 fill buy 601827.SH vol=8300 price=9.7024 amt=80529.53
+[INFO]  2025-06-05 sell: 000937.SZ(holding_expired)
+[INFO]  2025-06-05 buy: 600941.SH (per=84944)
+[INFO]  2025-06-06 fill sell 000937.SZ vol=1000 price=81.3003 amt=81300.28
+[INFO]  2025-06-06 fill buy 600941.SH vol=600 price=137.8622 amt=82717.32
+[INFO]  2025-06-06 sell: 002958.SZ(holding_expired),600000.SH(holding_expired)
+[INFO]  2025-06-06 buy: 601128.SH,600846.SH (per=66587)
+[INFO]  2025-06-09 fill sell 002958.SZ vol=13200 price=4.1320 amt=54541.94
+[INFO]  2025-06-09 fill sell 600000.SH vol=200 price=198.0555 amt=39611.11
+[INFO]  2025-06-09 fill buy 601128.SH vol=5900 price=11.2854 amt=66583.82
+[INFO]  2025-06-09 fill buy 600846.SH vol=300 price=178.2916 amt=53487.49
+[INFO]  2025-06-09 hold
+[INFO]  2025-06-10 sell: 601919.SH(holding_expired)
+[INFO]  2025-06-10 buy: 600863.SH (per=85413)
+[INFO]  2025-06-11 fill sell 601919.SH vol=2500 price=34.5781 amt=86445.26
+[INFO]  2025-06-11 fill buy 600863.SH vol=900 price=92.1002 amt=82890.22
+[INFO]  2025-06-11 hold
+[INFO]  2025-06-12 hold
+[INFO]  2025-06-13 hold
+[INFO]  2025-06-16 hold
+[INFO]  2025-06-17 hold
+[INFO]  2025-06-18 hold
+[INFO]  2025-06-19 sell: 603797.SH(stop_loss)
+[INFO]  2025-06-19 buy: 002125.SZ (per=85061)
+[INFO]  2025-06-20 fill sell 603797.SH vol=6400 price=9.1626 amt=58640.69
+[ERROR] 2025-06-20 unfilled_order code=002125.SZ reason=limit_up_at_open
+[INFO]  2025-06-20 buy: 601398.SH (per=85310)
+[INFO]  2025-06-23 fill buy 601398.SH vol=4800 price=17.7082 amt=84999.29
+[INFO]  2025-06-23 hold
+[INFO]  2025-06-24 hold
+[INFO]  2025-06-25 hold
+[INFO]  2025-06-26 hold
+[INFO]  2025-06-27 hold
+[INFO]  2025-06-30 sell: 601009.SH(holding_expired)
+[INFO]  2025-06-30 buy: 603071.SH (per=84200)
+[INFO]  2025-07-01 fill sell 601009.SH vol=1100 price=80.1489 amt=88163.79
+[INFO]  2025-07-01 fill buy 603071.SH vol=5500 price=15.1251 amt=83188.01
+[INFO]  2025-07-01 hold
+[INFO]  2025-07-02 sell: 000598.SZ(holding_expired),601827.SH(holding_expired)
+[INFO]  2025-07-03 fill sell 000598.SZ vol=300 price=203.1982 amt=60959.47
+[INFO]  2025-07-03 fill sell 601827.SH vol=8300 price=9.3506 amt=77609.98
+[INFO]  2025-07-03 sell: 600941.SH(holding_expired)
+[INFO]  2025-07-03 buy: 002788.SZ,600219.SH,000709.SZ (per=75852)
+[INFO]  2025-07-04 fill sell 600941.SH vol=600 price=131.3221 amt=78793.24
+[INFO]  2025-07-04 fill buy 002788.SZ vol=2600 price=28.7165 amt=74662.80
+[INFO]  2025-07-04 fill buy 600219.SH vol=2300 price=31.7403 amt=73002.77
+[INFO]  2025-07-04 fill buy 000709.SZ vol=2900 price=25.8690 amt=75019.98
+[INFO]  2025-07-04 sell: 601128.SH(holding_expired),600846.SH(holding_expired)
+[INFO]  2025-07-04 buy: 002081.SZ,000708.SZ (per=41774)
+[INFO]  2025-07-07 fill sell 601128.SH vol=5900 price=11.7257 amt=69181.65
+[INFO]  2025-07-07 fill sell 600846.SH vol=300 price=187.8799 amt=56363.97
+[INFO]  2025-07-07 fill buy 002081.SZ vol=300 price=116.0359 amt=34810.78
+[INFO]  2025-07-07 fill buy 000708.SZ vol=700 price=54.2270 amt=37958.93
+[INFO]  2025-07-07 hold
+[INFO]  2025-07-08 sell: 600863.SH(holding_expired)
+[INFO]  2025-07-09 fill sell 600863.SH vol=900 price=92.7875 amt=83508.73
+[INFO]  2025-07-09 buy: 000885.SZ (per=86487)
+[INFO]  2025-07-10 fill buy 000885.SZ vol=2800 price=30.8193 amt=86294.01
+[INFO]  2025-07-10 hold
+[INFO]  2025-07-11 hold
+[INFO]  2025-07-14 hold
+[INFO]  2025-07-15 hold
+[INFO]  2025-07-16 hold
+[INFO]  2025-07-17 hold
+[INFO]  2025-07-18 sell: 601398.SH(holding_expired)
+[INFO]  2025-07-18 buy: 600211.SH (per=87609)
+[INFO]  2025-07-21 fill sell 601398.SH vol=4800 price=19.0131 amt=91263.09
+[INFO]  2025-07-21 fill buy 600211.SH vol=600 price=131.0845 amt=78650.71
+[INFO]  2025-07-21 hold
+[INFO]  2025-07-22 hold
+[INFO]  2025-07-23 hold
+[INFO]  2025-07-24 hold
+[INFO]  2025-07-25 hold
+[INFO]  2025-07-28 sell: 603071.SH(holding_expired)
+[INFO]  2025-07-28 buy: 000625.SZ (per=88973)
+[INFO]  2025-07-29 fill sell 603071.SH vol=5500 price=15.9870 amt=87928.53
+[INFO]  2025-07-29 fill buy 000625.SZ vol=400 price=207.5026 amt=83001.05
+[INFO]  2025-07-29 hold
+[INFO]  2025-07-30 hold
+[INFO]  2025-07-31 sell: 002788.SZ(holding_expired),600219.SH(holding_expired),000709.SZ(holding_expired)
+[INFO]  2025-07-31 buy: 002876.SZ (per=87995)
+[INFO]  2025-08-01 fill sell 002788.SZ vol=2600 price=29.1108 amt=75688.11
+[INFO]  2025-08-01 fill sell 600219.SH vol=2300 price=31.4363 amt=72303.56
+[INFO]  2025-08-01 fill sell 000709.SZ vol=2900 price=27.6468 amt=80175.83
+[INFO]  2025-08-01 fill buy 002876.SZ vol=1700 price=50.6484 amt=86102.33
+[INFO]  2025-08-01 sell: 002081.SZ(holding_expired),000708.SZ(holding_expired)
+[INFO]  2025-08-01 buy: 600976.SH,301185.SZ,688657.SH (per=87994)
+[INFO]  2025-08-04 fill sell 002081.SZ vol=300 price=118.7317 amt=35619.52
+[INFO]  2025-08-04 fill sell 000708.SZ vol=700 price=55.4186 amt=38793.02
+[INFO]  2025-08-04 fill buy 600976.SH vol=600 price=136.9020 amt=82141.18
+[INFO]  2025-08-04 fill buy 301185.SZ vol=4000 price=21.4654 amt=85861.48
+[INFO]  2025-08-04 fill buy 688657.SH vol=1200 price=71.2139 amt=85456.64
+[INFO]  2025-08-04 buy: 600038.SH (per=89240)
+[INFO]  2025-08-05 fill buy 600038.SH vol=600 price=128.2723 amt=76963.40
+[INFO]  2025-08-05 hold
+[INFO]  2025-08-06 sell: 000885.SZ(holding_expired)
+[INFO]  2025-08-06 buy: 002011.SZ (per=36431)
+[INFO]  2025-08-07 fill sell 000885.SZ vol=2800 price=31.3552 amt=87794.46
+[INFO]  2025-08-07 fill buy 002011.SZ vol=400 price=75.7777 amt=30311.08
+[INFO]  2025-08-07 hold
+[INFO]  2025-08-08 hold
+[INFO]  2025-08-11 hold
+[INFO]  2025-08-12 hold
+[INFO]  2025-08-13 hold
+[INFO]  2025-08-14 hold
+[INFO]  2025-08-15 sell: 600211.SH(holding_expired)
+[INFO]  2025-08-15 buy: 300360.SZ (per=89020)
+[INFO]  2025-08-18 fill sell 600211.SH vol=600 price=158.1259 amt=94875.53
+[INFO]  2025-08-18 fill buy 300360.SZ vol=700 price=119.8448 amt=83891.34
+[INFO]  2025-08-18 hold
+[INFO]  2025-08-19 hold
+[INFO]  2025-08-20 hold
+[INFO]  2025-08-21 hold
+[INFO]  2025-08-22 hold
+[INFO]  2025-08-25 sell: 000625.SZ(holding_expired)
+[INFO]  2025-08-26 fill sell 000625.SZ vol=400 price=202.2972 amt=80918.87
+[INFO]  2025-08-26 buy: 600009.SH (per=92625)
+[INFO]  2025-08-27 fill buy 600009.SH vol=800 price=103.2224 amt=82577.94
+[INFO]  2025-08-27 hold
+[INFO]  2025-08-28 sell: 002876.SZ(holding_expired)
+[INFO]  2025-08-29 fill sell 002876.SZ vol=1700 price=51.3707 amt=87330.13
+[INFO]  2025-08-29 sell: 600976.SH(holding_expired),301185.SZ(holding_expired),688657.SH(holding_expired)
+[INFO]  2025-08-29 buy: 601333.SH,600496.SH (per=91346)
+[INFO]  2025-09-01 fill sell 600976.SH vol=600 price=135.3545 amt=81212.71
+[INFO]  2025-09-01 fill sell 301185.SZ vol=4000 price=21.2870 amt=85147.85
+[INFO]  2025-09-01 fill sell 688657.SH vol=1200 price=88.2896 amt=105947.57
+[INFO]  2025-09-01 fill buy 601333.SH vol=20300 price=4.4957 amt=91262.53
+[INFO]  2025-09-01 fill buy 600496.SH vol=2300 price=39.1993 amt=90158.46
+[INFO]  2025-09-01 sell: 600038.SH(holding_expired)
+[INFO]  2025-09-01 buy: 600125.SH,603199.SH (per=91381)
+[INFO]  2025-09-02 fill sell 600038.SH vol=600 price=125.1273 amt=75076.37
+[INFO]  2025-09-02 fill buy 600125.SH vol=800 price=111.6886 amt=89350.91
+[INFO]  2025-09-02 fill buy 603199.SH vol=2100 price=42.0138 amt=88228.89
+[INFO]  2025-09-02 buy: 000333.SZ (per=90580)
+[INFO]  2025-09-03 fill buy 000333.SZ vol=200 price=429.5225 amt=85904.49
+[INFO]  2025-09-03 sell: 002011.SZ(holding_expired)
+[INFO]  2025-09-03 buy: 600790.SH (per=89950)
+[INFO]  2025-09-04 fill sell 002011.SZ vol=400 price=76.7412 amt=30696.47
+[INFO]  2025-09-04 fill buy 600790.SH vol=1500 price=57.5086 amt=86262.94
+[INFO]  2025-09-04 hold
+[INFO]  2025-09-05 hold
+[INFO]  2025-09-08 hold
+[INFO]  2025-09-09 hold
+[INFO]  2025-09-10 hold
+[INFO]  2025-09-11 hold
+[INFO]  2025-09-12 sell: 300360.SZ(holding_expired)
+[INFO]  2025-09-15 fill sell 300360.SZ vol=700 price=109.8085 amt=76865.98
+[INFO]  2025-09-15 buy: 600308.SH (per=90847)
+[INFO]  2025-09-16 fill buy 600308.SH vol=2100 price=41.8258 amt=87834.13
+[INFO]  2025-09-16 hold
+[INFO]  2025-09-17 hold
+[INFO]  2025-09-18 hold
+[INFO]  2025-09-19 hold
+[INFO]  2025-09-22 hold
+[INFO]  2025-09-23 sell: 600009.SH(holding_expired)
+[INFO]  2025-09-24 fill sell 600009.SH vol=800 price=99.3070 amt=79445.58
+[INFO]  2025-09-24 buy: 002039.SZ (per=89087)
+[INFO]  2025-09-25 fill buy 002039.SZ vol=1300 price=64.0211 amt=83227.45
+[INFO]  2025-09-25 hold
+[INFO]  2025-09-26 sell: 601333.SH(holding_expired),600496.SH(holding_expired)
+[INFO]  2025-09-26 buy: 001979.SZ (per=21843)
+[INFO]  2025-09-29 fill sell 601333.SH vol=20300 price=4.6830 amt=95064.94
+[INFO]  2025-09-29 fill sell 600496.SH vol=2300 price=38.0521 amt=87519.90
+[INFO]  2025-09-29 fill buy 001979.SZ vol=1500 price=13.6914 amt=20537.06
+[INFO]  2025-09-29 sell: 600125.SH(holding_expired),603199.SH(holding_expired)
+[INFO]  2025-09-29 buy: 603889.SH,000793.SZ,002243.SZ (per=61250)
+[INFO]  2025-09-30 fill sell 600125.SH vol=800 price=114.7016 amt=91761.26
+[INFO]  2025-09-30 fill sell 603199.SH vol=2100 price=40.0294 amt=84061.69
+[INFO]  2025-09-30 fill buy 603889.SH vol=1100 price=52.2304 amt=57453.44
+[INFO]  2025-09-30 fill buy 000793.SZ vol=1600 price=37.5784 amt=60125.44
+[INFO]  2025-09-30 fill buy 002243.SZ vol=3500 price=17.3263 amt=60642.05
+[INFO]  2025-09-30 sell: 000333.SZ(holding_expired)
+[INFO]  2025-10-09 fill sell 000333.SZ vol=200 price=405.1451 amt=81029.03
+[INFO]  2025-10-09 sell: 600790.SH(holding_expired)
+[INFO]  2025-10-09 buy: 600483.SH (per=89009)
+[INFO]  2025-10-10 fill sell 600790.SH vol=1500 price=52.9999 amt=79499.92
+[INFO]  2025-10-10 fill buy 600483.SH vol=2200 price=40.0321 amt=88070.69
+[INFO]  2025-10-10 buy: 600395.SH (per=90092)
+[INFO]  2025-10-13 fill buy 600395.SH vol=2500 price=35.4389 amt=88597.21
+[INFO]  2025-10-13 hold
+[INFO]  2025-10-14 hold
+[INFO]  2025-10-15 hold
+[INFO]  2025-10-16 hold
+[INFO]  2025-10-17 hold
+[INFO]  2025-10-20 hold
+[INFO]  2025-10-21 sell: 600308.SH(holding_expired)
+[INFO]  2025-10-22 fill sell 600308.SH vol=2100 price=40.8611 amt=85808.32
+[INFO]  2025-10-22 buy: 002839.SZ (per=90121)
+[INFO]  2025-10-23 fill buy 002839.SZ vol=12200 price=7.3372 amt=89513.27
+[INFO]  2025-10-23 hold
+[INFO]  2025-10-24 hold
+[INFO]  2025-10-27 hold
+[INFO]  2025-10-28 hold
+[INFO]  2025-10-29 hold
+[INFO]  2025-10-30 sell: 002039.SZ(holding_expired)
+[INFO]  2025-10-30 buy: 001286.SZ (per=88820)
+[INFO]  2025-10-31 fill sell 002039.SZ vol=1300 price=67.7880 amt=88124.42
+[INFO]  2025-10-31 fill buy 001286.SZ vol=8000 price=11.0674 amt=88539.01
+[INFO]  2025-10-31 hold
+[INFO]  2025-11-03 sell: 001979.SZ(holding_expired)
+[INFO]  2025-11-03 buy: 600373.SH (per=89767)
+[INFO]  2025-11-04 fill sell 001979.SZ vol=1500 price=12.8789 amt=19318.33
+[INFO]  2025-11-04 fill buy 600373.SH vol=1400 price=61.5486 amt=86168.09
+[INFO]  2025-11-04 sell: 603889.SH(holding_expired),000793.SZ(holding_expired),002243.SZ(holding_expired)
+[INFO]  2025-11-05 fill sell 603889.SH vol=1100 price=58.3261 amt=64158.66
+[INFO]  2025-11-05 fill sell 000793.SZ vol=1600 price=43.8814 amt=70210.30
+[INFO]  2025-11-05 fill sell 002243.SZ vol=3500 price=16.4082 amt=57428.58
+[INFO]  2025-11-05 buy: 301115.SZ,600969.SH,605199.SH (per=91117)
+[INFO]  2025-11-06 fill buy 301115.SZ vol=4800 price=18.8125 amt=90300.16
+[INFO]  2025-11-06 fill buy 600969.SH vol=5300 price=17.0796 amt=90522.00
+[INFO]  2025-11-06 fill buy 605199.SH vol=8600 price=10.5610 amt=90824.50
+[INFO]  2025-11-06 sell: 600483.SH(holding_expired)
+[INFO]  2025-11-06 buy: 600642.SH (per=13630)
+[INFO]  2025-11-07 fill sell 600483.SH vol=2200 price=41.6705 amt=91675.14
+[INFO]  2025-11-07 fill buy 600642.SH vol=100 price=97.1557 amt=9715.57
+[INFO]  2025-11-07 sell: 600395.SH(holding_expired)
+[INFO]  2025-11-07 buy: 601065.SH (per=91615)
+[INFO]  2025-11-10 fill sell 600395.SH vol=2500 price=34.0581 amt=85145.37
+[INFO]  2025-11-10 fill buy 601065.SH vol=9500 price=9.5843 amt=91051.05
+[INFO]  2025-11-10 hold
+[INFO]  2025-11-11 hold
+[INFO]  2025-11-12 hold
+[INFO]  2025-11-13 hold
+[INFO]  2025-11-14 hold
+[INFO]  2025-11-17 hold
+[INFO]  2025-11-18 hold
+[INFO]  2025-11-19 sell: 002839.SZ(holding_expired)
+[INFO]  2025-11-19 buy: 600028.SH (per=89526)
+[INFO]  2025-11-20 fill sell 002839.SZ vol=12200 price=7.3225 amt=89334.41
+[INFO]  2025-11-20 fill buy 600028.SH vol=3200 price=27.3261 amt=87443.52
+[INFO]  2025-11-20 hold
+[INFO]  2025-11-21 hold
+[INFO]  2025-11-24 hold
+[INFO]  2025-11-25 hold
+[INFO]  2025-11-26 hold
+[INFO]  2025-11-27 sell: 001286.SZ(holding_expired)
+[INFO]  2025-11-27 buy: 600690.SH (per=88119)
+[INFO]  2025-11-28 fill sell 001286.SZ vol=8000 price=10.9895 amt=87915.84
+[ERROR] 2025-11-28 unfilled_order code=600690.SH reason=below_min_lot
+[INFO]  2025-11-28 buy: 601825.SH (per=88374)
+[INFO]  2025-12-01 fill buy 601825.SH vol=7000 price=12.4901 amt=87430.97
+[INFO]  2025-12-01 sell: 600373.SH(holding_expired)
+[INFO]  2025-12-01 buy: 600750.SH (per=88657)
+[INFO]  2025-12-02 fill sell 600373.SH vol=1400 price=59.7854 amt=83699.53
+[INFO]  2025-12-02 fill buy 600750.SH vol=100 price=479.6150 amt=47961.50
+[INFO]  2025-12-02 hold
+[INFO]  2025-12-03 sell: 301115.SZ(holding_expired),600969.SH(holding_expired),605199.SH(stop_loss)
+[INFO]  2025-12-03 buy: 000333.SZ,600795.SH,600863.SH (per=42463)
+[INFO]  2025-12-04 fill sell 301115.SZ vol=4800 price=17.5017 amt=84008.17
+[INFO]  2025-12-04 fill sell 600969.SH vol=5300 price=18.7166 amt=99198.11
+[INFO]  2025-12-04 fill sell 605199.SH vol=8600 price=9.2592 amt=79629.51
+[ERROR] 2025-12-04 unfilled_order code=000333.SZ reason=below_min_lot
+[ERROR] 2025-12-04 unfilled_order code=600795.SH reason=below_min_lot
+[INFO]  2025-12-04 fill buy 600863.SH vol=300 price=110.7581 amt=33227.43
+[INFO]  2025-12-04 sell: 600642.SH(holding_expired)
+[INFO]  2025-12-04 buy: 300099.SZ,000333.SZ,600795.SH (per=88648)
+[INFO]  2025-12-05 fill sell 600642.SH vol=100 price=94.1031 amt=9410.31
+[INFO]  2025-12-05 fill buy 300099.SZ vol=700 price=119.9489 amt=83964.23
+[INFO]  2025-12-05 fill buy 000333.SZ vol=100 price=462.3706 amt=46237.06
+[ERROR] 2025-12-05 unfilled_order code=600795.SH reason=below_min_lot
+[INFO]  2025-12-05 sell: 601065.SH(holding_expired)
+[INFO]  2025-12-05 buy: 002595.SZ,600679.SH (per=89006)
+[INFO]  2025-12-08 fill sell 601065.SH vol=9500 price=9.1903 amt=87307.63
+[INFO]  2025-12-08 fill buy 002595.SZ vol=200 price=376.8881 amt=75377.63
+[INFO]  2025-12-08 fill buy 600679.SH vol=2300 price=37.1761 amt=85504.96
+[INFO]  2025-12-08 hold
+[INFO]  2025-12-09 hold
+[INFO]  2025-12-10 hold
+[INFO]  2025-12-11 hold
+[INFO]  2025-12-12 hold
+[INFO]  2025-12-15 hold
+[INFO]  2025-12-16 hold
+[INFO]  2025-12-17 sell: 600028.SH(holding_expired)
+[INFO]  2025-12-17 buy: 000100.SZ (per=87504)
+[INFO]  2025-12-18 fill sell 600028.SH vol=3200 price=26.7261 amt=85523.43
+[INFO]  2025-12-18 fill buy 000100.SZ vol=5000 price=17.4908 amt=87453.93
+[INFO]  2025-12-18 hold
+[INFO]  2025-12-19 hold
+[INFO]  2025-12-22 hold
+[INFO]  2025-12-23 hold
+[INFO]  2025-12-24 hold
+[INFO]  2025-12-25 hold
+[INFO]  2025-12-26 sell: 601825.SH(holding_expired)
+[INFO]  2025-12-26 buy: 605116.SH (per=87903)
+[INFO]  2025-12-29 fill sell 601825.SH vol=7000 price=11.9751 amt=83825.37
+[INFO]  2025-12-29 fill buy 605116.SH vol=3300 price=25.8692 amt=85368.52
+[INFO]  2025-12-29 sell: 600750.SH(holding_expired)
+[INFO]  2025-12-29 buy: 601528.SH (per=87630)
+[INFO]  2025-12-30 fill sell 600750.SH vol=100 price=496.6195 amt=49661.95
+[INFO]  2025-12-30 fill buy 601528.SH vol=10400 price=8.4030 amt=87391.40
+[INFO]  2025-12-30 hold
+[INFO]  2025-12-31 sell: 600863.SH(holding_expired)
+[INFO]  2026-01-05 fill sell 600863.SH vol=300 price=103.1982 amt=30959.47
+[INFO]  2026-01-05 sell: 300099.SZ(holding_expired),000333.SZ(holding_expired)
+[INFO]  2026-01-05 buy: 600998.SH,002223.SZ (per=75892)
+[INFO]  2026-01-06 fill sell 300099.SZ vol=700 price=122.0876 amt=85461.30
+[INFO]  2026-01-06 fill sell 000333.SZ vol=100 price=442.7951 amt=44279.51
+[INFO]  2026-01-06 fill buy 600998.SH vol=4300 price=17.5187 amt=75330.43
+[INFO]  2026-01-06 fill buy 002223.SZ vol=100 price=386.5226 amt=38652.26
+[INFO]  2026-01-06 sell: 002595.SZ(holding_expired),600679.SH(holding_expired)
+[INFO]  2026-01-06 buy: 000423.SZ,600999.SH (per=83708)
+[INFO]  2026-01-07 fill sell 002595.SZ vol=200 price=431.9928 amt=86398.55
+[INFO]  2026-01-07 fill sell 600679.SH vol=2300 price=34.2711 amt=78823.62
+[INFO]  2026-01-07 fill buy 000423.SZ vol=100 price=596.6455 amt=59664.55
+[INFO]  2026-01-07 fill buy 600999.SH vol=2100 price=39.2009 amt=82321.98
+[INFO]  2026-01-07 buy: 600352.SH (per=87989)
+[INFO]  2026-01-08 fill buy 600352.SH vol=300 price=251.9487 amt=75584.62
+[INFO]  2026-01-08 hold
+[INFO]  2026-01-09 hold
+[INFO]  2026-01-12 hold
+[INFO]  2026-01-13 hold
+[INFO]  2026-01-14 hold
+[INFO]  2026-01-15 hold
+[INFO]  2026-01-16 sell: 000100.SZ(holding_expired)
+[INFO]  2026-01-19 fill sell 000100.SZ vol=5000 price=18.0954 amt=90476.93
+[INFO]  2026-01-19 buy: 600054.SH (per=90505)
+[INFO]  2026-01-20 fill buy 600054.SH vol=1600 price=55.1971 amt=88315.30
+[INFO]  2026-01-20 hold
+[INFO]  2026-01-21 hold
+[INFO]  2026-01-22 hold
+[INFO]  2026-01-23 hold
+[INFO]  2026-01-26 hold
+[INFO]  2026-01-27 sell: 605116.SH(holding_expired)
+[INFO]  2026-01-27 buy: 000028.SZ (per=91786)
+[INFO]  2026-01-28 fill sell 605116.SH vol=3300 price=31.8493 amt=105102.73
+[INFO]  2026-01-28 fill buy 000028.SZ vol=600 price=152.3149 amt=91388.93
+[INFO]  2026-01-28 sell: 601528.SH(holding_expired)
+[INFO]  2026-01-29 fill sell 601528.SH vol=10400 price=7.8330 amt=81462.90
+[INFO]  2026-01-29 buy: 600132.SH (per=94037)
+[INFO]  2026-01-30 fill buy 600132.SH vol=200 price=346.5447 amt=69308.95
+[INFO]  2026-01-30 hold
+[INFO]  2026-02-02 sell: 600998.SH(holding_expired),002223.SZ(holding_expired)
+[INFO]  2026-02-02 buy: 002033.SZ (per=92227)
+[INFO]  2026-02-03 fill sell 600998.SH vol=4300 price=16.9579 amt=72918.87
+[INFO]  2026-02-03 fill sell 002223.SZ vol=100 price=383.0900 amt=38309.00
+[INFO]  2026-02-03 fill buy 002033.SZ vol=1500 price=61.4280 amt=92142.05
+[INFO]  2026-02-03 sell: 000423.SZ(holding_expired),600999.SH(holding_expired)
+[INFO]  2026-02-03 buy: 000401.SZ,002012.SZ (per=80814)
+[INFO]  2026-02-04 fill sell 000423.SZ vol=100 price=632.6840 amt=63268.40
+[INFO]  2026-02-04 fill sell 600999.SH vol=2100 price=36.5950 amt=76849.57
+[INFO]  2026-02-04 fill buy 000401.SZ vol=3300 price=23.8234 amt=78617.20
+[INFO]  2026-02-04 fill buy 002012.SZ vol=2000 price=38.5570 amt=77114.00
+[INFO]  2026-02-04 sell: 600352.SH(holding_expired)
+[INFO]  2026-02-04 buy: 601018.SH,000423.SZ (per=72935)
+[INFO]  2026-02-05 fill sell 600352.SH vol=300 price=312.6668 amt=93800.05
+[INFO]  2026-02-05 fill buy 601018.SH vol=12600 price=5.7453 amt=72391.16
+[INFO]  2026-02-05 fill buy 000423.SZ vol=100 price=647.0132 amt=64701.32
+[INFO]  2026-02-05 hold
+[INFO]  2026-02-06 hold
+[INFO]  2026-02-09 hold
+[INFO]  2026-02-10 hold
+[INFO]  2026-02-11 hold
+[INFO]  2026-02-12 hold
+[INFO]  2026-02-13 hold
+[INFO]  2026-02-24 sell: 600054.SH(holding_expired)
+[INFO]  2026-02-24 buy: 600479.SH (per=91875)
+[INFO]  2026-02-25 fill sell 600054.SH vol=1600 price=58.3355 amt=93336.80
+[INFO]  2026-02-25 fill buy 600479.SH vol=400 price=184.1788 amt=73671.54
+[INFO]  2026-02-25 hold
+[INFO]  2026-02-26 hold
+[INFO]  2026-02-27 hold
+[INFO]  2026-03-02 hold
+[INFO]  2026-03-03 hold
+[INFO]  2026-03-04 sell: 000028.SZ(holding_expired)
+[INFO]  2026-03-05 fill sell 000028.SZ vol=600 price=144.2851 amt=86571.03
+[INFO]  2026-03-05 buy: 600905.SH (per=90934)
+[INFO]  2026-03-06 fill buy 600905.SH vol=20100 price=4.5048 amt=90546.98
+[INFO]  2026-03-06 sell: 600132.SH(holding_expired)
+[INFO]  2026-03-06 buy: 600025.SH (per=91808)
+[INFO]  2026-03-09 fill sell 600132.SH vol=200 price=364.1426 amt=72828.52
+[INFO]  2026-03-09 fill buy 600025.SH vol=7200 price=12.6982 amt=91426.79
+[INFO]  2026-03-09 hold
+[INFO]  2026-03-10 sell: 002033.SZ(holding_expired)
+[INFO]  2026-03-11 fill sell 002033.SZ vol=1500 price=58.6317 amt=87947.62
+[INFO]  2026-03-11 sell: 000401.SZ(holding_expired),002012.SZ(holding_expired)
+[INFO]  2026-03-11 buy: 600015.SH,601033.SH (per=92722)
+[INFO]  2026-03-12 fill sell 000401.SZ vol=3300 price=23.9165 amt=78924.38
+[INFO]  2026-03-12 fill sell 002012.SZ vol=2000 price=38.3742 amt=76748.49
+[INFO]  2026-03-12 fill buy 600015.SH vol=2100 price=43.1436 amt=90601.55
+[INFO]  2026-03-12 fill buy 601033.SH vol=5200 price=17.5035 amt=91018.15
+[INFO]  2026-03-12 sell: 601018.SH(holding_expired),000423.SZ(holding_expired)
+[INFO]  2026-03-12 buy: 000895.SZ,001965.SZ (per=80542)
+[INFO]  2026-03-13 fill sell 601018.SH vol=12600 price=5.9996 amt=75594.52
+[INFO]  2026-03-13 fill sell 000423.SZ vol=100 price=613.0704 amt=61307.04
+[INFO]  2026-03-13 fill buy 000895.SZ vol=100 price=801.5843 amt=80158.43
+[INFO]  2026-03-13 fill buy 001965.SZ vol=5900 price=13.6133 amt=80318.59
+[INFO]  2026-03-13 buy: 600926.SH (per=92458)
+[INFO]  2026-03-16 fill buy 600926.SH vol=2000 price=45.0621 amt=90124.10
+[INFO]  2026-03-16 hold
+[INFO]  2026-03-17 hold
+[INFO]  2026-03-18 hold
+[INFO]  2026-03-19 hold
+[INFO]  2026-03-20 hold
+[INFO]  2026-03-23 market gate closed (MA200) -> exit all
+[INFO]  2026-03-24 fill sell 600479.SH vol=400 price=163.7293 amt=65491.73
+[INFO]  2026-03-24 fill sell 600905.SH vol=20100 price=4.5699 amt=91854.47
+[INFO]  2026-03-24 fill sell 600025.SH vol=7200 price=12.5498 amt=90358.26
+[INFO]  2026-03-24 fill sell 600015.SH vol=2100 price=43.1811 amt=90680.36
+[INFO]  2026-03-24 fill sell 601033.SH vol=5200 price=16.6520 amt=86590.56
+[INFO]  2026-03-24 fill sell 000895.SZ vol=100 price=794.2233 amt=79422.33
+[INFO]  2026-03-24 fill sell 001965.SZ vol=5900 price=13.2268 amt=78038.36
+[INFO]  2026-03-24 fill sell 600926.SH vol=2000 price=42.6382 amt=85276.39
+[INFO]  2026-03-24 market gate closed (MA200) -> exit all
+[INFO]  2026-03-25 buy: 600548.SH,601998.SH,600905.SH,000883.SZ,003816.SZ,000027.SZ,300022.SZ,603529.SH (per=89304)
+[INFO]  2026-03-26 fill buy 600548.SH vol=3100 price=28.3339 amt=87835.23
+[INFO]  2026-03-26 fill buy 601998.SH vol=5200 price=16.8572 amt=87657.34
+[INFO]  2026-03-26 fill buy 600905.SH vol=18500 price=4.8228 amt=89222.04
+[INFO]  2026-03-26 fill buy 000883.SZ vol=2800 price=31.4232 amt=87984.92
+[INFO]  2026-03-26 fill buy 003816.SZ vol=17000 price=5.2239 amt=88807.05
+[INFO]  2026-03-26 fill buy 000027.SZ vol=600 price=140.2234 amt=84134.04
+[INFO]  2026-03-26 fill buy 300022.SZ vol=2400 price=36.7254 amt=88140.93
+[INFO]  2026-03-26 fill buy 603529.SH vol=1200 price=74.3336 amt=89200.34
+[INFO]  2026-03-26 market gate closed (MA200) -> exit all
+[INFO]  2026-03-27 fill sell 600548.SH vol=3100 price=27.9700 amt=86706.91
+[INFO]  2026-03-27 fill sell 601998.SH vol=5200 price=17.1723 amt=89295.86
+[INFO]  2026-03-27 fill sell 600905.SH vol=18500 price=4.6968 amt=86891.06
+[INFO]  2026-03-27 fill sell 000883.SZ vol=2800 price=31.3604 amt=87809.12
+[INFO]  2026-03-27 fill sell 003816.SZ vol=17000 price=5.3185 amt=90414.09
+[INFO]  2026-03-27 fill sell 000027.SZ vol=600 price=141.9714 amt=85182.84
+[INFO]  2026-03-27 fill sell 300022.SZ vol=2400 price=36.1255 amt=86701.24
+[INFO]  2026-03-27 fill sell 603529.SH vol=1200 price=74.8616 amt=89833.96
+[INFO]  2026-03-27 buy: 002035.SZ,002608.SZ,003816.SZ,002866.SZ,601998.SH,000027.SZ,600098.SH,600548.SH (per=89198)
+[INFO]  2026-03-30 fill buy 002035.SZ vol=700 price=122.2736 amt=85591.55
+[INFO]  2026-03-30 fill buy 002608.SZ vol=3600 price=24.4755 amt=88111.62
+[INFO]  2026-03-30 fill buy 003816.SZ vol=16500 price=5.3759 amt=88701.85
+[INFO]  2026-03-30 fill buy 002866.SZ vol=2400 price=37.0214 amt=88851.27
+[INFO]  2026-03-30 fill buy 601998.SH vol=5200 price=17.0833 amt=88833.23
+[INFO]  2026-03-30 fill buy 000027.SZ vol=600 price=144.8421 amt=86905.25
+[INFO]  2026-03-30 fill buy 600098.SH vol=1700 price=50.4694 amt=85797.90
+[INFO]  2026-03-30 fill buy 600548.SH vol=3100 price=28.0260 amt=86880.50
+[INFO]  2026-03-30 hold
+[INFO]  2026-03-31 market gate closed (MA200) -> exit all
+[INFO]  2026-04-01 fill sell 002035.SZ vol=700 price=128.0741 amt=89651.90
+[INFO]  2026-04-01 fill sell 002608.SZ vol=3600 price=23.1145 amt=83212.18
+[INFO]  2026-04-01 fill sell 003816.SZ vol=16500 price=5.3885 amt=88909.52
+[INFO]  2026-04-01 fill sell 002866.SZ vol=2400 price=38.7252 amt=92940.57
+[INFO]  2026-04-01 fill sell 601998.SH vol=5200 price=16.9466 amt=88122.31
+[INFO]  2026-04-01 fill sell 000027.SZ vol=600 price=129.4337 amt=77660.20
+[INFO]  2026-04-01 fill sell 600098.SH vol=1700 price=46.2516 amt=78627.63
+[INFO]  2026-04-01 fill sell 600548.SH vol=3100 price=28.7076 amt=88993.69
+[INFO]  2026-04-01 buy: 600007.SH,601000.SH,000989.SZ,002422.SZ,601988.SH,601939.SH,600015.SH,603288.SH (per=87667)
+[INFO]  2026-04-02 fill buy 600007.SH vol=1800 price=46.8287 amt=84291.58
+[INFO]  2026-04-02 fill buy 601000.SH vol=2500 price=34.3193 amt=85798.27
+[INFO]  2026-04-02 fill buy 000989.SZ vol=1600 price=53.9282 amt=86285.10
+[INFO]  2026-04-02 fill buy 002422.SZ vol=300 price=259.5271 amt=77858.12
+[INFO]  2026-04-02 fill buy 601988.SH vol=5700 price=15.1832 amt=86544.51
+[INFO]  2026-04-02 fill buy 601939.SH vol=3700 price=23.5767 amt=87233.91
+[INFO]  2026-04-02 fill buy 600015.SH vol=1900 price=45.8711 amt=87155.02
+[INFO]  2026-04-02 fill buy 603288.SH vol=200 price=365.3657 amt=73073.14
+[INFO]  2026-04-02 market gate closed (MA200) -> exit all
+[INFO]  2026-04-03 fill sell 600007.SH vol=1800 price=46.6023 amt=83884.06
+[INFO]  2026-04-03 fill sell 601000.SH vol=2500 price=34.0344 amt=85086.05
+[INFO]  2026-04-03 fill sell 000989.SZ vol=1600 price=54.3266 amt=86922.54
+[INFO]  2026-04-03 fill sell 002422.SZ vol=300 price=255.2527 amt=76575.81
+[INFO]  2026-04-03 fill sell 601988.SH vol=5700 price=15.3594 amt=87548.72
+[INFO]  2026-04-03 fill sell 601939.SH vol=3700 price=23.7288 amt=87796.63
+[INFO]  2026-04-03 fill sell 600015.SH vol=1900 price=46.2125 amt=87803.68
+[INFO]  2026-04-03 fill sell 603288.SH vol=200 price=369.2858 amt=73857.15
+[INFO]  2026-04-03 market gate closed (MA200) -> exit all
+[INFO]  2026-04-07 market gate closed (MA200) -> exit all
+[INFO]  2026-04-08 buy: 300050.SZ,601598.SH,002650.SZ,605319.SH,600015.SH,600007.SH,603288.SH,000989.SZ (per=87738)
+[INFO]  2026-04-09 fill buy 300050.SZ vol=1500 price=57.8332 amt=86749.78
+[INFO]  2026-04-09 fill buy 601598.SH vol=10300 price=8.4769 amt=87312.30
+[INFO]  2026-04-09 fill buy 002650.SZ vol=1400 price=60.3422 amt=84479.08
+[INFO]  2026-04-09 fill buy 605319.SH vol=2100 price=40.7315 amt=85536.23
+[INFO]  2026-04-09 fill buy 600015.SH vol=1900 price=45.9950 amt=87390.58
+[INFO]  2026-04-09 fill buy 600007.SH vol=1800 price=47.4720 amt=85449.54
+[INFO]  2026-04-09 fill buy 603288.SH vol=200 price=362.2888 amt=72457.75
+[INFO]  2026-04-09 fill buy 000989.SZ vol=1600 price=53.8155 amt=86104.78
+[INFO]  2026-04-09 hold
+[INFO]  2026-04-10 hold
+[INFO]  2026-04-13 hold
+[INFO]  2026-04-14 hold
+[INFO]  2026-04-15 hold
+[INFO]  2026-04-16 hold
+[INFO]  2026-04-17 hold
+[INFO]  2026-04-20 hold
+[INFO]  2026-04-21 hold
+[INFO]  2026-04-22 hold
+[INFO]  2026-04-23 hold
+[INFO]  2026-04-24 hold
+[INFO]  2026-04-27 hold
+[INFO]  2026-04-28 hold
+[INFO]  2026-04-29 hold
+[INFO]  2026-04-30 hold
+[INFO]  2026-05-06 hold
+[INFO]  2026-05-07 hold
+[INFO]  2026-05-08 hold
+[INFO]  2026-05-11 sell: 300050.SZ(holding_expired),601598.SH(holding_expired),002650.SZ(holding_expired),605319.SH(holding_expired),600015.SH(holding_expired),600007.SH(holding_expired),603288.SH(holding_expired),000989.SZ(holding_expired)
+[INFO]  2026-05-11 buy: 600887.SH (per=26251)
+[INFO]  2026-05-12 fill sell 300050.SZ vol=1500 price=64.0474 amt=96071.13
+[INFO]  2026-05-12 fill sell 601598.SH vol=10300 price=8.2546 amt=85022.85
+[INFO]  2026-05-12 fill sell 002650.SZ vol=1400 price=69.5876 amt=97422.67
+[INFO]  2026-05-12 fill sell 605319.SH vol=2100 price=39.8753 amt=83738.13
+[INFO]  2026-05-12 fill sell 600015.SH vol=1900 price=41.0777 amt=78047.72
+[INFO]  2026-05-12 fill sell 600007.SH vol=1800 price=49.1704 amt=88506.65
+[INFO]  2026-05-12 fill sell 603288.SH vol=200 price=334.9805 amt=66996.11
+[INFO]  2026-05-12 fill sell 000989.SZ vol=1600 price=54.3266 amt=86922.54
+[ERROR] 2026-05-12 unfilled_order code=600887.SH reason=below_min_lot
+[INFO]  2026-05-12 buy: 600663.SH,600642.SH,300907.SZ,002559.SZ,603776.SH,600887.SH,003032.SZ,301353.SZ (per=88558)
+[INFO]  2026-05-13 fill buy 600663.SH vol=600 price=128.0161 amt=76809.68
+[INFO]  2026-05-13 fill buy 600642.SH vol=800 price=110.3313 amt=88265.08
+[INFO]  2026-05-13 fill buy 300907.SZ vol=2500 price=35.2155 amt=88038.75
+[INFO]  2026-05-13 fill buy 002559.SZ vol=1000 price=85.9342 amt=85934.18
+[INFO]  2026-05-13 fill buy 603776.SH vol=1500 price=57.2457 amt=85868.51
+[ERROR] 2026-05-13 unfilled_order code=600887.SH reason=below_min_lot
+[INFO]  2026-05-13 fill buy 003032.SZ vol=12400 price=7.1225 amt=88319.19
+[INFO]  2026-05-13 fill buy 301353.SZ vol=2200 price=39.9039 amt=87788.50
+[INFO]  2026-05-13 buy: 000429.SZ (per=89293)
+[INFO]  2026-05-14 fill buy 000429.SZ vol=1300 price=64.7549 amt=84181.40
+[INFO]  2026-05-14 hold
+[INFO]  2026-05-15 hold
+[INFO]  2026-05-18 sell: 600663.SH(stop_loss)
+[INFO]  2026-05-18 buy: 603206.SH (per=23090)
+[INFO]  2026-05-19 fill sell 600663.SH vol=600 price=111.4070 amt=66844.22
+[INFO]  2026-05-19 fill buy 603206.SH vol=1100 price=20.1352 amt=22148.67
+[INFO]  2026-05-19 hold
+[INFO]  2026-05-20 hold
+[INFO]  2026-05-21 hold
+[INFO]  2026-05-22 hold
+[INFO]  2026-05-25 hold
+[INFO]  2026-05-26 hold
+[INFO]  2026-05-27 hold
+[INFO]  2026-05-28 hold
+[INFO]  2026-05-29 sell: 002559.SZ(stop_loss),301353.SZ(stop_loss),603206.SH(stop_loss)
+[INFO]  2026-05-29 buy: 600377.SH,600012.SH,601963.SH (per=22577)
+[INFO]  2026-06-01 fill sell 002559.SZ vol=1000 price=74.8901 amt=74890.09
+[INFO]  2026-06-01 fill sell 301353.SZ vol=2200 price=34.2488 amt=75347.27
+[INFO]  2026-06-01 fill sell 603206.SH vol=1100 price=17.1990 amt=18918.92
+[INFO]  2026-06-01 fill buy 600377.SH vol=400 price=46.5784 amt=18631.35
+[INFO]  2026-06-01 fill buy 600012.SH vol=400 price=49.2743 amt=19709.72
+[INFO]  2026-06-01 fill buy 601963.SH vol=1400 price=15.3321 amt=21464.96
+[INFO]  2026-06-01 hold
+[INFO]  2026-06-02 hold
+[INFO]  2026-06-03 hold
+[INFO]  2026-06-04 hold
+[INFO]  2026-06-05 hold
+[INFO]  2026-06-08 market gate closed (MA200) -> exit all
+[INFO]  2026-06-09 fill sell 600642.SH vol=800 price=110.3396 amt=88271.67
+[INFO]  2026-06-09 fill sell 300907.SZ vol=2500 price=54.2401 amt=135600.21
+[INFO]  2026-06-09 fill sell 603776.SH vol=1500 price=51.1576 amt=76736.46
+[INFO]  2026-06-09 fill sell 003032.SZ vol=12400 price=6.3854 amt=79179.06
+[INFO]  2026-06-09 fill sell 000429.SZ vol=1300 price=67.5498 amt=87814.71
+[INFO]  2026-06-09 fill sell 600377.SH vol=400 price=45.9406 amt=18376.22
+[INFO]  2026-06-09 fill sell 600012.SH vol=400 price=48.5465 amt=19418.62
+[INFO]  2026-06-09 fill sell 601963.SH vol=1400 price=15.3015 amt=21422.08
+[INFO]  2026-06-09 hold
+[INFO]  2026-06-10 market gate closed (MA200) -> exit all
+[INFO]  2026-06-11 market gate closed (MA200) -> exit all
+[INFO]  2026-06-12 market gate closed (MA200) -> exit all
+[INFO]  2026-06-15 buy: 600999.SH,002668.SZ,000001.SZ,601328.SH,601398.SH,600919.SH,601838.SH,601988.SH (per=87920)
+[INFO]  2026-06-16 fill buy 600999.SH vol=2100 price=40.6324 amt=85328.12
+[INFO]  2026-06-16 fill buy 002668.SZ vol=1700 price=50.2390 amt=85406.27
+[ERROR] 2026-06-16 unfilled_order code=000001.SZ reason=below_min_lot
+[INFO]  2026-06-16 fill buy 601328.SH vol=4600 price=19.0681 amt=87713.49
+[INFO]  2026-06-16 fill buy 601398.SH vol=4500 price=19.2554 amt=86649.18
+[INFO]  2026-06-16 fill buy 600919.SH vol=4400 price=19.7420 amt=86864.95
+[INFO]  2026-06-16 fill buy 601838.SH vol=3100 price=28.2544 amt=87588.60
+[INFO]  2026-06-16 fill buy 601988.SH vol=5500 price=15.7782 amt=86779.89
+[INFO]  2026-06-16 hold
+[INFO]  2026-06-17 buy: 000001.SZ (per=87027)
+[ERROR] 2026-06-18 unfilled_order code=000001.SZ reason=below_min_lot
+[INFO]  2026-06-18 buy: 000795.SZ (per=84987)
+[INFO]  2026-06-22 fill buy 000795.SZ vol=1900 price=44.6503 amt=84835.49
+[INFO]  2026-06-22 hold
+[INFO]  2026-06-23 hold
+[INFO]  2026-06-24 hold
+[INFO]  2026-06-25 hold
+[INFO]  2026-06-26 sell: 000795.SZ(stop_loss)
+[ERROR] 2026-06-29 unfilled_order code=000795.SZ reason=suspended
+[INFO]  2026-06-29 sell: 000795.SZ(stop_loss)
+[ERROR] 2026-06-30 unfilled_order code=000795.SZ reason=suspended

@@ -30,13 +30,13 @@ from data.astock_reader import AstockParquetReader
 from data.universe import load_universe
 import yaml
 
-# (名称, 参数覆盖)
+# (名称, 参数覆盖)  —— v3 矩阵：60天/-12% 新基线（归因：20天是灾难，止损-12%正优化）
 VARIANTS = [
-    ("v2_n8_h20_s12",        {"n_hold": 8,  "max_holding_days": 20, "stop_loss": -0.12, "market_gate": 0}),
-    ("v2_n12_h20_s12",       {"n_hold": 12, "max_holding_days": 20, "stop_loss": -0.12, "market_gate": 0}),
-    ("v2_n16_h20_s12",       {"n_hold": 16, "max_holding_days": 20, "stop_loss": -0.12, "market_gate": 0}),
-    ("v2_n8_gate_hold",      {"n_hold": 8,  "max_holding_days": 20, "stop_loss": -0.12, "market_gate": 1, "gate_mode": "hold"}),
-    ("v2_n8_gate_exit_refill",{"n_hold": 8, "max_holding_days": 20, "stop_loss": -0.12, "market_gate": 1, "gate_mode": "exit", "signal_window": 20}),
+    ("v3_n8_h60_s12",        {"n_hold": 8,  "max_holding_days": 60, "stop_loss": -0.12, "market_gate": 0}),
+    ("v3_n12_h60_s12",       {"n_hold": 12, "max_holding_days": 60, "stop_loss": -0.12, "market_gate": 0}),
+    ("v3_n16_h60_s12",       {"n_hold": 16, "max_holding_days": 60, "stop_loss": -0.12, "market_gate": 0}),
+    ("v3_n8_gate_hold",      {"n_hold": 8,  "max_holding_days": 60, "stop_loss": -0.12, "market_gate": 1, "gate_mode": "hold"}),
+    ("v3_n8_gate_exit_refill",{"n_hold": 8, "max_holding_days": 60, "stop_loss": -0.12, "market_gate": 1, "gate_mode": "exit", "signal_window": 20}),
 ]
 
 
