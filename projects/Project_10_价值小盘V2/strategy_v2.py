@@ -891,11 +891,13 @@ def _reconcile(C):
                         if acct_vol > 0:
                             # 撤销估算扣减后需按估算价扣回（无真实成交价，用下单时价）
                             _cash -= od["amount"] * od["price"]
-                            _holdings[code] = acct_vol
+                            # R1修复(2026-08-16): 共享账户 position 含其他策略(如ATR)同code份额，
+                            # 兜底量按当日下单量封顶，防把他人份额纳管进本策略ledger导致后续误卖串账。
+                            _holdings[code] = min(acct_vol, od["amount"])
                             _entry_prices[code] = od.get("price", 0) or 0
                             _entry_dates[code] = od.get("entry_date", "") or _get_market_time(C).strftime("%Y-%m-%d")
-                            _log("[reconcile] %s 买入成交(账户持仓兜底) 持仓=%.0f股 现金=%.0f"
-                                 % (code, acct_vol, _cash), C)
+                            _log("[reconcile] %s 买入成交(账户持仓兜底,min封顶) 持仓=%.0f股(账户%.0f) 现金=%.0f"
+                                 % (code, min(acct_vol, od["amount"]), acct_vol, _cash), C)
                             continue
                     if pos is _ACCT_QUERY_FAIL:
                         _log("[reconcile] %s 买入对账兜底查询失败，保守保留持仓" % code, C)

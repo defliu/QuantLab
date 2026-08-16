@@ -45,7 +45,7 @@ PENDING_MAX_RETRIES = 3      # µ¥Ö»×î¶àÖØÏÂ´ÎÊı£¨º¬Ê×´Î£©£¬³¬¹ıÔò·ÅÆú£¨µÈÊÕÅÌ¶ÔÕ
 RETRY_COOLDOWN_MIN = 1       # ³·µ¥ÖØÏÂµÄ×îĞ¡ÀäÈ´¼ä¸ô£¨·ÖÖÓ£©£¬·ÀÖ¹Í¬Ò»·ÖÖÓ·´¸´ÖØÏÂ
 
 # ¹¹½¨°æ±¾±ê¼Ç£ºbuild.py Ã¿´Î¹¹½¨Ê±×Ô¶¯Ìæ»»ÎªÊ±¼ä´Á£¨YYYYmmdd-HHMMSS£©
-BUILD_TAG = "20260814-210622"
+BUILD_TAG = "20260816-150356"
 
 # ============ È«¾Ö×´Ì¬ ============
 _cash = CAPITAL_INIT       # ×¨Êô×Ê½ğ³ØÏÖ½ğ£¨ÓëÕË»§ÆäËû²ßÂÔ×Ê½ğÍêÈ«¸ôÀë£©
@@ -891,11 +891,13 @@ def _reconcile(C):
                         if acct_vol > 0:
                             # ³·Ïú¹ÀËã¿Û¼õºóĞè°´¹ÀËã¼Û¿Û»Ø£¨ÎŞÕæÊµ³É½»¼Û£¬ÓÃÏÂµ¥Ê±¼Û£©
                             _cash -= od["amount"] * od["price"]
-                            _holdings[code] = acct_vol
+                            # R1ĞŞ¸´(2026-08-16): ¹²ÏíÕË»§ position º¬ÆäËû²ßÂÔ(ÈçATR)Í¬code·İ¶î£¬
+                            # ¶µµ×Á¿°´µ±ÈÕÏÂµ¥Á¿·â¶¥£¬·À°ÑËûÈË·İ¶îÄÉ¹Ü½ø±¾²ßÂÔledgerµ¼ÖÂºóĞøÎóÂô´®ÕË¡£
+                            _holdings[code] = min(acct_vol, od["amount"])
                             _entry_prices[code] = od.get("price", 0) or 0
                             _entry_dates[code] = od.get("entry_date", "") or _get_market_time(C).strftime("%Y-%m-%d")
-                            _log("[reconcile] %s ÂòÈë³É½»(ÕË»§³Ö²Ö¶µµ×) ³Ö²Ö=%.0f¹É ÏÖ½ğ=%.0f"
-                                 % (code, acct_vol, _cash), C)
+                            _log("[reconcile] %s ÂòÈë³É½»(ÕË»§³Ö²Ö¶µµ×,min·â¶¥) ³Ö²Ö=%.0f¹É(ÕË»§%.0f) ÏÖ½ğ=%.0f"
+                                 % (code, min(acct_vol, od["amount"]), acct_vol, _cash), C)
                             continue
                     if pos is _ACCT_QUERY_FAIL:
                         _log("[reconcile] %s ÂòÈë¶ÔÕË¶µµ×²éÑ¯Ê§°Ü£¬±£ÊØ±£Áô³Ö²Ö" % code, C)
