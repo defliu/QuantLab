@@ -57,7 +57,7 @@ CONFIG = {
 }
 
 # 构建版本标记（YYYYmmdd-HHMMSS），部署核对用
-BUILD_TAG = "20260816-141355"
+BUILD_TAG = "20260817-144500"
 
 # ============================================================
 # 全局状态
@@ -654,8 +654,13 @@ def _batch_get_roe(codes):
     if not codes:
         return {}
     result = {}
-    # 分批（每批 200），兼顾单次调用上限与 IPC 次数（几十次 vs 逐股上千次）
-    import xtdata
+    # QMT内置 Python 无 xtdata，报失败自动放弃 ROE 质量门控 (fail-open)
+    try:
+        import xtdata
+    except Exception as e:
+        print("[ATR_EW] ROE接口xtdata不可用, 自动放弃质量门控(fail-open): %s" % e)
+        _g_roe_api_ok = False
+        return {}
     step = 200
     for i in range(0, len(codes), step):
         batch = codes[i:i + step]
@@ -850,17 +855,28 @@ def _current_prices(C, codes):
     prices = {}
     if not codes:
         return prices
-    try:
-        data = C.get_market_data_ex(stock_code=list(codes), period='1d', count=2)
-        if data:
-            for code, df in data.items():
-                if df is not None and len(df) > 0:
-                    prices[code] = float(df['close'].iloc[-1])
-    except Exception:
-        pass
+    # 优先用选股时拉到的全市场快照（count 大、已验证可用），避免 count=2 实时价返回空
+    for code in codes:
+        df = _g_all_data.get(code)
+        if df is not None and len(df) > 0:
+            try:
+                prices[code] = float(df['close'].iloc[-1])
+            except Exception:
+                pass
+    missing = [c for c in codes if c not in prices]
+    if missing:
+        try:
+            data = C.get_market_data_ex(stock_code=list(missing), period='1d', count=2)
+            if data:
+                for code, df in data.items():
+                    if df is not None and len(df) > 0:
+                        prices[code] = float(df['close'].iloc[-1])
+        except Exception as e:
+            print("[ATR_EW] 实时价二次获取失败: %s" % e)
+        still = [c for c in codes if c not in prices]
+        if still:
+            print("[ATR_EW] 警告: %d 只取不到价格: %s" % (len(still), ",".join(still)))
     return prices
-
-
 def _quarter_key(now):
     q = (now.month - 1) // 3 + 1
     return "%dQ%d" % (now.year, q)

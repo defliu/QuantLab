@@ -45,7 +45,7 @@ PENDING_MAX_RETRIES = 3      # µ¥Ö»×î¶àÖØÏÂ´ÎÊı£¨º¬Ê×´Î£©£¬³¬¹ıÔò·ÅÆú£¨µÈÊÕÅÌ¶ÔÕ
 RETRY_COOLDOWN_MIN = 1       # ³·µ¥ÖØÏÂµÄ×îĞ¡ÀäÈ´¼ä¸ô£¨·ÖÖÓ£©£¬·ÀÖ¹Í¬Ò»·ÖÖÓ·´¸´ÖØÏÂ
 
 # ¹¹½¨°æ±¾±ê¼Ç£ºbuild.py Ã¿´Î¹¹½¨Ê±×Ô¶¯Ìæ»»ÎªÊ±¼ä´Á£¨YYYYmmdd-HHMMSS£©
-BUILD_TAG = "20260816-150356"
+BUILD_TAG = "20260817-134500"
 
 # ============ È«¾Ö×´Ì¬ ============
 _cash = CAPITAL_INIT       # ×¨Êô×Ê½ğ³ØÏÖ½ğ£¨ÓëÕË»§ÆäËû²ßÂÔ×Ê½ğÍêÈ«¸ôÀë£©
@@ -185,6 +185,30 @@ def _load_industry_map():
     except Exception:
         pass
     return result
+
+def _load_st_set(C):
+    """´Ó QMT ·çÏÕ¾¯Ê¾°åÀ­È¡ ST ¹ÉÆ±Ãûµ¥£¨Ò»´ÎĞÔ£¬±ÜÃâÖğ¹É²éÃû³Æ£©
+    ½öÔÚĞèÒªµ÷²ÖÊ±µ÷ÓÃ¡£Ê§°ÜÊ±·µ»Ø¿Õ¼¯ºÏ£¨°²È«½µ¼¶£º²»¹ıÂË£©¡£"""
+    st_set = set()
+    try:
+        lst = C.get_stock_list_in_sector("·çÏÕ¾¯Ê¾°å")
+        if lst:
+            st_set = set(lst)
+    except Exception:
+        pass
+    if not st_set:
+        try:
+            lst = C.get_stock_list_in_sector("ST")
+            if lst:
+                st_set = set(lst)
+        except Exception:
+            pass
+    if not st_set:
+        _log("[st] ¾¯¸æ: ST°å¿éÃûµ¥»ñÈ¡Ê§°Ü£¬ST¹ıÂË±¾´ÎÌø¹ı£¨±£ÊØ½µ¼¶£©")
+    else:
+        _log("[st] ST¹ÉÉ¸³ı¼ÓÔØ³É¹¦: %d Ö»" % len(st_set))
+    return st_set
+
 
 def _load_delist_info():
     """´ÓCSV¼ÓÔØÍËÊĞĞÅÏ¢ (v2.3 ÍËÊĞÅÅÀ×): code -> (list_status, delist_date 'YYYY-MM-DD')"""
@@ -750,6 +774,12 @@ def handlebar(C):
 
         # v2.3 ÍËÊĞÅÅÀ×: ÌŞ³ıÍËÊĞ·çÏÕ¹É (ÒÑÍËÊĞ/ÍËÊĞÁÙ½ü/ÊĞÖµºìÏß)
         n_before = len(scores)
+        st_set = _load_st_set(C)
+        if st_set:
+            n_st_before = len(scores)
+            scores = dict((c, s) for c, s in scores.items() if c not in st_set)
+            n_st = n_st_before - len(scores)
+            _log("[st] ÌÔÌ­ ST %d Ö»" % n_st, C)
         scores = dict((c, s) for c, s in scores.items()
                       if not _delist_hit_qmt(c, fin_data, delist_info, today_str))
         n_screened = n_before - len(scores)
@@ -935,8 +965,8 @@ def _reconcile(C):
                     acct_vol = 0
                     if pos is not None and pos is not _ACCT_QUERY_FAIL:
                         acct_vol = float(getattr(pos, "m_nVolume", 0) or 0)
-                    if pos is None:
-                        # ²éÑ¯³É¹¦µ«ÕË»§È·ÎŞ»õ£ºÊµ¼ÊÒÑÂô³ö
+                    if pos is None or acct_vol <= 0:
+                        # ¶©µ¥²éÑ¯³É¹¦µ«ÕË»§È·ÎŞ»õ£¨º¬ÓÄÁé³Ö²Ö vol=0£¬µ±ÈÕÂô³ö²ĞÁô£©£ºÊµ¼ÊÒÑÂô³ö
                         _cash += od["amount"] * od["price"]
                         _holdings.pop(code, None)
                         _entry_prices.pop(code, None)
