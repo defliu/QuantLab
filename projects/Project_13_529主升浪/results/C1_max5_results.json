@@ -1,0 +1,35 @@
+{
+  "full": {
+    "name": "C1_max5_full",
+    "total_return": 0.534758,
+    "annual_return": 0.074247,
+    "cagr": 0.06128086849001413,
+    "cagr_calmar": 0.2213679520041012,
+    "max_drawdown": -0.276828,
+    "sharpe": 0.430414,
+    "win_rate": 0.457143,
+    "n_trades": 832
+  },
+  "1922": {
+    "name": "C1_max5_1922",
+    "total_return": 0.261465,
+    "annual_return": 0.067787,
+    "cagr": 0.06206931601344157,
+    "cagr_calmar": 0.29336663805270075,
+    "max_drawdown": -0.211576,
+    "sharpe": 0.423401,
+    "win_rate": 0.421739,
+    "n_trades": 448
+  },
+  "2326": {
+    "name": "C1_max5_2326",
+    "total_return": 0.215001,
+    "annual_return": 0.064271,
+    "cagr": 0.059943401548226305,
+    "cagr_calmar": 0.26906404140800166,
+    "max_drawdown": -0.222785,
+    "sharpe": 0.431488,
+    "win_rate": 0.47644,
+    "n_trades": 373
+  }
+}

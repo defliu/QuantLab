@@ -1,0 +1,35 @@
+{
+  "full": {
+    "name": "B1_trail15_full",
+    "total_return": 0.831359,
+    "annual_return": 0.115428,
+    "cagr": 0.08763772060476627,
+    "cagr_calmar": 0.3610664598385603,
+    "max_drawdown": -0.242719,
+    "sharpe": 0.563464,
+    "win_rate": 0.42735,
+    "n_trades": 927
+  },
+  "1922": {
+    "name": "B1_trail15_1922",
+    "total_return": 0.763074,
+    "annual_return": 0.197834,
+    "cagr": 0.158371594988022,
+    "cagr_calmar": 0.6524892563009157,
+    "max_drawdown": -0.242719,
+    "sharpe": 0.878959,
+    "win_rate": 0.410646,
+    "n_trades": 514
+  },
+  "2326": {
+    "name": "B1_trail15_2326",
+    "total_return": -0.038433,
+    "annual_return": -0.011489,
+    "cagr": -0.01164714245986509,
+    "cagr_calmar": -0.051519443081736525,
+    "max_drawdown": -0.226073,
+    "sharpe": 0.005292,
+    "win_rate": 0.399038,
+    "n_trades": 408
+  }
+}
