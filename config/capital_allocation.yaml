@@ -31,6 +31,13 @@ strategies:
     config_file: "config/value_smallcap_v2_config.yaml"
     note: "纯行业中性BP+质量排雷+退市排雷+buffer160；双月调仓80只；虚拟子账户，绝不抢占他人资金/持仓"
 
+  - key: huang529_breakout
+    name: "黄氏529主升浪(ATR低波top16)"
+    capital_base: 100000
+    max_hold: 12
+    config_file: "D:/QMT_POOL/p13_huang529_config.yaml"
+    note: "529信号日更CSV管道+09:35开盘执行；T-1信号补槽12只、1/12等权、止损-12%/到期60交易日/trail15默认关；虚拟子账户，绝不抢占他人资金/持仓（T-20260817-001 任务书T5登记）"
+
   # ---- 新增策略在此追加（取消注释并填值）----
   # - key: xxx
   #   name: "新策略名"

@@ -1,0 +1,80 @@
+[
+  {
+    "name": "trail15_n12_base",
+    "dir": "D:/QuantLab/reports/20260817_215648_2bde7e_trail15_n12_base",
+    "total_return": 0.531403,
+    "annual_return": 0.073782,
+    "cagr": 0.060958489933022886,
+    "cagr_calmar": 0.2532552072977276,
+    "max_drawdown": -0.2407,
+    "sharpe": 0.416125,
+    "win_rate": 0.444444,
+    "n_trades": 837,
+    "segment": "full"
+  },
+  {
+    "name": "trail15_n12_base_1922",
+    "dir": "D:/QuantLab/reports/20260817_221101_8f3dac_trail15_n12_base_1922",
+    "total_return": 0.669773,
+    "annual_return": 0.173645,
+    "cagr": 0.14215757273110152,
+    "cagr_calmar": 0.646966612181675,
+    "max_drawdown": -0.219729,
+    "sharpe": 0.768671,
+    "win_rate": 0.433476,
+    "n_trades": 454,
+    "segment": "1922"
+  },
+  {
+    "name": "trail15_n12_base_2326",
+    "dir": "D:/QuantLab/reports/20260817_221649_dd2d08_trail15_n12_base_2326",
+    "total_return": 0.245166,
+    "annual_return": 0.073288,
+    "cagr": 0.06774237494376001,
+    "cagr_calmar": 0.34456216443826687,
+    "max_drawdown": -0.196604,
+    "sharpe": 0.484061,
+    "win_rate": 0.502618,
+    "n_trades": 374,
+    "segment": "2326"
+  },
+  {
+    "name": "trail15_n12_t15",
+    "dir": "D:/QuantLab/reports/20260817_222256_5096a5_trail15_n12_t15",
+    "total_return": 0.831359,
+    "annual_return": 0.115428,
+    "cagr": 0.08763772060476627,
+    "cagr_calmar": 0.3610664598385603,
+    "max_drawdown": -0.242719,
+    "sharpe": 0.563464,
+    "win_rate": 0.42735,
+    "n_trades": 927,
+    "segment": "full"
+  },
+  {
+    "name": "trail15_n12_t15_1922",
+    "dir": "D:/QuantLab/reports/20260817_223753_bcf8d1_trail15_n12_t15_1922",
+    "total_return": 0.763074,
+    "annual_return": 0.197834,
+    "cagr": 0.158371594988022,
+    "cagr_calmar": 0.6524892563009157,
+    "max_drawdown": -0.242719,
+    "sharpe": 0.878959,
+    "win_rate": 0.410646,
+    "n_trades": 514,
+    "segment": "1922"
+  },
+  {
+    "name": "trail15_n12_t15_2326",
+    "dir": "D:/QuantLab/reports/20260817_224437_5d92d8_trail15_n12_t15_2326",
+    "total_return": -0.038433,
+    "annual_return": -0.011489,
+    "cagr": -0.01164714245986509,
+    "cagr_calmar": -0.051519443081736525,
+    "max_drawdown": -0.226073,
+    "sharpe": 0.005292,
+    "win_rate": 0.399038,
+    "n_trades": 408,
+    "segment": "2326"
+  }
+]

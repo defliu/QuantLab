@@ -23,6 +23,7 @@ config（strategy_params）示例：
   signal_window: 1          # 候选信号有效期（交易日数）：1=只当日信号；
                             # >1=含最近 N 个信号日的信号，用于门控恢复日快速回补
   max_single_pct: 0.125     # 单票仓位上限
+  trailing_stop: None       # 移动止损（None=关；0.15=收盘 ≤ 持有期最高收盘×0.85 触发）
 """
 from strategy.registry import register_strategy
 
@@ -36,6 +37,40 @@ def _noop_decision(date, logs, diag):
         "diagnostics": diag,
         "logs": logs,
     }
+
+
+def _peak_close_since_entry(market_window, code, entry_date, last):
+    """计算入场后（含入场日）的历史最高收盘价，用于移动止损（PIT 安全）。
+
+    引擎语义：决策日 T 的 market_window 只含至 T-1 的数据（决策基于 T-1 收盘，
+    次一交易日开盘执行），而 position.last_price 已被引擎 mark 为 T 收盘。
+    因此「持有期最高收盘」= max(窗口内 entry_date 起的收盘, 今日收盘 last)；
+    若 entry_date 未达（当日刚买入，窗口尚无入场日 bar），仅用 last。
+    """
+    peak = float(last)
+    mw = (market_window or {}).get(code)
+    if mw is None or len(mw) == 0:
+        return peak
+    try:
+        close = mw["close"]
+        if len(close) == 0:
+            return peak
+        if entry_date is not None:
+            dates = mw["date"].astype(str).values
+            idx = None
+            for i, d in enumerate(dates):
+                if d >= entry_date:
+                    idx = i
+                    break
+            if idx is None:
+                return peak
+            sub = close.iloc[idx:]
+            if len(sub) == 0:
+                return peak
+            return max(peak, float(sub.max()))
+        return max(peak, float(close.max()))
+    except Exception:
+        return peak
 
 
 def _collect_signals(signals, current_date, signal_window, universe, market_window):
@@ -69,6 +104,9 @@ def evaluate_day(current_date, market_window, positions, cash, universe,
     gate_mode = str(cfg.get("gate_mode", "exit")).lower()
     max_single_pct = float(cfg.get("max_single_pct", 1.0 / max(1, n_hold)))
     signal_window = int(cfg.get("signal_window", 1))
+    trailing_stop = cfg.get("trailing_stop", None)
+    if trailing_stop is not None:
+        trailing_stop = float(trailing_stop)
 
     signals = (aux_data or {}).get("huang_529_signals") or {}
     today_sigs = _collect_signals(signals, current_date, signal_window,
@@ -78,21 +116,29 @@ def evaluate_day(current_date, market_window, positions, cash, universe,
     sell_decisions = []
     buy_candidates = []
 
-    # 1) 持仓管理：止损 / 到期 → 清仓卖出
+    # 1) 持仓管理：止损 / 移动止损 / 到期 → 清仓卖出
     for code, p in held.items():
         cost = float(p.get("cost_price", 0)) or 0.0
         last = float(p.get("last_price", 0)) or 0.0
         hold_days = int(p.get("holding_days", 0) or 0)
+        entry_date = p.get("entry_date", None)
         stopped = False
+        reason = None
         if stop_loss is not None and cost > 0:
             pnl = (last - cost) / cost
             if pnl <= stop_loss:
                 stopped = True
+                reason = "stop_loss"
+        if not stopped and trailing_stop is not None:
+            peak = _peak_close_since_entry(market_window, code, entry_date, last)
+            if peak > 0 and (last - peak) / peak <= -trailing_stop:
+                stopped = True
+                reason = "trailing_stop"
         expired = hold_days >= max_holding_days
         if stopped or expired:
             sell_decisions.append({
                 "code": code,
-                "reason": "stop_loss" if stopped else "holding_expired",
+                "reason": reason if stopped else "holding_expired",
                 "layer": "confirm",
             })
 
