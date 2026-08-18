@@ -57,7 +57,7 @@ CONFIG = {
 }
 
 # 构建版本标记（YYYYmmdd-HHMMSS），部署核对用
-BUILD_TAG = "20260818-225254"  # 20260818 修复: 换手率尺度自适应+fail-open+对账get_trade_detail_data全局调用
+BUILD_TAG = "20260819-000525"  # 对账 position 字段访问修复(CPositionDetail 无 m_strCode/.get)  # 20260818 修复: 换手率尺度自适应+fail-open+对账get_trade_detail_data全局调用
 
 # ============================================================
 # 全局状态
@@ -343,7 +343,9 @@ def _reconcile_own_holdings(C):
             return
         account_pos = {}
         for pos in positions:
-            code = str(pos.m_strCode if hasattr(pos, 'm_strCode') else pos.get('code', ''))
+            # 远程QMT position 为 CPositionDetail 对象（字段 m_strInstrumentID/m_strSecurityCode，
+            # 非 m_strCode、无 .get()，对齐 V2 _get_acct_position 读取方式）
+            code = str(getattr(pos, 'm_strInstrumentID', '') or getattr(pos, 'm_strSecurityCode', '') or '')
             if not code:
                 continue
             if not code.endswith('.SH') and not code.endswith('.SZ'):
