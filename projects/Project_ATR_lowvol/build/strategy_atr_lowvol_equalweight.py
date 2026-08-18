@@ -57,7 +57,7 @@ CONFIG = {
 }
 
 # 构建版本标记（YYYYmmdd-HHMMSS），部署核对用
-BUILD_TAG = "20260819-000525"  # 对账 position 字段访问修复(CPositionDetail 无 m_strCode/.get)  # 20260818 修复: 换手率尺度自适应+fail-open+对账get_trade_detail_data全局调用
+BUILD_TAG = "20260819-044755"  # 修复审计 3b 回归: 换手过滤三态正确实现(数据可用→True+消费 is True)  # 20260819修复: _lookup_order全局函数+turnover_available?None+datetime.now改QMT时间  # 对账 position 字段访问修复(CPositionDetail 无 m_strCode/.get)  # 20260818 修复: 换手率尺度自适应+fail-open+对账get_trade_detail_data全局调用
 
 # ============================================================
 # 全局状态
@@ -76,7 +76,7 @@ _g_pending_sells = {}       # code -> {shares, price, reason, time}
 _g_pending_buys = {}        # code -> {shares, price, time}
 _g_roe_cache = {}           # code -> roe（季内缓存）
 _g_roe_api_ok = None        # None=未探明 True/False
-_g_turnover_available = True
+_g_turnover_available = None  # 修复 20260819: 首次筛选前不应默认True
 
 # 可配置参数（被 _load_config 覆盖；config 中 capital_base 设定本策略锁定可用资金）
 _STRATEGY_CAPITAL = 100000
@@ -386,13 +386,17 @@ def _lookup_order(C, code, volume, direction, retries=None, interval=None):
     # QMT passorder 是异步接口，返回0/None不代表下单失败；因此做"乐观确认"：
     # 反查方法不存在时直接按成功处理，调用方写/删 ledger、不进 pending 死循环。
     # （参考6+2策略的乐观确认修复2）
-    if getattr(C, 'get_trade_detail_data', None) is None:
+    # 修复 20260819: get_trade_detail_data 是全局函数(非C方法)，对齐V2 + 防坑指南
+    f_get = globals().get('get_trade_detail_data')
+    if f_get is None:
+        f_get = getattr(C, 'get_trade_detail_data', None)
+    if f_get is None:
         return ('OPTIMISTIC', None)
     dir_cn = '买入' if direction == 'buy' else '卖出'
     for retry in range(retries):
         time.sleep(interval)
         try:
-            deals = C.get_trade_detail_data(_ACCOUNT_ID, 'stock', 'order')
+            deals = f_get(_ACCOUNT_ID, 'stock', 'order')
             if not deals:
                 continue
             candidates = []
@@ -654,7 +658,7 @@ def _execute_buys_equalweight(C, target_codes, prices):
                 else:
                     _g_my_codes[code] = {
                         'buy_price': price,
-                        'buy_date': datetime.now().strftime('%Y%m%d'),
+                        'buy_date': _get_qmt_time(C).strftime('%Y%m%d'),  # 修复 20260819
                         'shares': delta,
                         'peak_price': price,
                     }
@@ -716,7 +720,7 @@ def _run_screening(C):
     """全市场 ATR 低波动筛选：返回入选代码列表（低 ATR% 前 N_HOLD）。"""
     global _g_hold_pool_cache, _g_hold_pool_cache_date, _g_all_data, _g_turnover_available
 
-    today_str = datetime.now().strftime('%Y%m%d')
+    today_str = _get_qmt_time(C).strftime('%Y%m%d')  # 修复 20260819: 优先QMT行情时间(AGENTS红线)
     if _g_hold_pool_cache is not None and _g_hold_pool_cache_date == today_str:
         print("[ATR_EW] 选股缓存命中: %d 只" % len(_g_hold_pool_cache))
         return _g_hold_pool_cache
@@ -757,7 +761,7 @@ def _run_screening(C):
     if not turnover_map:
         try:
             if hasattr(C, 'get_turnover_rate'):
-                start = (datetime.now() - timedelta(days=120)).strftime('%Y%m%d')
+                start = (_get_qmt_time(C) - timedelta(days=120)).strftime('%Y%m%d')  # 修复 20260819
                 end = today_str
                 td = C.get_turnover_rate(codes, start, end)
                 if td is not None and hasattr(td, 'columns'):
@@ -771,7 +775,7 @@ def _run_screening(C):
         except Exception:
             pass
     if turnover_map:
-        _g_turnover_available = True
+        _g_turnover_available = True  # 修复 20260819: 数据可用→启用过滤(三态不可用才跳过)
         print("[ATR_EW] 换手率数据可用: %d 只 (样例: %s)" % (len(turnover_map), list(turnover_map.items())[:3]))
     else:
         _g_turnover_available = False
@@ -826,7 +830,7 @@ def _run_screening(C):
                 skip_atr_high += 1
                 continue
             # 换手率过滤（修复 20260818: fail-open，缺该票数据则跳过此过滤，绝不误杀）
-            if _g_turnover_available:
+            if _g_turnover_available is True:
                 to = turnover_map.get(code)
                 if to is not None and (to < _MIN_TURNOVER or to > _MAX_TURNOVER):
                     skip_turn += 1

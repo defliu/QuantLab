@@ -1,4 +1,4 @@
-# coding=gbk
+# -*- coding: utf-8 -*-
 """
 ATR低波动策略 — 全QMT闭环，零外部依赖
 选股: ATR%%<6%% + 换手1-8%% + 成交额排序 top N
@@ -261,24 +261,41 @@ def _log_trade(trade_type, code, price, shares, reason):
         pass
 
 
+
+def _get_trade_detail_safe(C, acct_id, category, info_type):
+    """安全获取交易明细：优先全局函数(对齐V2+防坑指南)，fallback C方法。修复 20260819。"""
+    f = globals().get('get_trade_detail_data')
+    if f is not None:
+        try:
+            return f(acct_id, category, info_type)
+        except Exception:
+            pass
+    f2 = getattr(C, 'get_trade_detail_data', None)
+    if f2 is not None:
+        try:
+            return f2(acct_id, category, info_type)
+        except Exception:
+            pass
+    return None
+
 def _sync_account_holdings(C):
     """从QMT账户同步持仓到 _g_my_codes（解决孤儿持仓问题）"""
     # 修复2b：部分国金QMT的 context 无 get_trade_detail_data，此处显式降级而非抛异常
-    if not hasattr(C, 'get_trade_detail_data'):
+    if _get_trade_detail_safe(C, _ACCOUNT_ID, 'stock', 'account') is None:  # fix 20260819
         print("  [ATR纳管] 本环境无 get_trade_detail_data API，跳过账户持仓反查")
         print("  [ATR纳管]   降级策略：以本地持仓记录文件为准（孤儿持仓需人工核对）")
         return
     try:
-        account_info = C.get_trade_detail_data(_ACCOUNT_ID, 'stock', 'account')
+        account_info = _get_trade_detail_safe(C, _ACCOUNT_ID, 'stock', 'account')
         if not account_info:
             return
         # 获取账户持仓
-        positions = C.get_trade_detail_data(_ACCOUNT_ID, 'stock', 'position')
+        positions = _get_trade_detail_safe(C, _ACCOUNT_ID, 'stock', 'position') or []
         if not positions:
             return
         account_codes = set()
         for pos in positions:
-            code = str(pos.m_strCode if hasattr(pos, 'm_strCode') else pos.get('code', ''))
+            code = str(getattr(pos, 'm_strInstrumentID', '') or getattr(pos, 'm_strSecurityCode', '') or '')  # fix 20260819
             if not code:
                 continue
             if not code.endswith('.SH') and not code.endswith('.SZ'):
@@ -286,8 +303,8 @@ def _sync_account_holdings(C):
             account_codes.add(code)
             if code not in _g_my_codes:
                 # 账户有但策略无记录 — 孤儿持仓纳管
-                volume = int(pos.m_nCanUseVolume if hasattr(pos, 'm_nCanUseVolume') else pos.get('can_use_volume', 0))
-                cost = float(pos.m_dOpenPrice if hasattr(pos, 'm_dOpenPrice') else pos.get('open_price', 0))
+                volume = int(getattr(pos, 'm_nVolume', 0) or 0)  # fix 20260819: total vol for reconciliation
+                cost = float(getattr(pos, 'm_dOpenPrice', 0) or 0)  # fix 20260819
                 if volume > 0:
                     _g_my_codes[code] = {
                         'buy_price': cost,
@@ -470,11 +487,11 @@ def _run_screening(C):
     # 排除所有账户已有持仓（包括其他策略的票）
     held = set(_g_my_codes.keys()) if isinstance(_g_my_codes, dict) else set()
     try:
-        positions = C.get_trade_detail_data(_ACCOUNT_ID, 'stock', 'position')
+        positions = _get_trade_detail_safe(C, _ACCOUNT_ID, 'stock', 'position') or []
         if positions:
             for pos in positions:
                 try:
-                    p_code = str(pos.m_strCode if hasattr(pos, 'm_strCode') else '')
+                    p_code = str(getattr(pos, 'm_strInstrumentID', '') or getattr(pos, 'm_strSecurityCode', '') or '')  # fix 20260819
                     p_vol = int(pos.m_nCanUseVolume if hasattr(pos, 'm_nCanUseVolume') else 0)
                     if p_code and p_vol > 0:
                         held.add(p_code)
@@ -583,7 +600,7 @@ def _lookup_order(C, code, volume, direction, retries=None, interval=None):
     for retry in range(retries):
         time.sleep(interval)
         try:
-            deals = C.get_trade_detail_data(_ACCOUNT_ID, 'stock', 'order')
+            deals = _get_trade_detail_safe(C, _ACCOUNT_ID, 'stock', 'order') or []
             if not deals:
                 continue
             candidates = []
@@ -674,16 +691,20 @@ def _execute_sells(C, to_sell, current_prices):
 
         # 调用QMT卖出
         try:
-            order_id = C.passorder(
+            # 修复 20260819: passorder是全局函数(非C方法)，参数6=价格 参数7=股数(防坑指南坑1)
+            # 对齐V2的11参数格式: passorder(opType, orderType, acct, code, prType, modelprice, volume, remark, quickTrade, extra, C)
+            order_id = passorder(
                 24,  # 24=卖出
-                1101 if price >= 1.0 else 1102,  # 1101=限价 1102=市价
+                1101 if price >= 1.0 else 1102,
                 _ACCOUNT_ID,
                 code,
                 5,   # 卖5价类型
-                -1,  # -1=全部
-                price,
-                code,
-                1,   # 1=普通订单
+                -1,  # modelprice=-1 自动取五档价
+                shares,  # 股数（修复：旧版此处传了price，参数6/7颠倒）
+                'ATR_EW',
+                2,
+                '',
+                C,
             )
             print("  [ATR卖出] %s %d股 @ %.3f  原因:%s  订单返回值:%s" % (code, shares, price, reason, order_id))
 
@@ -774,16 +795,19 @@ def _execute_buys(C, candidates):
 
         # 调用QMT买入
         try:
-            order_id = C.passorder(
+            # 修复 20260819: passorder全局函数，参数6=价格 参数7=股数(防坑指南坑1)
+            order_id = passorder(
                 23,  # 23=买入
-                1101,  # 限价
+                1101,
                 _ACCOUNT_ID,
                 code,
                 5,   # 卖5价类型（实际是买1）
-                max_shares,
-                price,
-                code,
-                1,
+                -1,  # modelprice=-1 自动取五档价
+                max_shares,  # 股数（修复：旧版参数6/7颠倒）
+                'ATR_EW',
+                2,
+                '',
+                C,
             )
             print("  [ATR买入] %s %d股 @ %.3f  预算=%.2f  订单返回值:%s" % (code, max_shares, price, per_slot_budget, order_id))
 
@@ -939,7 +963,7 @@ class StrategyRunner:
         print("  [ATR] =============================================")
         # ---- WorkBuddy 修复版指纹（日志 grep 'ATR_FIX_v3_20260802' 即可确认是修复版）----
         global _g_has_trade_query
-        _g_has_trade_query = hasattr(C, 'get_trade_detail_data')
+        _g_has_trade_query = (globals().get('get_trade_detail_data') is not None or hasattr(C, 'get_trade_detail_data'))  # fix 20260819
         print("  [ATR] ★★★ 修复版 WorkBuddy %s ★★★" % _VERSION)
         print("  [ATR]   修复1: 换手率 fail-open（取不到放行，杜绝静默误杀 0 候选）")
         print("  [ATR]   修复2: 成交确认去除 get_trade_detail_data 依赖（本环境支持=%s -> 不支持则降级乐观确认）" % _g_has_trade_query)
