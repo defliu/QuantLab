@@ -57,7 +57,7 @@ CONFIG = {
 }
 
 # 构建版本标记（YYYYmmdd-HHMMSS），部署核对用
-BUILD_TAG = "20260817-144500"
+BUILD_TAG = "20260818-225254"  # 20260818 修复: 换手率尺度自适应+fail-open+对账get_trade_detail_data全局调用
 
 # ============================================================
 # 全局状态
@@ -220,6 +220,22 @@ def _calc_atr_pct(df):
         return 999.0
 
 
+def _scale_turnover(raw):
+    """换手率尺度自适应（对齐 src/strategy_atr.py）：返回已适配为百分比的值。
+    尺度自适应：<1 视为小数（×100），>=1 视为已是百分比（如 2.5=2.5%）。
+    修复 20260818：旧版无条件 ×100，若接口返回百分比（2.5）则 ×100=250 全杀候选。
+    """
+    if raw is None:
+        return None
+    try:
+        v = float(raw)
+    except Exception:
+        return None
+    if v < 1.0:
+        v = v * 100.0
+    return v
+
+
 def _get_roe_qmt(C, code):
     """质量门控：取最新 ROE(%)。接口不可用则自动跳过门控（返回通过）。"""
     global _g_roe_api_ok
@@ -316,7 +332,13 @@ def _reconcile_own_holdings(C):
     """仅依据本策略 ledger 与账户对账：账户里已没有的(被外部卖出)就从 ledger 移除；
     绝不清管/接管别的策略的持仓，保证多策略共存时票与资金互不干扰。"""
     try:
-        positions = C.get_trade_detail_data(_ACCOUNT_ID, 'stock', 'position')
+        f_get = globals().get('get_trade_detail_data')
+        if f_get is None:
+            f_get = getattr(C, 'get_trade_detail_data', None)
+        if f_get is None:
+            print("[ATR_EW 对账] get_trade_detail_data 不可用，跳过本次对账")
+            return
+        positions = f_get(_ACCOUNT_ID, 'stock', 'position')
         if not positions:
             return
         account_pos = {}
@@ -715,32 +737,43 @@ def _run_screening(C):
         print("[ATR_EW] 行情拉取失败: %s" % e)
         return []
 
-    # 换手率：优先从日线取，缺失再试接口
+    # 换手率：优先从日线列取，缺失再试接口。
+    # 修复 20260818：尺度自适应(_scale_turnover) + 能力探测(hasattr) + 全空 fail-open。
+    # 旧版：无条件×100（百分比会被放大250倍全杀候选）；依赖抛异常置位；空数据时
+    # _g_turnover_available 仍为 True + map 为空 → 每只票 to=-1 → 全部淘汰（0候选）。
     turnover_map = {}
     for code, df in data.items():
         try:
-            if 'turnover_rate' in df.columns:
+            if df is not None and 'turnover_rate' in df.columns:
                 s = df['turnover_rate'].dropna()
                 if len(s) > 0:
-                    turnover_map[code] = float(s.iloc[-1]) * 100.0
+                    to = _scale_turnover(float(s.iloc[-1]))
+                    if to is not None:
+                        turnover_map[code] = to
         except Exception:
             pass
     if not turnover_map:
         try:
-            start = (datetime.now() - timedelta(days=120)).strftime('%Y%m%d')
-            end = today_str
-            td = C.get_turnover_rate(codes, start, end)
-            if td is not None:
-                for code in codes:
-                    if code in td.columns:
-                        s = td[code].dropna()
-                        if len(s) > 0:
-                            turnover_map[code] = float(s.iloc[-1]) * 100.0
-        except AttributeError:
-            _g_turnover_available = False
+            if hasattr(C, 'get_turnover_rate'):
+                start = (datetime.now() - timedelta(days=120)).strftime('%Y%m%d')
+                end = today_str
+                td = C.get_turnover_rate(codes, start, end)
+                if td is not None and hasattr(td, 'columns'):
+                    for code in codes:
+                        if code in td.columns:
+                            s = td[code].dropna()
+                            if len(s) > 0:
+                                to = _scale_turnover(float(s.iloc[-1]))
+                                if to is not None:
+                                    turnover_map[code] = to
         except Exception:
-            _g_turnover_available = False
-
+            pass
+    if turnover_map:
+        _g_turnover_available = True
+        print("[ATR_EW] 换手率数据可用: %d 只 (样例: %s)" % (len(turnover_map), list(turnover_map.items())[:3]))
+    else:
+        _g_turnover_available = False
+        print("[ATR_EW] 警告: 换手率数据不可用，本次跳过换手过滤（fail-open，不误杀）")
     # ST 名单一次性拉取（避免对每只股票单独查名称，季频全市场会触发数千次 API）
     st_set = set()
     try:
@@ -760,32 +793,45 @@ def _run_screening(C):
         print("[ATR_EW] 警告: ST板块名单获取失败，ST过滤本次跳过（保守降级）")
 
     eligible = []
+    skip_len = 0
+    skip_close = 0
     skip_price = 0
+    skip_atr_flat = 0
+    skip_atr_high = 0
+    skip_turn = 0
+    skip_st = 0
+    skip_mom = 0
+    skip_exc = 0
     for code, df in data.items():
         if df is None or len(df) < _MIN_HISTORY:
+            skip_len += 1
             continue
         try:
             cl = float(df['close'].iloc[-1])
             if cl <= 0:
+                skip_close += 1
                 continue
             # 真实价上限过滤（QMT 行情即真实价，非复权）：高价股小资金买不起整手
             if _MAX_PRICE > 0 and cl >= _MAX_PRICE:
                 skip_price += 1
                 continue
-            # ATR% 过滤（低波动）
+            # ATR% 过滤（低波动）；atr_pct<=0 多为数据平填/停牌(近14日ATR=0)
             atr_pct = _calc_atr_pct(df)
-            if atr_pct <= 0 or atr_pct >= _ATR_THRESHOLD:
+            if atr_pct <= 0:
+                skip_atr_flat += 1
                 continue
-            # 换手率过滤
+            if atr_pct >= _ATR_THRESHOLD:
+                skip_atr_high += 1
+                continue
+            # 换手率过滤（修复 20260818: fail-open，缺该票数据则跳过此过滤，绝不误杀）
             if _g_turnover_available:
-                to = turnover_map.get(code, -1.0)
-                if to < 0:
-                    # 该票无换手数据，跳过（保守）
-                    continue
-                if to < _MIN_TURNOVER or to > _MAX_TURNOVER:
+                to = turnover_map.get(code)
+                if to is not None and (to < _MIN_TURNOVER or to > _MAX_TURNOVER):
+                    skip_turn += 1
                     continue
             # 非 ST（板块集合判断，O(1)）
             if code in st_set:
+                skip_st += 1
                 continue
             # 动量门控：12-1 月收益 > 0（剔除近期输家，来自已拉取日线，零额外API）
             if _MOMENTUM_GATE:
@@ -793,11 +839,12 @@ def _run_screening(C):
                 if len(close) >= 252:
                     ret_12_1 = close[-21] / close[-252] - 1.0 if close[-252] > 0 else 0.0
                     if ret_12_1 <= 0:
+                        skip_mom += 1
                         continue
             eligible.append((code, atr_pct))
         except Exception:
+            skip_exc += 1
             continue
-
     # 质量门控：ROE > 0（一次性批量取，替代逐股调用，避免上千次 IPC）
     if _QUALITY_GATE and eligible:
         print("[ATR_EW] 初筛通过 %d 只，批量取ROE..." % len(eligible))
@@ -839,6 +886,8 @@ def _run_screening(C):
     _g_hold_pool_cache_date = today_str
 
     print("[ATR_EW] 筛选完成: 候选%d -> 入选%d只 (高价排除%d)" % (len(eligible), len(selected), skip_price))
+    print("[ATR_EW] 过滤明细: 长度<252=%d 价<=0=%d ATR平填=%d ATR>=%.1f%%=%d 换手=%d ST=%d 动量=%d 异常=%d"
+          % (skip_len, skip_close, skip_atr_flat, _ATR_THRESHOLD, skip_atr_high, skip_turn, skip_st, skip_mom, skip_exc))
     for c in selected[:15]:
         name = _get_stock_name_safe(C, c)
         print("    [ATR_EW 选股] %s %s ATR%%=%.2f" % (c, name, dict(eligible).get(c, 0)))
