@@ -1,0 +1,37 @@
+# Trae 主升浪启动前/中段选股 —— 基线（无 MA200 门控）
+# 信号日买入池内 ATR 低波 top8，持有至止损-12%/60天到期
+backtest:
+  name: trae_uptrend_base
+  start_date: "2019-01-01"
+  end_date: "2026-06-30"
+  initial_cash: 1000000.0
+  benchmark_code: "000300.SH"
+  benchmark_db_path: "F:/backtest_workspace/data/duckdb/benchmark_index.duckdb"
+
+data:
+  source: astock
+  path: "E:/astock/daily/stock_daily.parquet"
+  adjustment: hfq
+
+universe:
+  csv: "D:/QuantLab/data/universe_all_a.csv"
+
+execution:
+  price: next_open
+  slippage: 0.001
+  commission_rate: 0.00025
+  tax_rate: 0.0005
+
+strategy: trae_main_uptrend
+trading_model: next_open
+
+strategy_params:
+  n_hold: 8
+  max_holding_days: 60
+  stop_loss: -0.12
+  market_gate: 0
+  ma_window: 200
+  gate_mode: exit
+  max_single_pct: 0.125
+  signal_window: 1
+  trailing_stop: null
