@@ -1,0 +1,37 @@
+# 菜场大妈六步选股 —— A4 干净口径（框架引擎）
+# 任务书 §2.5 A4：宇宙/选股规则 = A3 同款；成本/涨跌停/停牌/整手全用引擎设施
+backtest:
+  name: cai_market_a4
+  start_date: "2019-01-01"
+  end_date: "2026-06-30"
+  initial_cash: 1000000.0        # 100万（10只等权，每只约10万够买整手）
+  benchmark_code: "000300.SH"
+  benchmark_db_path: "F:/backtest_workspace/data/duckdb/benchmark_index.duckdb"
+
+data:
+  source: astock
+  path: "E:/astock/daily/stock_daily.parquet"
+  adjustment: hfq
+
+universe:
+  csv: "D:/QuantLab/data/universe_all_a.csv"
+
+execution:
+  price: next_open
+  slippage: 0.001          # 滑点 0.1%
+  commission_rate: 0.00025 # 佣金万 0.25
+  tax_rate: 0.001          # 卖出印花税万 1（原配置万0.5，任务书口径万1）
+
+strategy: cai_market_audit
+trading_model: next_open
+
+strategy_params:
+  rebalance_freq: weekly     # 每周第一个交易日
+  n_hold: 10                 # 总市值升序前10，等权
+  min_listed_days: 250       # 上市不少于250自然日
+  div_top_pct: 0.25          # 股息率前25%
+  price_lo: 2.0
+  price_hi: 9.0
+  max_positions: 10
+  position_sizing: equal
+  min_position_value: 0.0

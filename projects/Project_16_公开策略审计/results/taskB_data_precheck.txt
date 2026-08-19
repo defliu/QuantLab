@@ -1,0 +1,58 @@
+==== 任务B 数据预检 ====
+时间: 2026-08-20 00:06:21.338593
+
+[1] stock_basic rows=5884
+  list_status 分布: {'L': 5543, 'D': 339, nan: 2}
+  list_date 非空: 1.0  delist_date 非空: 0.0576
+  sample: [{'ts_code': '000003.SZ', 'name': 'PT金田A(退)', 'list_date': Timestamp('1991-07-03 00:00:00'), 'delist_date': Timestamp('2002-06-14 00:00:00')}, {'ts_code': '000004.SZ', 'name': '国华退', 'list_date': Timestamp('1990-12-01 00:00:00'), 'delist_date': Timestamp('2026-07-14 00:00:00')}, {'ts_code': '000005.SZ', 'name': 'ST星源(退)', 'list_date': Timestamp('1990-12-10 00:00:00'), 'delist_date': Timestamp('2024-04-26 00:00:00')}, {'ts_code': '000013.SZ', 'name': '*ST石化A(退)', 'list_date': Timestamp('1992-05-06 00:00:00'), 'delist_date': Timestamp('2004-09-20 00:00:00')}, {'ts_code': '000015.SZ', 'name': 'PT中浩A(退)', 'list_date': Timestamp('1992-06-25 00:00:00'), 'delist_date': Timestamp('2001-10-22 00:00:00')}]
+
+[2] dividend rows=168249
+  div_proc 分布: {'预案': 74533, '实施': 51412, '股东大会通过': 41946, '预披露': 108, '股东提议': 107, '未通过': 92, '停止实施': 44, '其他': 3, '股东大会未通过': 3, '实施 ': 1}
+  ex_date 非空: 0.3063
+  cash_div_tax 非空: 0.9815
+
+[3] income rows=314346
+  report_type 分布: {'1': 314346}
+  f_ann_date 非空: 1.0  ann_date 非空: 1.0
+  end_type 分布: {'4': 88817, '1': 75945, '2': 75254, '3': 72155, '1.0': 581, '2.0': 487, '4.0': 470, '3.0': 367, nan: 270}
+  600816.SH 报告期/净利润: [{'end_date': '20050331', 'end_type': '1', 'n_income_attr_p': 1452726.69, 'f_ann_date': '20050421'}, {'end_date': '20050630', 'end_type': '2', 'n_income_attr_p': 2775982.21, 'f_ann_date': '20050825'}, {'end_date': '20050930', 'end_type': '3', 'n_income_attr_p': -11913070.12, 'f_ann_date': '20051020'}, {'end_date': '20051231', 'end_type': '4', 'n_income_attr_p': 5768544.13, 'f_ann_date': '20060526'}, {'end_date': '20060331', 'end_type': '1', 'n_income_attr_p': 2305650.85, 'f_ann_date': '20060429'}, {'end_date': '20060630', 'end_type': '2', 'n_income_attr_p': 910116.62, 'f_ann_date': '20060721'}, {'end_date': '20060930', 'end_type': '3', 'n_income_attr_p': 6140462.22, 'f_ann_date': '20061025'}, {'end_date': '20061231', 'end_type': '4', 'n_income_attr_p': -43514373.58, 'f_ann_date': '20070423'}]
+
+[4] stock_daily rows=14545845 区间=2009-01-05 ~ 2026-08-14
+  历史出现过的 ts_code 数=5820
+  is_st 取值: [0, 1]
+  suspend_type 取值: ['N', 'S', 'R', 'R&S', '']
+  listed_days 非空: 0.9989
+
+[2] 复权口径验证：找一只除权日
+  抽样200只中带除权跳变: [('920806.BJ', datetime.date(2024, 1, 11), np.float64(1.0), np.float64(1.0291)), ('688528.SH', datetime.date(2020, 7, 1), np.float64(1.0), np.float64(1.017)), ('300063.SZ', datetime.date(2010, 3, 26), np.float64(1.0), np.float64(7.861)), ('603227.SH', datetime.date(2015, 5, 15), np.float64(1.0), np.float64(2.3134)), ('002654.SZ', datetime.date(2012, 2, 17), np.float64(1.0), np.float64(6.2291))]
+  验证 920806.BJ (首日 2024-01-11, adj_factor 1.000 -> 1.029):
+    最大跳变日=2024-07-09 前一日adj=1.0000 当日adj=1.0124
+    除权日前3~后3日 close/adj_factor:
+            close  adj_factor
+trade_date                   
+2024-07-08   8.17      1.0000
+2024-07-09   8.36      1.0124
+2024-07-10   8.90      1.0124
+2024-07-11   9.10      1.0124
+2024-07-12   9.10      1.0124
+
+[3] TTM 股息率对照（抽样某日，自建 vs dv_ttm 快照）
+  2019-06-28 对照:
+    {'code': '000001.SZ', 'close': np.float64(13.78), 'self_ttm': np.float64(0.020392), 'dv_ttm_snap': np.float64(2.0392)}
+    {'code': '600519.SH', 'close': np.float64(984.0), 'self_ttm': np.float64(0.014775), 'dv_ttm_snap': np.float64(1.4775)}
+    {'code': '000002.SZ', 'close': np.float64(27.81), 'self_ttm': np.float64(0.032362), 'dv_ttm_snap': np.float64(3.2362)}
+    {'code': '600036.SH', 'close': np.float64(35.98), 'self_ttm': np.float64(0.023346), 'dv_ttm_snap': np.float64(2.3346)}
+  2022-06-30 对照:
+    {'code': '000001.SZ', 'close': np.float64(14.98), 'self_ttm': np.float64(0.0), 'dv_ttm_snap': np.float64(1.232)}
+    {'code': '600519.SH', 'close': np.float64(2045.0), 'self_ttm': np.float64(0.010599), 'dv_ttm_snap': np.float64(1.0599)}
+    {'code': '000002.SZ', 'close': np.float64(20.5), 'self_ttm': np.float64(0.060976), 'dv_ttm_snap': np.float64(6.0976)}
+    {'code': '600036.SH', 'close': np.float64(42.2), 'self_ttm': np.float64(0.029692), 'dv_ttm_snap': np.float64(2.9692)}
+  2025-06-30 对照:
+    {'code': '000001.SZ', 'close': np.float64(12.07), 'self_ttm': None, 'dv_ttm_snap': np.float64(5.0373)}
+    {'code': '600519.SH', 'close': np.float64(1409.52), 'self_ttm': None, 'dv_ttm_snap': np.float64(3.6525)}
+    {'code': '000002.SZ', 'close': np.float64(6.42), 'self_ttm': None, 'dv_ttm_snap': np.float64(10.5288)}
+    {'code': '600036.SH', 'close': np.float64(45.95), 'self_ttm': None, 'dv_ttm_snap': np.float64(4.2916)}
+
+[4] 净利润同比（累计口径）构造测试（600816.SH 用报告期对齐，非PIT）
+  end_date 序列: ['2025-06-30 00:00:00', '2025-09-30 00:00:00', '2025-12-31 00:00:00', '20250331', '20250630', '20250930', '20251231', '2026-03-31 00:00:00', '2026-06-30 00:00:00', '20260331']
+  20200331 n_income=-665452527.79 vs 20190331 312107126.23 -> yoy=-3.1321
