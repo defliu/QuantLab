@@ -1,0 +1,20 @@
+{
+  "period": [
+    "2024-07-01",
+    "2026-08-14"
+  ],
+  "n_days": 516,
+  "top_k": 5,
+  "threshold": 60.0,
+  "daily_ret_mean": 0.006253906189305734,
+  "market_daily_ret_mean": 0.0009302280502666338,
+  "daily_excess": 0.005323678139039102,
+  "win_rate": 0.539922480620155,
+  "avg_win": 0.02790289111353011,
+  "avg_loss": -0.020163789976691916,
+  "profit_loss_ratio": 1.3838118303049236,
+  "annual_return": NaN,
+  "market_annual_return": NaN,
+  "max_drawdown": -0.22293094352258225,
+  "note": "理想化模拟：T+1收盘买入持有1日、无成本、无涨跌停限制；用于验证信号排序有效性"
+}

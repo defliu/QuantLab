@@ -1,0 +1,76 @@
+{
+  "period": [
+    "2024-07-01",
+    "2026-08-14"
+  ],
+  "top_k": 2,
+  "note": "v3模型+严格红线(不足K只则空仓)+等权TOP2；理想化模拟",
+  "results": [
+    {
+      "threshold": 50,
+      "trade_days": 516,
+      "flat_days": 0,
+      "n_samples": 1032,
+      "win_rate": 0.6501937984496124,
+      "profit_loss_ratio": 1.8314870447386837,
+      "annual_return": NaN,
+      "max_drawdown": -0.20028662700780497,
+      "daily_excess": 0.029266625723514846
+    },
+    {
+      "threshold": 55,
+      "trade_days": 516,
+      "flat_days": 0,
+      "n_samples": 1032,
+      "win_rate": 0.5891472868217055,
+      "profit_loss_ratio": 1.6168955383269017,
+      "annual_return": NaN,
+      "max_drawdown": -0.2307024878111983,
+      "daily_excess": 0.014361466487843288
+    },
+    {
+      "threshold": 58,
+      "trade_days": 516,
+      "flat_days": 0,
+      "n_samples": 1032,
+      "win_rate": 0.5503875968992248,
+      "profit_loss_ratio": 1.4577464155054995,
+      "annual_return": NaN,
+      "max_drawdown": -0.34834139526437624,
+      "daily_excess": 0.008323753730137738
+    },
+    {
+      "threshold": 60,
+      "trade_days": 516,
+      "flat_days": 0,
+      "n_samples": 1032,
+      "win_rate": 0.5494186046511628,
+      "profit_loss_ratio": 1.4187598980128677,
+      "annual_return": NaN,
+      "max_drawdown": -0.29742337248814776,
+      "daily_excess": 0.007515478208861935
+    },
+    {
+      "threshold": 62,
+      "trade_days": 516,
+      "flat_days": 0,
+      "n_samples": 1032,
+      "win_rate": 0.5310077519379846,
+      "profit_loss_ratio": 1.5891953147575626,
+      "annual_return": NaN,
+      "max_drawdown": -0.2732591418094992,
+      "daily_excess": 0.007627098411506667
+    },
+    {
+      "threshold": 65,
+      "trade_days": 516,
+      "flat_days": 0,
+      "n_samples": 1032,
+      "win_rate": 0.5145348837209303,
+      "profit_loss_ratio": 1.406545954323511,
+      "annual_return": NaN,
+      "max_drawdown": -0.41965722640918146,
+      "daily_excess": 0.004838562987462285
+    }
+  ]
+}

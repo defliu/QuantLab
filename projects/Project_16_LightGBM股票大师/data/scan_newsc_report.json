@@ -1,0 +1,83 @@
+{
+  "period": [
+    "2024-07-01",
+    "2026-08-14"
+  ],
+  "pre_pool": 100,
+  "threshold": 58.0,
+  "note": "新评分体系(当日PE口径F6)+红线58+模型前100池+不足空仓；理想化模拟(T+1收盘买入持有1日、无成本)",
+  "results": [
+    {
+      "top_k": 1,
+      "rule": "A_无否决",
+      "trade_days": 516,
+      "flat_days": 0,
+      "n_samples": 516,
+      "win_rate": 0.5852713178294574,
+      "profit_loss_ratio": 1.5226141441628627,
+      "annual_return": NaN,
+      "max_drawdown": -0.36781098110706023,
+      "daily_excess": 0.011597689836671978
+    },
+    {
+      "top_k": 1,
+      "rule": "B_一票否决",
+      "trade_days": 516,
+      "flat_days": 0,
+      "n_samples": 516,
+      "win_rate": 0.5678294573643411,
+      "profit_loss_ratio": 1.4699034748424953,
+      "annual_return": NaN,
+      "max_drawdown": -0.4833031742704539,
+      "daily_excess": 0.00928612065273341
+    },
+    {
+      "top_k": 2,
+      "rule": "A_无否决",
+      "trade_days": 516,
+      "flat_days": 0,
+      "n_samples": 1032,
+      "win_rate": 0.5484496124031008,
+      "profit_loss_ratio": 1.4828582181887926,
+      "annual_return": NaN,
+      "max_drawdown": -0.37340342862446874,
+      "daily_excess": 0.007934955043435886
+    },
+    {
+      "top_k": 2,
+      "rule": "B_一票否决",
+      "trade_days": 516,
+      "flat_days": 0,
+      "n_samples": 1032,
+      "win_rate": 0.5339147286821705,
+      "profit_loss_ratio": 1.3956287749282152,
+      "annual_return": NaN,
+      "max_drawdown": -0.47569103965456705,
+      "daily_excess": 0.005761852029572782
+    },
+    {
+      "top_k": 3,
+      "rule": "A_无否决",
+      "trade_days": 516,
+      "flat_days": 0,
+      "n_samples": 1548,
+      "win_rate": 0.5316537467700259,
+      "profit_loss_ratio": 1.4655003734254162,
+      "annual_return": NaN,
+      "max_drawdown": -0.2790747421511094,
+      "daily_excess": 0.00626461554850981
+    },
+    {
+      "top_k": 3,
+      "rule": "B_一票否决",
+      "trade_days": 516,
+      "flat_days": 0,
+      "n_samples": 1548,
+      "win_rate": 0.5258397932816538,
+      "profit_loss_ratio": 1.3627098546109457,
+      "annual_return": NaN,
+      "max_drawdown": -0.3892840376844302,
+      "daily_excess": 0.004677000273756544
+    }
+  ]
+}

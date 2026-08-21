@@ -1,0 +1,15 @@
+{
+  "date": "20260821",
+  "stocks": [
+    {"ts_code": "001260.SZ", "name": "坤泰股份", "main_net_inflow": 1709666, "liangbi": 1.89, "industry_pct": 0.14, "quote_pct": 0.12, "catalyst_score": 2, "catalyst_note": "8/17-19连续跌停，龙虎榜机构出逃，Q1净利-61%，高位崩盘后弱反弹"},
+    {"ts_code": "002237.SZ", "name": "恒邦股份", "main_net_inflow": 1414448, "liangbi": 3.77, "industry_pct": 2.74, "quote_pct": 0.67, "catalyst_score": 9, "catalyst_note": "8/20晚半年报净利+112.6%，Q2单季+211.97%超预期，贵金属冶炼景气"},
+    {"ts_code": "000737.SZ", "name": "北方铜业", "main_net_inflow": 7472384, "liangbi": 2.35, "industry_pct": 1.40, "quote_pct": 1.28, "catalyst_score": 3, "catalyst_note": "无近期新闻，铜价驱动+主力小幅流入"},
+    {"ts_code": "603230.SH", "name": "内蒙新华", "main_net_inflow": 797378, "liangbi": 2.24, "industry_pct": -1.02, "quote_pct": -1.30, "catalyst_score": 2, "catalyst_note": "无新闻催化，换手仅0.1%流动性极差"},
+    {"ts_code": "300818.SZ", "name": "耐普矿机", "main_net_inflow": -21572, "liangbi": 4.24, "industry_pct": 0.36, "quote_pct": 3.90, "catalyst_score": 5, "catalyst_note": "8/12半年报转亏，但8/17锻造衬板订单增长+8/21与中信重工深化合作"},
+    {"ts_code": "300916.SZ", "name": "朗特智能", "main_net_inflow": -78111, "liangbi": 3.32, "industry_pct": 0.52, "quote_pct": 1.19, "catalyst_score": 5, "catalyst_note": "机器人/电子烟概念，与优必选泳池清洁机器人合作，8/7曾涨停"},
+    {"ts_code": "000539.SZ", "name": "粤电力A", "main_net_inflow": -10813940, "liangbi": 1.44, "industry_pct": -0.45, "quote_pct": -0.56, "catalyst_score": 2, "catalyst_note": "无新闻催化，PE-TTM 343畸高"},
+    {"ts_code": "300201.SZ", "name": "海伦哲", "main_net_inflow": 11777776, "liangbi": 1.50, "industry_pct": 0.17, "quote_pct": 0.62, "catalyst_score": 4, "catalyst_note": "8/10两项发明专利+Q1净利+50%，但澄清不涉AI发电机组"},
+    {"ts_code": "603066.SH", "name": "音飞储存", "main_net_inflow": -363664, "liangbi": 3.54, "industry_pct": -0.70, "quote_pct": -1.65, "catalyst_score": 2, "catalyst_note": "无实质催化，仅董秘聘任公告"},
+    {"ts_code": "601865.SH", "name": "福莱特", "main_net_inflow": 5284418, "liangbi": 1.81, "industry_pct": 0.46, "quote_pct": -0.39, "catalyst_score": 6, "catalyst_note": "8/5拟收购福来瑞诚60%股权+光伏反内卷政策，8/7曾涨停"}
+  ]
+}

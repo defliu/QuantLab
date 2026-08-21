@@ -1,0 +1,21 @@
+{
+  "last_main_date": "2026-08-14",
+  "incremental_range": [
+    "20260815",
+    "20260821"
+  ],
+  "source": "miniQMT xtdata",
+  "updated_at": "2026-08-21 07:45:31",
+  "n_rows": 23280,
+  "n_stocks": 5820,
+  "fields": [
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "amount",
+    "preClose",
+    "suspendFlag"
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "period": [
+    "2024-07-01",
+    "2026-08-14"
+  ],
+  "top_k": 2,
+  "pre_pool": 100,
+  "note": "v3模型+模型前100池内过滤红线+不足K只空仓+等权TOP2；复刻 deploy 实盘流程；理想化模拟",
+  "results": [
+    {
+      "threshold": 50,
+      "trade_days": 516,
+      "flat_days": 0,
+      "n_samples": 1032,
+      "win_rate": 0.6501937984496124,
+      "profit_loss_ratio": 1.8314870447386837,
+      "annual_return": NaN,
+      "max_drawdown": -0.20028662700780497,
+      "daily_excess": 0.029266625723514846
+    },
+    {
+      "threshold": 55,
+      "trade_days": 516,
+      "flat_days": 0,
+      "n_samples": 1032,
+      "win_rate": 0.5891472868217055,
+      "profit_loss_ratio": 1.6168955383269017,
+      "annual_return": NaN,
+      "max_drawdown": -0.2307024878111983,
+      "daily_excess": 0.014361466487843288
+    },
+    {
+      "threshold": 58,
+      "trade_days": 516,
+      "flat_days": 0,
+      "n_samples": 1032,
+      "win_rate": 0.5503875968992248,
+      "profit_loss_ratio": 1.4577464155054995,
+      "annual_return": NaN,
+      "max_drawdown": -0.34834139526437624,
+      "daily_excess": 0.008323753730137738
+    },
+    {
+      "threshold": 60,
+      "trade_days": 516,
+      "flat_days": 0,
+      "n_samples": 1032,
+      "win_rate": 0.5494186046511628,
+      "profit_loss_ratio": 1.4187598980128677,
+      "annual_return": NaN,
+      "max_drawdown": -0.29742337248814776,
+      "daily_excess": 0.007515478208861935
+    },
+    {
+      "threshold": 62,
+      "trade_days": 499,
+      "flat_days": 17,
+      "n_samples": 998,
+      "win_rate": 0.5320641282565131,
+      "profit_loss_ratio": 1.5887643942828773,
+      "annual_return": NaN,
+      "max_drawdown": -0.3196328910292756,
+      "daily_excess": 0.007395892622837705
+    },
+    {
+      "threshold": 65,
+      "trade_days": 426,
+      "flat_days": 90,
+      "n_samples": 852,
+      "win_rate": 0.5223004694835681,
+      "profit_loss_ratio": 1.5442767832608837,
+      "annual_return": NaN,
+      "max_drawdown": -0.33238415560929413,
+      "daily_excess": 0.005201664488604559
+    }
+  ]
+}

@@ -1,0 +1,154 @@
+{
+  "method": "季度滚动训练（walk-forward，用历史全部数据训练→预测当季）",
+  "params": {
+    "objective": "binary",
+    "metric": "auc",
+    "learning_rate": 0.05,
+    "n_estimators": 3000,
+    "random_state": 42,
+    "n_jobs": -1,
+    "max_depth": 5,
+    "num_leaves": 63,
+    "min_child_samples": 1000,
+    "feature_fraction": 0.9,
+    "bagging_fraction": 0.8,
+    "lambda_l1": 0.0667467948733595,
+    "lambda_l2": 837.6092125986357
+  },
+  "folds": [
+    {
+      "fold": "2021-01-01",
+      "train_rows": 1125889,
+      "test_rows": 137440,
+      "ic": 0.05231
+    },
+    {
+      "fold": "2021-04-01",
+      "train_rows": 1264764,
+      "test_rows": 156568,
+      "ic": 0.05486
+    },
+    {
+      "fold": "2021-07-01",
+      "train_rows": 1402204,
+      "test_rows": 155434,
+      "ic": 0.04423
+    },
+    {
+      "fold": "2021-10-01",
+      "train_rows": 1558772,
+      "test_rows": 151199,
+      "ic": 0.08388
+    },
+    {
+      "fold": "2022-01-01",
+      "train_rows": 1714206,
+      "test_rows": 141987,
+      "ic": 0.03999
+    },
+    {
+      "fold": "2022-04-01",
+      "train_rows": 1865405,
+      "test_rows": 167099,
+      "ic": 0.01347
+    },
+    {
+      "fold": "2022-07-01",
+      "train_rows": 2007392,
+      "test_rows": 158188,
+      "ic": 0.06781
+    },
+    {
+      "fold": "2022-10-01",
+      "train_rows": 2174491,
+      "test_rows": 158725,
+      "ic": 0.04906
+    },
+    {
+      "fold": "2023-01-01",
+      "train_rows": 2332679,
+      "test_rows": 147620,
+      "ic": 0.05027
+    },
+    {
+      "fold": "2023-04-01",
+      "train_rows": 2491404,
+      "test_rows": 167568,
+      "ic": 0.03925
+    },
+    {
+      "fold": "2023-07-01",
+      "train_rows": 2639024,
+      "test_rows": 161451,
+      "ic": 0.08601
+    },
+    {
+      "fold": "2023-10-01",
+      "train_rows": 2806592,
+      "test_rows": 158148,
+      "ic": 0.05864
+    },
+    {
+      "fold": "2024-01-01",
+      "train_rows": 2968043,
+      "test_rows": 153001,
+      "ic": 0.07982
+    },
+    {
+      "fold": "2024-04-01",
+      "train_rows": 3126191,
+      "test_rows": 186281,
+      "ic": -0.06182
+    },
+    {
+      "fold": "2024-07-01",
+      "train_rows": 3279192,
+      "test_rows": 179494,
+      "ic": 0.08528
+    },
+    {
+      "fold": "2024-10-01",
+      "train_rows": 3465473,
+      "test_rows": 168864,
+      "ic": 0.06125
+    },
+    {
+      "fold": "2025-01-01",
+      "train_rows": 3644967,
+      "test_rows": 166874,
+      "ic": 0.12743
+    },
+    {
+      "fold": "2025-04-01",
+      "train_rows": 3813831,
+      "test_rows": 187980,
+      "ic": 0.04695
+    },
+    {
+      "fold": "2025-07-01",
+      "train_rows": 3980705,
+      "test_rows": 170785,
+      "ic": 0.04557
+    },
+    {
+      "fold": "2025-10-01",
+      "train_rows": 4168685,
+      "test_rows": 159281,
+      "ic": 0.05594
+    },
+    {
+      "fold": "2026-01-01",
+      "train_rows": 4339470,
+      "test_rows": 162413,
+      "ic": 0.00634
+    }
+  ],
+  "summary": {
+    "n_folds": 21,
+    "ic_mean": 0.05174,
+    "ic_std": 0.03682135684626518,
+    "icir": 1.4051627759406706,
+    "positive_ratio": 0.9523809523809523,
+    "verdict": "稳定"
+  }
+}

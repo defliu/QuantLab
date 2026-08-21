@@ -1,0 +1,55 @@
+{
+  "time": "2026-08-21 07:58:30",
+  "signals": [
+    {
+      "code": "600528.SH",
+      "action": "SELL_STOP",
+      "note": "现价7.01 跌破止损位8.65",
+      "last_price": 7.01,
+      "cost": 9.2994,
+      "time": "2026-08-21 07:58:14",
+      "auto_sold": true,
+      "order_id": 1082144252
+    },
+    {
+      "code": "600582.SH",
+      "action": "SELL_STOP",
+      "note": "现价4.85 跌破止损位5.20",
+      "last_price": 4.850000000000001,
+      "cost": 5.5927,
+      "time": "2026-08-21 07:58:17",
+      "auto_sold": true,
+      "order_id": 1082144254
+    },
+    {
+      "code": "601311.SH",
+      "action": "SELL_STOP",
+      "note": "现价7.69 跌破止损位8.50",
+      "last_price": 7.69,
+      "cost": 9.1384,
+      "time": "2026-08-21 07:58:20",
+      "auto_sold": true,
+      "order_id": 1082144256
+    },
+    {
+      "code": "601390.SH",
+      "action": "SELL_STOP",
+      "note": "现价4.36 跌破止损位4.95",
+      "last_price": 4.36,
+      "cost": 5.32365,
+      "time": "2026-08-21 07:58:23",
+      "auto_sold": true,
+      "order_id": 1082144258
+    },
+    {
+      "code": "601800.SH",
+      "action": "SELL_STOP",
+      "note": "现价5.93 跌破止损位6.66",
+      "last_price": 5.93,
+      "cost": 7.16,
+      "time": "2026-08-21 07:58:26",
+      "auto_sold": true,
+      "order_id": 1082144260
+    }
+  ]
+}

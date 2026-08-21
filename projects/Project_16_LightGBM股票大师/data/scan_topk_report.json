@@ -1,0 +1,82 @@
+{
+  "period": [
+    "2024-07-01",
+    "2026-08-14"
+  ],
+  "threshold": 65.0,
+  "note": "v3模型+评分卡65红线+等权持仓；理想化模拟(T+1收盘买入持有1日、无成本)",
+  "results": [
+    {
+      "top_k": 1,
+      "n_samples": 516,
+      "n_days": 516,
+      "win_rate": 0.5387596899224806,
+      "avg_win": 0.03612908778646733,
+      "avg_loss": -0.02442747817735382,
+      "profit_loss_ratio": 1.4790346970798574,
+      "annual_return": NaN,
+      "max_drawdown": -0.48283560401546466,
+      "daily_excess": 0.0075682408186495504
+    },
+    {
+      "top_k": 2,
+      "n_samples": 1032,
+      "n_days": 516,
+      "win_rate": 0.5145348837209303,
+      "avg_win": 0.03155248073243044,
+      "avg_loss": -0.02243259854784186,
+      "profit_loss_ratio": 1.406545954323511,
+      "annual_return": NaN,
+      "max_drawdown": -0.41965722640918146,
+      "daily_excess": 0.004838562987462285
+    },
+    {
+      "top_k": 3,
+      "n_samples": 1548,
+      "n_days": 516,
+      "win_rate": 0.5038759689922481,
+      "avg_win": 0.029358025050937524,
+      "avg_loss": -0.021900001324490822,
+      "profit_loss_ratio": 1.3405490080087976,
+      "annual_return": NaN,
+      "max_drawdown": -0.4813664607720024,
+      "daily_excess": 0.0034019781371819506
+    },
+    {
+      "top_k": 4,
+      "n_samples": 2064,
+      "n_days": 516,
+      "win_rate": 0.502422480620155,
+      "avg_win": 0.027869042055471693,
+      "avg_loss": -0.02150688953299407,
+      "profit_loss_ratio": 1.2958192774793091,
+      "annual_return": NaN,
+      "max_drawdown": -0.48622788860568333,
+      "daily_excess": 0.0027840388200857957
+    },
+    {
+      "top_k": 5,
+      "n_samples": 2580,
+      "n_days": 516,
+      "win_rate": 0.4945736434108527,
+      "avg_win": 0.026756125268688175,
+      "avg_loss": -0.02120040730678873,
+      "profit_loss_ratio": 1.262057133219342,
+      "annual_return": NaN,
+      "max_drawdown": -0.4705839610352205,
+      "daily_excess": 0.0020121818477682554
+    },
+    {
+      "top_k": 6,
+      "n_samples": 3096,
+      "n_days": 516,
+      "win_rate": 0.499031007751938,
+      "avg_win": 0.02552203061329451,
+      "avg_loss": -0.021142439364334596,
+      "profit_loss_ratio": 1.2071469225234195,
+      "annual_return": NaN,
+      "max_drawdown": -0.4102603846059295,
+      "daily_excess": 0.0016222048836986732
+    }
+  ]
+}

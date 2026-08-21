@@ -1,0 +1,33 @@
+{
+  "feature_cols": [
+    "mom_5",
+    "mom_10",
+    "mom_20",
+    "mom_60",
+    "pos_250",
+    "dist_250_low",
+    "volume_ratio",
+    "vol_ratio_5_20",
+    "amount_ma5",
+    "turn_ma5",
+    "above_ma20",
+    "above_ma60",
+    "rsi6",
+    "macd_hist",
+    "vol20",
+    "log_mv",
+    "pe_ttm",
+    "pb",
+    "dv_ttm",
+    "rel_mom_20"
+  ],
+  "label_col": "label",
+  "fwd_ret_col": "fwd_ret",
+  "fwd_days": 1,
+  "n_rows": 4750508,
+  "n_stocks": 4303,
+  "date_range": [
+    "2019-01-10 00:00:00",
+    "2026-08-14 00:00:00"
+  ]
+}
