@@ -47,6 +47,24 @@ Windows 服务器
 
 > ⚠️ 迁移前在本地先跑一次 `python deploy_predict.py --model v3` 和 `python factor_ic_monitor.py`，把最新面板/报告一并带上。
 
+### 部署进度记录（2026-08-22 实测）
+
+| 资产 | 目标目录 | 状态 | 核对 |
+|---|---|---|---|
+| 代码 + 文档（27 py + 9 md） | `D:\quant_server\app\` | ✅ 已部署 | — |
+| 模型 v1/v2/v3（`lgb_model.txt`/`_v2`/`_v3`） | `D:\quant_server\models\` | ✅ 已传输 | 17.3 MB，大小一致 |
+| 主库行情 `stock_daily.parquet` | `D:\quant_server\astock\daily\` | ✅ 已传输 | 1.24 GB，大小一致，可读 |
+| 财务数据 8 个 parquet | `D:\quant_server\astock\finance\` | ✅ 已传输 | 574 MB，大小一致 |
+| 特征面板 v1/v2/v3 + `features*.json` | `D:\quant_server\app\data\` | ✅ 已传输 | 2.0 GB，大小一致 |
+| 服务器环境 Python 3.10.11 + 全部依赖 | — | ✅ 就绪 | lightgbm 4.7 / optuna 4.9 |
+| QMT 客户端在线 + xtquant 通信 | — | ✅ 验证通过 | — |
+| 交易/行情通道（步骤 4-3 / 4-4） | — | ✅ 实测通过 | — |
+| 选股链路（步骤 4-5） | — | ⏳ 待服务器跑通 | `python deploy_predict.py --model v3 --top-k 5` |
+| 定时任务（步骤 5） | — | ⏳ 待配置 | — |
+
+> 传输方式：原开发机 robocopy `/MT:8` 至 `\\192.168.31.131\d\quant_server\`，目标文件大小与源逐一核对一致。
+> 注意：`feature_panel_v3.parquet` 是 v2 精简 27 特征的定制版（IC 监控回灌），`build_features_v2.py` 只产出 v2 全量；服务器周更重训后如需重建 v3 面板，按 `WORKFLOW_DEPLOY.md` 的 v3 精简步骤执行，且重建仅用训练期特征选择（见 `TODO_PENDING.md` 审计项）。
+
 ## 三、部署步骤
 
 ### 步骤 0：服务器系统与环境
