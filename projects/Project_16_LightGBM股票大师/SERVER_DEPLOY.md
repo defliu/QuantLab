@@ -1,8 +1,9 @@
 # 股票大师 · 服务器部署指导（全套迁移）
 
-> 生成/更新：2026-08-20（**已按路径集中配置化改造更新**）
+> 生成/更新：2026-08-22（**已按路径集中配置化改造更新**）
 > 适用范围：将「TraeWork 选股 + miniQMT 执行/盯盘 + 本地数据源」整套迁移到服务器无人值守运行
 > ✅ **路径已集中配置**：数据/模型脚本统一走 `data_config.py`，交易/盯盘脚本统一走 `qmt_config.py`。部署到服务器**只需改这两个配置文件的顶部路径/账号**，其余脚本零修改。
+> ⚠️ **部署前必读（2026-08-22 审计警示）**：第三方审计+验证已确认原回测口径（close→close）与实盘系统性错位（官方日均超额 +0.676% → 可执行口径实测 -0.109%~-0.278%）。**实盘部署前必须先完成可执行口径回测验证**（任务见 `TODO_PENDING.md`「修正回测口径重跑」）；未验证通过前，仅可按模拟盘流程部署，不得以旧口径回测数字作为实盘收益依据。详见 `第三方审计报告_20260822.md` / `第三方审计验证报告_20260822.md`。
 
 ---
 
@@ -30,7 +31,8 @@ Windows 服务器
 
 | 类别 | 来源路径（本地） | 迁移目标（服务器建议） | 大小/说明 |
 |---|---|---|---|
-| 代码 | `d:\trae_workspace\projects\Project_16_LightGBM股票大师\*.py` | `D:\quant_server\app\` | 16 个 py（**含 data_config.py、qmt_config.py 两个配置文件**）+ 3 个 md |
+| 代码 | `d:\trae_workspace\projects\Project_16_LightGBM股票大师\*.py` | `D:\quant_server\app\` | 27 个 py（**含 data_config.py、qmt_config.py 两个配置文件**）+ 9 个 md（含审计三件套） |
+| 审计文档 | `第三方审计交接书.md`、`第三方审计报告_20260822.md`、`第三方审计验证报告_20260822.md`、`TODO_PENDING.md` | `D:\quant_server\app\` | 部署前必读（见顶部审计警示） |
 | 主库行情 | `E:\astock\daily\stock_daily.parquet` | `D:\quant_server\astock\daily\` | 1.3 GB，`data_config.MAIN_DAILY` 指此 |
 | 主库财务 | `E:\astock\finance\*.parquet` | `D:\quant_server\astock\finance\` | 553 MB，`data_config.FIN_*` 指此 |
 | 主库基础 | `E:\astock\basic\` | `D:\quant_server\astock\basic\` | 可选，`data_config.BASIC_DIR` 指此 |
@@ -71,9 +73,9 @@ python -c "import lightgbm, pyarrow, pandas; print('env OK', lightgbm.__version_
 # 服务器创建目录
 New-Item -ItemType Directory -Force -Path 'D:\quant_server\app','D:\quant_server\astock','D:\quant_server\models'
 
-# 拷贝代码（含所有 .py + 手册）
+# 拷贝代码（含所有 .py + 手册与审计文档）
 Copy-Item 'd:\trae_workspace\projects\Project_16_LightGBM股票大师\*.py' 'D:\quant_server\app\'
-Copy-Item 'd:\trae_workspace\projects\Project_16_LightGBM股票大师\README.md','WORKFLOW_DEPLOY.md','SERVER_DEPLOY.md' 'D:\quant_server\app\'
+Copy-Item 'd:\trae_workspace\projects\Project_16_LightGBM股票大师\*.md' 'D:\quant_server\app\'
 
 # 拷贝数据（用 robocopy 支持大文件断点）
 robocopy 'E:\astock\daily' 'D:\quant_server\astock\daily' /E

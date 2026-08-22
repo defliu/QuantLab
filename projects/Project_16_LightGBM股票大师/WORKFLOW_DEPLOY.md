@@ -1,9 +1,10 @@
-# 股票大师 · 工作流与部署手册（v1.0）
+# 股票大师 · 工作流与部署手册（v1.1）
 
 > 项目：Project_16 LightGBM 股票大师
-> 更新：2026-08-21
+> 更新：2026-08-22
 > 目标：TraeWork 选股 → miniQMT 执行 → 盯盘，全链路可部署、可复用
 > ⚠️ **接手必读**：交易链路所有踩坑与避坑规则见 `QMT避坑指南.md`（QMT 持仓判断/成交记录/委托状态/飞书推送/账户纪律）；完整知识库见 Obsidian `60_工程知识库`。
+> ⚠️ **审计状态（2026-08-22）**：第三方审计+验证确认原回测口径（close→close）与实盘系统性错位——官方宣称日均超额 +0.676%，可执行口径（open→open+一字板过滤+成本）实测 **-0.109%~-0.278%**。当前策略**未通过可执行口径验证**，交易规则章节的参数（红线58/TOP2/N=1）源自旧口径回测，**须待 `TODO_PENDING.md`「修正回测口径重跑」验证后复核**；验证通过前实盘仅限模拟流程。详见 `第三方审计报告_20260822.md` / `第三方审计验证报告_20260822.md`。
 
 ---
 
@@ -45,19 +46,32 @@ Project_16_LightGBM股票大师/
 ├── review_full.py           # 阶段3b：完整版实时复核（读 tdx_review.json）
 ├── factor_ic_monitor.py     # 阶段5：因子 IC 月度监控 + 回灌
 ├── scan_topk.py             # 持仓数量扫描回测（Top1~6 对比，定最优持仓数）
-├── backtest_dual.py         # 双轨选股样本外回测
+├── scan_threshold.py        # 红线阈值扫描回测
+├── scan_threshold_pool.py   # 红线阈值扫描（模型前100池内，复刻实盘）
+├── scan_sortkey.py          # 排序键扫描回测
+├── scan_newsc.py            # 评分卡新体系（F6实时PE+不设一票否决）回测
+├── scan_rotate.py           # 每日轮动回测
+├── scan_rotate_cost.py      # 含真实交易成本的轮动回测（⚠️ 旧口径，见审计警示）
+├── backtest_dual.py         # 双轨选股样本外回测（⚠️ 旧口径理想化，勿当实盘预期）
+├── backtest_executable.py   # 【待建】可执行口径回测（见 TODO_PENDING.md「修正回测口径重跑」）
 ├── rolling_eval.py          # 季度滚动训练评估
 ├── xtdata_update.py         # 增量行情拉取 → data_live（主库不写）
 ├── merge_live_features.py   # 合并视图 → 最新日特征快照
+├── is_trade_day.py          # 交易日判断（所有定时任务第一道闸）
 ├── qmt_config.py            # QMT 配置（路径/账号/风控参数）
 ├── qmt_trader.py            # miniQMT 委托下单（--equal 均分/dry-run/live）
 ├── qmt_monitor.py           # 盯盘：止损/止盈/移动止盈预警+自动卖出+飞书推送
 ├── qmt_clear.py             # 清仓工具（--keep 保留 / --live 实盘）
 ├── qmt_mini_test.py         # 全链路最小测试单
+├── rebalance_daily.py       # 方案A·每日换仓执行层（9:45，卖被PK/买新晋top）
 ├── strategy_capital.py      # 策略资金池计算（初始10万+已实现盈亏+持仓浮盈）
 ├── data_config.py           # 数据/模型/输出路径集中配置（部署只改此文件）
 ├── run_scheduled.ps1        # 定时任务调度器（daily/monitor/retrain/factor）
 ├── QMT避坑指南.md           # 交易链路踩坑与避坑规则（接手必读）
+├── TODO_PENDING.md          # 待执行清单（含「修正回测口径重跑」任务）
+├── 第三方审计交接书.md      # 给独立审计方的审计指引
+├── 第三方审计报告_20260822.md  # 审计结论（P0-1 回测口径错位）
+├── 第三方审计验证报告_20260822.md # 审计验证（P0-1 实测转负，P1-3 降级）
 ├── data/                    # 特征面板/模型报告/选股清单
 │   ├── feature_panel*.parquet
 │   ├── features*.json       # 特征集定义（v1/v2/v3）
