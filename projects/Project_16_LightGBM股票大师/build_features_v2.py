@@ -42,7 +42,7 @@ OUT_META = os.path.join(OUT_DIR, "features_v2.json")
 
 RAW_COLS = [
     "close", "pct_chg", "vol", "amount", "turnover_rate", "volume_ratio",
-    "pe_ttm", "pb", "dv_ttm", "circ_mv", "is_st",
+    "pe_ttm", "pb", "dv_ttm", "circ_mv", "is_st", "adj_factor",
 ]
 
 # 阶段0的量价特征（保持不变）
@@ -108,6 +108,10 @@ def main():
     print(f"    行情行数: {len(df):,}  股票数: {df['ts_code'].nunique()}")
 
     close = df["close"].astype(float)
+    # 2026-08-22 审计修复 R2：量价特征与标签改用复权价（close × adj_factor），
+    # 避免除权除息日未复权导致的假跳空污染动量/均线/RSI/MACD 与 fwd_ret 标签。
+    adj = df["adj_factor"].astype(float)
+    adj_close = close * adj  # 后复权价（复权因子单调，动量/均线/比值不受基数影响）
     gkey = df["ts_code"]
 
     def gshift(s, n):
@@ -120,36 +124,36 @@ def main():
         return r
 
     feats = pd.DataFrame(index=df.index)
-    feats["mom_5"] = close / gshift(close, 5) - 1.0
-    feats["mom_10"] = close / gshift(close, 10) - 1.0
-    feats["mom_20"] = close / gshift(close, 20) - 1.0
-    feats["mom_60"] = close / gshift(close, 60) - 1.0
-    high250 = groll(close, 250, "max")
-    low250 = groll(close, 250, "min")
-    feats["pos_250"] = close / high250
-    feats["dist_250_low"] = close / low250 - 1.0
+    feats["mom_5"] = adj_close / gshift(adj_close, 5) - 1.0
+    feats["mom_10"] = adj_close / gshift(adj_close, 10) - 1.0
+    feats["mom_20"] = adj_close / gshift(adj_close, 20) - 1.0
+    feats["mom_60"] = adj_close / gshift(adj_close, 60) - 1.0
+    high250 = groll(adj_close, 250, "max")
+    low250 = groll(adj_close, 250, "min")
+    feats["pos_250"] = adj_close / high250
+    feats["dist_250_low"] = adj_close / low250 - 1.0
     feats["volume_ratio"] = df["volume_ratio"]
     vol_ma5 = groll(df["vol"].astype(float), 5)
     vol_ma20 = groll(df["vol"].astype(float), 20)
     feats["vol_ratio_5_20"] = vol_ma5 / vol_ma20
     feats["amount_ma5"] = np.log1p(groll(df["amount"].astype(float), 5))
     feats["turn_ma5"] = groll(df["turnover_rate"].astype(float), 5)
-    ma20 = groll(close, 20)
-    ma60 = groll(close, 60)
-    feats["above_ma20"] = close / ma20 - 1.0
-    feats["above_ma60"] = close / ma60 - 1.0
-    delta = close.groupby(gkey).diff()
+    ma20 = groll(adj_close, 20)
+    ma60 = groll(adj_close, 60)
+    feats["above_ma20"] = adj_close / ma20 - 1.0
+    feats["above_ma60"] = adj_close / ma60 - 1.0
+    delta = adj_close.groupby(gkey).diff()
     gain = delta.clip(lower=0.0)
     loss = (-delta).clip(lower=0.0)
     avg_gain = gain.groupby(gkey).transform(lambda s: s.ewm(alpha=1.0 / 6, min_periods=6).mean())
     avg_loss = loss.groupby(gkey).transform(lambda s: s.ewm(alpha=1.0 / 6, min_periods=6).mean())
     feats["rsi6"] = 100.0 - 100.0 / (1.0 + avg_gain / avg_loss.replace(0.0, np.nan))
-    ema12 = close.groupby(gkey).transform(lambda s: s.ewm(span=12, adjust=False).mean())
-    ema26 = close.groupby(gkey).transform(lambda s: s.ewm(span=26, adjust=False).mean())
+    ema12 = adj_close.groupby(gkey).transform(lambda s: s.ewm(span=12, adjust=False).mean())
+    ema26 = adj_close.groupby(gkey).transform(lambda s: s.ewm(span=26, adjust=False).mean())
     dif = ema12 - ema26
     dea = dif.groupby(gkey).transform(lambda s: s.ewm(span=9, adjust=False).mean())
     feats["macd_hist"] = (dif - dea) * 2.0
-    ret1 = close / gshift(close, 1) - 1.0
+    ret1 = adj_close / gshift(adj_close, 1) - 1.0
     feats["vol20"] = groll(ret1, 20, "std")
     feats["log_mv"] = np.log(df["circ_mv"].astype(float))
     feats["pe_ttm"] = df["pe_ttm"].astype(float)
@@ -286,7 +290,8 @@ def main():
 
     # ---------- 5. 标签 + 保存 ----------
     print("[5/6] 构造标签并过滤 ...")
-    fwd_ret = gshift(close, -args.fwd) / close - 1.0
+    # R2：fwd_ret 用复权价计算（adj_close），除权日不再产生假跳空标签
+    fwd_ret = gshift(adj_close, -args.fwd) / adj_close - 1.0
     feats["fwd_ret"] = fwd_ret
     feats["label"] = (fwd_ret > 0.0).astype("int8")
     feats["trade_date"] = df["trade_date"]
