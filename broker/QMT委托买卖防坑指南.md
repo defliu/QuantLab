@@ -63,7 +63,7 @@ passorder(23, 1101, account_id, code, 11, volume, price, C)
 from broker.qmt_order import QmtOrderExecutor
 
 # 在 init() 里构造一次（C 为 ContextInfo，account_id 同 config）
-executor = QmtOrderExecutor(C, account_id='67014907', safemode=False, pending_timeout=30.0)
+executor = QmtOrderExecutor(C, account_id='70180771', safemode=False, pending_timeout=30.0)
 
 # 买入（限价）：价格在第2参、股数在第3参，模块内部保证正确签名
 r = executor.send_limit_order('BUY', code, price, volume)

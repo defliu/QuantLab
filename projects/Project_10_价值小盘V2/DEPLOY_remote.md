@@ -84,7 +84,7 @@ scripts/update_p10_csv.bat    # 串接脚本（计划任务，工作日 18:30）
 
 | 项 | 值 / 规则 |
 |----|-----------|
-| 账号 ID | `67014907`（硬编码） |
+| 账号 ID | `70180771`（硬编码） |
 | 初始本金 | `CAPITAL_INIT = 100000`（专属虚拟子账户，与账户其他策略隔离） |
 | 资金分配 | 先改 `config/capital_allocation.yaml` + 跑 `scripts/check_capital_allocation.py`（退出码 0 才算） |
 | 编码 | QMT 运行产物必须 GBK 且首行 `# coding=gbk` |

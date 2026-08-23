@@ -11,7 +11,7 @@ fail-open: 当日信号 CSV 缺失/损坏 -> 当日不买入（现金闲置）�
 风控: 卖出优先级高于买入；先卖后买；跌停/停牌卖出进暂缓队列，解封自动补卖。
 账本: D:/QMT_POOL/p13_huang529_holdings.json（code/entry_date/cost/peak_close/hold_days/volume）。
 对账: 以账户 position 唯一真相 + 三态兜底；回滚先撤活单；每日成交/持仓 CSV 导出。
-账号: 67014907（硬编码）；remark=P13H529（防串账户）。
+账号: 70180771（硬编码）；remark=P13H529（防串账户）。
 """
 import json
 import os
@@ -20,7 +20,7 @@ import glob
 from datetime import datetime
 
 # ============ 参数 ============
-ACCOUNT_ID = "67014907"
+ACCOUNT_ID = "70180771"
 CAPITAL_BASE = 100000.0      # 专属资金池本金（资金分配表登记 huang529_breakout）
 N_HOLD = 12                  # 持仓上限
 MAX_HOLDING_DAYS = 60        # 最长持有（交易日）
@@ -63,7 +63,7 @@ _DEFAULT_CONFIG = {
         "name": "HUANG529",
         "display_name": "黄氏529主升浪",
         "capital_base": 100000.0,
-        "account_id": "67014907",
+        "account_id": "70180771",
     },
     "signal": {
         "n_hold": 12,

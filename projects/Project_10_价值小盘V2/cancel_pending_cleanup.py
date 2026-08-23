@@ -24,7 +24,7 @@ t = XtQuantTrader(r"E:\国金QMT交易端模拟\userdata_mini", int(time.time())
 t.register_callback(CB())
 t.start()
 rc = t.connect()
-acc = StockAccount("67014907")
+acc = StockAccount("70180771")
 t.subscribe(acc)
 orders = []
 for _i in range(10):

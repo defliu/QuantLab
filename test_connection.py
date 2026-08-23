@@ -1,7 +1,7 @@
 """
 测试miniQMT连接
 
-账号: 67014907
+账号: 70180771
 """
 import sys
 from pathlib import Path
@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 print("=" * 60)
 print("  QuantLab - miniQMT连接测试")
-print("  账号: 67014907")
+print("  账号: 70180771")
 print("=" * 60)
 print()
 

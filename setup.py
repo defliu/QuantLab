@@ -1,6 +1,6 @@
 """
 一键配置脚本 - QuantLab实盘环境
-账号: 67014907
+账号: 70180771
 """
 import sys
 import shutil
@@ -8,7 +8,7 @@ from pathlib import Path
 
 print("=" * 60)
 print("  QuantLab 一键配置")
-print("  账号: 67014907")
+print("  账号: 70180771")
 print("=" * 60)
 print()
 
@@ -76,6 +76,6 @@ print("✅ 配置完成！")
 print("=" * 60)
 print("\n下一步:")
 print("  1. 启动QMT: E:\\国金QMT交易端模拟\\bin.x64\\XtMiniQmt.exe")
-print("  2. 登录账号: 67014907")
+print("  2. 登录账号: 70180771")
 print("  3. 测试连接: python test_connection.py")
 print("  4. 启动实盘: start_trading.bat")

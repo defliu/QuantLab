@@ -8,7 +8,7 @@
 
 部署：粘贴到 miniQMT 策略编辑器，设置为全天运行
 """
-ACCOUNT_ID = '67014907'
+ACCOUNT_ID = '70180771'
 LOG_FILE = "D:/QMT_POOL/mfic_sim_log.txt"
 
 # 策略参数

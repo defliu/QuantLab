@@ -2,7 +2,7 @@
 """价值小盘V2微调版 — QMT单文件策略
 行业中性BP(z-score)*1.0 (V2a 纯BP, hp已去除)
 风控: 8%止损 / 60天持有上限 / 15%组合回撤
-账号: 67014907
+账号: 70180771
 自动生成于 2026-08-04"""
 import math
 import csv
@@ -12,7 +12,7 @@ import time as _time
 from datetime import datetime
 
 # ============ 参数 ============
-ACCOUNT_ID = "67014907"
+ACCOUNT_ID = "70180771"
 N_STOCKS = 80
 REBALANCE_MONTHS = 2
 STOP_LOSS = 0.08

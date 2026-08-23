@@ -4,7 +4,7 @@
 测试 QMT 的 get_financial_data 和 get_market_data_ex 能否获取 pb/pe_ttm/circ_mv
 如果可以，策略就不需要依赖本地 CSV
 """
-ACCOUNT_ID = '67014907'
+ACCOUNT_ID = '70180771'
 
 def init(C):
     print("[fin_test] init OK")

@@ -8,7 +8,7 @@
 
 部署：粘贴到 miniQMT 策略编辑器，设置为全天运行，K线周期1分钟
 """
-ACCOUNT_ID = '67014907'
+ACCOUNT_ID = '70180771'
 TARGET_CODE = '000001.SZ'
 TARGET_VOLUME = 100
 ORDER_HOUR = 9

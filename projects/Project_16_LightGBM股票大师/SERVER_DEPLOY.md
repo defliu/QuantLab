@@ -81,7 +81,7 @@ python -c "import lightgbm, pyarrow, pandas; print('env OK', lightgbm.__version_
 ### 步骤 1：安装国金 QMT/miniQMT 客户端
 
 1. 在服务器安装「国金 QMT 交易端」（模拟或实盘），安装到**纯英文路径**（如 `D:\QMT`），避免中文路径（LightGBM 写模型在中文路径会失败）
-2. 启动 `bin.x64\XtMiniQmt.exe` 并登录（测试账号 67014907 或实盘账号）
+2. 启动 `bin.x64\XtMiniQmt.exe` 并登录（测试账号 70180771 或实盘账号）
 3. 确认服务器上能看到 `bin.x64\Lib\site-packages\xtquant`（含 `IPythonApiClient.cp310-win_amd64.pyd`，匹配 Python 3.10）
 4. **保持客户端常驻登录**（设开机自启：任务计划程序 → 登录时启动 XtMiniQmt）
 
@@ -115,7 +115,7 @@ Copy-Item 'D:\QuantLab\models\lgb_model*.txt' 'D:\quant_server\models\'
 | `data_config.py` | `UNIVERSE` | `D:/QuantLab/data/universe_all_a.csv` | `D:/quant_server/app/data/universe_all_a.csv` |
 | `data_config.py` | `MODEL_DIR` | `D:/QuantLab/models` | `D:/quant_server/models` |
 | `qmt_config.py` | `QMT_PATH` | `E:\国金QMT交易端模拟` | `D:\QMT`（服务器 QMT 安装路径） |
-| `qmt_config.py` | `ACCOUNT_ID` | `67014907` | 服务器资金账号 |
+| `qmt_config.py` | `ACCOUNT_ID` | `70180771` | 服务器资金账号 |
 
 > 派生说明（它们由上面的根配置自动算出，**无需单独改**）：
 > - `data_config.py`：`MAIN_DAILY`、`FINANCE_DIR`、`BASIC_DIR`、`FIN_*`、`DATA_DIR`、`LIVE_DIR`、`model_file()` 全部由 `ASTOCK_DIR/UNIVERSE/MODEL_DIR` 派生。

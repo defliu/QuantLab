@@ -1,13 +1,13 @@
 """
 测试连接 - 使用QMT Python
-账号: 67014907
+账号: 70180771
 """
 import sys
 from pathlib import Path
 
 print("=" * 60)
 print("  QuantLab - QMT连接测试")
-print("  账号: 67014907")
+print("  账号: 70180771")
 print("=" * 60)
 print()
 
@@ -60,7 +60,7 @@ try:
         print(f"❌ 连接失败，错误码: {result}")
         print("\n可能原因:")
         print("  1. QMT未启动 → 请启动: E:\\国金QMT交易端模拟\\bin.x64\\XtMiniQmt.exe")
-        print("  2. 账号未登录 → 请在QMT中登录账号 67014907")
+        print("  2. 账号未登录 → 请在QMT中登录账号 70180771")
         print("  3. 路径错误 → 检查config/trading_config.yaml中的account.path")
         sys.exit(1)
     

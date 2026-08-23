@@ -26,7 +26,7 @@ AMOUNT_MIN = 20000
 FACTOR_WEIGHTS = {"BP": 0.30, "reversal_1m": 0.25, "volatility_60d": 0.25, "ROE": 0.20}
 POSITIONS_FILE = "D:/QMT_POOL/mfic_positions.json"
 TRADES_FILE = "D:/QMT_POOL/mfic_trades.txt"
-ACCOUNT_ID = '67014907'   # QMT 资金账号
+ACCOUNT_ID = '70180771'   # QMT 资金账号
 
 # ============================================================
 # 工具函数

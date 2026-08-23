@@ -47,7 +47,7 @@ _TE_last_check_min = -1     # 巡检分钟节流
 _TE_fallback = None         # 替补回调：func(C, expired_code, expired_info) -> (code, amount) or None
 
 
-def _te_init(C, acct="67014907", fallback=None):
+def _te_init(C, acct="70180771", fallback=None):
     """初始化（在策略 init(C) 中调用）
     fallback: 可选回调 func(C, expired_code, expired_info) -> (code, amount) or None
               重试耗尽时调用，返回替补标的和数量"""

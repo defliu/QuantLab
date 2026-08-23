@@ -1,12 +1,12 @@
 # coding=gbk
 """trade_executor 最小测试策略
 目标：验证 _te_ 函数的 下单→反查→超时→撤单→重试 链路
-账号: 67014907
+账号: 70180771
 """
 import time as _time
 from datetime import datetime
 
-ACCOUNT_ID = "67014907"
+ACCOUNT_ID = "70180771"
 LOG_FILE = "D:/QMT_POOL/strategy_log_v2.txt"
 BUILD_TAG = "te_test_20260804_v2"
 
@@ -27,7 +27,7 @@ _TE_LOOKUP_RETRIES = 15     # passorder后反查短轮询次数（撞~100ms异步分配订单号�
 _TE_LOOKUP_INTERVAL = 0.2   # 短轮询间隔秒（15次x0.2s=3s 起步，实测不够再加）
 
 
-def _te_init(C, acct="67014907"):
+def _te_init(C, acct="70180771"):
     global _TE_ACCT, _TE_pending, _TE_last_check_min
     _TE_ACCT = acct
     _TE_pending = {}

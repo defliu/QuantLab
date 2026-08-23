@@ -14,7 +14,7 @@ USERDATA = os.path.join(QMT_PATH, "userdata_mini")          # xtquant 连接路�
 XTPACK = os.path.join(QMT_PATH, "bin.x64", "Lib", "site-packages")  # xtquant 包位置
 
 # ---- 交易账户（必填：你的资金账号）----
-ACCOUNT_ID = "67014907"                # 国金证券 QMT 测试资金账号
+ACCOUNT_ID = "70180771"                # 国金证券 QMT 测试资金账号
 # 登录密码在 miniQMT 客户端 GUI 登录时输入（xtquant 连接本地客户端不需要密码）
 
 # ---- 策略资金池（账户资金隔离）----

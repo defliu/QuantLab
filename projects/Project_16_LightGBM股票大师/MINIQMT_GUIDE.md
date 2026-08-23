@@ -36,7 +36,7 @@ miniQMT 是券商提供的量化交易终端。它带一个 `xtquant` Python 包
 QMT_PATH = r"E:\国金QMT交易端模拟"
 USERDATA = os.path.join(QMT_PATH, "userdata_mini")                    # 连接路径
 XTPACK   = os.path.join(QMT_PATH, "bin.x64", "Lib", "site-packages")  # xtquant 包位置
-ACCOUNT_ID = "67014907"                                               # 资金账号
+ACCOUNT_ID = "70180771"                                               # 资金账号
 ```
 
 ### 2.3 引入 xtquant 的坑（numpy 版本冲突）

@@ -24,7 +24,7 @@ def connect_data():
     return True
 
 
-def connect_trader(path=r"E:\国金QMT交易端模拟\userdata_mini", account_id="67014907"):
+def connect_trader(path=r"E:\国金QMT交易端模拟\userdata_mini", account_id="70180771"):
     """连接交易服务（58600），返回 (trader, account) 或 (None, None)"""
     global _trader
     if _trader is not None:

@@ -5,7 +5,7 @@
 import time
 from datetime import datetime
 
-ACCOUNT_ID = "67014907"
+ACCOUNT_ID = "70180771"
 TEST_SIDE = "buy"         # buy / sell（sell 模式 init 先校验账户持仓，无持仓不执行）
 TEST_CODE = "600016.SH"  # 测试股票（流动性好）
 TEST_AMOUNT = 100        # 测试数量（最小100股）

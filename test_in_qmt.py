@@ -3,7 +3,7 @@ QMT连接测试脚本（在QMT中运行）
 
 使用方法：
 1. 启动QMT: E:\国金QMT交易端模拟\bin.x64\XtMiniQmt.exe
-2. 登录账号: 67014907
+2. 登录账号: 70180771
 3. 打开Python策略研究 → 新建策略 → 粘贴本代码 → 运行
 """
 
@@ -14,10 +14,10 @@ def test_connection():
     # 配置
     qmt_path = r"E:\国金QMT交易端模拟\userdata_mini"
     session_id = 670149
-    account_id = "67014907"
+    account_id = "70180771"
     
     print("=" * 60)
-    print("  QMT连接测试 - 账号 67014907")
+    print("  QMT连接测试 - 账号 70180771")
     print("=" * 60)
     
     # 连接

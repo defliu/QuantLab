@@ -39,7 +39,7 @@ CONFIG = {
         'condition_exit': True,
     },
     'account': {
-        'id': '67014907',
+        'id': '70180771',
     },
     'pool': {
         'holdings_file': 'D:/QMT_POOL/atr_holdings.json',
@@ -72,7 +72,7 @@ _STOP_LOSS = -0.08
 _TAKE_PROFIT = 0.20
 _TRAILING_STOP = -0.10
 _ENABLE_CONDITION_EXIT = True
-_ACCOUNT_ID = '67014907'
+_ACCOUNT_ID = '70180771'
 _DEBUG_MODE = True
 _TEST_MODE = False
 _g_last_trade_date = ''

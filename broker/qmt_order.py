@@ -77,7 +77,7 @@ class QmtOrderExecutor(object):
                  log_fn=None):
         """
         C              : QMT ContextInfo 对象
-        account_id     : 资金账号，如 '67014907'
+        account_id     : 资金账号，如 '70180771'
         safemode       : True 时只记录不真正下单
         pending_timeout: pending 超时秒数（默认 30）
         log_fn         : 可选日志函数 log_fn(msg)

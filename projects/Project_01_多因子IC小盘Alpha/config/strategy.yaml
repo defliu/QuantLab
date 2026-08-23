@@ -56,6 +56,6 @@ live:
 
 # QMT配置
 qmt:
-  account_id: "67014907"
+  account_id: "70180771"
   target_code: "000001.SZ"  # 测试股票
   target_volume: 100        # 测试数量

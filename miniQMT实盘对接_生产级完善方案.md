@@ -1,6 +1,6 @@
 # miniQMT 实盘对接 — 生产级完善方案
 
-> 账号: **67014907**
+> 账号: **70180771**
 
 你之前的方案存在以下 **关键缺陷**，我逐一补全：
 
@@ -31,7 +31,7 @@
 # config/trading_config.yaml
 
 account:
-  id: "67014907"
+  id: "70180771"
   path: "D:\\miniQMT\\userdata_mini"   # 根据实际安装路径修改
   session_id: 670149
 
@@ -200,12 +200,12 @@ class MiniQMTBrokerPro:
     """
     miniQMT 生产级 Broker
     
-    账号: 67014907
+    账号: 70180771
     """
     
     def __init__(self, config: dict):
         self.config = config
-        self.account_id = config['account']['id']  # "67014907"
+        self.account_id = config['account']['id']  # "70180771"
         self.path = config['account']['path']
         self.session_id = config['account']['session_id']
         
@@ -461,7 +461,7 @@ class MiniQMTBrokerPro:
         order_id = self.xt_trader.order_stock(
             self.account, code, xt_direction,
             volume, FIX_PRICE, price,
-            strategy_name="quant_67014907",
+            strategy_name="quant_70180771",
             order_remark=f"{direction}_{code}_{datetime.now().strftime('%H%M%S')}"
         )
         
@@ -1352,7 +1352,7 @@ if __name__ == "__main__":
 
 @echo off
 echo ========================================
-echo   A股量化交易系统 - 账号 67014907
+echo   A股量化交易系统 - 账号 70180771
 echo ========================================
 
 :: 检查miniQMT是否运行

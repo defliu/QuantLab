@@ -11,7 +11,7 @@ import sys
 sys.path.insert(0, "E:/QuantLab/projects/Project_10_价值小盘V2")
 import trade_executor as TE
 
-ACCOUNT = "67014907"
+ACCOUNT = "70180771"
 CODE = "600016.SH"
 AMOUNT = 100
 TIMEOUT = 180

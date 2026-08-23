@@ -24,7 +24,7 @@ FACTOR_WEIGHTS = {"BP": 0.30, "reversal_1m": 0.25, "volatility_60d": 0.25, "ROE"
 POSITIONS_FILE = "D:/QMT_POOL/mfic_positions.json"
 FIN_DATA_CSV = "D:/QMT_POOL/mfic_fin_data.csv"
 DEBUG_FORCE_REBAL = True  # 调试：强制每天都调仓，生产设为 False
-ACCOUNT_ID = '67014907'   # QMT 资金账号
+ACCOUNT_ID = '70180771'   # QMT 资金账号
 
 # ============================================================
 # 工具函数

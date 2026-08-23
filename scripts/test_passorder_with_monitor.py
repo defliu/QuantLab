@@ -7,7 +7,7 @@
   2. 每根K线检查委托状态
   3. 输出成交/撤单/废单结果
 """
-ACCOUNT_ID = '67014907'
+ACCOUNT_ID = '70180771'
 
 def init(C):
     print("[test] init OK, 账号: %s" % ACCOUNT_ID)

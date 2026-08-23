@@ -19,7 +19,7 @@ A 股量化全链路框架：因子研究 → 策略构建 → 回测验证 → 
 QuantLab/
 ├── config/
 │   ├── settings.yaml           # 全局配置（数据源/回测/因子预处理/股票池）
-│   └── trading_config.yaml     # 实盘配置（账号 67014907/风控阈值/调度）
+│   └── trading_config.yaml     # 实盘配置（账号 70180771/风控阈值/调度）
 │
 ├── data/                       # 数据读取层（鸭子类型 4 方法接口）
 │   ├── feed.py                 # DataFeed 分发器
@@ -97,7 +97,7 @@ python scripts/gen_qmt_csv.py
 | 研究环境 | Python 3.11（pandas>=2.0 / numpy / pyyaml / pyarrow） |
 | 回测工具链 | Python 3.10（含 duckdb） |
 | QMT 生产 | Python 3.6.8（GBK 产物、无 f-string、无新式类型标注） |
-| QMT 端 | E:\国金QMT交易端模拟（账号 67014907） |
+| QMT 端 | E:\国金QMT交易端模拟（账号 70180771） |
 
 ## 核心约定（详见 AGENTS.md）
 

@@ -37,7 +37,7 @@ def build_qmt_strategy(config):
     mc = p01.get("market_cap", {})
 
     capital = live.get("initial_capital", 100000)
-    account_id = config.get("qmt", {}).get("account_id", "67014907")
+    account_id = config.get("qmt", {}).get("account_id", "70180771")
     max_pos_pct = live.get("max_position_pct", 0.02)
     stop_loss_pct = live.get("stop_loss_pct", -0.12)
     top_n = p01.get("backtest", {}).get("top_n", 80)

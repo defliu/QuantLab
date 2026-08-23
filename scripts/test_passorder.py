@@ -5,7 +5,7 @@
 功能：第一根K线买入沪深A股第一只股票100股
 预期：日志输出 [test] 委托已发送 且 QMT显示委托记录
 """
-ACCOUNT_ID = '67014907'
+ACCOUNT_ID = '70180771'
 
 def init(C):
     print("[test] init OK, 账号: %s" % ACCOUNT_ID)

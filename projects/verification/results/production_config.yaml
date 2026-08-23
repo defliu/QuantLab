@@ -85,7 +85,7 @@ risk_control:
 
 # ==================== QMT配置 ====================
 qmt:
-  account_id: "67014907"
+  account_id: "70180771"
   strategy_key: "MULTI_FACTOR"
   strategy_name: "红利低波+质量小市值"
   
