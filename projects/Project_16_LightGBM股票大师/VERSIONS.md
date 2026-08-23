@@ -21,8 +21,10 @@
 
 | 资产 | 路径 | 保留状态 |
 |---|---|---|
-| 模型 `lgb_model_v3.txt`（8/19 版，1437树） | `D:/QuantLab/models/lgb_model_v3.txt` | ⚠️ **已被 8/23 重训覆盖，无备份，无法恢复** |
-| 面板 `feature_panel_v3.parquet`（8/14 版） | `data/feature_panel_v3.parquet` | ⚠️ **已被 8/23 复权重建覆盖，备份见 `_unadj_bak`** |
+| 模型 `lgb_model_v3.txt`（8/19 版，1962树） | `D:/QuantLab/models/lgb_model_v3.txt` | ❌ **8/19 版未找到**（8/23 被重训覆盖；F盘找到的是 484 树小样本测试版，非原版） |
+| 模型 `lgb_model.txt`（v1，2754树） | `versions/models/lgb_model_v1_0819_2754t.txt` | ✅ **真原版已归档** |
+| 模型 `lgb_model_v2.txt`（v2，2576树） | `versions/models/lgb_model_v2_0819_2576t.txt` | ✅ **真原版已归档** |
+| 面板 `feature_panel_v3.parquet`（8/14 版） | `versions/V1_20260821/feature_panel_v3_unadj.parquet` | ✅ 已归档（未复权版） |
 | 选股清单 8/21 | `data/selections/20260821_selection_full.csv/md` | ✅ 保留 |
 | 选股清单 8/20 | `data/selections/20260820_selection_full.csv/md` | ✅ 保留 |
 | 持仓报告 8/21 | `data/holdings_report_20260821.md` | ✅ 保留 |
@@ -45,7 +47,7 @@
 
 **归档目录结构**（`versions/`）：
 - `versions/V<数字>_<日期>/`：每个版本一个目录，含模型/面板/选股清单/报告
-- `versions/models/`：模型保留池，当前 6 个模型副本（V1 8/19 版已被重训覆盖不可恢复，此为教训）
+- `versions/models/`：模型保留池。当前含：v1 原版(2754树)、v2 原版(2576树)、复权v3(1437树)、v3_enh(1373树)、v3_enh2、v3_f3、v3小样本测试版(484树)。命名带日期+树数防混淆。
 
 每个版本上线时归档：
 1. `lgb_model_v<版本>.txt` 模型副本 → `versions/models/`（**必须保留，防重训覆盖**）
@@ -55,7 +57,7 @@
 5. 配置快照（红线/TOP/N/权重/滑点等）→ `VERSIONS.md` 登记表
 6. 回测结论（可执行口径日超额/胜率/回撤，来源报告文件名）→ `VERSIONS.md` 登记表
 
-**V1 教训**：8/19 版 `lgb_model_v3.txt` 因未做模型保留，8/23 重训时被直接覆盖且无备份，现已无法恢复。自 V2 起任何重训前必须先复制旧模型到 `versions/models/`。
+**V1 教训**：8/19 版 `lgb_model_v3.txt`（1962树）因未做模型保留，8/23 重训时被直接覆盖；从 F 盘找回的 v3 是 484 树小样本测试版（服务器曾用 `--limit 300 --n-trials 2` 重训覆盖），非原版。v1/v2 原版已在本机模型池确认保留。自 V2 起任何重训前必须先复制旧模型到 `versions/models/`。
 
 ---
 
