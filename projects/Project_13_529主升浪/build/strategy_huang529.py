@@ -41,7 +41,7 @@ PENDING_MAX_RETRIES = 3
 RETRY_COOLDOWN_MIN = 1
 
 # 构建版本标记：build.py 每次构建时自动替换为时间戳（YYYYmmdd-HHMMSS）
-BUILD_TAG = "20260823-185043"
+BUILD_TAG = "20260823-223613"
 
 # ============ 全局状态 ============
 _cash = CAPITAL_BASE
@@ -197,6 +197,23 @@ def _load_holdings():
         try:
             with open(HOLDINGS_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
+            # 账号戳校验（T-20260823-004）：不匹配或缺戳 -> 备份旧档并空仓起步(fail-safe)
+            stamp = str(data.get("account_id", ""))
+            if stamp != str(ACCOUNT_ID):
+                bak = "%s.bak_acct_%s_%s" % (HOLDINGS_FILE, stamp or "nostamp", datetime.now().strftime("%Y%m%d_%H%M%S"))
+                try:
+                    fbk = open(HOLDINGS_FILE, "rb")
+                    _raw_b = fbk.read()
+                    fbk.close()
+                    fbk2 = open(bak, "wb")
+                    fbk2.write(_raw_b)
+                    fbk2.close()
+                    print("[P13] [!] 账本账号戳不匹配(账本=%s 本策略=%s)，旧档已备份 %s，空仓起步" % (stamp or "无戳", ACCOUNT_ID, os.path.basename(bak)))
+                except Exception as e_bak:
+                    print("[P13] [!] 账本账号戳不匹配(账本=%s 本策略=%s)，备份失败，空仓起步" % (stamp or "无戳", ACCOUNT_ID))
+                _holdings = {}
+                _cash = CAPITAL_BASE
+                return
             _holdings = data.get("holdings", {})
             _cash = float(data.get("cash", CAPITAL_BASE))
             print("[P13] 加载持仓 %d 只, 现金=%.0f" % (len(_holdings), _cash))
@@ -213,6 +230,7 @@ def _save_holdings():
     """保存持仓状态到文件（每笔决策/成交后调用）。"""
     try:
         data = {
+            "account_id": ACCOUNT_ID,
             "cash": _cash,
             "holdings": _holdings,
             "updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),

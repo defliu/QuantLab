@@ -57,7 +57,7 @@ CONFIG = {
 }
 
 # 构建版本标记（YYYYmmdd-HHMMSS），部署核对用
-BUILD_TAG = "20260823-182638"  # P0: 盘前当日空bar(volume=0)误判停牌静默跳过->末两根无量才判停牌 + P0: 季度键死守卫(if selected:恒真)盘前假成功锁死整季->真实建仓后才锁键 + P1: 建仓限盘中窗口0933-1455 + P1: 空仓兜底改30分钟间隔重试(原每天一次被盘前失败烧毁) + P1: 账号换70180771(原67014907) + P2: ATR百分比剔除平填bar(volume<=0)对齐astock回测口径  # 历史tag: 20260819-201531(Fix4编码重放/R9三态/对账字段修复/换手尺度自适应)
+BUILD_TAG = "20260823-223613"  # P0: 盘前当日空bar(volume=0)误判停牌静默跳过->末两根无量才判停牌 + P0: 季度键死守卫(if selected:恒真)盘前假成功锁死整季->真实建仓后才锁键 + P1: 建仓限盘中窗口0933-1455 + P1: 空仓兜底改30分钟间隔重试(原每天一次被盘前失败烧毁) + P1: 账号换70180771(原67014907) + P2: ATR百分比剔除平填bar(volume<=0)对齐astock回测口径  # 历史tag: 20260819-201531(Fix4编码重放/R9三态/对账字段修复/换手尺度自适应)
 
 # ============================================================
 # 全局状态
@@ -298,6 +298,25 @@ def _load_holdings():
         try:
             with open(_HOLDINGS_FILE, 'r', encoding='utf-8') as f:
                 data = json.load(f)
+            # 账号戳校验（T-20260823-004）：账本只属于一个模拟账号，双账号并存防拿错档；
+            # 不匹配或缺戳(历史遗留) -> 自动备份旧档并空仓起步(fail-safe)。
+            stamp = str(data.get('account_id', ''))
+            if stamp != str(_ACCOUNT_ID):
+                bak = '%s.bak_acct_%s_%s' % (_HOLDINGS_FILE, stamp or 'nostamp', time.strftime('%Y%m%d_%H%M%S'))
+                try:
+                    fbk = open(_HOLDINGS_FILE, 'rb')
+                    _raw_b = fbk.read()
+                    fbk.close()
+                    fbk2 = open(bak, 'wb')
+                    fbk2.write(_raw_b)
+                    fbk2.close()
+                    print("[ATR_EW] [!] 账本账号戳不匹配(账本=%s 本策略=%s)，旧档已备份 %s，空仓起步" % (stamp or '无戳', _ACCOUNT_ID, os.path.basename(bak)))
+                except Exception as e_bak:
+                    print("[ATR_EW] [!] 账本账号戳不匹配(账本=%s 本策略=%s)，备份失败(%s)，空仓起步" % (stamp or '无戳', _ACCOUNT_ID, e_bak))
+                _g_my_codes = {}
+                _g_cumulative_pnl = 0.0
+                _g_nav_history = []
+                return
             _g_my_codes = data.get('holdings', {})
             _g_cumulative_pnl = data.get('cumulative_pnl', 0.0)
             _g_nav_history = data.get('nav_history', [])
@@ -316,6 +335,7 @@ def _load_holdings():
 def _save_holdings():
     try:
         data = {
+            'account_id': _ACCOUNT_ID,
             'holdings': _g_my_codes,
             'cumulative_pnl': _g_cumulative_pnl,
             'nav_history': _g_nav_history[-500:],

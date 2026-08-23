@@ -45,7 +45,7 @@ PENDING_MAX_RETRIES = 3      # µ¥Ö»×î¶àÖØÏÂ´ÎÊý£¨º¬Ê×´Î£©£¬³¬¹ýÔò·ÅÆú£¨µÈÊÕÅÌ¶ÔÕ
 RETRY_COOLDOWN_MIN = 1       # ³·µ¥ÖØÏÂµÄ×îÐ¡ÀäÈ´¼ä¸ô£¨·ÖÖÓ£©£¬·ÀÖ¹Í¬Ò»·ÖÖÓ·´¸´ÖØÏÂ
 
 # ¹¹½¨°æ±¾±ê¼Ç£ºbuild.py Ã¿´Î¹¹½¨Ê±×Ô¶¯Ìæ»»ÎªÊ±¼ä´Á£¨YYYYmmdd-HHMMSS£©
-BUILD_TAG = "20260823-185043"
+BUILD_TAG = "20260823-223613"
 
 # ============ È«¾Ö×´Ì¬ ============
 _cash = CAPITAL_INIT       # ×¨Êô×Ê½ð³ØÏÖ½ð£¨ÓëÕË»§ÆäËû²ßÂÔ×Ê½ðÍêÈ«¸ôÀë£©
@@ -542,6 +542,7 @@ def _check_pending_orders(C):
 
 def _save_state():
     state = {
+        "account_id": ACCOUNT_ID,
         "cash": _cash,
         "holdings": _holdings,
         "entry_prices": _entry_prices,
@@ -563,6 +564,28 @@ def _load_state():
     try:
         with open(STATE_FILE, "r", encoding="utf-8") as f:
             state = json.load(f)
+        # ÕËºÅ´ÁÐ£Ñé£¨T-20260823-004£©£º²»Æ¥Åä»òÈ±´Á -> ±¸·Ý¾Éµµ²¢¿Õ²ÖÆð²½(fail-safe)
+        stamp = str(state.get("account_id", ""))
+        if stamp != str(ACCOUNT_ID):
+            bak = "%s.bak_acct_%s_%s" % (STATE_FILE, stamp or "nostamp", datetime.now().strftime("%Y%m%d_%H%M%S"))
+            try:
+                fbk = open(STATE_FILE, "rb")
+                _raw_b = fbk.read()
+                fbk.close()
+                fbk2 = open(bak, "wb")
+                fbk2.write(_raw_b)
+                fbk2.close()
+                print("[state] [!] ÕË±¾ÕËºÅ´Á²»Æ¥Åä(ÕË±¾=%s ±¾²ßÂÔ=%s)£¬¾ÉµµÒÑ±¸·Ý %s£¬¿Õ²ÖÆð²½" % (stamp or "ÎÞ´Á", ACCOUNT_ID, os.path.basename(bak)))
+            except Exception as e_bak:
+                print("[state] [!] ÕË±¾ÕËºÅ´Á²»Æ¥Åä(ÕË±¾=%s ±¾²ßÂÔ=%s)£¬±¸·ÝÊ§°Ü£¬¿Õ²ÖÆð²½" % (stamp or "ÎÞ´Á", ACCOUNT_ID))
+            _cash = CAPITAL_INIT
+            _holdings = {}
+            _entry_prices = {}
+            _entry_dates = {}
+            _nav_peak = 1.0
+            _today_orders = {}
+            _suspended_sells = []
+            return
         _cash = state.get("cash", CAPITAL_INIT)
         _holdings = state.get("holdings", {})
         _entry_prices = state.get("entry_prices", {})

@@ -77,6 +77,7 @@
   - f-string
 - `passorder()` 是全局函数，不是 `C.passorder()`。
 - 账号 ID 必须硬编码：`70180771`（2026-08-23 换新国金QMT模拟账号，原 `67014907` 已停用；未迁移的旧 build/脚本引用旧号会废单，迁移清单见看板 T-20260823-002）。
+- **持票账本（holdings/state 文件）必须内嵌 `account_id` 戳**；加载时若 `account_id` 字段缺失或与当前策略 `ACCOUNT_ID` 不匹配，必须自动备份旧档（重命名为 `.bak_acct_<旧戳>_<时间戳>`）并空仓起步（fail-safe），严禁拿错账号的账本交易（T-20260823-004）。
 - `C.get_market_data_ex` 缺少财务字段，PE/PB/circ_mv 必须来自预生成 CSV。
 - QMT Python 3.6.8 无 pyarrow，不能读 parquet，数据源用 CSV。
 - `circ_mv` 单位是万元，30 亿 = 300000（万元单位）。

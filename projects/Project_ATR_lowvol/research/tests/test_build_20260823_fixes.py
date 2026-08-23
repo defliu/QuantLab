@@ -3,6 +3,10 @@
 import ast
 import datetime
 import io
+import os
+import json
+import tempfile
+import shutil
 import sys
 import time
 
@@ -208,6 +212,52 @@ reset_stubs(True)
 make_ns_now(sat)
 ns["_main_loop"](FakeC(sat))
 check("M11 周末不触发", not any("再平衡触发" in x for x in logs))
+
+# F10-F12: 账号戳校验回归测试（T-20260823-004）
+# 模块已在 ns 命名空间中执行，直接用 ns 访问
+tmpdir = tempfile.mkdtemp()
+fake = os.path.join(tmpdir, "fake_atr_ew_holdings.json")
+with open(fake, "w", encoding="utf-8") as f:
+    json.dump({"account_id": "67014907", "holdings": {"600000.SH": {"shares": 100, "buy_price": 10.0}}, "cumulative_pnl": 123.45}, f)
+ns["_HOLDINGS_FILE"] = fake
+ns["_ACCOUNT_ID"] = "70180771"
+ns["_g_my_codes"] = {}
+ns["_g_cumulative_pnl"] = 0.0
+ns["_g_nav_history"] = []
+ns["_load_holdings"]()
+ok10 = (ns["_g_my_codes"] == {} and ns["_g_cumulative_pnl"] == 0)
+bak = [f for f in os.listdir(tmpdir) if f.startswith("fake_atr_ew_holdings.json.bak_acct_")]
+check("F10 mismatch->empty", ok10 and len(bak) == 1)
+shutil.rmtree(tmpdir)
+
+tmpdir = tempfile.mkdtemp()
+fake = os.path.join(tmpdir, "fake_atr_ew_holdings.json")
+with open(fake, "w", encoding="utf-8") as f:
+    json.dump({"holdings": {"600000.SH": {"shares": 100, "buy_price": 10.0}}, "cumulative_pnl": 0}, f)
+ns["_HOLDINGS_FILE"] = fake
+ns["_ACCOUNT_ID"] = "70180771"
+ns["_g_my_codes"] = {}
+ns["_g_cumulative_pnl"] = 0.0
+ns["_g_nav_history"] = []
+ns["_load_holdings"]()
+ok11 = (ns["_g_my_codes"] == {} and ns["_g_cumulative_pnl"] == 0.0)
+bak = [f for f in os.listdir(tmpdir) if f.startswith("fake_atr_ew_holdings.json.bak_acct_")]
+check("F11 missing stamp->empty", ok11 and len(bak) == 1)
+shutil.rmtree(tmpdir)
+
+tmpdir = tempfile.mkdtemp()
+fake = os.path.join(tmpdir, "fake_atr_ew_holdings.json")
+with open(fake, "w", encoding="utf-8") as f:
+    json.dump({"account_id": "70180771", "holdings": {"600000.SH": {"shares": 100, "buy_price": 10.0}}, "cumulative_pnl": 456.78}, f)
+ns["_HOLDINGS_FILE"] = fake
+ns["_ACCOUNT_ID"] = "70180771"
+ns["_g_my_codes"] = {}
+ns["_g_cumulative_pnl"] = 0.0
+ns["_g_nav_history"] = []
+ns["_load_holdings"]()
+ok12 = (len(ns["_g_my_codes"]) == 1 and ns["_g_cumulative_pnl"] == 456.78)
+check("F12 match->loaded", ok12)
+shutil.rmtree(tmpdir)
 
 # ---------- 输出 ----------
 fails = [r for r in results if not r[1]]

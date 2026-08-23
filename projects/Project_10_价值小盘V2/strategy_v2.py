@@ -518,6 +518,7 @@ def _check_pending_orders(C):
 
 def _save_state():
     state = {
+        "account_id": ACCOUNT_ID,
         "cash": _cash,
         "holdings": _holdings,
         "entry_prices": _entry_prices,
@@ -539,6 +540,28 @@ def _load_state():
     try:
         with open(STATE_FILE, "r", encoding="utf-8") as f:
             state = json.load(f)
+        # 账号戳校验（T-20260823-004）：不匹配或缺戳 -> 备份旧档并空仓起步(fail-safe)
+        stamp = str(state.get("account_id", ""))
+        if stamp != str(ACCOUNT_ID):
+            bak = "%s.bak_acct_%s_%s" % (STATE_FILE, stamp or "nostamp", datetime.now().strftime("%Y%m%d_%H%M%S"))
+            try:
+                fbk = open(STATE_FILE, "rb")
+                _raw_b = fbk.read()
+                fbk.close()
+                fbk2 = open(bak, "wb")
+                fbk2.write(_raw_b)
+                fbk2.close()
+                print("[state] [!] 账本账号戳不匹配(账本=%s 本策略=%s)，旧档已备份 %s，空仓起步" % (stamp or "无戳", ACCOUNT_ID, os.path.basename(bak)))
+            except Exception as e_bak:
+                print("[state] [!] 账本账号戳不匹配(账本=%s 本策略=%s)，备份失败，空仓起步" % (stamp or "无戳", ACCOUNT_ID))
+            _cash = CAPITAL_INIT
+            _holdings = {}
+            _entry_prices = {}
+            _entry_dates = {}
+            _nav_peak = 1.0
+            _today_orders = {}
+            _suspended_sells = []
+            return
         _cash = state.get("cash", CAPITAL_INIT)
         _holdings = state.get("holdings", {})
         _entry_prices = state.get("entry_prices", {})
