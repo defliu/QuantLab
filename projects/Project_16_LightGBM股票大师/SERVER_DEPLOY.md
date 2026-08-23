@@ -65,6 +65,22 @@ Windows 服务器
 > 传输方式：原开发机 robocopy `/MT:8` 至 `\\192.168.31.131\d\quant_server\`，目标文件大小与源逐一核对一致。
 > 注意：`feature_panel_v3.parquet` 是 v2 精简 27 特征的定制版（IC 监控回灌），`build_features_v2.py` 只产出 v2 全量；服务器周更重训后如需重建 v3 面板，按 `WORKFLOW_DEPLOY.md` 的 v3 精简步骤执行，且重建仅用训练期特征选择（见 `TODO_PENDING.md` 审计项）。
 
+### 本机 miniQMT 链路验证（2026-08-24 实测）
+
+在开发机（TraeWork）对 `E:\国金QMT交易端模拟`（账号 67014907）执行不下单连通性测试，结果：
+
+| 检查项 | 结果 | 说明 |
+|---|---|---|
+| 行情通道·实时 tick | ✅ 通 | 603969.SH lastPrice=7.30 / 002237.SZ lastPrice=15.45（恒邦，成交 53.4 万手） |
+| 行情通道·日线 | ✅ 通 | 最近 5 根日线正常返回 |
+| 交易通道·连接 | ✅ 通 | `connect=0` 成功 |
+| 账户资金查询 | ✅ 通 | 总资产 10,011,269 / 可用 9,890,582 / 市值 118,337 |
+| 持仓查询 | ✅ 通 | 9 只（600528/600582/601311/601390/601800 等），市值约 11.8 万 |
+
+**结论**：TraeWork → miniQMT → 柜台全链路连通，V1.1（8/25 开盘）交易前置条件已验证。
+**修复记录**：`qmt_link_test.py` 持仓打印曾用 `XtPosition.mkt_price`（不存在）报错，已改为 `market_value`（市值）+ `can_use_volume`（可用）；实测 `XtPosition` 有效字段为 `stock_code/volume/open_price/market_value/can_use_volume/frozen_volume/yesterday_volume`。
+**注意**：账户当前存有 9 只模拟持仓（历史测试遗留），V1.1 开盘建仓前如需清理请执行 `python qmt_clear.py`（先 dry-run）。
+
 ## 三、部署步骤
 
 ### 步骤 0：服务器系统与环境
@@ -81,7 +97,7 @@ python -c "import lightgbm, pyarrow, pandas; print('env OK', lightgbm.__version_
 ### 步骤 1：安装国金 QMT/miniQMT 客户端
 
 1. 在服务器安装「国金 QMT 交易端」（模拟或实盘），安装到**纯英文路径**（如 `D:\QMT`），避免中文路径（LightGBM 写模型在中文路径会失败）
-2. 启动 `bin.x64\XtMiniQmt.exe` 并登录（测试账号 70180771 或实盘账号）
+2. 启动 `bin.x64\XtMiniQmt.exe` 并登录（测试账号 67014907 或实盘账号）
 3. 确认服务器上能看到 `bin.x64\Lib\site-packages\xtquant`（含 `IPythonApiClient.cp310-win_amd64.pyd`，匹配 Python 3.10）
 4. **保持客户端常驻登录**（设开机自启：任务计划程序 → 登录时启动 XtMiniQmt）
 
@@ -115,7 +131,7 @@ Copy-Item 'D:\QuantLab\models\lgb_model*.txt' 'D:\quant_server\models\'
 | `data_config.py` | `UNIVERSE` | `D:/QuantLab/data/universe_all_a.csv` | `D:/quant_server/app/data/universe_all_a.csv` |
 | `data_config.py` | `MODEL_DIR` | `D:/QuantLab/models` | `D:/quant_server/models` |
 | `qmt_config.py` | `QMT_PATH` | `E:\国金QMT交易端模拟` | `D:\QMT`（服务器 QMT 安装路径） |
-| `qmt_config.py` | `ACCOUNT_ID` | `70180771` | 服务器资金账号 |
+| `qmt_config.py` | `ACCOUNT_ID` | `67014907` | 服务器资金账号 |
 
 > 派生说明（它们由上面的根配置自动算出，**无需单独改**）：
 > - `data_config.py`：`MAIN_DAILY`、`FINANCE_DIR`、`BASIC_DIR`、`FIN_*`、`DATA_DIR`、`LIVE_DIR`、`model_file()` 全部由 `ASTOCK_DIR/UNIVERSE/MODEL_DIR` 派生。
