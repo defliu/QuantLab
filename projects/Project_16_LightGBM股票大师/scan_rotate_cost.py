@@ -42,6 +42,11 @@ PANEL = os.path.join(DC.DATA_DIR, "feature_panel_v3.parquet")
 MODEL = DC.model_file("_v3")
 META = os.path.join(DC.DATA_DIR, "features_v3.json")
 OUT_MD = os.path.join(DC.DATA_DIR, "scan_rotate_cost_report.md")
+# 支持自定义面板/模型/输出（A/B 对比测试用），可用环境变量覆盖
+PANEL = os.environ.get("BT_PANEL", PANEL)
+MODEL = os.environ.get("BT_MODEL", MODEL)
+META = os.environ.get("BT_META", META)
+OUT_MD = os.environ.get("BT_OUT", OUT_MD)
 
 THRESHOLD = 58.0
 PRE_POOL = 100
@@ -92,6 +97,7 @@ def build_per_day():
     }, index=daily.index)
     daily = pd.concat([daily, nxt], axis=1)
     daily = daily.set_index(["trade_date", "ts_code"])
+    open_map = daily["open"].to_dict()  # 全市场 open，(date, code) -> open，供持仓收益取价
 
     dates = sorted(panel.loc[(panel["trade_date"] >= START) & (panel["trade_date"] <= END), "trade_date"].unique())
     per_day, market_avgs = {}, []
@@ -116,10 +122,10 @@ def build_per_day():
         pre = day.nlargest(PRE_POOL, "prob")[["ts_code", "total_new", "fwd_ret", "prob", "open_next",
                                               "up_limit_next", "vol_next", "suspend_next"]].set_index("ts_code")
         per_day[d] = pre.nlargest(TOP10, "prob")
-    return dates, per_day, pd.Series(market_avgs)
+    return dates, per_day, pd.Series(market_avgs), open_map
 
 
-def simulate(dates, per_day, N, slip, exec_ok=True):
+def simulate(dates, per_day, N, slip, open_map, exec_ok=True):
     """资金模拟：真实金额(初始10万)，满仓2只，换仓扣真实费用。返回 trades 与日收益序列。
 
     exec_ok=True  → 可执行口径（open→open + 一字板/停牌过滤，审计 R1 新基线）
@@ -127,33 +133,45 @@ def simulate(dates, per_day, N, slip, exec_ok=True):
     """
     M = len(dates)
     cash = 100000.0  # 真实金额，佣金最低5元才正确生效
-    hold = {}      # code -> dict(value=市值, buy_val=买入成本市值, buy_i)
+    hold = {}      # code -> dict(value=市值, buy_val=买入成本市值, buy_i, invest=投入本金)
     trades, daily_ret = [], []
     prev_total = 100000.0
+    n_skip = 0
     for i, d in enumerate(dates):
         row = per_day[d]
         if i > 0:
-            prev = per_day[dates[i - 1]]
             for c in list(hold):
+                h = hold[c]
                 if exec_ok:
-                    # 可执行口径：持仓收益用 open_{i}/open_{i-1}（剔除隔夜跳空）
-                    o_now = float(row.loc[c, "open_next"]) if c in row.index else np.nan
-                    o_prev = float(prev.loc[c, "open_next"]) if c in prev.index else np.nan
-                    if np.isnan(o_now) or np.isnan(o_prev) or o_prev <= 0:
-                        r = 0.0  # 数据缺失按不涨不跌处理（保守）
-                    else:
-                        r = o_now / o_prev - 1.0
+                    # 可执行口径：持仓按全市场 open 逐日盯市（buy_i 决策 → buy_i+1 开盘买入）
+                    o_buy = open_map.get((dates[h["buy_i"] + 1], c)) if h["buy_i"] + 1 < len(dates) else None
+                    o_cur = open_map.get((d, c))
+                    if o_buy and o_cur and o_buy > 0:
+                        h["value"] = h["invest"] * o_cur / o_buy
                 else:
+                    prev = per_day[dates[i - 1]]
                     r = float(prev.loc[c, "fwd_ret"]) if c in prev.index else 0.0
-                hold[c]["value"] *= (1 + r)
+                    h["value"] *= (1 + r)
         # 卖出：止损/止盈/期满
         for c in list(hold):
             h = hold[c]
-            if h["value"] / h["buy_val"] - 1 <= STOP or h["value"] / h["buy_val"] - 1 >= TP or (i - h["buy_i"]) >= N:
-                amt = h["value"]
-                cash += amt - sell_fee(amt, c, slip)
-                trades.append((h["buy_i"], i, h["value"] / h["buy_val"] - 1))
-                del hold[c]
+            if exec_ok:
+                o_buy = open_map.get((dates[h["buy_i"] + 1], c)) if h["buy_i"] + 1 < len(dates) else None
+                o_cur = open_map.get((d, c))
+                if not (o_buy and o_cur and o_buy > 0):
+                    continue
+                ret = o_cur / o_buy - 1
+                if ret <= STOP or ret >= TP or (i - h["buy_i"]) >= N + 1:  # 买入在 buy_i+1 开盘，持有 N 天，卖出在 buy_i+1+N
+                    amt = h["value"]
+                    cash += amt - sell_fee(amt, c, slip)
+                    trades.append((h["buy_i"], i, h["value"] / h["buy_val"] - 1))
+                    del hold[c]
+            else:
+                if h["value"] / h["buy_val"] - 1 <= STOP or h["value"] / h["buy_val"] - 1 >= TP or (i - h["buy_i"]) >= N:
+                    amt = h["value"]
+                    cash += amt - sell_fee(amt, c, slip)
+                    trades.append((h["buy_i"], i, h["value"] / h["buy_val"] - 1))
+                    del hold[c]
         # 买入：补足到 TOP
         while len(hold) < TOP:
             cand = row[~row.index.isin(hold)]
@@ -175,7 +193,9 @@ def simulate(dates, per_day, N, slip, exec_ok=True):
                             and s["open_next"] >= s["up_limit_next"]:
                         return False
                     return True
+                n_before = len(cand)
                 cand = cand[cand.apply(_executable, axis=1)]
+                n_skip += (n_before - len(cand))
                 if len(cand) == 0:
                     break
             best = cand.nlargest(1, "total_new").index[0]
@@ -186,7 +206,7 @@ def simulate(dates, per_day, N, slip, exec_ok=True):
             if invest <= 0:
                 break
             cash -= budget
-            hold[best] = {"value": invest, "buy_val": invest, "buy_i": i}
+            hold[best] = {"value": invest, "buy_val": invest, "buy_i": i, "invest": invest}
         # 轮动：持仓未满2 且 len>0，新 top 超最弱 X 分则换（此处固定不设 X，X=None 即不做）
         total_now = cash + sum(h["value"] for h in hold.values())
         daily_ret.append(total_now / prev_total - 1 if prev_total > 0 else 0.0)
@@ -194,7 +214,7 @@ def simulate(dates, per_day, N, slip, exec_ok=True):
     # 期末清仓（不计费，仅补 trades）
     for c, h in hold.items():
         trades.append((h["buy_i"], M, h["value"] / h["buy_val"] - 1))
-    return trades, pd.Series(daily_ret)
+    return trades, pd.Series(daily_ret), n_skip
 
 
 def stats(trades, daily_ret, market_daily):
@@ -220,24 +240,24 @@ def main():
     do_exec = not args.naive
     do_naive = not args.exec
 
-    dates, per_day, market_daily = build_per_day()
+    dates, per_day, market_daily, open_map = build_per_day()
     print(f"    测试期 {dates[0].date()} ~ {dates[-1].date()} | {len(dates)} 日 | 持仓{TOP} | 止损{STOP:.0%}/止盈{TP:.0%}")
     print("[2/3] 含成本模拟（持有期 × 滑点 × 口径）...")
     rows = []
     for N in N_LIST:
         for slip in SLIPS:
             if do_naive:
-                trades, daily_ret = simulate(dates, per_day, N, slip, exec_ok=False)
+                trades, daily_ret, _ = simulate(dates, per_day, N, slip, open_map, exec_ok=False)
                 s = stats(trades, daily_ret, market_daily)
                 rows.append({"N": N, "slip": slip, "口径": "close→close(原)", **s})
                 print(f"    N={N} 滑点{slip:.1%} [原口径]: 超额{s['daily_excess']:.3%} 胜率{s['win_rate']:.1%} "
                       f"盈亏比{s['profit_loss_ratio']:.2f} 回撤{s['max_drawdown']:.1%} 交易{s['n_trades']}")
             if do_exec:
-                trades, daily_ret = simulate(dates, per_day, N, slip, exec_ok=True)
+                trades, daily_ret, n_skip = simulate(dates, per_day, N, slip, open_map, exec_ok=True)
                 s = stats(trades, daily_ret, market_daily)
                 rows.append({"N": N, "slip": slip, "口径": "open→open(可执行)", **s})
                 print(f"    N={N} 滑点{slip:.1%} [可执行]: 超额{s['daily_excess']:.3%} 胜率{s['win_rate']:.1%} "
-                      f"盈亏比{s['profit_loss_ratio']:.2f} 回撤{s['max_drawdown']:.1%} 交易{s['n_trades']}")
+                      f"盈亏比{s['profit_loss_ratio']:.2f} 回撤{s['max_drawdown']:.1%} 交易{s['n_trades']} 跳过{n_skip}")
     res = pd.DataFrame(rows)
     print("[3/3] 保存报告 ...")
     lines = [

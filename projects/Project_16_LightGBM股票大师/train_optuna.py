@@ -51,8 +51,8 @@ def daily_icir(panel, prob_col, ret_col):
     return float(s.mean()), float(s.std()), float(s.mean() / s.std()) if s.std() > 0 else np.nan
 
 
-def train_once(params, X_tr, y_tr, X_va, y_va, trial=None):
-    callbacks = [lgb.early_stopping(100, verbose=False)]
+def train_once(params, X_tr, y_tr, X_va, y_va, trial=None, es_rounds=100):
+    callbacks = [lgb.early_stopping(es_rounds, verbose=False)]
     if trial is not None:
         from optuna.integration import LightGBMPruningCallback
         callbacks.append(LightGBMPruningCallback(trial, "auc"))
@@ -112,6 +112,9 @@ def main():
     ap.add_argument("--n-trials", type=int, default=20, help="OPTUNA 迭代次数")
     ap.add_argument("--limit-rows", type=int, default=0, help="限制训练行数(调试用)")
     ap.add_argument("--panel", default="v1", choices=["v1", "v2", "v3"], help="使用 v1/v2/v3 面板")
+    ap.add_argument("--panel-file", default=None, help="自定义面板 parquet 绝对路径(测试用，覆盖 --panel)")
+    ap.add_argument("--meta-file", default=None, help="自定义特征 json 绝对路径(测试用)")
+    ap.add_argument("--model-tag", default="", help="模型文件名后缀，如 _enh（默认写入 v3 正式模型）")
     ap.add_argument("--split-train", default="2020-01-01/2023-06-30")
     ap.add_argument("--split-valid", default="2023-07-01/2024-06-30")
     ap.add_argument("--split-test", default="2024-07-01/2026-08-14")
@@ -121,9 +124,14 @@ def main():
     args = ap.parse_args()
 
     suffix = "" if args.panel == "v1" else ("_v2" if args.panel == "v2" else "_v3")
-    panel_path = os.path.join(HERE, "data", f"feature_panel{suffix}.parquet")
-    meta_path = os.path.join(HERE, "data", f"features{suffix}.json")
-    out_model = DC.model_file(suffix)
+    if args.panel_file:
+        panel_path = args.panel_file
+        meta_path = args.meta_file or os.path.join(HERE, "data", "features_v3_enh.json")
+        out_model = os.path.join(DC.MODEL_DIR, f"lgb_model_v3{args.model_tag}.txt")
+    else:
+        panel_path = os.path.join(HERE, "data", f"feature_panel{suffix}.parquet")
+        meta_path = os.path.join(HERE, "data", f"features{suffix}.json")
+        out_model = DC.model_file(suffix)
 
     print("[1/5] 读取特征面板 ...")
     df = pd.read_parquet(panel_path)
@@ -164,13 +172,13 @@ def main():
     print("[3/5] 精调（降学习率 + 增大树量） ...")
     fine_params = dict(
         objective="binary", metric="auc",
-        learning_rate=args.fine_lr, n_estimators=8000,
+        learning_rate=args.fine_lr, n_estimators=12000,
         **{k: v for k, v in best_params.items() if k in
            ("max_depth", "num_leaves", "min_child_samples", "feature_fraction",
             "bagging_fraction", "bagging_freq", "lambda_l1", "lambda_l2")},
         random_state=42, n_jobs=-1, verbose=-1,
     )
-    model = train_once(fine_params, X[m_tr], y[m_tr], X[m_va], y[m_va])
+    model = train_once(fine_params, X[m_tr], y[m_tr], X[m_va], y[m_va], es_rounds=400)
     print("    best_iteration =", model.best_iteration_)
 
     print("[4/5] 测试集评估 ...")
