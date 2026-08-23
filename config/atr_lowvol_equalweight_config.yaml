@@ -6,7 +6,7 @@ strategy:
   name: ATR_LOWVOL_EW
   display_name: ATR低波动-等权不杠杆
   capital_base: 100000           # 策略锁定可用资金（10万，虚拟子账户基准，收益滚动不再回吐本金）
-  account_id: '67014907'         # 国金QMT模拟端账号
+  account_id: '70180771'         # 国金QMT模拟端账号（2026-08-23 换新账号，原67014907）
 
 screening:
   n_hold: 8                     # 等权持仓数（低ATR%前8，10万/8=每只1.25万集中版；2026-08-14 诚哥拍板由100改8）

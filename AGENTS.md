@@ -76,7 +76,7 @@
   - `match/case`
   - f-string
 - `passorder()` 是全局函数，不是 `C.passorder()`。
-- 账号 ID 必须硬编码：`67014907`。
+- 账号 ID 必须硬编码：`70180771`（2026-08-23 换新国金QMT模拟账号，原 `67014907` 已停用；未迁移的旧 build/脚本引用旧号会废单，迁移清单见看板 T-20260823-002）。
 - `C.get_market_data_ex` 缺少财务字段，PE/PB/circ_mv 必须来自预生成 CSV。
 - QMT Python 3.6.8 无 pyarrow，不能读 parquet，数据源用 CSV。
 - `circ_mv` 单位是万元，30 亿 = 300000（万元单位）。
@@ -99,7 +99,7 @@
 
 ### 资金分配红线
 
-- 国金模拟账号 `67014907` 多策略共存，每个策略锁定独立「虚拟子账户」本金（`capital_base`），只能动自己 ledger 的票和自己的额度，**绝不抢占他人资金、绝不纳管/卖出他人持仓**。
+- 国金模拟账号 `70180771`（2026-08-23 换新，原 `67014907` 已停用）多策略共存，每个策略锁定独立「虚拟子账户」本金（`capital_base`），只能动自己 ledger 的票和自己的额度，**绝不抢占他人资金、绝不纳管/卖出他人持仓**。
 - **账户总额约束（硬）**：`Σ 各策略 capital_base ≤ 账户实际总资产`。唯一事实源 `D:/QuantLab/config/capital_allocation.yaml`（已从 QMT_STRATEGIES 迁移并删副本）；改后必须跑 `D:/QuantLab/scripts/check_capital_allocation.py`（退出码 0 才许部署）。
 - 账户 `total_capital` 必须在国金QMT客户端查「总资产」填入；未填只警告不报错，但生产环境必填。
 - 当前已锁：**仅 `atr_lowvol_equalweight`（ATR低波等权不杠杆）10 万**。`dual_band_6plus2`（主升浪6+2）已于 2026-08-05 淘汰，不再占用额度。新增/调额先改分配表再校验。
@@ -116,7 +116,7 @@
 ## 配置系统（三级级联）
 
 1. **全局配置** `config/settings.yaml`：项目信息、数据源、回测参数、因子预处理、策略默认股票池、日志。
-2. **实盘配置** `config/trading_config.yaml`：账号（67014907）、交易参数、风控阈值、委托管理、调度计划、通知。
+2. **实盘配置** `config/trading_config.yaml`：账号（70180771，2026-08-23 换新）、交易参数、风控阈值、委托管理、调度计划、通知。
 3. **项目级配置** `projects/Project_XX_*/config/strategy.yaml`：项目独立参数。
 
 ## 文件通信
@@ -141,6 +141,7 @@
 - `filter_func` 模式：市值等过滤条件以 callable 传入评分函数，在函数内部应用（预过滤会降低收益）。
 - 数据缓存：`data/cache/` 目录，过期时间 1 天。
 - 主数据源 `E:/astock/` 是买断离线资产（2009 起、财务全量、PIT 字段齐）；`adj_factor` 是后复权因子，前复权价 = 原始价 × (adj_factor / 最新 adj_factor)。
+- **备用数据源（回测交叉验证，全局规则）**：`E:/huicexitong/runtime/sj/gpsj.duckdb`（`data/gpsj_reader.py` 鸭子类型 reader，与 astock_reader 同 4 方法接口）。口径与 E:/astock 同源：adj_factor/换手率/市值/成交额/不复权价逐字段一致（已验 2025 全年 ATR MAX5 回测差异 0）。**注意 gpsj `收盘价` 列是前复权价，禁止直接用**，reader 已封装为取 `不复权_*` 列 + `复权因子`；全市场覆盖仅 2015-01 起，2015 前非全市场不可用于全市场选股对比。**每个新策略/因子回测定稿后，必须用备用数据源随机抽取 1 个自然年做同区间对比**，两源 CAGR/最大回撤应基本一致（差异 >1pp 需排查数据口径），模板 `research_audit/compare_gpsj_astock_2025.py`。
 - look-ahead 是回测第一杀手：复权 look-ahead、宇宙选择 look-ahead（静态池套全期）、撮合 look-ahead（盘中取当日 close）都击中过；"盘中 vs 尾盘对照差异 >30pp 且方向反转"是验证 look-ahead 的干净方法。
 
 ## 因子层约定

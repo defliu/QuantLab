@@ -32,7 +32,7 @@ CONFIG = {
         'name': 'ATR_LOWVOL_EW',
         'display_name': 'ATR低波动-等权不杠杆',
         'capital_base': 1000000,
-        'account_id': '67014907',
+        'account_id': '70180771',   # 2026-08-23 换新模拟账号(诚哥提供)
     },
     'screening': {
         'n_hold': 8,
@@ -57,7 +57,7 @@ CONFIG = {
 }
 
 # 构建版本标记（YYYYmmdd-HHMMSS），部署核对用
-BUILD_TAG = "20260819-201531"  # 修复审计 3b 回归: 换手过滤三态正确实现(数据可用→True+消费 is True)  # 20260819修复: _lookup_order全局函数+turnover_available?None+datetime.now改QMT时间  # 对账 position 字段访问修复(CPositionDetail 无 m_strCode/.get)  # 20260818 修复: 换手率尺度自适应+fail-open+对账get_trade_detail_data全局调用
+BUILD_TAG = "20260823-182638"  # P0: 盘前当日空bar(volume=0)误判停牌静默跳过->末两根无量才判停牌 + P0: 季度键死守卫(if selected:恒真)盘前假成功锁死整季->真实建仓后才锁键 + P1: 建仓限盘中窗口0933-1455 + P1: 空仓兜底改30分钟间隔重试(原每天一次被盘前失败烧毁) + P1: 账号换70180771(原67014907) + P2: ATR百分比剔除平填bar(volume<=0)对齐astock回测口径  # 历史tag: 20260819-201531(Fix4编码重放/R9三态/对账字段修复/换手尺度自适应)
 
 # ============================================================
 # 全局状态
@@ -71,7 +71,8 @@ _g_hold_pool_cache_date = ''
 _g_initialized = False
 _g_cooling_until = 0.0
 _g_last_rebalance_key = ''  # 上次再平衡的 季度键(如 2026Q3)
-_g_last_attempt_date = ''   # 上次再平衡尝试日期 YYYYMMDD（空仓兜底限频用）
+_g_last_attempt_ts = 0.0    # 上次再平衡尝试时刻 time.time() 秒（空仓兜底限频用；修复20260823）
+_RETRY_MIN_INTERVAL = 1800  # 空仓兜底重试最小间隔秒（防每bar刷屏；选股有日缓存，重试开销低）
 _g_pending_sells = {}       # code -> {shares, price, reason, time}
 _g_pending_buys = {}        # code -> {shares, price, time}
 _g_roe_cache = {}           # code -> roe（季内缓存）
@@ -80,7 +81,7 @@ _g_turnover_available = None  # 修复 20260819: 首次筛选前不应默认True
 
 # 可配置参数（被 _load_config 覆盖；config 中 capital_base 设定本策略锁定可用资金）
 _STRATEGY_CAPITAL = 100000
-_ACCOUNT_ID = '67014907'
+_ACCOUNT_ID = '70180771'  # 2026-08-23 换新模拟账号（原67014907），外部config仍可覆盖
 _N_HOLD = 8
 _ATR_THRESHOLD = 6.0
 _MIN_TURNOVER = 1.0
@@ -199,10 +200,18 @@ def _get_stock_name_safe(C, code):
 
 
 def _calc_atr_pct(df):
-    """计算 ATR(14)/close * 100（与框架 factors/atr.atr_pct 同口径）。"""
+    """计算 ATR(14)/close * 100（与框架 factors/atr.atr_pct 同口径）。
+
+    修复 20260823(P2)：先剔除平填bar(volume<=0：停牌平填/盘前未完成bar)再计算，
+    对齐 astock 回测口径（仅真实成交bar）；否则ATR%被稀释12~37%选股漂移。
+    """
     if df is None or len(df) < 15:
         return 999.0
     try:
+        if 'volume' in df.columns:
+            df = df[df['volume'] > 0]
+            if len(df) < 15:
+                return 999.0
         h = df['high']
         l = df['low']
         c = df['close']
@@ -575,6 +584,26 @@ def _get_account_cash(C):
     print("[ATR_EW] 获取账户可用资金全部失败(其他单位): 已用大倿值")
     return 1e18
 
+def _is_suspended_bar(df):
+    """真停牌判定（修复 20260823 P0）：末两根均无量才判停牌。
+
+    盘前09:15起QMT即生成当日K线(volume=0/turnover=NaN)，旧逻辑只看末根 volume<=0
+    就当停牌跳过且该分支无日志，导致09:16建仓时8只候选全部静默丢弃。
+    单根无量视为盘前未完成bar放行；连续无量才是真停牌。
+    """
+    try:
+        if df is None or len(df) == 0 or 'volume' not in df.columns:
+            return False
+        vols = df['volume'].astype(float).dropna()
+        if len(vols) == 0:
+            return False
+        last_v = float(vols.iloc[-1])
+        prev_v = float(vols.iloc[-2]) if len(vols) >= 2 else 1.0
+        return last_v <= 0 and prev_v <= 0
+    except Exception:
+        return False
+
+
 def _partial_sell(C, code, shares, price, reason):
     """卖出本策略持有的部分份额（调仓缩减），不影响别的策略的同票持仓。"""
     global _g_my_codes, _g_cumulative_pnl
@@ -658,14 +687,11 @@ def _execute_buys_equalweight(C, target_codes, prices):
         price = prices.get(code)
         if price is None or price <= 0:
             continue
-        # 停牌检查：最新成交量为 0 则不交易
+        # 停牌检查（修复 20260823 P0）：连续两根无量才判停牌；
+        # 单根末根无量是盘前未完成bar，放行（详见 _is_suspended_bar）
         df = _g_all_data.get(code)
-        if df is not None and len(df) > 0:
-            try:
-                if float(df['volume'].iloc[-1]) <= 0:
-                    continue
-            except Exception:
-                pass
+        if _is_suspended_bar(df):
+            continue
         held = _g_my_codes.get(code, {}).get('shares', 0)
         desired = int(target_value / price / 100) * 100
         delta = desired - held
@@ -1035,7 +1061,7 @@ def _evaluate_interim_stops(C, prices):
 # 主循环
 # ============================================================
 def _main_loop(C):
-    global _g_last_rebalance_key, _g_cooling_until, _g_last_attempt_date
+    global _g_last_rebalance_key, _g_cooling_until, _g_last_attempt_ts
 
     # R2修复: 历史K线回放守卫（对齐 src 尾盘版 is_last_bar）；回测模式全量跑，实盘仅最后一根bar交易
     try:
@@ -1072,21 +1098,34 @@ def _main_loop(C):
     key = _quarter_key(now)
     today_y = now.strftime('%Y%m%d') if hasattr(now, 'strftime') else datetime.now().strftime('%Y%m%d')
     is_rebalance_day = (key != _g_last_rebalance_key)
-    # 空仓兜底：尚未建仓时，每天允许重试一次（不卡季频首日），
-    # 避免"中途部署错过Q3首日 + 首次选股失败"导致永久空仓到下一季度。
-    force_retry = (len(_g_my_codes) == 0) and (_g_last_attempt_date != today_y)
+    # 修复 20260823(P1)：建仓限盘中窗口(09:33~14:55)。盘前当日bar尚未成交(volume=0)，
+    # 曾致09:16触发时全部候选被停牌检查静默丢弃并假成功。间际止损不受窗口限制（风控优先）。
+    hhmm_int = int(now_str) if now_str.isdigit() else 0
+    in_trade_window = (933 <= hhmm_int <= 1455)
+    # 空仓兜底：尚未建仓时按最小间隔重试（不卡季频首日，防中途部署错过Q3首日永久空仓）。
+    # 修复 20260823(P0)：由"每天一次"改为"间隔限频"，单次失败不再烧毁全天配额。
+    force_retry = (len(_g_my_codes) == 0) and (
+        _g_last_attempt_ts == 0.0 or (time.time() - _g_last_attempt_ts) >= _RETRY_MIN_INTERVAL)
 
-    if is_rebalance_day or force_retry:
+    # 全局限流（修复 20260823 第二批）：距上次尝试不足间隔则整体不触发。
+    # 必须同时盖住 is_rebalance_day（键未锁时每bar恒真，否则死循环复发）与 force_retry。
+    throttled = (_g_last_attempt_ts != 0.0) and (
+        time.time() - _g_last_attempt_ts) < _RETRY_MIN_INTERVAL
+
+    if (is_rebalance_day or force_retry) and in_trade_window and not throttled:
         print("[ATR_EW] 再平衡触发(%s, 季频=%s, 空仓兜底=%s)" % (key, is_rebalance_day, force_retry))
         selected = _run_screening(C)
         if selected:
             _rebalance_to_target(C, selected)
-            # 仅在建仓成功后刷新季度键（失败则留待重试，避免永久空仓）
-            if selected:
+            # 修复 20260823(P0)：真实建仓成功（持仓非空，含pending登记）才锁季度键；
+            # 原写法 if selected: 恒真——盘前假成功把整季锁死不再重试。
+            if len(_g_my_codes) > 0:
                 _g_last_rebalance_key = key
+            else:
+                print("[ATR_EW] 建仓未成功(持仓仍空)，%d秒后重试" % _RETRY_MIN_INTERVAL)
         else:
             print("[ATR_EW] 选股池无候选，跳过本次再平衡（不刷新季度键，留待重试）")
-        _g_last_attempt_date = today_y
+        _g_last_attempt_ts = time.time()
     else:
         # 非再平衡日：仅做间际止损（轻量，只取持仓价）
         if _STOP_LOSS is not None and _STOP_LOSS < 0:
