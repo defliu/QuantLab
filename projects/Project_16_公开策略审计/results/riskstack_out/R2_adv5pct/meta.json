@@ -1,0 +1,58 @@
+{
+  "tag": "R2_adv5pct",
+  "strategy": "riskstack_R2_adv5pct",
+  "strategy_params": {
+    "rebalance_freq": "weekly",
+    "n_hold": 10,
+    "min_listed_days": 250,
+    "div_top_pct": 0.25,
+    "price_lo": 2.0,
+    "price_hi": 9.0,
+    "max_positions": 10,
+    "position_sizing": "equal",
+    "min_position_value": 0.0
+  },
+  "execution": {
+    "price": "next_open",
+    "slippage": 0.001,
+    "commission_rate": 0.00025,
+    "tax_rate": 0.001,
+    "max_adv_pct": 0.05
+  },
+  "performance": {
+    "total_return": 0.0,
+    "annual_return": 0.0,
+    "cagr": 0.0,
+    "max_drawdown": 0.0,
+    "sharpe": 0.0,
+    "calmar": null,
+    "cagr_calmar": null,
+    "win_rate": 0.0,
+    "n_trades": 0,
+    "n_buy": 0,
+    "n_sell": 0,
+    "n_open": 0,
+    "avg_holding_days": 0.0,
+    "excess_return": -0.608777,
+    "information_ratio": -0.444308,
+    "tracking_error": 0.188813
+  },
+  "mdd_trough_date": "2019-01-02",
+  "yearly_returns": {
+    "2019": 0.0,
+    "2020": 0.0,
+    "2021": 0.0,
+    "2022": 0.0,
+    "2023": 0.0,
+    "2024": 0.0,
+    "2025": 0.0,
+    "2026": 0.0
+  },
+  "portfolio_end": {
+    "total_asset": 1000000.0,
+    "cash": 1000000.0,
+    "market_value": 0,
+    "n_positions": 0
+  },
+  "runtime_seconds": 935.9
+}

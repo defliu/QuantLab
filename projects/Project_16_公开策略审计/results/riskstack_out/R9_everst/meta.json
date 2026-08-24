@@ -1,0 +1,58 @@
+{
+  "tag": "R9_everst",
+  "strategy": "riskstack_R9_everst",
+  "strategy_params": {
+    "rebalance_freq": "weekly",
+    "n_hold": 10,
+    "min_listed_days": 250,
+    "div_top_pct": 0.25,
+    "price_lo": 2.0,
+    "price_hi": 9.0,
+    "max_positions": 10,
+    "position_sizing": "equal",
+    "min_position_value": 0.0,
+    "ever_st_exclude": 1
+  },
+  "execution": {
+    "price": "next_open",
+    "slippage": 0.001,
+    "commission_rate": 0.00025,
+    "tax_rate": 0.001
+  },
+  "performance": {
+    "total_return": 9.031255,
+    "annual_return": 1.253926,
+    "cagr": 0.37730824529966656,
+    "max_drawdown": -0.326496,
+    "sharpe": 1.369306,
+    "calmar": 3.840559,
+    "cagr_calmar": 1.1556296280288227,
+    "win_rate": 0.586071,
+    "n_trades": 3741,
+    "n_buy": 2195,
+    "n_sell": 1546,
+    "n_open": 741,
+    "avg_holding_days": 131.899474,
+    "excess_return": 8.422478,
+    "information_ratio": 1.231644,
+    "tracking_error": 0.219472
+  },
+  "mdd_trough_date": "2024-02-07",
+  "yearly_returns": {
+    "2019": 0.45286807163199994,
+    "2020": 0.4039388201818377,
+    "2021": 0.5460260247760773,
+    "2022": 0.589042204487042,
+    "2023": 0.3622712748016994,
+    "2024": 0.09255599686525517,
+    "2025": 0.2847082433624686,
+    "2026": -0.08480824262819098
+  },
+  "portfolio_end": {
+    "total_asset": 10031255.400666,
+    "cash": -19769.108334,
+    "market_value": 10051024.509,
+    "n_positions": 10
+  },
+  "runtime_seconds": 1105.8
+}

@@ -1,0 +1,60 @@
+{
+  "tag": "R6_gate_exit_ma200",
+  "strategy": "riskstack_R6_gate_exit_ma200",
+  "strategy_params": {
+    "rebalance_freq": "weekly",
+    "n_hold": 10,
+    "min_listed_days": 250,
+    "div_top_pct": 0.25,
+    "price_lo": 2.0,
+    "price_hi": 9.0,
+    "max_positions": 10,
+    "position_sizing": "equal",
+    "min_position_value": 0.0,
+    "market_gate": 1,
+    "ma_window": 200,
+    "gate_mode": "exit"
+  },
+  "execution": {
+    "price": "next_open",
+    "slippage": 0.001,
+    "commission_rate": 0.00025,
+    "tax_rate": 0.001
+  },
+  "performance": {
+    "total_return": 2.355209,
+    "annual_return": 0.327004,
+    "cagr": 0.18302106518727013,
+    "max_drawdown": -0.198895,
+    "sharpe": 0.963056,
+    "calmar": 1.644109,
+    "cagr_calmar": 0.9201913908215227,
+    "win_rate": 0.619202,
+    "n_trades": 2319,
+    "n_buy": 1398,
+    "n_sell": 921,
+    "n_open": 514,
+    "avg_holding_days": 115.499461,
+    "excess_return": 1.746432,
+    "information_ratio": 0.51979,
+    "tracking_error": 0.198946
+  },
+  "mdd_trough_date": "2019-06-06",
+  "yearly_returns": {
+    "2019": 0.172155314926,
+    "2020": 0.40683438585668785,
+    "2021": 0.5149126653692815,
+    "2022": -0.027166123621341853,
+    "2023": 0.05087962200346463,
+    "2024": 0.0435503593143689,
+    "2025": 0.285329906756171,
+    "2026": -0.08493543639461953
+  },
+  "portfolio_end": {
+    "total_asset": 3355209.418196,
+    "cash": 320.146196,
+    "market_value": 3354889.272,
+    "n_positions": 10
+  },
+  "runtime_seconds": 1092.3
+}

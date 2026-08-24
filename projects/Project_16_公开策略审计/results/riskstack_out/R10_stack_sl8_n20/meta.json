@@ -1,0 +1,64 @@
+{
+  "tag": "R10_stack_sl8_n20",
+  "strategy": "riskstack_R10_stack_sl8_n20",
+  "strategy_params": {
+    "rebalance_freq": "weekly",
+    "n_hold": 20,
+    "min_listed_days": 250,
+    "div_top_pct": 0.25,
+    "price_lo": 2.0,
+    "price_hi": 9.0,
+    "max_positions": 20,
+    "position_sizing": "equal",
+    "min_position_value": 0.0,
+    "stop_loss_pct": 0.08
+  },
+  "execution": {
+    "price": "next_open",
+    "slippage": 0.001,
+    "commission_rate": 0.00025,
+    "tax_rate": 0.001
+  },
+  "performance": {
+    "total_return": 5.018295,
+    "annual_return": 0.696755,
+    "cagr": 0.2829933812419678,
+    "max_drawdown": -0.243062,
+    "sharpe": 1.189573,
+    "calmar": 2.866569,
+    "cagr_calmar": 1.1642831286942399,
+    "win_rate": 0.61553,
+    "n_trades": 6245,
+    "n_buy": 3592,
+    "n_sell": 2653,
+    "n_open": 1043,
+    "avg_holding_days": 129.43121,
+    "excess_return": 4.409518,
+    "information_ratio": 1.010635,
+    "tracking_error": 0.190739
+  },
+  "mdd_trough_date": "2026-06-30",
+  "yearly_returns": {
+    "2019": 0.37763737992900004,
+    "2020": 0.35702848991328784,
+    "2021": 0.38804056578473545,
+    "2022": 0.2294854248350553,
+    "2023": 0.22742765849451962,
+    "2024": 0.2975442498149319,
+    "2025": 0.26991843112809977,
+    "2026": -0.165770583832619
+  },
+  "portfolio_end": {
+    "total_asset": 6018295.000165,
+    "cash": -4843.006635,
+    "market_value": 6023138.0068,
+    "n_positions": 20
+  },
+  "unfilled_reason_counts": {
+    "below_min_lot": 2937,
+    "suspended": 8,
+    "limit_up_at_open": 11,
+    "limit_down_at_open": 2
+  },
+  "runtime_seconds": 1400.9
+}
