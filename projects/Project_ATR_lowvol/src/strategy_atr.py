@@ -73,6 +73,7 @@ _TEST_MODE = False
 _g_last_trade_date = ''
 _g_sell_cooldown = {}      # code -> time.time() of last sell attempt
 _g_pending_sells = {}      # code -> {shares, price, reason, time}
+BUILD_TAG = "20260823-223613"  # P0: 盘前空bar(volume=0)误判停牌->单根空bar放行 + P0: 季度锁死守卫(if selected:)恒真->仅实建仓成功刷新 + P1: 建仓限盘中窗口0933-1455 + P1: 空仓兜底30分钟限频(防死循环) + P1: 账号改70180771(原67014907) + P2: ATR口径先滤volume<=0再算对齐astock回测口径  # 旧tag: 20260819-201531(Fix4重放/R9全绿/语法检查/编码校验/账号迁移)
 _g_pending_buys = {}       # code -> {shares, price, time}
 _LOOKUP_RETRIES = 4
 _LOOKUP_INTERVAL = 0.2     # 单次轮询间隔（4次×0.2s=0.8s覆盖QMT ~100ms异步延迟）
@@ -95,7 +96,7 @@ def _load_config():
     global _STOP_LOSS, _TAKE_PROFIT, _TRAILING_STOP, _ENABLE_CONDITION_EXIT
     global _ACCOUNT_ID, _DEBUG_MODE, _TEST_MODE
 
-    config_path = 'D:/QMT_STRATEGIES/config/atr_lowvol_config.yaml'
+    config_path = 'D:/QMT_POOL/config/atr_lowvol_equalweight_config.yaml'
     if not os.path.exists(config_path):
         print("  [ATR] 无配置文件，使用内置默认值")
         return
@@ -414,7 +415,7 @@ def _run_screening(C):
         print("  [ATR] 缓存命中: %d 只" % len(_g_hold_pool_cache))
         return _g_hold_pool_cache
 
-    # 获取全市场股票
+# 获取全市场股票
     try:
         all_codes = C.get_stock_list_in_sector('沪深A股')
         codes = [c for c in all_codes if c.endswith('.SH') or c.endswith('.SZ')]
@@ -423,7 +424,27 @@ def _run_screening(C):
         print("  [ATR] get_stock_list_in_sector失败: %s" % e)
         return []
 
-    # 换手率查询的日期范围（取近90天覆盖 _MIN_BARS=60个交易日）
+    # ST/*ST 过滤：剔除风险警示板股票
+    st_set = set()
+    try:
+        lst = C.get_stock_list_in_sector('风险警示板')
+        if lst:
+            st_set = set(lst)
+    except Exception:
+        pass
+    if not st_set:
+        try:
+            lst = C.get_stock_list_in_sector('ST')
+            if lst:
+                st_set = set(lst)
+        except Exception:
+            pass
+    if st_set:
+        before = len(codes)
+        codes = [c for c in codes if c not in st_set]
+        print("  [ATR] ST过滤: 剔除 %d 只, 剩余 %d 只" % (before - len(codes), len(codes)))
+
+    # 预计算换手率查询范围，取近90天窗口 _MIN_BARS=60 足够
     _turnover_start = (datetime.now() - timedelta(days=90)).strftime('%Y%m%d')
     _turnover_end = today_str
 

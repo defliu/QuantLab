@@ -23,7 +23,7 @@ except ImportError:
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-ALLOC_FILE = os.path.join(ROOT, "config", "capital_allocation.yaml")
+ALLOC_FILE = r"D:\QMT_POOL\config\capital_allocation.yaml"
 
 
 def _load_strategy_capital(cfg_path):
@@ -58,7 +58,7 @@ def main():
     if total is None:
         warnings.append(
             "account.total_capital 未填 -> 暂不校验上限。"
-            "请在国金QMT客户端查「总资产」后填入 config/capital_allocation.yaml"
+            "请在国金QMT客户端查「总资产」后填入 D:/QMT_POOL/config/capital_allocation.yaml"
         )
     else:
         try:

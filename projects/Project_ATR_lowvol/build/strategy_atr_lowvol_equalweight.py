@@ -1,4 +1,5 @@
 # coding=gbk
+# coding=gbk
 """
 ATR 低波动策略 - 等权 不杠杆 部署版（QMT 全闭环，零外部依赖）
 
@@ -111,7 +112,7 @@ def _load_config():
     global _MOMENTUM_GATE, _MAX_PRICE, _MAX_EXCLUDE_PCT, _REBALANCE_FREQ, _STOP_LOSS
     global _HOLDINGS_FILE, _NAV_FILE, _TRADE_LOG_FILE
 
-    config_path = 'D:/QMT_STRATEGIES/config/atr_lowvol_equalweight_config.yaml'
+    config_path = 'D:/QMT_POOL/config/atr_lowvol_equalweight_config.yaml'
     if not os.path.exists(config_path):
         print("[ATR_EW] 无配置文件，使用内置默认值")
         return

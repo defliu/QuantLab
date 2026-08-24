@@ -1,4 +1,5 @@
 # coding=gbk
+# coding=gbk
 """黄氏529主升浪精选 —— QMT 单文件策略（本地预计算信号，QMT 只读 CSV）
 
 选股: 黄氏529版公式信号（本地 D:/Python311 预计算，PIT 安全）按 ATR% 升序 top16,
@@ -29,7 +30,7 @@ TRAILING_STOP = None         # 移动止损（None=关；0.15=收盘<=持有期最高收盘×0.8
 MAX_SINGLE_PCT = 1.0 / 12.0  # 单票仓位上限
 SIGNAL_PREFIX = "529_signal_top16_"
 SIGNAL_DIR = "D:/QMT_POOL"
-DATA_DIR = "D:/QMT_POOL"
+DATA_DIR = "D:/QMT_POOL/config"
 HOLDINGS_FILE = os.path.join(DATA_DIR, "p13_huang529_holdings.json")
 NAV_FILE = os.path.join(DATA_DIR, "p13_huang529_nav.json")
 TRADE_LOG_FILE = os.path.join(DATA_DIR, "p13_huang529_trade_log.csv")

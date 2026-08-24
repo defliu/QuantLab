@@ -29,7 +29,7 @@ TRAILING_STOP = None         # 移动止损（None=关；0.15=收盘<=持有期�
 MAX_SINGLE_PCT = 1.0 / 12.0  # 单票仓位上限
 SIGNAL_PREFIX = "529_signal_top16_"
 SIGNAL_DIR = "D:/QMT_POOL"
-DATA_DIR = "D:/QMT_POOL"
+DATA_DIR = "D:/QMT_POOL/config"
 HOLDINGS_FILE = os.path.join(DATA_DIR, "p13_huang529_holdings.json")
 NAV_FILE = os.path.join(DATA_DIR, "p13_huang529_nav.json")
 TRADE_LOG_FILE = os.path.join(DATA_DIR, "p13_huang529_trade_log.csv")
