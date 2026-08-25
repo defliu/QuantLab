@@ -4,6 +4,10 @@
       "type": "stdio",
       "command": "mcp-server-metasearch",
       "args": []
+    },
+    "ashare-mcp": {
+      "type": "http",
+      "url": "http://localhost:8000/mcp"
     }
   }
 }

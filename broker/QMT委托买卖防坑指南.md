@@ -57,6 +57,33 @@ passorder(23, 1101, account_id, code, 11, volume, price, C)
 
 ---
 
+---
+
+### 坑4【P1】买入 pending 超时即放弃、无重试机制
+
+原策略买单进入 pending 后，**30 秒超时直接撤单并删除 pending**，不再重新下单。导致：
+- 流动性差/涨停/价格偏离时，挂单不成交 → 30 秒后彻底放弃该票
+- 盘中波动大、QMT 反查延迟时，误判"未成交" → 永不补单
+
+**2026-08-25 实盘案例**：浙能电力 (600023.SH) 买单挂单不成，30 秒超时撤单后无重报，该票永久丢失。
+
+**修复 / 规范（ATR EW 2026-08-25 已落地）**：
+- 超时从 **30 秒 → 300 秒 (5 分钟)**
+- **最多重试 3 次**：撤单 → 重新 `passorder`（取最新价） → 更新 `pending['time']` + `pending['retry']` → 继续跟踪
+- 3 次重试（约 15 分钟）仍不成交 → 打印「pending放弃」并彻底放弃该票
+- 间际止损 / 日终对账仍会兜底核对
+
+```python
+# 简化逻辑
+retry = pending.get('retry', 0)
+if now - pending['time'] > 300:
+    if retry >= 3:
+        print("pending放弃"); del _g_pending_buys[code]; continue
+    oid, _ = _lookup_order(...); _cancel_order(...) if oid
+    new_oid = passorder(23, ..., code, 5, -1, pending['shares'], 'ATR_EW重报', 2, '', C)
+    pending['time'] = now; pending['retry'] = retry + 1; continue
+```
+
 ## 三、标准用法（复制即用）
 
 ```python

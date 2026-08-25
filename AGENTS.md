@@ -97,6 +97,7 @@
 - QMT 内置 Python 不保证有第三方包（如 pyyaml），import 必须 try/except fallback；重装/换设备后必看 `XtClient_FormulaOutput_*.log` 确认初始化完成。
 - 策略必须自包含：config 读取不得依赖 `__file__`，读不到要有完整 `_DEFAULT_CONFIG` fallback。
 - 详细清单见 `全局复利与踩坑日志.md` 的 QMT 相关章节。
+- **买入 pending 超时必须重试，不可即刻放弃**：进入 pending 后，超时从 30 秒延长至 300 秒 (5 分钟)，最多重试 3 次（撤单→重新 passorder→更新 pending time/retry→继续跟踪）；3 次重试（约 15 分钟）仍不成交才打印「pending放弃」彻底放弃。禁止出现「30 秒超时即撤单删 pending、永不补单」的写法（2026-08-25 浙能电力案例已证痛点）。
 
 ### 资金分配红线
 
