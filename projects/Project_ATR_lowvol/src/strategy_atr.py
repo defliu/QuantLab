@@ -681,17 +681,45 @@ def _check_pending_orders(C):
             del _g_pending_sells[code]
     for code in list(_g_pending_buys.keys()):
         pending = _g_pending_buys[code]
-        if now - pending['time'] > 30:
-            print("  [ATR pending超时] %s 买入未确认超时, 回滚持仓" % code)
-            if code in _g_my_codes:
-                del _g_my_codes[code]
-            del _g_pending_buys[code]
-            continue
+        retry = pending.get('retry', 0)
+        if now - pending['time'] > 300:   # 5分钟超时（原30秒）
+            if retry >= 3:                # 最多重试3次
+                print("  [ATR pending放弃] %s 超过3次重试仍未成交, 彻底放弃" % code)
+                if code in _g_my_codes:
+                    del _g_my_codes[code]
+                del _g_pending_buys[code]
+                continue
+            # 撤单并重报
+            oid, _ = _lookup_order(C, code, pending['shares'], 'buy')
+            if oid:
+                _cancel_order(C, code, oid)
+                print("  [ATR pending重报] %s 撤单重试第%d次" % (code, retry + 1))
+            # 重新下单
+            price = pending.get('price', 0)
+            if price <= 0:
+                try:
+                    data = C.get_market_data_ex(stock_code=[code], period='1d', count=1)
+                    if data and code in data and data[code] is not None:
+                        price = float(data[code]['close'].iloc[-1])
+                except Exception:
+                    pass
+            if price > 0:
+                new_oid = passorder(23, 1101, _ACCOUNT_ID, code, 5, -1, pending['shares'], 'ATR_EW重报', 2, '', C)
+                print("  [ATR 重报下单] %s %d股 @ %.3f 返回:%s" % (code, pending['shares'], price, new_oid))
+                # 更新pending时间和重试计数
+                _g_pending_buys[code]['time'] = now
+                _g_pending_buys[code]['retry'] = retry + 1
+                continue
+            else:
+                print("  [ATR 重报失败] %s 无法获取最新价格" % code)
+                if code in _g_my_codes:
+                    del _g_my_codes[code]
+                del _g_pending_buys[code]
+                continue
         oid, matched = _lookup_order(C, code, pending['shares'], 'buy')
         if oid:
-            print("  [ATR pending确认] %s 买入订单%s已确认" % (code, oid))
+            print("  [ATR pending确认] %s 买入已确认%s成交" % (code, oid))
             del _g_pending_buys[code]
-
 
 def _execute_sells(C, to_sell, current_prices):
     """执行卖出，带反查确认 + pending兜底"""
