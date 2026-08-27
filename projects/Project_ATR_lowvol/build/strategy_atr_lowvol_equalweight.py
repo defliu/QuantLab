@@ -60,7 +60,7 @@ CONFIG = {
 }
 
 # 构建版本标记（YYYYmmdd-HHMMSS），部署核对用
-BUILD_TAG = "20260823-223613"  # P0: 盘前当日空bar(volume=0)误判停牌静默跳过->末两根无量才判停牌 + P0: 季度键死守卫(if selected:恒真)盘前假成功锁死整季->真实建仓后才锁键 + P1: 建仓限盘中窗口0933-1455 + P1: 空仓兜底改30分钟间隔重试(原每天一次被盘前失败烧毁) + P1: 账号换70180771(原67014907) + P2: ATR百分比剔除平填bar(volume<=0)对齐astock回测口径  # 历史tag: 20260819-201531(Fix4编码重放/R9三态/对账字段修复/换手尺度自适应)
+BUILD_TAG = "20260827-171855"  # P0: 盘前当日空bar(volume=0)误判停牌静默跳过->末两根无量才判停牌 + P0: 季度键死守卫(if selected:恒真)盘前假成功锁死整季->真实建仓后才锁键 + P1: 建仓限盘中窗口0933-1455 + P1: 空仓兜底改30分钟间隔重试(原每天一次被盘前失败烧毁) + P1: 账号换70180771(原67014907) + P2: ATR百分比剔除平填bar(volume<=0)对齐astock回测口径  # 历史tag: 20260819-201531(Fix4编码重放/R9三态/对账字段修复/换手尺度自适应)
 
 # ============================================================
 # 全局状态
@@ -551,7 +551,7 @@ def _execute_sells(C, to_sell, current_prices):
                 1101 if price >= 1.0 else 1102,
                 _ACCOUNT_ID,
                 code,
-                5,   # 对手价，确保成交
+                5,   # 最新价(prType=5=LATEST_PRICE，官方手册；14=对手价)
                 price,
                 shares,  # 仅本策略持仓量（绝不用-1，防误卖他策略份额）
                 'ATR_EW',  # R7: 策略标识（V2 对账按 remark 过滤，防串账）
@@ -663,7 +663,7 @@ def _partial_sell(C, code, shares, price, reason):
             1101 if price >= 1.0 else 1102,
             _ACCOUNT_ID,
             code,
-            5,   # 对手价，确保成交
+            5,   # 最新价(prType=5=LATEST_PRICE，官方手册；14=对手价)
             price,
             shares,  # R8修复: 原实现 6/7 位价格~股数颠倒（易废单），已纠正；仅卖本策略量
             'ATR_EW',
@@ -763,7 +763,7 @@ def _execute_buys_equalweight(C, target_codes, prices):
                     1101,
                     _ACCOUNT_ID,
                     code,
-                    5,   # 对手价，确保成交
+                    5,   # 最新价(prType=5=LATEST_PRICE，官方手册；14=对手价)
                     price,
                     delta,
                     'ATR_EW',

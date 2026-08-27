@@ -27,6 +27,7 @@ import os
 import sys
 import time
 import urllib.request
+from collections import defaultdict, deque
 
 # 编码兜底：Windows 控制台默认 GBK 无法输出 emoji（✅❌⛔ 等），强制 stdout/stderr 用 UTF-8
 # 否则 qmt_monitor 在 --auto-sell 打印自动卖出开关时会抛 UnicodeEncodeError 而中断盯盘
@@ -42,27 +43,68 @@ import qmt_config as C
 sys.path.append(C.XTPACK)
 
 
-def load_positions_from_log():
-    """从 qmt_trade_log.csv 读取最近买入作为持仓(成本, 数量)。返回 (positions, vols)。"""
+def _buy_fee(amt, code):
+    """买入手续费：佣金(最低5元) + 沪市过户费（与 strategy_capital.py 同口径）。"""
+    return max(C.COMM_MIN, amt * C.COMM_RATE) + (amt * C.TRANS_RATE if code.startswith("6") else 0.0)
+
+
+def fifo_positions_from_log():
+    """从 qmt_trade_log.csv 用 FIFO 推导当前持仓与成本（含费均价，与 strategy_capital 同口径）。
+
+    返回 {code: (net_vol, avg_cost_含费)}。price=0 的市价清仓记录同样扣减；未买入过的代码忽略。
+    """
+    q = {}
     if not os.path.exists(C.TRADE_LOG):
-        return {}, {}
-    positions, vols = {}, {}
+        return q
+    qq = defaultdict(deque)
     with open(C.TRADE_LOG, encoding="utf-8-sig") as f:
-        for row in csv.DictReader(f):
-            if row.get("side") == "BUY":
-                code = row["code"]
-                positions[code] = float(row["price"])
-                try:
-                    vols[code] = int(float(row["vol"]))
-                except (TypeError, ValueError):
-                    vols[code] = 0
+        rows = list(csv.DictReader(f))
+    rows.sort(key=lambda r: r.get("time", ""))
+    for r in rows:
+        code, side = r.get("code", ""), r.get("side", "")
+        if not code:
+            continue
+        try:
+            vol = int(float(r["vol"]))
+            price = float(r["price"])
+        except (TypeError, ValueError, KeyError):
+            continue
+        if side == "BUY":
+            amt = price * vol
+            qq[code].append((vol, (amt + _buy_fee(amt, code)) / vol))
+        elif side == "SELL":
+            sv = vol
+            while sv > 0 and qq[code]:
+                v, cp = qq[code][0]
+                take = min(v, sv)
+                sv -= take
+                qq[code][0] = (v - take, cp)
+                if qq[code][0][0] <= 0:
+                    qq[code].popleft()
+    for code, dq in qq.items():
+        tv = sum(v for v, _ in dq)
+        if tv > 0:
+            tc = sum(v * c for v, c in dq)
+            q[code] = (tv, tc / tv)
+    return q
+
+
+def load_positions_from_log():
+    """从 qmt_trade_log.csv 用 FIFO 推导持仓（净额 + 含费成本）。返回 (positions, vols)。"""
+    positions, vols = {}, {}
+    for code, (vol, cost) in fifo_positions_from_log().items():
+        positions[code] = cost
+        vols[code] = vol
     return positions, vols
 
 
 def load_positions_from_qmt():
-    """从 miniQMT 实时查询账户持仓（成本=open_price，数量=可用）。失败返回空 dict。
+    """从 miniQMT 实时查询账户持仓。失败返回空 dict。
 
-    返回 (positions, vols)：positions[code]=成本价，vols[code]=可卖数量。
+    返回 (positions, vols, sellable)：
+      positions[code] = 成本价（优先成交记录 FIFO 含费成本；QMT open_price 不可靠，仅兜底）
+      vols[code]      = 总持仓量（volume，含 T+1 锁定，盯盘判断用）
+      sellable[code]  = 今日可卖量（can_use_volume，自动卖出用）
     """
     from xtquant import xttrader, xttype
     trader = xttrader.XtQuantTrader(C.USERDATA, int(time.time()))
@@ -70,27 +112,32 @@ def load_positions_from_qmt():
     try:
         if trader.connect() != 0:
             print("    !! QMT 交易通道连接失败")
-            return {}, {}
+            return {}, {}, {}
         account = xttype.StockAccount(C.ACCOUNT_ID)
         trader.subscribe(account)
         time.sleep(5)  # 等待持仓数据异步就绪
         positions = trader.query_stock_positions(account)
         if not positions:
             print("    !! QMT 未查询到持仓（可能查询超时）")
-            return {}, {}
-        pos_out, vol_out = {}, {}
+            return {}, {}, {}
+        fifo = fifo_positions_from_log()
+        pos_out, vol_out, sell_out = {}, {}, {}
         for p in positions:
             code = getattr(p, "stock_code", "")
-            vol = int(getattr(p, "can_use_volume", 0) or getattr(p, "volume", 0))
+            vol = int(getattr(p, "volume", 0) or 0)
             if not code or vol <= 0:
                 continue
-            pos_out[code] = float(getattr(p, "open_price", 0) or 0)
             vol_out[code] = vol
-        print(f"    QMT 实时持仓 {len(pos_out)} 只")
-        return pos_out, vol_out
+            sell_out[code] = int(getattr(p, "can_use_volume", 0) or 0)
+            if code in fifo and fifo[code][0] > 0:
+                pos_out[code] = fifo[code][1]          # 权威成本：成交记录 FIFO 含费均价
+            else:
+                pos_out[code] = float(getattr(p, "open_price", 0) or 0)
+        print(f"    QMT 实时持仓 {len(pos_out)} 只（成本优先取成交记录 FIFO）")
+        return pos_out, vol_out, sell_out
     except Exception as e:
         print(f"    !! QMT 查询持仓异常: {e!r}")
-        return {}, {}
+        return {}, {}, {}
     finally:
         trader.stop()
 
@@ -216,23 +263,25 @@ def main():
     ap.add_argument("--auto-sell", action="store_true", help="触发信号后自动卖出（真实委托，慎用）")
     args = ap.parse_args()
 
+    sellable = {}
     if args.positions:
         positions, vols = parse_positions(args.positions)
     else:
-        positions, vols = load_positions_from_qmt()
+        positions, vols, sellable = load_positions_from_qmt()
         src = "QMT 实时持仓"
         log_pos, log_vols = load_positions_from_log()
         if positions:
-            # 成本缺失用本地买入价补全；仍无成本则剔除（避免误报止盈/止损）
+            # 成本缺失用本地 FIFO 成本补全；仍无成本则剔除（避免误报止盈/止损）
             for c in list(positions.keys()):
                 if positions[c] <= 0:
-                    if c in log_pos:
+                    if c in log_pos and log_pos[c] > 0:
                         positions[c] = log_pos[c]
-                        print(f"    补成本 {c}: {log_pos[c]:.2f}（本地买入价）")
+                        print(f"    补成本 {c}: {log_pos[c]:.2f}（本地 FIFO 成本）")
                     else:
                         print(f"    !! {c} 无成本信息，剔除盯盘")
                         del positions[c]
                         vols.pop(c, None)
+                        sellable.pop(c, None)
         else:
             print("    QMT 无持仓数据，回退本地成交记录")
             src = "本地成交记录"
@@ -287,12 +336,13 @@ def main():
                    "cost": cost, "time": time.strftime("%Y-%m-%d %H:%M:%S")}
             if auto_sell:
                 vol = vols.get(code, 0)
-                if vol <= 0:
-                    print(f"      [!] {code} 无持仓数量，无法自动卖出（--positions 需带 vol 或补充交易记录）")
+                sell_vol = min(vol, sellable.get(code, vol)) if sellable else vol
+                if sell_vol <= 0:
+                    print(f"      [!] {code} 无可卖数量（T+1 锁定），跳过自动卖出")
                 else:
-                    order_id = _sell(code, vol, last)
+                    order_id = _sell(code, sell_vol, last)
                     if order_id is not None and order_id > 0:
-                        print(f"      [ALERT] 自动卖出 {code} {vol}股 @ 市价 -> order_id={order_id}")
+                        print(f"      [ALERT] 自动卖出 {code} {sell_vol}股 @ 市价 -> order_id={order_id}")
                         sold.add(code)
                         sig["auto_sold"] = True
                         sig["order_id"] = order_id
@@ -300,7 +350,7 @@ def main():
                             w = csv.writer(f)
                             if not os.path.exists(C.TRADE_LOG) or os.path.getsize(C.TRADE_LOG) == 0:
                                 w.writerow(["time", "code", "side", "vol", "price", "score", "order_id"])
-                            w.writerow([sig["time"], code, "SELL", vol, last, action, order_id])
+                            w.writerow([sig["time"], code, "SELL", sell_vol, last, action, order_id])
                     else:
                         print(f"      [FAIL] 自动卖出 {code} 失败（检查 miniQMT 客户端/账号）")
                         sig["auto_sold"] = False

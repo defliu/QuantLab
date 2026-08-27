@@ -358,7 +358,18 @@ def main():
             log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), t["code"], "SELL",
                              r["traded_vol"], t["price"], "TRIM_OVR", r["order_id"]])
 
-    # 3) 补仓/买入 target（委托守护；每笔前用实际可用资金做上限，防超买）
+    # ---- P0 资金池硬校验（2026-08-27 补强）：买入预算一律以策略资金池为硬上限 ----
+    # 教训：8/24 bug1 用账户全量可用资金(asset.cash)买入 300684 939万，远超 10 万资金池。
+    # 此处从策略资金池推导买入总额上限与单票上限，下单前逐笔校验，超限直接拒绝+报警（fail-loud）。
+    POOL_BUY_CAP = capital * (1 - C.RESERVE_CASH_PCT)          # 当日买入总额硬上限 = 资金池×95%
+    SINGLE_CAP = target_value                                   # 单票硬上限 = 资金池×95%÷目标数
+    if not (POOL_BUY_CAP > 0 and SINGLE_CAP > 0):
+        print("    !! [P0-资金池校验] 资金池<=0，拒绝全部买入（防超买）")
+        POOL_BUY_CAP = SINGLE_CAP = 0.0
+    placed_buy_total = 0.0  # 已放置买入金额累计
+    print(f"    [P0-资金池校验] 当日买入上限 {POOL_BUY_CAP:,.0f} 元 | 单票上限 {SINGLE_CAP:,.0f} 元")
+
+    # 3) 补仓/买入 target（委托守护；资金池硬校验 + 实际可用资金双重上限，防超买）
     for b in buy_orders:
         if not b.get("vol"):
             continue
@@ -369,6 +380,18 @@ def main():
         if vol < C.MIN_ORDER_VOL:
             print(f"    !! {b['code']} 可用资金不足一手({C.MIN_ORDER_VOL}股)，跳过")
             continue
+        order_amt = vol * b["price"]
+        # P0 硬校验 1：单笔买入额不得超过单票上限（防单票独吞资金池）
+        if order_amt > SINGLE_CAP * 1.02:
+            print(f"    !! [P0-资金池校验] {b['code']} 单笔 {order_amt:,.0f} > 单票上限 {SINGLE_CAP:,.0f}，拒绝（防超买）")
+            guard_note.append(f"买{b['code']}:POOL_BLOCK")
+            continue
+        # P0 硬校验 2：当日累计买入额不得超过资金池上限
+        if placed_buy_total + order_amt > POOL_BUY_CAP * 1.02:
+            print(f"    !! [P0-资金池校验] 累计买入 {placed_buy_total + order_amt:,.0f} > 资金池上限 {POOL_BUY_CAP:,.0f}，拒绝（防超买）")
+            guard_note.append(f"买{b['code']}:POOL_BLOCK")
+            continue
+        placed_buy_total += order_amt
         r = order_guard.order_with_guard(trader, account, b["code"], "BUY", vol, b["price"], "planA_new_top")
         print(f"    买入 {b['code']} {vol}股 -> {r['note']}")
         guard_note.append(f"买{b['code']}:{r['action']}")
