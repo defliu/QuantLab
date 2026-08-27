@@ -1,0 +1,27 @@
+{
+  "date": "20260827",
+  "target": [
+    {
+      "code": "300684.SZ",
+      "name": "中石科技",
+      "total": 86.5,
+      "prob": 0.685
+    },
+    {
+      "code": "000737.SZ",
+      "name": "北方铜业",
+      "total": 82.5,
+      "prob": 0.6452
+    }
+  ],
+  "strategy_capital": 137182.41,
+  "target_value_each": 65161.64,
+  "sell": [],
+  "buy": [],
+  "trim": [],
+  "hold": [
+    "000737.SZ",
+    "300684.SZ"
+  ],
+  "locked": []
+}

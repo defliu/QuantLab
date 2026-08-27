@@ -1,0 +1,86 @@
+{
+  "date": "2026-08-25",
+  "source": "wudao_mcp_dragon_tiger",
+  "complete": false,
+  "note": "MCP 实测当日数据（与增量库 8/25 涨跌幅交叉验证一致）；对话侧输出截断，完整 59 条待 HTTP 途径接入",
+  "rows": [
+    {
+      "stockCode": "600487",
+      "stockName": "亨通光电",
+      "reason": "日振幅值达15%的前五只证券",
+      "netBuy": 184959.3215
+    },
+    {
+      "stockCode": "002837",
+      "stockName": "英维克",
+      "reason": "日涨幅偏离值达7%的前五只证券",
+      "netBuy": 36866.4164
+    },
+    {
+      "stockCode": "002081",
+      "stockName": "金螳螂",
+      "reason": "日涨幅偏离值达7%的前五只证券",
+      "netBuy": 26780.2871
+    },
+    {
+      "stockCode": "002041",
+      "stockName": "登海种业",
+      "reason": "连续三个交易日内,涨幅偏离值累计达20%的证券",
+      "netBuy": 16726.0146
+    },
+    {
+      "stockCode": "601869",
+      "stockName": "长飞光纤",
+      "reason": "日振幅值达15%的前五只证券",
+      "netBuy": 14106.5914
+    },
+    {
+      "stockCode": "000603",
+      "stockName": "盛达资源",
+      "reason": "日跌幅偏离值达7%的前五只证券",
+      "netBuy": 12985.3273
+    },
+    {
+      "stockCode": "600127",
+      "stockName": "金健米业",
+      "reason": "日涨幅偏离值达7%的前五只证券",
+      "netBuy": 10363.18
+    },
+    {
+      "stockCode": "600127",
+      "stockName": "金健米业",
+      "reason": "日换手率达20%的前五只证券",
+      "netBuy": 10363.18
+    },
+    {
+      "stockCode": "688169",
+      "stockName": "石头科技",
+      "reason": "日涨幅达到15%的前五只证券",
+      "netBuy": 10235.87
+    },
+    {
+      "stockCode": "002703",
+      "stockName": "浙江世宝",
+      "reason": "日涨幅偏离值达7%的前五只证券",
+      "netBuy": 8005.5329
+    },
+    {
+      "stockCode": "688828",
+      "stockName": "国仪公司",
+      "reason": "日换手率达到30%的前五只证券",
+      "netBuy": 7918.46
+    },
+    {
+      "stockCode": "300097",
+      "stockName": "智云股份",
+      "reason": "日涨幅达到15%的前五只证券",
+      "netBuy": 7221.0337
+    },
+    {
+      "stockCode": "600103",
+      "stockName": "青山纸业",
+      "reason": "日涨幅偏离值达7%的前五只证券",
+      "netBuy": 5699.1752
+    }
+  ]
+}

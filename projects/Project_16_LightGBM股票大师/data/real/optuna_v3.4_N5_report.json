@@ -1,0 +1,141 @@
+{
+  "optuna": {
+    "n_trials": 20,
+    "best_params": {
+      "max_depth": 6,
+      "num_leaves": 63,
+      "min_child_samples": 1000,
+      "feature_fraction": 0.9,
+      "bagging_fraction": 0.8,
+      "lambda_l1": 0.023111690820757255,
+      "lambda_l2": 6.8525894383279224
+    },
+    "best_valid_ic": 0.12090750879101368
+  },
+  "fine_params": {
+    "objective": "binary",
+    "metric": "auc",
+    "learning_rate": 0.02,
+    "n_estimators": 12000,
+    "max_depth": 6,
+    "num_leaves": 63,
+    "min_child_samples": 1000,
+    "feature_fraction": 0.9,
+    "bagging_fraction": 0.8,
+    "lambda_l1": 0.023111690820757255,
+    "lambda_l2": 6.8525894383279224,
+    "random_state": 42,
+    "n_jobs": -1
+  },
+  "splits": {
+    "train": [
+      "2020-01-01",
+      "2023-06-30"
+    ],
+    "valid": [
+      "2023-07-01",
+      "2024-06-30"
+    ],
+    "test": [
+      "2024-07-01",
+      "2026-08-14"
+    ]
+  },
+  "metrics": {
+    "accuracy_0.5": 0.5200269690535547,
+    "ic_all": 0.08418730723882235,
+    "ic_daily_mean": 0.06671016264497916,
+    "icir": 0.5095738371236744,
+    "quantile_fwd_ret": {
+      "1": 6.21602122873685e-05,
+      "2": 0.005929711448681579,
+      "3": 0.006879768584502681,
+      "4": 0.0077060892939448304,
+      "5": 0.011169003840351929
+    }
+  },
+  "top20_features": [
+    [
+      "ex_days_since",
+      "2300"
+    ],
+    [
+      "fc_days_since",
+      "1916"
+    ],
+    [
+      "industry_mom20",
+      "1378"
+    ],
+    [
+      "rel_mom_20",
+      "1159"
+    ],
+    [
+      "above_ma60",
+      "888"
+    ],
+    [
+      "vol20",
+      "861"
+    ],
+    [
+      "mom_5",
+      "812"
+    ],
+    [
+      "mom_20",
+      "751"
+    ],
+    [
+      "mom_60",
+      "637"
+    ],
+    [
+      "above_ma20",
+      "633"
+    ],
+    [
+      "pb",
+      "622"
+    ],
+    [
+      "amount_ma5",
+      "618"
+    ],
+    [
+      "vol_ratio_5_20",
+      "615"
+    ],
+    [
+      "mom_10",
+      "577"
+    ],
+    [
+      "dist_250_low",
+      "575"
+    ],
+    [
+      "log_mv",
+      "493"
+    ],
+    [
+      "rsi6",
+      "410"
+    ],
+    [
+      "fin_ocf_to_profit",
+      "406"
+    ],
+    [
+      "pos_250",
+      "358"
+    ],
+    [
+      "dv_year_sum",
+      "335"
+    ]
+  ],
+  "model_file": "D:/QuantLab/models\\lgb_model_v3_v3.4_N5.txt",
+  "verdict": "PASS: test IC 显著为正，模型已保存，可进入阶段3(双轨选股接入)"
+}

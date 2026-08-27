@@ -1,0 +1,54 @@
+{
+  "date": "20260825",
+  "target": [
+    {
+      "code": "300684.SZ",
+      "name": "中石科技",
+      "total": 64.5,
+      "prob": 0.7512
+    },
+    {
+      "code": "000960.SZ",
+      "name": "锡业股份",
+      "total": 64.0,
+      "prob": 0.5747
+    }
+  ],
+  "strategy_capital": 99935.35,
+  "target_value_each": 47469.29,
+  "sell": [
+    {
+      "code": "601865.SH",
+      "cost": 10.24177,
+      "vol": 3000
+    },
+    {
+      "code": "002237.SZ",
+      "cost": 15.1465,
+      "vol": 2000
+    }
+  ],
+  "buy": [
+    {
+      "code": "300684.SZ",
+      "vol": 500,
+      "held_vol": 0,
+      "held_value": 0.0,
+      "price": 86.29,
+      "total": 64.5,
+      "action": "补仓"
+    },
+    {
+      "code": "000960.SZ",
+      "vol": 1300,
+      "held_vol": 0,
+      "held_value": 0.0,
+      "price": 34.73,
+      "total": 64.0,
+      "action": "补仓"
+    }
+  ],
+  "trim": [],
+  "hold": [],
+  "locked": []
+}

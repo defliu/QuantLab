@@ -1,0 +1,39 @@
+{
+  "date": "20260824",
+  "target": [
+    {
+      "code": "300684.SZ",
+      "name": "中石科技",
+      "total": 68.5,
+      "prob": 0.7512
+    },
+    {
+      "code": "002237.SZ",
+      "name": "恒邦股份",
+      "total": 67.5,
+      "prob": 0.6217
+    }
+  ],
+  "strategy_capital": 101852.34,
+  "target_value_each": 48379.86,
+  "sell": [],
+  "buy": [
+    {
+      "code": "002237.SZ",
+      "vol": 1200,
+      "held_vol": 2000,
+      "held_value": 30160.0,
+      "price": 15.08,
+      "total": 67.5,
+      "action": "补仓"
+    }
+  ],
+  "trim": [],
+  "hold": [
+    "002237.SZ",
+    "300684.SZ"
+  ],
+  "locked": [
+    "601865.SH"
+  ]
+}
