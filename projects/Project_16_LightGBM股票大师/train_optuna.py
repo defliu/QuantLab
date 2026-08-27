@@ -24,6 +24,7 @@ import pandas as pd
 from scipy.stats import spearmanr
 import lightgbm as lgb
 import optuna
+from datetime import datetime
 
 import data_config as DC
 
@@ -114,7 +115,7 @@ def main():
     ap.add_argument("--panel", default="v1", choices=["v1", "v2", "v3"], help="使用 v1/v2/v3 面板")
     ap.add_argument("--panel-file", default=None, help="自定义面板 parquet 绝对路径(测试用，覆盖 --panel)")
     ap.add_argument("--meta-file", default=None, help="自定义特征 json 绝对路径(测试用)")
-    ap.add_argument("--model-tag", default="", help="模型文件名后缀，如 _enh（默认写入 v3 正式模型）")
+    ap.add_argument("--model-tag", default="", help="模型文件名后缀（候选文件，如 _enh / _retrain_20260825；缺省自动 _cand_YYYYMMDD；生产模型经 promote_model.py 提升）")
     ap.add_argument("--split-train", default="2020-01-01/2023-06-30")
     ap.add_argument("--split-valid", default="2023-07-01/2024-06-30")
     ap.add_argument("--split-test", default="2024-07-01/2026-08-14")
@@ -127,11 +128,17 @@ def main():
     if args.panel_file:
         panel_path = args.panel_file
         meta_path = args.meta_file or os.path.join(HERE, "data", "features_v3_enh.json")
-        out_model = os.path.join(DC.MODEL_DIR, f"lgb_model_v3{args.model_tag}.txt")
     else:
         panel_path = os.path.join(HERE, "data", f"feature_panel{suffix}.parquet")
         meta_path = os.path.join(HERE, "data", f"features{suffix}.json")
-        out_model = DC.model_file(suffix)
+
+    # 【研发-生产隔离】一律输出候选文件，绝不写裸生产模型名（lgb_model_v3.txt）。
+    # 生产模型只允许经 promote_model.py 显式提升。model_tag 为空时自动追加 _cand_YYYYMMDD。
+    _tag = args.model_tag or "_cand_" + datetime.now().strftime("%Y%m%d")
+    if args.panel_file:
+        out_model = os.path.join(DC.MODEL_DIR, f"lgb_model_v3{_tag}.txt")
+    else:
+        out_model = os.path.join(DC.MODEL_DIR, f"lgb_model{suffix}{_tag}.txt")
 
     print("[1/5] 读取特征面板 ...")
     df = pd.read_parquet(panel_path)
@@ -244,6 +251,7 @@ def main():
     with open(OUT_REPORT, "w", encoding="utf-8") as f:
         json.dump(report, f, ensure_ascii=False, indent=2, default=str)
     print("    模型保存到:", out_model)
+    print("    [隔离] 已保存为候选模型；若需上线请运行 promote_model.py --model-file <路径> --suffix v3")
     print("    报告保存到:", OUT_REPORT)
 
 

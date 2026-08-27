@@ -28,17 +28,34 @@ New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 $stamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $log = Join-Path $logDir "$Mode`_$stamp.log"
 
-# ---- Python 解释器（优先 PATH，找不到则用 TraeWork 内置）----
-$py = (Get-Command python -ErrorAction SilentlyContinue).Source
-if (-not $py) {
-    $py = "C:\Users\Administrator\AppData\Roaming\TRAE SOLO CN\ModularData\ai-agent\vm\tools\python\python.exe"
-}
-
+# ---- 日志函数（先定义，供后续 Python 选择段使用）----
 function Log($m) {
     $line = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')  $m"
     Write-Host $line
     Add-Content -Path $log -Value $line -Encoding UTF8
 }
+
+# ---- Python 解释器（优先 PATH，但必须带 numpy/lightgbm；否则回退内置）----
+$FALLBACK_PY = "C:\Users\Administrator\AppData\Roaming\TRAE SOLO CN\ModularData\ai-agent\vm\tools\python\python.exe"
+function Get-GoodPy {
+    $cands = @()
+    $p = (Get-Command python -ErrorAction SilentlyContinue).Source
+    if ($p) { $cands += $p }
+    if (Test-Path $FALLBACK_PY) { $cands += $FALLBACK_PY }
+    foreach ($c in $cands) {
+        try {
+            $v = & $c -c "import numpy, lightgbm; print('OK')" 2>$null | Select-Object -Last 1
+            if ($v -eq 'OK') { return $c }
+        } catch { }
+    }
+    return $null
+}
+$py = Get-GoodPy
+if (-not $py) {
+    Log "!! 未找到带 numpy/lightgbm 的 Python，定时任务无法运行"
+    exit 1
+}
+Log "使用 Python: $py"
 
 function Run-Py($argsStr) {
     Log ">> python $argsStr"
@@ -92,8 +109,17 @@ try {
         }
         "retrain" {
             Log "[周更重训] 开始（约1小时）"
+            # 0) 重训前备份当前正式模型，防止覆盖（SERVER_DEPLOY.md 六、安全与备份 第2条要求）
+            $formalModel = "D:/QuantLab/models/lgb_model_v3.txt"
+            if (Test-Path $formalModel) {
+                $modelBak = Join-Path $proj ("versions\models\lgb_model_v3_pre_retrain_" + (Get-Date -Format 'yyyyMMdd_HHmmss') + ".txt")
+                Copy-Item $formalModel $modelBak -Force
+                Log "已备份正式模型 -> $modelBak"
+            }
             Run-Py "build_features_v2.py"
-            Run-Py "train_optuna.py --panel v3 --n-trials 20"
+            # 写入带日期后缀的候选模型（lgb_model_v3_retrain_YYYYMMDD.txt），不覆盖正式模型 lgb_model_v3.txt
+            $retrainTag = "_retrain_" + (Get-Date -Format 'yyyyMMdd')
+            Run-Py "train_optuna.py --panel-file data/feature_panel_v3.parquet --meta-file data/features_v3.json --n-trials 20 --model-tag $retrainTag"
         }
         "factor" {
             Log "[月度因子监控] 开始"

@@ -26,6 +26,7 @@
 - **全局研究视图**：`研究总览与路线图.md` 一眼看清"以前研究过什么 / 踩过什么坑 / 现在研究什么 / 未来研究什么"；旧项目史料在 `archive/legacy_qmt_strategies/`。
 - **未完工作看板（硬规则，2026-08-09 立）**：`全局控制台.md`「三、当前任务看板」是唯一任务看板（TODO/DOING/DONE/陈旧待裁决）。**开工前先读它确认有哪些未完工作；任务新建/完成/阻塞/拍板必须当场更新它，不更新=工作没做完。** 策略级状态同步更新下方「策略项目状态」表。
 - **QMT 实盘下单**：一律复用 `broker/qmt_order.py`（防坑版），禁止裸调 `passorder`；规范与踩坑见 `broker/QMT委托买卖防坑指南.md`。
+- **项目级记忆（2026-08-25 自 trae_workspace 迁移）**：各策略项目的历史研发记忆（硬约束/工程惯例/经验教训）见项目目录下 `PROJECT_MEMORY.md`，接手项目先读它再读代码。当前已有：`projects/Project_16_LightGBM股票大师/PROJECT_MEMORY.md`；对话级记忆归档见 `archive/_from_trae_workspace_20260825/memory_projects/trae_workspace/`。
 
 ## 核心模块认知
 
@@ -76,7 +77,10 @@
   - `match/case`
   - f-string
 - `passorder()` 是全局函数，不是 `C.passorder()`。
-- 账号 ID 必须硬编码：`70180771`（2026-08-23 换新国金QMT模拟账号，原 `67014907` 已停用；未迁移的旧 build/脚本引用旧号会废单，迁移清单见看板 T-20260823-002）。
+- 账号 ID 必须硬编码，**双账号并存（2026-08-25 用户确认，各跑各的策略，禁止混用）**：
+  - `67014907`（旧国金QMT账号，**仍在用**）：miniQMT（xtquant）委托，执行 Project_16 LightGBM 策略，见 `projects/Project_16_LightGBM股票大师/qmt_config.py` 的 `ACCOUNT_ID`。
+  - `70180771`（新国金QMT模拟账号）：纯 QMT 端执行 ATR低波 / 价值小盘V2 等策略，见 `config/*.yaml`。
+  - 哪个策略用哪个号必须严格对应；引用错号会废单。此前「67014907 已停用」的说法已推翻，Project_16 的 build/脚本引用 `67014907` 属正常，不是废单。
 - **持票账本（holdings/state 文件）必须内嵌 `account_id` 戳**；加载时若 `account_id` 字段缺失或与当前策略 `ACCOUNT_ID` 不匹配，必须自动备份旧档（重命名为 `.bak_acct_<旧戳>_<时间戳>`）并空仓起步（fail-safe），严禁拿错账号的账本交易（T-20260823-004）。
 - `C.get_market_data_ex` 缺少财务字段，PE/PB/circ_mv 必须来自预生成 CSV。
 - QMT Python 3.6.8 无 pyarrow，不能读 parquet，数据源用 CSV。
@@ -101,7 +105,7 @@
 
 ### 资金分配红线
 
-- 国金模拟账号 `70180771`（2026-08-23 换新，原 `67014907` 已停用）多策略共存，每个策略锁定独立「虚拟子账户」本金（`capital_base`），只能动自己 ledger 的票和自己的额度，**绝不抢占他人资金、绝不纳管/卖出他人持仓**。
+- 国金QMT账号 `70180771`（新模拟账号）下多策略共存，每个策略锁定独立「虚拟子账户」本金（`capital_base`），只能动自己 ledger 的票和自己的额度，**绝不抢占他人资金、绝不纳管/卖出他人持仓**。另一账号 `67014907`（旧号，miniQMT 跑 Project_16 研发策略，2026-08-25 用户确认仍在用）不在本分配表内，独立管理。
 - **账户总额约束（硬）**：`Σ 各策略 capital_base ≤ 账户实际总资产`。唯一事实源 `D:/QuantLab/config/capital_allocation.yaml`（已从 QMT_STRATEGIES 迁移并删副本）；改后必须跑 `D:/QuantLab/scripts/check_capital_allocation.py`（退出码 0 才许部署）。
 - 账户 `total_capital` 必须在国金QMT客户端查「总资产」填入；未填只警告不报错，但生产环境必填。
 - 当前已锁：**仅 `atr_lowvol_equalweight`（ATR低波等权不杠杆）10 万**。`dual_band_6plus2`（主升浪6+2）已于 2026-08-05 淘汰，不再占用额度。新增/调额先改分配表再校验。
@@ -118,7 +122,7 @@
 ## 配置系统（三级级联）
 
 1. **全局配置** `config/settings.yaml`：项目信息、数据源、回测参数、因子预处理、策略默认股票池、日志。
-2. **实盘配置** `config/trading_config.yaml`：账号（70180771，2026-08-23 换新）、交易参数、风控阈值、委托管理、调度计划、通知。
+2. **实盘配置** `config/trading_config.yaml`：账号（70180771，新国金QMT模拟账号，跑 ATR/v2 等纯 QMT 策略）、交易参数、风控阈值、委托管理、调度计划、通知。**Project_16 例外**：账号用 `67014907`（见项目 `qmt_config.py`，miniQMT 委托）。
 3. **项目级配置** `projects/Project_XX_*/config/strategy.yaml`：项目独立参数。
 
 ## 文件通信

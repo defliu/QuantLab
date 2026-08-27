@@ -6,7 +6,7 @@ import subprocess
 import time
 from datetime import datetime
 
-PROJECT_DIR = r"D:\trae_workspace\projects\Project_16_LightGBM股票大师"
+PROJECT_DIR = r"D:\QuantLab\projects\Project_16_LightGBM股票大师"
 CLEAR_LOG = os.path.join(PROJECT_DIR, "data_live", "qmt_clear_atopen_20260821.log")
 TRADE_LOG = os.path.join(PROJECT_DIR, "data", "qmt_trade_log.csv")
 NOTIFY_LOG = os.path.join(PROJECT_DIR, "data_live", "notify_result_20260821.log")

@@ -19,12 +19,33 @@ sys.path.append(C.XTPACK)
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--keep", default="", help="保留不卖出的股票(逗号分隔)")
+    ap.add_argument("--auto-keep", action="store_true", help="自动从 qmt_trade_log 计算当前策略持仓作为保留名单")
     ap.add_argument("--live", action="store_true", help="实际卖出(默认 dry-run)")
     args = ap.parse_args()
 
     from xtquant import xttrader, xttype, xtconstant
 
     keep = set(c.strip() for c in args.keep.split(",") if c.strip())
+    if args.auto_keep:
+        if os.path.exists(C.TRADE_LOG):
+            bought, sold = {}, {}
+            for row in csv.DictReader(open(C.TRADE_LOG, encoding="utf-8-sig")):
+                code = (row.get("code") or "").strip()
+                if not code:
+                    continue
+                try:
+                    vol = int(float(row.get("vol", 0) or 0))
+                except ValueError:
+                    vol = 0
+                side = row.get("side", "")
+                if side == "BUY":
+                    bought[code] = bought.get(code, 0) + vol
+                elif side == "SELL":
+                    sold[code] = sold.get(code, 0) + vol
+            keep = {c for c, b in bought.items() if b - sold.get(c, 0) > 0}
+            print(f"    [auto-keep] 当前策略持仓(保留): {sorted(keep) if keep else '无'}")
+        else:
+            print("    !! 未找到成交记录，auto-keep 无法计算策略持仓，将清空所有持仓")
 
     print("[1/4] 连接 miniQMT 并查询持仓 ...")
     trader = xttrader.XtQuantTrader(C.USERDATA, int(time.time()))
@@ -68,15 +89,31 @@ def main():
         trader.stop()
         return
 
-    print("[3/4] 执行清仓卖出 ...")
+    print("[3/4] 执行清仓卖出（委托守护：未成撤单重试，涨跌停跳过）...")
+    import order_guard
     log_rows = []
+    guard_note = []
     for s in to_sell:
-        order_id = trader.order_stock(
-            account, s["code"], xtconstant.STOCK_SELL, s["vol"],
-            xtconstant.LATEST_PRICE, 0.0, "traework_clear", "clear_all_except_keep",
-        )
-        print(f"    卖出 {s['code']} {s['vol']} 股 -> order_id={order_id}")
-        log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), s["code"], "SELL", s["vol"], 0.0, 0.0, order_id])
+        price = 0.0
+        try:
+            from xtquant import xtdata
+            xtdata.subscribe_quote(s["code"], period="tick", count=-1)
+            import time as _t
+            _t.sleep(0.3)
+            tick = xtdata.get_full_tick([s["code"]]).get(s["code"])
+            if tick:
+                price = float(tick.get("lastPrice", 0) or 0)
+        except Exception:
+            price = 0.0
+        r = order_guard.order_with_guard(trader, account, s["code"], "SELL", s["vol"],
+                                         price if price > 0 else None, "clear_all_except_keep")
+        print(f"    卖出 {s['code']} {s['vol']} 股 -> {r['note']}")
+        guard_note.append(f"{s['code']}:{r['action']}")
+        if r["ok"] and r["traded_vol"] > 0:
+            log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), s["code"], "SELL",
+                             r["traded_vol"], price, 0.0, r["order_id"]])
+    if guard_note:
+        print("  [委托守护] " + " | ".join(guard_note))
 
     print("[4/4] 记录清仓委托 ...")
     if log_rows:

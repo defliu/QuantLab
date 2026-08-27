@@ -91,7 +91,7 @@ Project_16_LightGBM股票大师/
 - miniQMT 客户端：`E:\国金QMT交易端模拟`（必须运行并登录，xtdata/xttrader 依赖）
 - xtquant 路径：`E:\国金QMT交易端模拟\bin.x64\Lib\site-packages`（qmt_*.py 已自动 append）
 - 数据：`E:/astock`（主库，周更）、`D:/QuantLab/models`（模型输出）
-- 交易账号：qmt_config.py 的 ACCOUNT_ID（当前 70180771 测试账号，模拟盘）
+- 交易账号：qmt_config.py 的 ACCOUNT_ID（当前 67014907 测试账号，模拟盘）
 
 ## 四、数据管线（主库只读原则）
 

@@ -120,6 +120,112 @@ python deploy_predict.py --model v3 --top-k 5
 
 ---
 
+## [待办] QMT 客户端内置风控策略（止损/止盈/移动止盈内嵌 QMT，脱离定时任务）
+
+- 状态：**待实施**（2026-08-24 建立，用户要求把方案落盘任务清单）
+- 背景：当前风控依赖 Windows 计划任务（`Quant_Monitor_0945/1030/1100/1330/1400/1430` 共 6 个）→ `run_scheduled.ps1 -Mode monitor` → Python 连 miniQMT，链路外部依赖多、触发精度低（约 30 分钟一次，间隙可能漏触发止损/止盈）。用户希望把风控直接做成 **QMT 客户端内置策略脚本**，粘贴到 QMT「模型交易/策略交易」模块运行，交易时段内每 tick 触发，最小化外部依赖。
+
+### 方案要点
+
+- 载体：QMT 客户端策略框架（`ContextInfo`：`init`/`handlebar`/`order_callback`/`deal_callback`，`passorder` 下单），本机 `xtquant/qmttools` 已确认该框架可用。
+- 规则复刻现有 `qmt_monitor.py`：止损 -7% / 止盈 +15% / 移动止盈 8%（成本价 + 当日最高价）。
+- 涨跌停跳过：`get_instrument_detail` 的 `UpStopPrice`/`DownStopPrice` 判断封板，封板不成交则跳过。
+- 委托保障：QMT 原生 `order_callback`/`deal_callback` 回报确认；`passorder` 市价卖出。
+- 策略持仓来源：本地 `data/qmt_trade_log.csv`（BUY 且未清空的代码 + 成本价），每次 `handlebar` 刷新，与 9:45 换仓自动同步。
+- 唯一依赖：QMT 客户端本身保持登录在线（数据与下单都在其本地，无法避免）。
+
+### 与现状依赖对比
+
+| 依赖点 | 当前(计划任务) | QMT 内置策略 |
+|---|---|---|
+| Windows 计划任务 | 6 个 | 无 |
+| PowerShell 调度 | 依赖 | 无 |
+| 外部 Python 进程 | 每次临时拉起 | 无（QMT 内嵌 Python） |
+| 触发精度 | 约 30 分钟一次 | 每 tick（毫秒级） |
+
+### 实施步骤
+
+1. 编写 `risk_guard.py`（QMT 策略格式：`init`/`handlebar`/`order_callback`/`deal_callback` + `passorder`）。
+2. 在 QMT 客户端「模型交易/策略交易」模块粘贴运行，选 tick 或 1m 周期 + 模拟/实盘交易模式。
+3. 模拟盘验证 1-2 天（触发、下单、回报链路）。
+4. 确认后切实盘；9:45 换仓、9:25 预判等决策类任务保留现有定时链路，**风控执行与定时任务彻底解耦**。
+
+### 验收标准
+
+- 交易时段内无需任何外部定时，`handlebar` 自动检查止损/止盈/移动止盈并触发市价卖出。
+- 涨跌停封板时自动跳过、不无限重试。
+- `order_callback`/`deal_callback` 可确认委托与成交回报。
+
+### 注意事项
+
+- QMT 客户端必须保持登录在线（无人值守最大风险点，建议后续加保活守护）。
+- 策略持仓变动后需同步 HOLDINGS：优先实现每次 `handlebar` 读本地 `qmt_trade_log.csv` 自动刷新。
+- 非交易时段 `query_stock_positions`/撤单可能不稳定（见 `QMT避坑指南.md`），策略内注意重试与兜底。
+
+---
+
+## [待办] v4 面板：接入资金流数据（补 F2/F5 真实数据缺口）
+
+- 状态：**待实施**（2026-08-24 建立，用户要求把 v4 规划落盘）
+- 背景：当前 F2（资金）用 `volume_ratio` 量比做离线代理、F5 用 `rel_mom_20` 相对动量做代理（见 `deploy_predict.py` 注释），无真实资金流字段。外部数据源提供 7 套 A 股资金流数据（通用口径 2007-01 至今 / 同花顺 2024-12 起 / 东财 2023-09 起 / 概念板块 / 行业板块 / 大盘），可弥补回测本地数据源不足。
+
+### 数据源要点（外部供应商）
+
+| 数据集 | 口径 | 时间范围 | 用途 |
+|---|---|---|---|
+| `moneyflow` | 通用 | 2007-01-04 至今 | **唯一能进长历史回测**，F2 个股资金 |
+| `moneyflow_ths` | 同花顺 | 2024-12-24 起 | 短线/量化因子（近端） |
+| `moneyflow_dc` | 东财 | 2023-09-11 起 | 多口径对比（近端） |
+| `moneyflow_cnt_ths` | 同花顺概念 | 2024-09-10 起 | 板块轮动 |
+| `moneyflow_ind_ths` | 同花顺行业 | 2024-09-10 起 | F5 行业资金 |
+| `moneyflow_ind_dc` | 东财行业+概念 | 2023-09-12 起 | F5 双维度 |
+| `moneyflow_mkt_dc` | 东财大盘 | 2023-04-17 起 | 大盘资金/择时 |
+
+格式：CSV / Parquet / DuckDB 三选一，每周更新，字段规整。
+
+### 接入成本评估
+
+- **格式选 Parquet**：与现有 `stock_daily.parquet` / `feature_panel_v2.parquet` 一致，零新依赖；放 `E:/astock/moneyflow/`。
+- **数据费用**：待确认（订阅制）。
+- **开发**：写 `moneyflow_ingest.py` 归一化入库 + 字段核对脚本。
+- **重训**：复用 R2 已跑通的全量重建流程（475 万行，研发电脑约 1 小时）。
+- ⚠️ **最大风险：周更 vs 日更错位**。资金流每周更新，实盘当日/昨日资金流缺口无法由它补 → v4 离线资金流特征主要用于提升模型/回测；**盘中实时资金流仍靠 TDX**（`review_full.py` 的 `main_net_inflow`），两者定位不同、不可互相替代。
+
+### 实施步骤（Phase A 核心优先）
+
+1. **数据接入**：`moneyflow_ingest.py` 把 `moneyflow`（2007-今）归一化存入 `E:/astock/moneyflow/moneyflow.parquet`（`ts_code + trade_date + 主力/超大单/大单/中单/小单 净流入+占比+成交额`）。
+2. **特征设计**（新增 6-8 个，替代量比代理）：
+   - `mf_main_net`：当日主力净流入 ÷ 当日成交额（归一化防市值偏差）
+   - `mf_main_net_5d` / `_20d`：主力净流入 5/20 日滚动和
+   - `mf_super_ratio`：超大单净流入占比
+   - `mf_main_trend`：主力净流入 5 日均 vs 20 日均（趋势方向）
+   - `mf_inflow_days`：近 10 日主力净流入为正的天数
+3. **建面板**：新写 `build_features_v3.py`（v2 基础上 + 上述特征，`merge_asof backward` 防未来函数），输出 `feature_panel_v4.parquet`。
+4. **重训**：`train_optuna.py --panel v4`，研发电脑跑；对比 v3_enh（+0.056%）是否接近/超过判定线 +0.3%。
+5. **评分卡 F2 升级**：`deploy_predict.py` 的 `_score_f2` 从量比代理 → 用 `mf_main_net` 真实资金流打分（F2 权重 0.20）。
+
+### Phase B（可选）
+
+`moneyflow_mkt_dc`（大盘，2023-04 起）→ 大盘资金风控二次确认：叠加现有沪深300涨跌幅两档（-1.5%/-1.0%），加"全市场主力净流出"信号，共振时更保守。
+
+### Phase C（可选）
+
+`moneyflow_ind_dc`/`moneyflow_ind_ths` → F5 真实板块资金：F5 从 `rel_mom_20` 相对动量升级为"所属行业当日主力净流入"打分，与 `review_full.py` 的行业涨幅 F5 互相印证。
+
+### 验收标准
+
+- `moneyflow.parquet` 入库行数/时间范围与供应商声明一致。
+- v4 面板回测（open→open + 0.1% 滑点）优于 v3_enh（+0.056%）。
+- F2 评分卡用真实资金流后，选股清单的 F2 列与 TDX 实时口径方向一致。
+
+### 注意事项
+
+- 先拿 `moneyflow` 通用口径样品核对字段/质量，再全量接入。
+- 历史覆盖只有 `moneyflow`（2007-今）能进长回测；ths/dc 口径仅限近端验证。
+- 周更数据的当日缺口由 TDX 实时通道补，v4 不替代盘中复核。
+
+---
+
 ## [已关闭] 核对模拟盘交易费用与真实费率是否一致
 
 - 状态：**已关闭**（2026-08-22，用户决策）

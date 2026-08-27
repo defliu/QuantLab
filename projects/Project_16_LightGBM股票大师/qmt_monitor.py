@@ -28,6 +28,14 @@ import sys
 import time
 import urllib.request
 
+# 编码兜底：Windows 控制台默认 GBK 无法输出 emoji（✅❌⛔ 等），强制 stdout/stderr 用 UTF-8
+# 否则 qmt_monitor 在 --auto-sell 打印自动卖出开关时会抛 UnicodeEncodeError 而中断盯盘
+for _stream in ("stdout", "stderr"):
+    try:
+        getattr(sys, _stream).reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 import qmt_config as C
 
 # 加载 xtquant（放末尾，避免覆盖本环境的 numpy）
@@ -241,7 +249,7 @@ def main():
     watchlist = list(dict.fromkeys(watchlist))
 
     print(f"[盯盘] 持仓 {len(positions)} 只 | 止损 {C.STOP_LOSS_PCT:.0%} | 止盈 {C.TAKE_PROFIT_PCT:.0%} | 移动止盈 {C.TRAILING_PCT:.0%}")
-    print(f"       自动卖出: {'✅ 开启(真实委托)' if auto_sell else '❌ 关闭(仅预警)'} | 连接: {C.USERDATA}")
+    print(f"       自动卖出: {'[ON] 开启(真实委托)' if auto_sell else '[OFF] 关闭(仅预警)'} | 连接: {C.USERDATA}")
 
     try:
         from xtquant import xtdata
@@ -270,7 +278,7 @@ def main():
             action, note = evaluate(cost, tick, peak.get(code, cost))
             last = float(tick.get("lastPrice", 0))
             peak[code] = max(peak.get(code, cost), last)
-            flag = {"HOLD": "·", "SELL_STOP": "⛔", "SELL_TAKE_PROFIT": "🟢", "SELL_TRAILING": "🟡"}.get(action, "?")
+            flag = {"HOLD": ".", "SELL_STOP": "[STOP]", "SELL_TAKE_PROFIT": "[TP]", "SELL_TRAILING": "[TRAIL]"}.get(action, "?")
             print(f"    {flag} {code} 现价{last:>7.2f} | 成本{cost:>7.2f} | {note}")
             if action == "HOLD":
                 continue
@@ -280,11 +288,11 @@ def main():
             if auto_sell:
                 vol = vols.get(code, 0)
                 if vol <= 0:
-                    print(f"      ⚠️ {code} 无持仓数量，无法自动卖出（--positions 需带 vol 或补充交易记录）")
+                    print(f"      [!] {code} 无持仓数量，无法自动卖出（--positions 需带 vol 或补充交易记录）")
                 else:
                     order_id = _sell(code, vol, last)
                     if order_id is not None and order_id > 0:
-                        print(f"      🚨 自动卖出 {code} {vol}股 @ 市价 -> order_id={order_id}")
+                        print(f"      [ALERT] 自动卖出 {code} {vol}股 @ 市价 -> order_id={order_id}")
                         sold.add(code)
                         sig["auto_sold"] = True
                         sig["order_id"] = order_id
@@ -294,7 +302,7 @@ def main():
                                 w.writerow(["time", "code", "side", "vol", "price", "score", "order_id"])
                             w.writerow([sig["time"], code, "SELL", vol, last, action, order_id])
                     else:
-                        print(f"      ❌ 自动卖出 {code} 失败（检查 miniQMT 客户端/账号）")
+                        print(f"      [FAIL] 自动卖出 {code} 失败（检查 miniQMT 客户端/账号）")
                         sig["auto_sold"] = False
             signals.append(sig)
 
@@ -303,7 +311,7 @@ def main():
             with open(C.SIGNAL_FILE, "w", encoding="utf-8") as f:
                 json.dump({"time": time.strftime("%Y-%m-%d %H:%M:%S"), "signals": signals},
                           f, ensure_ascii=False, indent=2)
-            print(f"    🚨 触发 {len(signals)} 条信号，已写入 {C.SIGNAL_FILE}")
+            print(f"    [ALERT] 触发 {len(signals)} 条信号，已写入 {C.SIGNAL_FILE}")
             notify_feishu(build_push_text(signals))
         else:
             notify_feishu(f"【盯盘 {time.strftime('%H:%M')}】无触发信号，持仓正常，持有中")

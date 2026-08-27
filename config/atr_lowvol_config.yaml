@@ -20,4 +20,4 @@ sell:
   condition_exit: true     # 条件失效退出
 
 account:
-  id: "70180771"  # 2026-08-23 换新模拟账号（原67014907）
+  id: "70180771"  # 国金QMT模拟端账号（跑纯 QMT 策略；旧号 67014907 仍用 miniQMT 跑 Project_16，双账号并存）

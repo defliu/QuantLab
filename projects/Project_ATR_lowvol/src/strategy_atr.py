@@ -222,7 +222,9 @@ def _load_holdings():
             _g_my_codes = data.get('holdings', {})
             _g_cumulative_pnl = data.get('cumulative_pnl', 0.0)
             _g_nav_history = data.get('nav_history', [])
-            print("  [ATR] 加载持仓 %d 只, 累计盈亏 %.2f" % (len(_g_my_codes), _g_cumulative_pnl))
+            global _g_last_rebalance_key
+            _g_last_rebalance_key = data.get('last_rebalance_key', '')
+            print("  [ATR] 加载持仓 %d 只, 累计盈亏 %.2f, 季度键=%s" % (len(_g_my_codes), _g_cumulative_pnl, _g_last_rebalance_key))
         except Exception as e:
             print("  [ATR] 持仓加载失败: %s" % e)
             _g_my_codes = {}
@@ -242,6 +244,7 @@ def _save_holdings():
             'holdings': _g_my_codes,
             'cumulative_pnl': _g_cumulative_pnl,
             'nav_history': _g_nav_history[-500:],  # 保留最近500条
+            'last_rebalance_key': _g_last_rebalance_key,
             'updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         }
         with open(fpath, 'w', encoding='utf-8') as f:

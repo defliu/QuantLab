@@ -1,4 +1,4 @@
-﻿{
+{
   "mcpServers": {
     "metasearch": {
       "type": "stdio",
@@ -8,6 +8,10 @@
     "ashare-mcp": {
       "type": "http",
       "url": "http://localhost:8000/mcp"
+    },
+    "tdx": {
+      "type": "stdio",
+      "command": "D:\\QuantLab\\mcp\\tdx-mcp\\start.bat"
     }
   }
 }
