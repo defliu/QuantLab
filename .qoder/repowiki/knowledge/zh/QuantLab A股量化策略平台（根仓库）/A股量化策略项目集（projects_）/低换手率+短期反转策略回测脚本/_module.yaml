@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_07_low_turnover_reversal
+title: 低换手率+短期反转策略回测脚本
+scope:
+    - projects/Project_07_低换手反转/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 7fce1bdb-28af-4d94-b0cd-235ea334acf4
+kk_ordinal: 5
+kk_cards:
+    architecture_design:
+        id: c1f3bbef-77b0-462a-b304-229d4d3780b6
+        title: 低换手率+短期反转策略回测脚本
+    coding_conventions:
+        id: 55c95c59-a6ed-4f3a-911f-1a1bfe59a4c9
+        title: 低换手率+短期反转策略回测脚本
+    overview:
+        id: ec2f34ff-1d8a-4ac7-9d00-8eed1d5e74cd
+        title: 低换手率+短期反转策略回测脚本
+    tech_stack:
+        id: 75b03790-64c1-4196-99ca-b274535f7f96
+        title: 低换手率+短期反转策略回测脚本
+    unique_setup_and_commands:
+        id: 43cde634-e2c0-4c59-936c-f6bb60612c5d
+        title: 低换手率+短期反转策略回测脚本

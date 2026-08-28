@@ -1,0 +1,56 @@
+schema_version: 1
+module_path: root
+title: QuantLab A股量化策略平台（根仓库）
+scope:
+    - main.py
+    - scripts/
+    - archive/
+    - projects/
+    - .codegraph/
+    - .freebuff/
+    - .mimocode/
+    - .omo/
+    - .trae-html-share-packages/
+    - .workbuddy/
+    - .zcode/
+    - __pycache__/
+    - _tavily_search.py
+    - _tavily_extract.py
+    - 讨论室/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 844bb487-2dfc-4c8f-886b-14291f23d6f8
+kk_cards:
+    architecture_design:
+        id: 9d5f4e3c-e8e3-4e4c-bc3c-f9ba0021ee5b
+        title: QuantLab A股量化策略平台（根仓库）
+    coding_conventions:
+        id: c11ec40a-2656-41ba-900e-a8f2d435a2e8
+        title: QuantLab A股量化策略平台（根仓库）
+    overview:
+        id: 9cb578d4-231e-439b-9c60-442f7efe8f68
+        title: QuantLab A股量化策略平台（根仓库）
+    tech_stack:
+        id: 3ae1df93-e11d-43c9-b14b-e7d1aa940de6
+        title: QuantLab A股量化策略平台（根仓库）
+    unique_setup_and_commands:
+        id: 8b01153f-34ac-48e4-a8f0-31e384674e52
+        title: QuantLab A股量化策略平台（根仓库）
+    configuration_system:
+        id: bd98b06f-8fac-44ab-8789-6c876e6c69d7
+        title: 配置系统：三级 YAML + 项目 Python 配置文件的分层落地（全局/实盘/项目/资金分配）
+    dependency_management:
+        id: 753984a8-a0e9-452b-802f-c1032ad8c8f6
+        title: QuantLab 依赖管理：requirements.txt + setup.py + 手动 xtquant 复制
+    error_handling:
+        id: bf322c2c-f350-427f-b4ac-bc7fe49b6391
+        title: Python 内置异常 + 防御式日志的错误处理模式
+    logging_system:
+        id: 5f4fbd23-be6f-40e9-89a3-10efde1121b7
+        title: 基于 Python stdlib logging 的分布式模块日志与报告落盘体系
+kk_repo_cards:
+    - configuration_system
+    - dependency_management
+    - error_handling
+    - logging_system

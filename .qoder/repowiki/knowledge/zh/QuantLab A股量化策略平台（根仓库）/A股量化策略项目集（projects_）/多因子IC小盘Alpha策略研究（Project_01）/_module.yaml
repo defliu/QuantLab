@@ -1,0 +1,25 @@
+schema_version: 1
+module_path: quant_projects/project_01_mfic_alpha
+title: 多因子IC小盘Alpha策略研究（Project_01）
+scope:
+    - projects/Project_01_多因子IC小盘Alpha/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 6310e251-1aae-4e9f-8753-82e2b8863201
+kk_cards:
+    architecture_design:
+        id: 33e9ee8d-6f87-4517-8c89-067d7b2e5e06
+        title: 多因子IC小盘Alpha策略研究（Project_01）
+    coding_conventions:
+        id: 62f66ae9-f9d2-4e2f-a84a-273571824bac
+        title: 多因子IC小盘Alpha策略研究（Project_01）
+    overview:
+        id: d46b5ef8-f2f8-4a22-94e2-96bffe506e32
+        title: 多因子IC小盘Alpha策略研究（Project_01）
+    tech_stack:
+        id: 422673a8-3d21-4394-91f8-31e82cedd825
+        title: 多因子IC小盘Alpha策略研究（Project_01）
+    unique_setup_and_commands:
+        id: 56fa6fe7-ed54-4d94-a67a-8125e1353e1c
+        title: 多因子IC小盘Alpha策略研究（Project_01）

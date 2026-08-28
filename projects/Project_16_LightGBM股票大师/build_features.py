@@ -75,7 +75,8 @@ def main():
     os.makedirs(OUT_DIR, exist_ok=True)
 
     print("[1/5] 读取行情与股票池 ...")
-    df = pd.read_parquet(DATA, columns=RAW_COLS)
+    # 主仓 + Updatedata 增量合并（增量优先），返回 MultiIndex (trade_date, ts_code)
+    df = DC.read_main_daily(columns=RAW_COLS)
     idx = df.index
     dates = pd.to_datetime(idx.get_level_values("trade_date"))
     codes = idx.get_level_values("ts_code")

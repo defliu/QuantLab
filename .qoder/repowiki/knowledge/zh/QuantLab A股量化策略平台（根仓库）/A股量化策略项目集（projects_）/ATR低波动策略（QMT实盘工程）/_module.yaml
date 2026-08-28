@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_atr_lowvol
+title: ATR低波动策略（QMT实盘工程）
+scope:
+    - projects/Project_ATR_lowvol/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: b75692e9-5ac4-4800-ad84-ce94ce93ca61
+kk_ordinal: 18
+kk_cards:
+    architecture_design:
+        id: 2683ef38-f767-40e8-b127-32d44581b101
+        title: ATR低波动策略（QMT实盘工程）
+    coding_conventions:
+        id: 9c41312e-65d6-42cb-a066-961537a21c63
+        title: ATR低波动策略（QMT实盘工程）
+    overview:
+        id: 2b05977f-9c69-4e5d-a0b7-624bbdeb7864
+        title: ATR低波动策略（QMT实盘工程）
+    tech_stack:
+        id: 5f3eccc6-3c7e-4a65-bda0-1033c3e627e5
+        title: ATR低波动策略（QMT实盘工程）
+    unique_setup_and_commands:
+        id: 34530350-ebe8-4ceb-982e-1380dc18af15
+        title: ATR低波动策略（QMT实盘工程）

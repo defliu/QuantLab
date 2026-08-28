@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: data_layer
+title: A股数据读取层（Parquet/DuckDB/CSV 多源统一）
+scope:
+    - data/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 228dd984-9338-44c0-9076-39f256b16fcf
+kk_ordinal: 2
+kk_cards:
+    architecture_design:
+        id: e59609ec-f3a5-4797-bc3d-059d6d6d9bae
+        title: A股数据读取层（Parquet/DuckDB/CSV 多源统一）
+    coding_conventions:
+        id: 1d2e3447-2a46-4931-a73c-8b5aeced02b8
+        title: A股数据读取层（Parquet/DuckDB/CSV 多源统一）
+    overview:
+        id: 962a0247-70a4-4295-88c9-4fdedd6841ff
+        title: A股数据读取层（Parquet/DuckDB/CSV 多源统一）
+    tech_stack:
+        id: 90c44e06-1d7f-49da-80f7-a1dfc1ba2bf1
+        title: A股数据读取层（Parquet/DuckDB/CSV 多源统一）
+    unique_setup_and_commands:
+        id: 9ee4e8f9-58b1-4eab-833c-6143248c76ef
+        title: A股数据读取层（Parquet/DuckDB/CSV 多源统一）

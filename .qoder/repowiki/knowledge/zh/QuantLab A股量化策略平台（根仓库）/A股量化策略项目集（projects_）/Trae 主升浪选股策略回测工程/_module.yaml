@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_14_trae_stock_selection
+title: Trae 主升浪选股策略回测工程
+scope:
+    - projects/Project_14_Trae选股驱动/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 7008347d-8e52-4682-a12d-c3e764225978
+kk_ordinal: 12
+kk_cards:
+    architecture_design:
+        id: c0975854-9f03-44ee-8f8c-b239908f9494
+        title: Trae 主升浪选股策略回测工程
+    coding_conventions:
+        id: daee6145-7521-46f2-91e6-73b412d9ef41
+        title: Trae 主升浪选股策略回测工程
+    overview:
+        id: 29f6bd19-e929-4e7c-8147-ad1e121d46d0
+        title: Trae 主升浪选股策略回测工程
+    tech_stack:
+        id: 0c9c9d0f-48ec-4396-a530-7e7ccdc40f6c
+        title: Trae 主升浪选股策略回测工程
+    unique_setup_and_commands:
+        id: ec92a60a-975d-4879-8c5e-2cabb35576f7
+        title: Trae 主升浪选股策略回测工程

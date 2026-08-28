@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_08_index_enhance
+title: 指数增强策略回测（Project_08）
+scope:
+    - projects/Project_08_指数增强/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 91b991ba-7302-403c-af29-21d73ec25953
+kk_ordinal: 6
+kk_cards:
+    architecture_design:
+        id: 25bcaec4-bf2c-4ae4-9430-9c2809d1d45b
+        title: 指数增强策略回测（Project_08）
+    coding_conventions:
+        id: cc06d9b5-2be4-47e7-b707-a8067bfb45c3
+        title: 指数增强策略回测（Project_08）
+    overview:
+        id: 8d067d78-2bb7-465d-ba7a-bd39c534155b
+        title: 指数增强策略回测（Project_08）
+    tech_stack:
+        id: 54efac59-4783-485e-ae6c-67611bd037e5
+        title: 指数增强策略回测（Project_08）
+    unique_setup_and_commands:
+        id: d2ab7c03-9cc8-4714-90bf-61b73a575cbb
+        title: 指数增强策略回测（Project_08）

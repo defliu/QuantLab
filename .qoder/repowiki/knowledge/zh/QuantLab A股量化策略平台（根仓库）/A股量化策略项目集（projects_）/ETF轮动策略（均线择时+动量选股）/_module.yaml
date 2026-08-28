@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_11_etf_rotation
+title: ETF轮动策略（均线择时+动量选股）
+scope:
+    - projects/Project_11_ETF轮动/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: c05bf869-5685-428a-9f87-6567b0cf5e82
+kk_ordinal: 9
+kk_cards:
+    architecture_design:
+        id: 47566f80-02a4-4c0b-8b03-1d845e151bf0
+        title: ETF轮动策略（均线择时+动量选股）
+    coding_conventions:
+        id: 3a328d83-8943-4e34-89c4-81ffca9f1d0d
+        title: ETF轮动策略（均线择时+动量选股）
+    overview:
+        id: 422923b3-8bdf-4f85-bdb6-f879b49f991a
+        title: ETF轮动策略（均线择时+动量选股）
+    tech_stack:
+        id: 9ca587f8-914d-464a-90ef-fac36cd326f7
+        title: ETF轮动策略（均线择时+动量选股）
+    unique_setup_and_commands:
+        id: e58e8e81-b400-4a76-9d1c-749bc7d39cbf
+        title: ETF轮动策略（均线择时+动量选股）

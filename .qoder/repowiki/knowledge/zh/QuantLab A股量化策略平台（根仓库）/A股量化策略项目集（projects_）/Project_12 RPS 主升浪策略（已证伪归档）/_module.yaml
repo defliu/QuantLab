@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_12_rps_main_wave
+title: Project_12 RPS 主升浪策略（已证伪归档）
+scope:
+    - projects/Project_12_RPS主升浪/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 7580ef94-2acb-45ec-978e-fca68597ba2b
+kk_ordinal: 10
+kk_cards:
+    architecture_design:
+        id: e6f20238-d417-4cec-b65b-4855ceb0d760
+        title: Project_12 RPS 主升浪策略（已证伪归档）
+    coding_conventions:
+        id: dc3ef785-e8ab-4924-b85d-61350078f120
+        title: Project_12 RPS 主升浪策略（已证伪归档）
+    overview:
+        id: d41e6126-1403-40ad-8056-f7dc091e4223
+        title: Project_12 RPS 主升浪策略（已证伪归档）
+    tech_stack:
+        id: 5e94bdad-9ca7-4d91-a3ee-375733f6c885
+        title: Project_12 RPS 主升浪策略（已证伪归档）
+    unique_setup_and_commands:
+        id: 4ccd8462-82d1-499f-8aec-25d877586552
+        title: Project_12 RPS 主升浪策略（已证伪归档）

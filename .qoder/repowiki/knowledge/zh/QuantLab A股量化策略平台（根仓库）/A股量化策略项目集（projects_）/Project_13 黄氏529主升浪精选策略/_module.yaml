@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_13_huang529_main_wave
+title: Project_13 黄氏529主升浪精选策略
+scope:
+    - projects/Project_13_529主升浪/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: f8829d0a-f059-4dd9-9e89-054ef666c0ca
+kk_ordinal: 11
+kk_cards:
+    architecture_design:
+        id: 28b64597-0cfa-442a-b9bf-4781f3f25506
+        title: Project_13 黄氏529主升浪精选策略
+    coding_conventions:
+        id: 9e15d900-b6ef-4daf-9937-e415df8064c6
+        title: Project_13 黄氏529主升浪精选策略
+    overview:
+        id: f8d49316-919a-45a8-8007-41a5a540a3c3
+        title: Project_13 黄氏529主升浪精选策略
+    tech_stack:
+        id: e14779f2-4e94-4c55-a5f9-109b4c30b9a2
+        title: Project_13 黄氏529主升浪精选策略
+    unique_setup_and_commands:
+        id: 24dd7462-e447-4da1-a597-bc09b13ee36a
+        title: Project_13 黄氏529主升浪精选策略

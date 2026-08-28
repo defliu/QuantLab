@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects
+title: A股量化策略项目集（projects/）
+scope:
+    - projects/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 351dc673-9ada-4107-ae64-977e27148132
+kk_ordinal: 9
+kk_cards:
+    architecture_design:
+        id: 4545e6d6-d257-4b6e-aee9-2bccf30515a5
+        title: A股量化策略项目集（projects/）
+    coding_conventions:
+        id: e46c8639-5449-4fdd-b375-c3cae94cff7f
+        title: A股量化策略项目集（projects/）
+    overview:
+        id: c51fda08-435d-484b-96c4-89c710b7d9f7
+        title: A股量化策略项目集（projects/）
+    tech_stack:
+        id: 6ddec011-c261-4f29-b579-189a665640c8
+        title: A股量化策略项目集（projects/）
+    unique_setup_and_commands:
+        id: 5cac01ca-0a2b-4b61-b7c8-11bf136da960
+        title: A股量化策略项目集（projects/）

@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: strategy_core
+title: QuantLab 策略库（目标权重/事件驱动即插即用策略集合）
+scope:
+    - strategy/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: a946c76f-d268-46ac-9121-d10e0ee6e213
+kk_ordinal: 4
+kk_cards:
+    architecture_design:
+        id: 3325a423-030d-4913-b7dc-5f8f10b1ad9a
+        title: QuantLab 策略库（目标权重/事件驱动即插即用策略集合）
+    coding_conventions:
+        id: a5abbc31-6e3f-43f6-93ed-c571640db228
+        title: QuantLab 策略库（目标权重/事件驱动即插即用策略集合）
+    overview:
+        id: 7addf468-6938-4b08-b491-441a0efc41ab
+        title: QuantLab 策略库（目标权重/事件驱动即插即用策略集合）
+    tech_stack:
+        id: 029d1730-c6ad-43bc-9ed4-1475b2aec14b
+        title: QuantLab 策略库（目标权重/事件驱动即插即用策略集合）
+    unique_setup_and_commands:
+        id: 1616d97c-9158-4fa0-832d-98812cdbb55d
+        title: QuantLab 策略库（目标权重/事件驱动即插即用策略集合）

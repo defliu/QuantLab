@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_03_pead_surprise
+title: PEAD盈余漂移策略回测与敏感性分析
+scope:
+    - projects/Project_03_PEAD盈余漂移/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 5a354da6-f844-4580-9626-93940bde9cea
+kk_ordinal: 2
+kk_cards:
+    architecture_design:
+        id: fe1aa167-a64c-4a4a-a5e4-097b626d60e2
+        title: PEAD盈余漂移策略回测与敏感性分析
+    coding_conventions:
+        id: 9b3ee43b-b10f-4a5f-a55b-8bf200ae6e09
+        title: PEAD盈余漂移策略回测与敏感性分析
+    overview:
+        id: 7d1e3a88-5dd4-42ce-8459-ce1534098ee5
+        title: PEAD盈余漂移策略回测与敏感性分析
+    tech_stack:
+        id: 86aa1de6-d136-415d-b77d-c9471819baa5
+        title: PEAD盈余漂移策略回测与敏感性分析
+    unique_setup_and_commands:
+        id: fedb5c8c-ce16-4fe1-af7e-71c4c817fa1e
+        title: PEAD盈余漂移策略回测与敏感性分析

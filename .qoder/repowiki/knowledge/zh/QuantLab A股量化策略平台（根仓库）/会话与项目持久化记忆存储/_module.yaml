@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: memory_store
+title: 会话与项目持久化记忆存储
+scope:
+    - memory/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 00e1df13-4261-428a-9024-e51197193d2e
+kk_ordinal: 6
+kk_cards:
+    architecture_design:
+        id: 2ee70f38-bd6d-451d-84b6-86c6a5bc7c81
+        title: 会话与项目持久化记忆存储
+    coding_conventions:
+        id: f658096a-a113-4312-aca8-eca79ebe1e06
+        title: 会话与项目持久化记忆存储
+    overview:
+        id: e805f6dc-3e85-4c23-8718-c3acf4db8fad
+        title: 会话与项目持久化记忆存储
+    tech_stack:
+        id: 9009dd65-a2bc-409b-b23b-e9cb35f621f3
+        title: 会话与项目持久化记忆存储
+    unique_setup_and_commands:
+        id: 94077bfc-3804-471c-ac5a-0afa089b78e9
+        title: 会话与项目持久化记忆存储

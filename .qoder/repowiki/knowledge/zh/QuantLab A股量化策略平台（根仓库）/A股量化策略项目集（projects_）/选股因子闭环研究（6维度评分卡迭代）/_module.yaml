@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_15_stock_factor_loop
+title: 选股因子闭环研究（6维度评分卡迭代）
+scope:
+    - projects/Project_15_选股因子闭环研究/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: e67cfaaf-f963-4fc9-a30a-4e4fd27bf324
+kk_ordinal: 13
+kk_cards:
+    architecture_design:
+        id: 01d8b714-e513-4b50-9b2f-6e8e1705ef73
+        title: 选股因子闭环研究（6维度评分卡迭代）
+    coding_conventions:
+        id: 35a192aa-1b26-49f4-9a77-d18c0cc0a8c0
+        title: 选股因子闭环研究（6维度评分卡迭代）
+    overview:
+        id: 80c2703b-7973-49d9-b81b-c46577848167
+        title: 选股因子闭环研究（6维度评分卡迭代）
+    tech_stack:
+        id: 795c1a1c-8842-4531-90bc-b0154c7d4c92
+        title: 选股因子闭环研究（6维度评分卡迭代）
+    unique_setup_and_commands:
+        id: 0ea368f8-581c-464c-9284-6b323f65ee0a
+        title: 选股因子闭环研究（6维度评分卡迭代）

@@ -26,6 +26,7 @@ import data_config as DC
 
 HERE = DC.PROJECT_DIR
 MODELS_BACKUP = os.path.join(HERE, "versions", "models")
+BINDING = os.path.join(DC.DATA_DIR, "model_panel_binding.json")
 
 
 def normalize_suffix(s):
@@ -128,6 +129,30 @@ def main():
         with open(vers, "a", encoding="utf-8") as f:
             f.write(f"\n> 上线记录（promote_model.py）\n{reg}\n")
         print("已追加 VERSIONS.md 上线记录")
+
+    # ---- 5) 写入模型-面板绑定记录（verify_model_panel_sync.py 校验用）----
+    try:
+        import pandas as pd
+        panel_path = os.path.join(DC.DATA_DIR, f"feature_panel{suffix}.parquet")
+        pdate = None
+        if os.path.exists(panel_path):
+            pdate = pd.to_datetime(pd.read_parquet(panel_path, columns=["trade_date"])["trade_date"]).max()
+            pdate = pdate.strftime("%Y-%m-%d")
+        binding = {
+            "formal_model": os.path.basename(prod),
+            "model_mtime": os.path.getmtime(prod),
+            "model_trees": n_tree,
+            "panel_file": os.path.basename(panel_path),
+            "panel_max_date": pdate,
+            "promote_time": stamp,
+            "candidate": os.path.basename(cand),
+            "note": args.note,
+        }
+        with open(BINDING, "w", encoding="utf-8") as f:
+            json.dump(binding, f, ensure_ascii=False, indent=2)
+        print(f"已写入模型-面板绑定记录 -> {BINDING}（面板 {pdate}）")
+    except Exception as e:
+        print(f"!! 写入绑定记录失败（不影响 promote 本身）: {e}")
     print("完成。若涉及版本号变更，请同步更新 VERSIONS.md 版本登记表。")
 
 

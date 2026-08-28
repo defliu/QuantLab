@@ -1,9 +1,0 @@
-schema_version: 1
-module_path: reports_output
-title: 回测报告输出目录
-scope:
-    - reports/
-source_files: []
-depends_on: []
-related_to:
-    - path: scripts_tooling

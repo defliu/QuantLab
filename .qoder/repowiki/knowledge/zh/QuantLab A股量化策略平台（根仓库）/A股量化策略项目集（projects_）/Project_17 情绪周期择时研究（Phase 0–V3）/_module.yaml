@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_17_sentiment_timing
+title: Project_17 情绪周期择时研究（Phase 0–V3）
+scope:
+    - projects/Project_17_情绪周期择时/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: d49590f7-8ceb-4665-8bee-e49a09b98f50
+kk_ordinal: 16
+kk_cards:
+    architecture_design:
+        id: bb1c3217-7445-42ca-890b-cc8e84e9a512
+        title: Project_17 情绪周期择时研究（Phase 0–V3）
+    coding_conventions:
+        id: 924cdc09-5f03-497b-8b8e-c49ce494dc57
+        title: Project_17 情绪周期择时研究（Phase 0–V3）
+    overview:
+        id: eee297ff-217e-47e4-96e2-4b183bf9333a
+        title: Project_17 情绪周期择时研究（Phase 0–V3）
+    tech_stack:
+        id: e4fec467-f670-44e6-97c3-e493ed25495b
+        title: Project_17 情绪周期择时研究（Phase 0–V3）
+    unique_setup_and_commands:
+        id: f88d5dc1-c692-4889-b8cf-8a7d30463748
+        title: Project_17 情绪周期择时研究（Phase 0–V3）

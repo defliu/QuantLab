@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: broker_adapter
+title: QMT Broker 适配器与策略生成器
+scope:
+    - broker/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: fb9be995-56b2-47f2-9839-08598fdfcbaf
+kk_ordinal: 1
+kk_cards:
+    architecture_design:
+        id: a2aeb89c-4bde-405e-a64c-0b3d1d0a123e
+        title: QMT Broker 适配器与策略生成器
+    coding_conventions:
+        id: ce69537c-38e5-4f61-bced-75f9a9c01725
+        title: QMT Broker 适配器与策略生成器
+    overview:
+        id: 8a44e31e-9b6d-4a3f-9dc3-c762237882d4
+        title: QMT Broker 适配器与策略生成器
+    tech_stack:
+        id: 6183547a-7c62-4b8e-a17e-d2cf50e4cf11
+        title: QMT Broker 适配器与策略生成器
+    unique_setup_and_commands:
+        id: 4a5dc75d-6e6b-4307-a7f3-61658db77fa9
+        title: QMT Broker 适配器与策略生成器

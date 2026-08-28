@@ -1,0 +1,25 @@
+schema_version: 1
+module_path: backtest_engine
+title: A 股回测引擎（DailyBacktestEngine）
+scope:
+    - backtest/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 564e1889-d186-4498-b1da-232a8d62f754
+kk_cards:
+    architecture_design:
+        id: 6fa06569-3bc5-4823-b5f7-4c34264a06b2
+        title: A 股回测引擎（DailyBacktestEngine）
+    coding_conventions:
+        id: 3d2efb9c-0f61-470c-9001-1e92f5663b48
+        title: A 股回测引擎（DailyBacktestEngine）
+    overview:
+        id: 60aeef62-c02c-48d9-b349-13d4c82ba780
+        title: A 股回测引擎（DailyBacktestEngine）
+    tech_stack:
+        id: 6e90241e-1a19-4fe1-a792-6163908fad05
+        title: A 股回测引擎（DailyBacktestEngine）
+    unique_setup_and_commands:
+        id: e5271097-d3f6-4b80-8ad2-2b9127074484
+        title: A 股回测引擎（DailyBacktestEngine）

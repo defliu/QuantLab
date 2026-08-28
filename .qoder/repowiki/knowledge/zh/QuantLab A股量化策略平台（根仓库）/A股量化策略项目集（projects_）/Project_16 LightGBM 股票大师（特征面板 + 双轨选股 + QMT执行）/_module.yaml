@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_16_lightgbm_master
+title: Project_16 LightGBM 股票大师（特征面板 + 双轨选股 + QMT执行）
+scope:
+    - projects/Project_16_LightGBM股票大师/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 5debcc35-072a-44ed-a3b6-2220c140938e
+kk_ordinal: 15
+kk_cards:
+    architecture_design:
+        id: 8c7ea6fe-1631-47e3-a297-561e1edfbdb1
+        title: Project_16 LightGBM 股票大师（特征面板 + 双轨选股 + QMT执行）
+    coding_conventions:
+        id: c229665a-696e-4274-bd69-97603a559787
+        title: Project_16 LightGBM 股票大师（特征面板 + 双轨选股 + QMT执行）
+    overview:
+        id: f2d6b7bd-1163-4200-9707-e2de15c09b59
+        title: Project_16 LightGBM 股票大师（特征面板 + 双轨选股 + QMT执行）
+    tech_stack:
+        id: 70f5a9a3-a503-4eaa-925d-a474f9326971
+        title: Project_16 LightGBM 股票大师（特征面板 + 双轨选股 + QMT执行）
+    unique_setup_and_commands:
+        id: e5f47bd6-2fea-49d9-8c92-d4e886650e34
+        title: Project_16 LightGBM 股票大师（特征面板 + 双轨选股 + QMT执行）

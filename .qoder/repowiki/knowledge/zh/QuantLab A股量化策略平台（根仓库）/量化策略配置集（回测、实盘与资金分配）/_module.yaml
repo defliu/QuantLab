@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: config_bundle
+title: 量化策略配置集（回测、实盘与资金分配）
+scope:
+    - config/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 1df6b12e-173b-4782-aad7-e2dfa3d1a386
+kk_ordinal: 7
+kk_cards:
+    architecture_design:
+        id: d819c784-0e2b-489b-9469-79c62a906c74
+        title: 量化策略配置集（回测、实盘与资金分配）
+    coding_conventions:
+        id: 373f1ebf-de46-4954-965e-749687e0c0b1
+        title: 量化策略配置集（回测、实盘与资金分配）
+    overview:
+        id: 7caccf23-3183-484e-a3e7-d32de7c6996f
+        title: 量化策略配置集（回测、实盘与资金分配）
+    tech_stack:
+        id: 2b808cd1-75f3-4cee-8d54-10363d55d6b4
+        title: 量化策略配置集（回测、实盘与资金分配）
+    unique_setup_and_commands:
+        id: efc744d5-1c24-4a79-9b10-04acfd49587e
+        title: 量化策略配置集（回测、实盘与资金分配）

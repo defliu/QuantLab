@@ -111,6 +111,14 @@ try {
             } else {
                 Log "[对账] 持仓一致，无异常"
             }
+            # ---- 模型-面板同步校验（T-20260828-005 固化）：面板重建后若正式模型未同步 promote 则告警 ----
+            # 防"新面板喂旧模型"=训练/推理分布不一致（8/14 冻结面板教训）；retrain 后 promote 前会在此报警。
+            Run-Py "verify_model_panel_sync.py"
+            if ($LASTEXITCODE -ne 0) {
+                Log "!! [模型-面板同步] 面板与正式模型版本不一致，需重训+promote 或检查绑定记录（data/model_panel_binding.json）"
+            } else {
+                Log "[模型-面板同步] 面板与正式模型同版，OK"
+            }
         }
         "monitor" {
             Log "[盯盘快照] 开始（--auto-sell: 触发信号自动卖出）"
@@ -125,10 +133,17 @@ try {
                 Copy-Item $formalModel $modelBak -Force
                 Log "已备份正式模型 -> $modelBak"
             }
-            Run-Py "build_features_v2.py"
+            Run-Py "refresh_panel_v3.py"
             # 写入带日期后缀的候选模型（lgb_model_v3_retrain_YYYYMMDD.txt），不覆盖正式模型 lgb_model_v3.txt
             $retrainTag = "_retrain_" + (Get-Date -Format 'yyyyMMdd')
             Run-Py "train_optuna.py --panel-file data/feature_panel_v3.parquet --meta-file data/features_v3.json --n-trials 20 --model-tag $retrainTag"
+            # 模型-面板同步提示：面板已重建、正式模型仍绑旧面板 → 应跑 promote_model.py 提升候选
+            Run-Py "verify_model_panel_sync.py"
+            if ($LASTEXITCODE -ne 0) {
+                Log "!! [模型-面板同步] 面板已更新但正式模型未 promote —— 请用 promote_model.py 提升今日候选 lgb_model_v3$retrainTag.txt"
+            } else {
+                Log "[模型-面板同步] 面板与正式模型同版（本周期未重建面板？）"
+            }
         }
         "factor" {
             Log "[月度因子监控] 开始"

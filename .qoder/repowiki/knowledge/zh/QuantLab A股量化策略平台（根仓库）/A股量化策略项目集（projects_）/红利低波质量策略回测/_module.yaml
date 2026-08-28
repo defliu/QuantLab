@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_05_dividend_lowvol
+title: 红利低波质量策略回测
+scope:
+    - projects/Project_05_红利低波/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 6142965d-f80a-42e6-be3b-5422430f8f04
+kk_ordinal: 3
+kk_cards:
+    architecture_design:
+        id: 4774b3bd-0065-4120-8911-7dd378f7edaf
+        title: 红利低波质量策略回测
+    coding_conventions:
+        id: 48b03e82-0026-4f09-be8e-4c79685c65a6
+        title: 红利低波质量策略回测
+    overview:
+        id: 61f86e41-5f3d-4b0c-b68b-74b0053382e3
+        title: 红利低波质量策略回测
+    tech_stack:
+        id: de641f5e-0d1c-4a03-84cd-535f256202a9
+        title: 红利低波质量策略回测
+    unique_setup_and_commands:
+        id: 925529cb-af75-434b-8242-c16861cdf98e
+        title: 红利低波质量策略回测

@@ -1,7 +1,8 @@
 # coding: utf-8
 """Astock parquet reader — duck-typed match for DuckDBDailyReader.
 
-Data source: E:\\astock\\daily\\stock_daily.parquet (tushare daily data, 2009+).
+Data source: E:\\astock\\daily\\stock_daily.parquet (tushare daily data, 2009+)
+            + E:\\astock\\Updatedata\\<week>\\stock_daily.parquet (增量，研发/回测使用)
 Implements the same 4-method duck-typed interface as DuckDBDailyReader:
   load_window / trading_calendar / coverage / close(code, date)
 
@@ -9,6 +10,7 @@ Constraints:
   - Read-only; no writes to E:\\astock\\
   - Output columns aligned with DuckDBDailyReader: date, open, high, low, close, vol, amount
   - Code format: tushare ts_code (e.g. "000001.SZ")
+  - 增量合并规则：主仓 + 各周增量按 (trade_date, ts_code) 去重，增量优先（同日期以增量为准）
 """
 import datetime as _dt
 import logging
@@ -20,6 +22,47 @@ log = logging.getLogger(__name__)
 
 DATA_SOURCE_ASTOCK = "astock"
 ASTOCK_DAILY_PATH = "E:/astock/daily/stock_daily.parquet"
+
+
+def _merge_update_daily(main_df, main_idx_type):
+    """将 Updatedata 下各周增量 daily 合并进主仓 DataFrame（增量优先）。
+
+    主仓为 MultiIndex (trade_date, ts_code) 或普通列两种格式均可；
+    增量统一为普通列格式（trade_date/ts_code/open/high/...）。
+    合并后返回与 main_df 相同索引结构（MultiIndex）的 DataFrame。
+    """
+    try:
+        import sys
+        # data_config.py 位于 Project_16 项目目录
+        sys.path.insert(0, r"D:\QuantLab\projects\Project_16_LightGBM股票大师")
+        import data_config as DC
+    except Exception as e:  # pragma: no cover
+        log.warning("data_config 导入失败，跳过增量合并: %s", e)
+        return main_df
+    weeks = DC.list_update_weeks()
+    if not weeks:
+        return main_df
+    parts = [main_df]
+    for week_dir in weeks:
+        fp = os.path.join(week_dir, "stock_daily.parquet")
+        if not os.path.isfile(fp):
+            continue
+        try:
+            inc = pd.read_parquet(fp)
+        except Exception as e:  # pragma: no cover
+            log.warning("增量 parquet 读取失败 %s: %s", fp, e)
+            continue
+        if "trade_date" not in inc.columns or "ts_code" not in inc.columns:
+            continue
+        # 增量转 MultiIndex，与主仓统一
+        inc = inc.set_index(["trade_date", "ts_code"])
+        inc.index.names = ["trade_date", "ts_code"]
+        parts.append(inc)
+    combined = pd.concat(parts)
+    # 按 (trade_date, ts_code) 去重，保留最后一个（后追加的增量在后，即增量优先）
+    combined = combined[~combined.index.duplicated(keep="last")]
+    combined = combined.sort_index()
+    return combined
 
 
 class AstockParquetReader(object):
@@ -64,6 +107,8 @@ class AstockParquetReader(object):
                 raise ValueError(
                     "astock parquet 缺少 trade_date/ts_code 列，无法构建索引: " + db_path)
         self._df.index.names = ["trade_date", "ts_code"]
+        # 增量合并（2026-08-28 新增）：主仓 + Updatedata 各周，增量优先
+        self._df = _merge_update_daily(self._df, None)
         self._dates = pd.to_datetime(self._df.index.get_level_values("trade_date"))
         self._codes = self._df.index.get_level_values("ts_code")
         self._coverage_cache = None

@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_16_public_strategy_audit
+title: 知乎公开策略审计（Project_16）
+scope:
+    - projects/Project_16_公开策略审计/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: f91c41e1-e85e-4fdf-a6db-8a3fc65026f5
+kk_ordinal: 14
+kk_cards:
+    architecture_design:
+        id: 6f10c34a-870b-4c32-8a4d-ccb24a3831c0
+        title: 知乎公开策略审计（Project_16）
+    coding_conventions:
+        id: b4b7f1d8-4e50-42b5-b0cc-535256b35222
+        title: 知乎公开策略审计（Project_16）
+    overview:
+        id: 4d0d52de-2027-4aa1-9581-44b242d2a963
+        title: 知乎公开策略审计（Project_16）
+    tech_stack:
+        id: 89a5e361-0040-4592-9192-5d917a3aa413
+        title: 知乎公开策略审计（Project_16）
+    unique_setup_and_commands:
+        id: 7aa09d2d-e30b-4223-a1de-6e7573aa4db3
+        title: 知乎公开策略审计（Project_16）

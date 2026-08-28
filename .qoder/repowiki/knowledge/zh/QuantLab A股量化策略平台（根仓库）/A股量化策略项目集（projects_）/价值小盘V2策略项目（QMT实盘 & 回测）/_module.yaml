@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_10_value_smallcap_v2
+title: 价值小盘V2策略项目（QMT实盘 & 回测）
+scope:
+    - projects/Project_10_价值小盘V2/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 0b3e8614-4ac3-4aba-b3eb-25b3d9d6fc31
+kk_ordinal: 8
+kk_cards:
+    architecture_design:
+        id: c090cc15-2b2d-4aef-92c0-fba9fc0d7b36
+        title: 价值小盘V2策略项目（QMT实盘 & 回测）
+    coding_conventions:
+        id: 0028a2c2-f4f9-443d-83f6-2f74e0ba8c1d
+        title: 价值小盘V2策略项目（QMT实盘 & 回测）
+    overview:
+        id: 8a2ab5c2-b5f4-4bbe-98e6-48cdcf3501bf
+        title: 价值小盘V2策略项目（QMT实盘 & 回测）
+    tech_stack:
+        id: 79aef72f-20e4-49d3-8ba6-8d90beaa9f05
+        title: 价值小盘V2策略项目（QMT实盘 & 回测）
+    unique_setup_and_commands:
+        id: 888e827c-16d2-45d5-b5af-a5cbface2439
+        title: 价值小盘V2策略项目（QMT实盘 & 回测）

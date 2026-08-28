@@ -1,0 +1,30 @@
+# Project_17 情绪周期择时 —— 项目级配置（Phase 0 草案，参数冻结前仅作占位）
+
+project:
+  name: 情绪周期择时+主线跟随
+  phase: 0
+  spec: specs/任务书_v1.md
+
+data:
+  board_daily: E:/astock/board/ths_daily.parquet
+  board_index: E:/astock/board/ths_index.parquet
+  limit_list_d: E:/astock/lhb/limit_list_d.parquet
+  stock_daily: E:/astock/daily/stock_daily.parquet
+
+sentiment:
+  start_date: "20200101"     # 主回测期起点（涨停明细 2019-11-28 起）
+  thermometer_indicators:    # 五指标定义（与任务书一致）
+    - limit_up_count         # 涨停家数
+    - max_lianban            # 连板高度 = max(limit_times)
+    - fengban_ratio          # 封板率 = U/(U+Z)
+    - prev_limit_premium     # 昨日涨停溢价
+    - promotion_rate         # 晋级率
+  stage_bins: [0.15, 0.35, 0.65, 0.85]   # 合成分位数切五阶段（冰点/回暖/高潮预备/高潮/退潮），冻结于 Phase 0 开跑
+
+universe:
+  circ_mv_max_wan: 500000    # 小盘池：流通市值 < 50亿（万元单位）
+  exclude_st: true
+  exclude_new_days: 60
+
+backtest:
+  sector_heat_mode: historical   # 目标态；当前引擎默认 zero，接入历史序列后切换

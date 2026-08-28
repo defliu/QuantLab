@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_18_buy_sell_signals
+title: A股买卖点形态信号扫描与增强验证研究项目
+scope:
+    - projects/Project_18_买卖点信号工具/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 0c403578-8f79-47f1-bd17-7cdb40ab26d3
+kk_ordinal: 17
+kk_cards:
+    architecture_design:
+        id: fb899648-2488-4cb2-8324-c3288f8f50a7
+        title: A股买卖点形态信号扫描与增强验证研究项目
+    coding_conventions:
+        id: c03fadaa-23e2-4c50-a36a-93f782ecc281
+        title: A股买卖点形态信号扫描与增强验证研究项目
+    overview:
+        id: 01746678-cd2e-44dd-be2e-155a835a8ef3
+        title: A股买卖点形态信号扫描与增强验证研究项目
+    tech_stack:
+        id: 5aaf9fc3-2374-4885-b27a-52f55fef4692
+        title: A股买卖点形态信号扫描与增强验证研究项目
+    unique_setup_and_commands:
+        id: 15890ca9-d19b-4998-937d-bc1a0c812ab9
+        title: A股买卖点形态信号扫描与增强验证研究项目

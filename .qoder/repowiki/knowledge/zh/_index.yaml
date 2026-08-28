@@ -1,144 +1,320 @@
 # 知识卡导出索引文件
 schema_version: 1
 locale: zh-CN
+commit: 344574276b7affdb148c959f47511e145ea2917d
 branch: master
-nodes_managed: true
-exported_at: "2026-08-04T12:59:19Z"
+exported_at: "2026-08-28T08:30:06Z"
 modules:
-    "":
-        dir_name: QuantLab A股量化研究框架（根项目）
-        title: QuantLab A股量化研究框架（根项目）
-        scope:
-            - main.py
-            - setup.py
-            - requirements.txt
-            - .gitignore
-            - .mcp.json
-            - AGENTS.md
-            - start_trading.bat
-            - start_trading_qmt.bat
-            - test_connection.py
-            - test_connection_qmt.py
-            - test_in_qmt.py
-            - 全局复利与踩坑日志.md
-            - 快速启动.md
-            - A股量化框架_五大扩展模块.md
-            - miniQMT实盘对接_生产级完善方案.md
-            - README.md
-            - _tavily_extract.py
-            - _tavily_search.py
-            - 全局控制台.md
-            - 实盘配置指南.md
-            - 配置完成.md
-        source_files: []
-        children:
-            - backtest_engine
-            - config_bundle
-            - data_layer
-            - factors_lib
-            - projects
-            - reports_output
-            - research_audit
-            - scripts_tooling
-            - strategy_core
-        depends_on: []
-        related_to: []
     backtest_engine:
-        dir_name: 量化回测引擎核心（Backtest Engine）
-        title: 量化回测引擎核心（Backtest Engine）
+        dir_name: A 股回测引擎（DailyBacktestEngine）
+        title: A 股回测引擎（DailyBacktestEngine）
         scope:
             - backtest/
         source_files: []
         children: []
         depends_on: []
-        related_to:
-            - path: config_bundle
-            - path: data_layer
-            - path: projects
-            - path: scripts_tooling
-            - path: strategy_core
+        related_to: []
+    broker_adapter:
+        dir_name: QMT Broker 适配器与策略生成器
+        title: QMT Broker 适配器与策略生成器
+        scope:
+            - broker/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
     config_bundle:
-        dir_name: 量化策略配置与回测参数集
-        title: 量化策略配置与回测参数集
+        dir_name: 量化策略配置集（回测、实盘与资金分配）
+        title: 量化策略配置集（回测、实盘与资金分配）
         scope:
             - config/
         source_files: []
         children: []
         depends_on: []
-        related_to:
-            - path: backtest_engine
+        related_to: []
     data_layer:
-        dir_name: A股数据源统一接入层
-        title: A股数据源统一接入层
+        dir_name: A股数据读取层（Parquet_DuckDB_CSV 多源统一）
+        title: A股数据读取层（Parquet/DuckDB/CSV 多源统一）
         scope:
             - data/
         source_files: []
         children: []
         depends_on: []
-        related_to:
-            - path: backtest_engine
-            - path: research_audit
+        related_to: []
     factors_lib:
-        dir_name: 量化因子库（ATR_ROE_波动率_VWAP量价相关）
-        title: 量化因子库（ATR/ROE/波动率/VWAP量价相关）
+        dir_name: 因子库与因子引擎（A股量化因子集合）
+        title: 因子库与因子引擎（A股量化因子集合）
         scope:
             - factors/
         source_files: []
         children: []
         depends_on: []
-        related_to:
-            - path: strategy_core
-    projects:
-        dir_name: 量化策略项目集与引擎验证
-        title: 量化策略项目集与引擎验证
+        related_to: []
+    mcp_services:
+        dir_name: A 股 MCP 服务进程 (Ashare + tdx)
+        title: A 股 MCP 服务进程 (Ashare + tdx)
+        scope:
+            - mcp/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    memory_store:
+        dir_name: 会话与项目持久化记忆存储
+        title: 会话与项目持久化记忆存储
+        scope:
+            - memory/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects:
+        dir_name: A股量化策略项目集（projects_）
+        title: A股量化策略项目集（projects/）
         scope:
             - projects/
         source_files: []
-        children: []
+        children:
+            - quant_projects/project_01_mfic_alpha
+            - quant_projects/project_02_dual_ma_trend
+            - quant_projects/project_03_pead_surprise
+            - quant_projects/project_05_dividend_lowvol
+            - quant_projects/project_06_quality_smallcap
+            - quant_projects/project_07_low_turnover_reversal
+            - quant_projects/project_08_index_enhance
+            - quant_projects/project_09_portfolio_strategy
+            - quant_projects/project_10_value_smallcap_v2
+            - quant_projects/project_11_etf_rotation
+            - quant_projects/project_12_rps_main_wave
+            - quant_projects/project_13_huang529_main_wave
+            - quant_projects/project_14_trae_stock_selection
+            - quant_projects/project_15_stock_factor_loop
+            - quant_projects/project_16_lightgbm_master
+            - quant_projects/project_16_public_strategy_audit
+            - quant_projects/project_17_sentiment_timing
+            - quant_projects/project_18_buy_sell_signals
+            - quant_projects/project_atr_lowvol
         depends_on: []
-        related_to:
-            - path: backtest_engine
-            - path: research_audit
-    reports_output:
-        dir_name: 回测报告输出目录
-        title: 回测报告输出目录
+        related_to: []
+    quant_projects/project_01_mfic_alpha:
+        dir_name: 多因子IC小盘Alpha策略研究（Project_01）
+        title: 多因子IC小盘Alpha策略研究（Project_01）
         scope:
-            - reports/
+            - projects/Project_01_多因子IC小盘Alpha/
         source_files: []
         children: []
         depends_on: []
-        related_to:
-            - path: scripts_tooling
+        related_to: []
+    quant_projects/project_02_dual_ma_trend:
+        dir_name: 双均线趋势策略回测（SMA10_30 + 动量过滤）
+        title: 双均线趋势策略回测（SMA10/30 + 动量过滤）
+        scope:
+            - projects/Project_02_双均线趋势策略/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects/project_03_pead_surprise:
+        dir_name: PEAD盈余漂移策略回测与敏感性分析
+        title: PEAD盈余漂移策略回测与敏感性分析
+        scope:
+            - projects/Project_03_PEAD盈余漂移/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects/project_05_dividend_lowvol:
+        dir_name: 红利低波质量策略回测
+        title: 红利低波质量策略回测
+        scope:
+            - projects/Project_05_红利低波/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects/project_06_quality_smallcap:
+        dir_name: 质量增强小市值策略回测脚本
+        title: 质量增强小市值策略回测脚本
+        scope:
+            - projects/Project_06_质量小市值/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects/project_07_low_turnover_reversal:
+        dir_name: 低换手率+短期反转策略回测脚本
+        title: 低换手率+短期反转策略回测脚本
+        scope:
+            - projects/Project_07_低换手反转/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects/project_08_index_enhance:
+        dir_name: 指数增强策略回测（Project_08）
+        title: 指数增强策略回测（Project_08）
+        scope:
+            - projects/Project_08_指数增强/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects/project_09_portfolio_strategy:
+        dir_name: 红利低波 + 质量小市值组合策略
+        title: 红利低波 + 质量小市值组合策略
+        scope:
+            - projects/Project_09_组合策略/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects/project_10_value_smallcap_v2:
+        dir_name: 价值小盘V2策略项目（QMT实盘 & 回测）
+        title: 价值小盘V2策略项目（QMT实盘 & 回测）
+        scope:
+            - projects/Project_10_价值小盘V2/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects/project_11_etf_rotation:
+        dir_name: ETF轮动策略（均线择时+动量选股）
+        title: ETF轮动策略（均线择时+动量选股）
+        scope:
+            - projects/Project_11_ETF轮动/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects/project_12_rps_main_wave:
+        dir_name: Project_12 RPS 主升浪策略（已证伪归档）
+        title: Project_12 RPS 主升浪策略（已证伪归档）
+        scope:
+            - projects/Project_12_RPS主升浪/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects/project_13_huang529_main_wave:
+        dir_name: Project_13 黄氏529主升浪精选策略
+        title: Project_13 黄氏529主升浪精选策略
+        scope:
+            - projects/Project_13_529主升浪/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects/project_14_trae_stock_selection:
+        dir_name: Trae 主升浪选股策略回测工程
+        title: Trae 主升浪选股策略回测工程
+        scope:
+            - projects/Project_14_Trae选股驱动/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects/project_15_stock_factor_loop:
+        dir_name: 选股因子闭环研究（6维度评分卡迭代）
+        title: 选股因子闭环研究（6维度评分卡迭代）
+        scope:
+            - projects/Project_15_选股因子闭环研究/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects/project_16_lightgbm_master:
+        dir_name: Project_16 LightGBM 股票大师（特征面板 + 双轨选股 + QMT执行）
+        title: Project_16 LightGBM 股票大师（特征面板 + 双轨选股 + QMT执行）
+        scope:
+            - projects/Project_16_LightGBM股票大师/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects/project_16_public_strategy_audit:
+        dir_name: 知乎公开策略审计（Project_16）
+        title: 知乎公开策略审计（Project_16）
+        scope:
+            - projects/Project_16_公开策略审计/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects/project_17_sentiment_timing:
+        dir_name: Project_17 情绪周期择时研究（Phase 0–V3）
+        title: Project_17 情绪周期择时研究（Phase 0–V3）
+        scope:
+            - projects/Project_17_情绪周期择时/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects/project_18_buy_sell_signals:
+        dir_name: A股买卖点形态信号扫描与增强验证研究项目
+        title: A股买卖点形态信号扫描与增强验证研究项目
+        scope:
+            - projects/Project_18_买卖点信号工具/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects/project_atr_lowvol:
+        dir_name: ATR低波动策略（QMT实盘工程）
+        title: ATR低波动策略（QMT实盘工程）
+        scope:
+            - projects/Project_ATR_lowvol/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
     research_audit:
-        dir_name: 多因子策略审计与归因分析脚本集
-        title: 多因子策略审计与归因分析脚本集
+        dir_name: 因子研究与策略审计脚本集
+        title: 因子研究与策略审计脚本集
         scope:
             - research_audit/
         source_files: []
         children: []
         depends_on: []
-        related_to:
-            - path: data_layer
-            - path: projects
-    scripts_tooling:
-        dir_name: 量化回测与QMT实盘脚本工具集
-        title: 量化回测与QMT实盘脚本工具集
+        related_to: []
+    root:
+        dir_name: QuantLab A股量化策略平台（根仓库）
+        title: QuantLab A股量化策略平台（根仓库）
         scope:
+            - main.py
             - scripts/
+            - archive/
+            - projects/
+            - .codegraph/
+            - .freebuff/
+            - .mimocode/
+            - .omo/
+            - .trae-html-share-packages/
+            - .workbuddy/
+            - .zcode/
+            - __pycache__/
+            - _tavily_search.py
+            - _tavily_extract.py
+            - 讨论室/
         source_files: []
-        children: []
+        children:
+            - backtest_engine
+            - broker_adapter
+            - config_bundle
+            - data_layer
+            - factors_lib
+            - mcp_services
+            - memory_store
+            - quant_projects
+            - research_audit
+            - strategy_core
         depends_on: []
-        related_to:
-            - path: backtest_engine
-            - path: reports_output
+        related_to: []
     strategy_core:
-        dir_name: 策略库与注册调度（Strategy Core）
-        title: 策略库与注册调度（Strategy Core）
+        dir_name: QuantLab 策略库（目标权重_事件驱动即插即用策略集合）
+        title: QuantLab 策略库（目标权重/事件驱动即插即用策略集合）
         scope:
             - strategy/
         source_files: []
         children: []
         depends_on: []
-        related_to:
-            - path: backtest_engine
-            - path: factors_lib
+        related_to: []

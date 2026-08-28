@@ -1,0 +1,125 @@
+{
+  "date": "20260828",
+  "stocks": [
+    {
+      "ts_code": "003018.SZ",
+      "quote_pct": -4.53,
+      "main_net_inflow": -76910000,
+      "liangbi": 1.47,
+      "industry_pct": 0.44,
+      "pe_ttm": 171.11,
+      "turnover": 6.67,
+      "catalyst_score": 2,
+      "catalyst_note": "无明确催化",
+      "source": "tdx_quotes+mx"
+    },
+    {
+      "ts_code": "600522.SH",
+      "quote_pct": -2.05,
+      "main_net_inflow": -703800000,
+      "liangbi": 1.53,
+      "industry_pct": -0.38,
+      "pe_ttm": 25.26,
+      "turnover": 6.11,
+      "catalyst_score": 10,
+      "catalyst_note": "中报净利+52.29%(23.87亿)，AI驱动；中标15.18亿算力耗材大单，海缆订单充足；AI光通信放量",
+      "source": "tdx_quotes+mx"
+    },
+    {
+      "ts_code": "603039.SH",
+      "quote_pct": 0.33,
+      "main_net_inflow": null,
+      "liangbi": 3.64,
+      "industry_pct": 0.94,
+      "pe_ttm": 53.36,
+      "turnover": 10.14,
+      "catalyst_score": 2,
+      "catalyst_note": "无明确催化",
+      "source": "tdx_quotes+mx"
+    },
+    {
+      "ts_code": "002845.SZ",
+      "quote_pct": 0.83,
+      "main_net_inflow": null,
+      "liangbi": 1.1,
+      "industry_pct": -0.5,
+      "pe_ttm": 209.04,
+      "turnover": 2.01,
+      "catalyst_score": 2,
+      "catalyst_note": "无明确催化",
+      "source": "tdx_quotes+mx"
+    },
+    {
+      "ts_code": "301086.SZ",
+      "quote_pct": -0.91,
+      "main_net_inflow": null,
+      "liangbi": 1.12,
+      "industry_pct": 0.15,
+      "pe_ttm": 108.17,
+      "turnover": 5.4,
+      "catalyst_score": 2,
+      "catalyst_note": "无明确催化",
+      "source": "tdx_quotes+mx"
+    },
+    {
+      "ts_code": "301280.SZ",
+      "quote_pct": -2.25,
+      "main_net_inflow": -6895000,
+      "liangbi": 0.86,
+      "industry_pct": 0.15,
+      "pe_ttm": 30.56,
+      "turnover": 1.56,
+      "catalyst_score": 2,
+      "catalyst_note": "无明确催化",
+      "source": "tdx_quotes+mx"
+    },
+    {
+      "ts_code": "603380.SH",
+      "quote_pct": 0.5,
+      "main_net_inflow": 2044000,
+      "liangbi": 1.14,
+      "industry_pct": 0.15,
+      "pe_ttm": 23.94,
+      "turnover": 1.6,
+      "catalyst_score": 6,
+      "catalyst_note": "中报Q2单季创新高；通讯设备+29.66%(AI服务器)；EC风机/服务器板卡 AI 概念",
+      "source": "tdx_quotes+mx"
+    },
+    {
+      "ts_code": "300877.SZ",
+      "quote_pct": -0.04,
+      "main_net_inflow": null,
+      "liangbi": 0.28,
+      "industry_pct": 0.44,
+      "pe_ttm": 51.64,
+      "turnover": 0.56,
+      "catalyst_score": 2,
+      "catalyst_note": "无明确催化",
+      "source": "tdx_quotes+mx"
+    },
+    {
+      "ts_code": "603329.SH",
+      "quote_pct": 0.68,
+      "main_net_inflow": -902900,
+      "liangbi": 0.92,
+      "industry_pct": 0.35,
+      "pe_ttm": 11.39,
+      "turnover": 1.28,
+      "catalyst_score": 2,
+      "catalyst_note": "无明确催化",
+      "source": "tdx_quotes+mx"
+    },
+    {
+      "ts_code": "603090.SH",
+      "quote_pct": -0.26,
+      "main_net_inflow": null,
+      "liangbi": 1.16,
+      "industry_pct": -0.8,
+      "pe_ttm": 63.59,
+      "turnover": 1.7,
+      "catalyst_score": 2,
+      "catalyst_note": "无明确催化",
+      "source": "tdx_quotes+mx"
+    }
+  ]
+}

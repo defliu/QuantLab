@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_02_dual_ma_trend
+title: 双均线趋势策略回测（SMA10/30 + 动量过滤）
+scope:
+    - projects/Project_02_双均线趋势策略/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: a4ca00e2-5639-48d2-9fb5-0cfb10798900
+kk_ordinal: 1
+kk_cards:
+    architecture_design:
+        id: 4878177c-9422-4c2d-ac7a-677f14e9dc8b
+        title: 双均线趋势策略回测（SMA10/30 + 动量过滤）
+    coding_conventions:
+        id: b30f98e7-1cf0-4ba2-991b-f62f4a7598ef
+        title: 双均线趋势策略回测（SMA10/30 + 动量过滤）
+    overview:
+        id: 4d208ad2-4a9c-497a-b732-ac046cec2a3a
+        title: 双均线趋势策略回测（SMA10/30 + 动量过滤）
+    tech_stack:
+        id: 7d6f6078-6fa9-4022-a854-b7b5b94c627a
+        title: 双均线趋势策略回测（SMA10/30 + 动量过滤）
+    unique_setup_and_commands:
+        id: 98e1fb40-533d-47d1-b3dd-b64e449ab280
+        title: 双均线趋势策略回测（SMA10/30 + 动量过滤）

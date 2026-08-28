@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_06_quality_smallcap
+title: 质量增强小市值策略回测脚本
+scope:
+    - projects/Project_06_质量小市值/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 370bd4cd-da78-45b4-98f5-1859ca882801
+kk_ordinal: 4
+kk_cards:
+    architecture_design:
+        id: 0aa604fd-9a90-40fc-958e-4de4588e483a
+        title: 质量增强小市值策略回测脚本
+    coding_conventions:
+        id: d16b7c1f-8e93-4671-8b4e-c3389586048e
+        title: 质量增强小市值策略回测脚本
+    overview:
+        id: 168ceef0-5173-42db-83b0-450d40806137
+        title: 质量增强小市值策略回测脚本
+    tech_stack:
+        id: fd15d1f8-8a11-47e8-bb71-35e83422fc69
+        title: 质量增强小市值策略回测脚本
+    unique_setup_and_commands:
+        id: 69298906-c435-4d46-a096-828b770524e6
+        title: 质量增强小市值策略回测脚本

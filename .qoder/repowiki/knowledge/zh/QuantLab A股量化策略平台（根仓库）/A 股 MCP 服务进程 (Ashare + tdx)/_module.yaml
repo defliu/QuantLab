@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: mcp_services
+title: A 股 MCP 服务进程 (Ashare + tdx)
+scope:
+    - mcp/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 7689728a-e044-4f35-87e9-43df5e0bd141
+kk_ordinal: 5
+kk_cards:
+    architecture_design:
+        id: 2d8b6c23-9a3e-4171-b187-33a7d681b2bc
+        title: A 股 MCP 服务进程 (Ashare + tdx)
+    coding_conventions:
+        id: 230fe9ba-0f87-451e-bfd3-592b2d83d47b
+        title: A 股 MCP 服务进程 (Ashare + tdx)
+    overview:
+        id: 67a6b126-0c86-40c3-a999-8b02e317bfd5
+        title: A 股 MCP 服务进程 (Ashare + tdx)
+    tech_stack:
+        id: 3f9af2fb-66b1-4e4a-9cb8-80610ee6032d
+        title: A 股 MCP 服务进程 (Ashare + tdx)
+    unique_setup_and_commands:
+        id: 9e046071-7551-435f-9253-72d70bc5c134
+        title: A 股 MCP 服务进程 (Ashare + tdx)

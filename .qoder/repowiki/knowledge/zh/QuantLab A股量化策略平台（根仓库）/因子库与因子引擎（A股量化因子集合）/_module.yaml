@@ -1,0 +1,23 @@
+schema_version: 1
+module_path: factors_lib
+title: 因子库与因子引擎（A股量化因子集合）
+scope:
+    - factors/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: baef1622-1e03-456c-9642-2fa1968628ce
+kk_ordinal: 3
+kk_cards:
+    architecture_design:
+        id: 43b42f25-11fc-4fda-9eae-73e861e3fe0d
+        title: 因子库与因子引擎（A股量化因子集合）
+    coding_conventions:
+        id: 4f8d0ade-320d-472f-8f80-a58d50f8ec4e
+        title: 因子库与因子引擎（A股量化因子集合）
+    overview:
+        id: ff597511-3ccc-4ae2-91e3-bc104c25fb4b
+        title: 因子库与因子引擎（A股量化因子集合）
+    tech_stack:
+        id: 008afddb-45c8-4f7c-846b-d0e687370fdd
+        title: 因子库与因子引擎（A股量化因子集合）

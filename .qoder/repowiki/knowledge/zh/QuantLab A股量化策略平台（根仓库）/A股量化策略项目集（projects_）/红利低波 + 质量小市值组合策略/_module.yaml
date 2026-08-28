@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_09_portfolio_strategy
+title: 红利低波 + 质量小市值组合策略
+scope:
+    - projects/Project_09_组合策略/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: b889892c-9180-4be6-8cef-e139a22bf57f
+kk_ordinal: 7
+kk_cards:
+    architecture_design:
+        id: c5fd223d-e8ff-43d4-a9aa-afebfe5ad1bc
+        title: 红利低波 + 质量小市值组合策略
+    coding_conventions:
+        id: 4149b918-4b24-4c85-8719-0eb5f537620d
+        title: 红利低波 + 质量小市值组合策略
+    overview:
+        id: e653b78d-829c-4555-a967-bd58fb424c29
+        title: 红利低波 + 质量小市值组合策略
+    tech_stack:
+        id: 6f87c103-255a-44b2-a4fe-723fc17cfc3b
+        title: 红利低波 + 质量小市值组合策略
+    unique_setup_and_commands:
+        id: 1392322f-a0c2-4ad9-9e64-955eb880f116
+        title: 红利低波 + 质量小市值组合策略
