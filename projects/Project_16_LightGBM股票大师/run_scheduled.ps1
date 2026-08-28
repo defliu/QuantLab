@@ -1,4 +1,4 @@
-﻿# coding: utf-8
+# coding: utf-8
 # ============================================================
 # 项目16 LightGBM股票大师 · 定时任务调度器
 # 用法:
@@ -19,6 +19,8 @@ param(
     [string]$Mode
 )
 $ErrorActionPreference = "Continue"
+# Python 子进程 stdout 统一 UTF-8，防 GBK 控制台对 ✅ 等字符 UnicodeEncodeError（2026-08-28 daily 链路 3 处崩溃根因）
+$env:PYTHONIOENCODING = "utf-8"
 
 # ---- 项目路径 ----
 $proj = Split-Path -Parent $MyInvocation.MyCommand.Path

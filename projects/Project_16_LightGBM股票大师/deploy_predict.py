@@ -31,6 +31,7 @@ import data_config as DC
 HERE = DC.PROJECT_DIR
 DATA_DIR = DC.DATA_DIR
 SELECT_DIR = os.path.join(DATA_DIR, "selections")
+SNAP_PATH = os.path.join(DC.LIVE_DIR, "latest_features.parquet")
 
 # 评分卡权重（与 Project_15 factor_framework.md 一致）
 SC_WEIGHTS = {"F1": 0.25, "F2": 0.20, "F3": 0.20, "F4": 0.15, "F5": 0.10, "F6": 0.10}
@@ -140,6 +141,30 @@ def compute_scorecard(df):
     return sc
 
 
+def _prefer_snapshot(df, feat_cols):
+    """daily 增量快照比主面板新时改用快照（merge_live_features.py 产出，限定主面板股票域）。"""
+    if not os.path.exists(SNAP_PATH):
+        return df
+    try:
+        snap = pd.read_parquet(SNAP_PATH)
+        snap["trade_date"] = pd.to_datetime(snap["trade_date"])
+    except Exception as e:
+        print(f"    !! 增量快照读取失败，回退主面板: {e}")
+        return df
+    panel_max = df["trade_date"].max()
+    snap_max = snap["trade_date"].max()
+    if snap_max <= panel_max:
+        return df
+    if not set(feat_cols).issubset(snap.columns):
+        print("    !! 增量快照缺特征列，回退主面板")
+        return df
+    uni = set(df["ts_code"])
+    before = len(snap)
+    snap = snap[snap["ts_code"].isin(uni)].copy()
+    print(f"    使用增量快照: {os.path.basename(SNAP_PATH)}（{snap_max.date()} > 主面板 {panel_max.date()}，股票域过滤 {before}→{len(snap)}）")
+    return snap
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default=None, help="目标交易日(YYYY-MM-DD)，默认面板最新日")
@@ -162,6 +187,7 @@ def main():
     feat_cols = meta["feature_cols"]
     df["trade_date"] = pd.to_datetime(df["trade_date"])
     if args.date is None:
+        df = _prefer_snapshot(df, feat_cols)
         date = df["trade_date"].max()
     else:
         date = pd.Timestamp(args.date)
