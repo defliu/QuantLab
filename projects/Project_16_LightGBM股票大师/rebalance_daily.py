@@ -50,16 +50,16 @@ def load_strategy_capital():
 
     策略只用 START_CAPITAL 建仓，收益滚动进资金池，亏损不补资金；
     买入预算一律以资金池为准，绝不用账户全量资金。
-    文件缺失时回退 START_CAPITAL。
+    文件缺失/账号戳校验失败时回退 START_CAPITAL（校验逻辑见 qmt_config.load_capital_pool）。
     """
-    try:
-        if os.path.exists(CAP_FILE):
-            data = json.load(open(CAP_FILE, encoding="utf-8"))
+    data = C.load_capital_pool()
+    if data:
+        try:
             cap = float(data.get("capital", 0) or 0)
             if cap > 0:
                 return cap
-    except Exception as e:
-        print(f"    !! 读取资金池失败: {e!r}，回退 START_CAPITAL")
+        except (TypeError, ValueError) as e:
+            print(f"    !! 资金池字段异常: {e!r}，回退 START_CAPITAL")
     return float(C.START_CAPITAL)
 
 
@@ -129,12 +129,13 @@ def load_positions_log():
     volumes:   {code: net}          总持有量
     sellable:  {code: net}          可卖量（今日买入的 T+1 锁定为 0）
     """
-    if not os.path.exists(C.TRADE_LOG):
+    rows = C.load_trade_log_rows()
+    if not rows:
         return {}, {}, {}
     bought, sold = {}, {}
     today = time.strftime("%Y-%m-%d")
     locked_codes = set()
-    for row in csv.DictReader(open(C.TRADE_LOG, encoding="utf-8-sig")):
+    for row in rows:
         code = row.get("code", "")
         if not code:
             continue
@@ -217,10 +218,9 @@ def main():
 
     # 策略持仓定义：只认成交记录里 BUY 过的代码（账户历史持仓不归本脚本管，由清仓任务负责）
     strategy_codes = set()
-    if os.path.exists(C.TRADE_LOG):
-        for row in csv.DictReader(open(C.TRADE_LOG, encoding="utf-8-sig")):
-            if row.get("side") == "BUY" and row.get("code"):
-                strategy_codes.add(row["code"].strip())
+    for row in C.load_trade_log_rows():
+        if row.get("side") == "BUY" and row.get("code"):
+            strategy_codes.add(row["code"].strip())
 
     # 持仓（QMT 优先 ∩ 策略持仓；QMT 失败回退日志）
     positions, volumes, sellable = load_positions_qmt()
@@ -403,12 +403,7 @@ def main():
         print("  [委托守护] " + " | ".join(guard_note))
 
     if log_rows and C.TRADE_LOG:
-        os.makedirs(os.path.dirname(C.TRADE_LOG), exist_ok=True)
-        with open(C.TRADE_LOG, "a", encoding="utf-8-sig", newline="") as f:
-            w = csv.writer(f)
-            if os.path.getsize(C.TRADE_LOG) == 0:
-                w.writerow(["time", "code", "side", "vol", "price", "score", "order_id"])
-            w.writerows(log_rows)
+        C.append_trade_rows(log_rows)
         print("    成交记录 ->", C.TRADE_LOG)
     trader.stop()
 

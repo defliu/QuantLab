@@ -142,12 +142,7 @@ def live_execute(orders):
         log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), o["code"], "BUY", vol, price, o["score"], order_id])
 
     if log_rows and C.TRADE_LOG:
-        os.makedirs(os.path.dirname(C.TRADE_LOG), exist_ok=True)
-        with open(C.TRADE_LOG, "a", encoding="utf-8-sig", newline="") as f:
-            w = csv.writer(f)
-            if os.path.getsize(C.TRADE_LOG) == 0:
-                w.writerow(["time", "code", "side", "vol", "price", "score", "order_id"])
-            w.writerows(log_rows)
+        C.append_trade_rows(log_rows)
         print("    成交记录 ->", C.TRADE_LOG)
     trader.stop()
 

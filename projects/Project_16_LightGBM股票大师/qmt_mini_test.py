@@ -89,14 +89,9 @@ def main():
     if matched:
         for t in matched:
             print(f"    成交: {args.code} {getattr(t,'traded_volume',0)}股 @ {getattr(t,'traded_price',0):.2f}")
-        with open(C.TRADE_LOG, "a", encoding="utf-8-sig", newline="") as f:
-            w = csv.writer(f)
-            if not os.path.exists(C.TRADE_LOG) or os.path.getsize(C.TRADE_LOG) == 0:
-                w.writerow(["time", "code", "side", "vol", "price", "score", "order_id"])
-            for t in matched:
-                w.writerow([time.strftime("%Y-%m-%d %H:%M:%S"), args.code, "BUY",
-                            getattr(t, "traded_volume", args.vol), getattr(t, "traded_price", price),
-                            "MINI_TEST", order_id])
+        C.append_trade_rows([[time.strftime("%Y-%m-%d %H:%M:%S"), args.code, "BUY",
+                             getattr(t, "traded_volume", args.vol), getattr(t, "traded_price", price),
+                             "MINI_TEST", order_id] for t in matched])
         print(f"    成交已写入 {C.TRADE_LOG}")
     else:
         print("    暂未查到成交（模拟盘可能需撮合或非交易时段，稍后查询）")

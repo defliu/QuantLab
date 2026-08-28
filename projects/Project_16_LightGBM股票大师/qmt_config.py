@@ -6,7 +6,10 @@
   - ACCOUNT_ID：券商资金账号（模拟盘/实盘账号）
   - 风控参数按你的资金与偏好调整
 """
+import csv
+import json
 import os
+import time
 
 # ---- miniQMT 客户端路径 ----
 QMT_PATH = r"E:\国金QMT交易端模拟"
@@ -58,3 +61,76 @@ TRADE_LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "qm
 # ---- 飞书推送（lark-cli bot 私聊通道，已验证连通）----
 LARK_CLI = r"C:\Users\Administrator\.trae-cn\plugins\trae-remote-official\lark\1.0.4\bin\lark-cli.exe"  # lark-cli 可执行文件
 FEISHU_OPEN_ID = "ou_76deaecde50e10576f8fdc8ba954a7b0"  # 接收人 open_id（刘诚，bot 私聊已测试连通）
+
+
+# ---- 账本 account_id 戳（红线 T-20260823-004，2026-08-28 补齐 P16）----
+CAPITAL_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "strategy_capital.json")
+TRADE_LOG_FIELDS = ["time", "code", "side", "vol", "price", "score", "order_id", "account_id"]
+
+
+def _bak_stamped(path, stamp):
+    """按红线命名规范备份账本：.bak_acct_<旧戳|nostamp>_<时间戳>。返回备份路径。"""
+    bak = "%s.bak_acct_%s_%s" % (path, stamp or "nostamp", time.strftime("%Y%m%d_%H%M%S"))
+    try:
+        with open(path, "rb") as a, open(bak, "wb") as b:
+            b.write(a.read())
+    except Exception as e:
+        print("    !! [account_id 校验] 备份失败: %r" % (e,))
+        bak = ""
+    return bak
+
+
+def append_trade_rows(rows):
+    """追加成交记录到 qmt_trade_log.csv，自动补 account_id 戳（写档加字段）。
+    rows 为字段列表的列表；静默，成功打印由调用方负责（保持调度链日志行稳定）。"""
+    if not rows:
+        return
+    os.makedirs(os.path.dirname(TRADE_LOG), exist_ok=True)
+    need_header = not os.path.exists(TRADE_LOG) or os.path.getsize(TRADE_LOG) == 0
+    with open(TRADE_LOG, "a", encoding="utf-8-sig", newline="") as f:
+        w = csv.writer(f)
+        if need_header:
+            w.writerow(TRADE_LOG_FIELDS)
+        for r in rows:
+            w.writerow(list(r) + [ACCOUNT_ID])
+
+
+def load_trade_log_rows():
+    """读取成交记录（DictReader 行列表），带 account_id 校验（红线 T-20260823-004）。
+    文件缺失 -> []；表头缺 account_id 列 -> 备份(.bak_acct_nostamp_*)并返回 []；
+    存在与 ACCOUNT_ID 不符的记录 -> 整文件不可信：备份(.bak_acct_<旧戳>_*)并返回 []（fail-safe）。"""
+    if not os.path.exists(TRADE_LOG):
+        return []
+    with open(TRADE_LOG, encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        if "account_id" not in (reader.fieldnames or []):
+            _bak_stamped(TRADE_LOG, "")
+            print("    !! [account_id 校验] 成交记录缺账号戳，已备份并按空账本处理（fail-safe）")
+            return []
+        rows = list(reader)
+    foreign = [r for r in rows if (r.get("account_id") or "").strip() != ACCOUNT_ID]
+    if foreign:
+        _bak_stamped(TRADE_LOG, (foreign[0].get("account_id") or "").strip())
+        print("    !! [account_id 校验] 成交记录含 %d 条非本账号(%s)记录（首条 %s %s），已备份并按空账本处理（fail-safe）"
+              % (len(foreign), ACCOUNT_ID, foreign[0].get("time", ""), foreign[0].get("code", "")))
+        return []
+    return rows
+
+
+def load_capital_pool():
+    """读取 strategy_capital.json，带 account_id 校验（红线 T-20260823-004）。
+    文件缺失/损坏/缺戳/账号不符 -> 备份(.bak_acct_*)并返回 None（调用方回退 START_CAPITAL）。"""
+    if not os.path.exists(CAPITAL_FILE):
+        return None
+    try:
+        with open(CAPITAL_FILE, encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception as e:
+        print("    !! [account_id 校验] 资金池读取失败: %r" % (e,))
+        return None
+    stamp = str(data.get("account_id", "") or "")
+    if stamp != str(ACCOUNT_ID):
+        _bak_stamped(CAPITAL_FILE, stamp)
+        print("    !! [account_id 校验] 资金池账号戳缺失或不符(=%r, 本策略=%s)，已备份并按无资金池处理（fail-safe）" % (stamp, ACCOUNT_ID))
+        return None
+    return data

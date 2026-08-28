@@ -40,10 +40,8 @@ EXCLUDE_CODES = {"300684.SZ"}
 
 
 def load_rows():
-    if not os.path.exists(C.TRADE_LOG):
-        return []
-    with open(C.TRADE_LOG, encoding="utf-8-sig") as f:
-        return list(csv.DictReader(f))
+    """读取成交记录，带 account_id 校验（红线 T-20260823-004，见 qmt_config.load_trade_log_rows）。"""
+    return C.load_trade_log_rows()
 
 
 def derive_positions(rows, exclude=frozenset()):

@@ -54,11 +54,8 @@ def fifo_positions_from_log():
     返回 {code: (net_vol, avg_cost_含费)}。price=0 的市价清仓记录同样扣减；未买入过的代码忽略。
     """
     q = {}
-    if not os.path.exists(C.TRADE_LOG):
-        return q
     qq = defaultdict(deque)
-    with open(C.TRADE_LOG, encoding="utf-8-sig") as f:
-        rows = list(csv.DictReader(f))
+    rows = C.load_trade_log_rows()
     rows.sort(key=lambda r: r.get("time", ""))
     for r in rows:
         code, side = r.get("code", ""), r.get("side", "")
@@ -346,11 +343,7 @@ def main():
                         sold.add(code)
                         sig["auto_sold"] = True
                         sig["order_id"] = order_id
-                        with open(C.TRADE_LOG, "a", encoding="utf-8-sig", newline="") as f:
-                            w = csv.writer(f)
-                            if not os.path.exists(C.TRADE_LOG) or os.path.getsize(C.TRADE_LOG) == 0:
-                                w.writerow(["time", "code", "side", "vol", "price", "score", "order_id"])
-                            w.writerow([sig["time"], code, "SELL", sell_vol, last, action, order_id])
+                        C.append_trade_rows([[sig["time"], code, "SELL", sell_vol, last, action, order_id]])
                     else:
                         print(f"      [FAIL] 自动卖出 {code} 失败（检查 miniQMT 客户端/账号）")
                         sig["auto_sold"] = False

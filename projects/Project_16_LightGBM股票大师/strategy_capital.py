@@ -52,12 +52,7 @@ def calc_realized():
     """
     q = defaultdict(deque)  # code -> deque[(vol, cost_per_share含费)]
     realized = 0.0
-    if not os.path.exists(C.TRADE_LOG):
-        return 0.0
-    rows = []
-    with open(C.TRADE_LOG, encoding="utf-8-sig") as f:
-        for row in csv.DictReader(f):
-            rows.append(row)
+    rows = C.load_trade_log_rows()
     rows.sort(key=lambda r: r.get("time", ""))
     for r in rows:
         code, side = r.get("code", ""), r.get("side", "")
@@ -104,12 +99,9 @@ def _fifo_positions_from_log():
     返回 {code: (net_vol, avg_cost_含费)}。price=0 的市价清仓记录同样扣减；未买入过的代码忽略。
     """
     q = {}
-    if not os.path.exists(C.TRADE_LOG):
-        return q
     from collections import defaultdict, deque
     qq = defaultdict(deque)
-    with open(C.TRADE_LOG, encoding="utf-8-sig") as f:
-        rows = list(csv.DictReader(f))
+    rows = C.load_trade_log_rows()
     rows.sort(key=lambda r: r.get("time", ""))
     for r in rows:
         code, side = r.get("code", ""), r.get("side", "")
@@ -206,6 +198,7 @@ def main():
     print(f"策略资金池 = 初始 {C.START_CAPITAL:,.0f} + 已实现盈亏 {realized:,.0f} + 策略持仓浮盈 {float_pnl:,.0f}")
     print(f"             = {capital:,.0f} 元（下次买入 --total 用此值，仓位上限 {capital * (1 - C.RESERVE_CASH_PCT):,.0f}）")
     out = {
+        "account_id": C.ACCOUNT_ID,
         "start": C.START_CAPITAL,
         "realized": round(realized, 2),
         "float_pnl": round(float_pnl, 2),

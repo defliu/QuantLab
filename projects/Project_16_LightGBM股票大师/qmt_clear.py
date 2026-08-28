@@ -27,9 +27,10 @@ def main():
 
     keep = set(c.strip() for c in args.keep.split(",") if c.strip())
     if args.auto_keep:
-        if os.path.exists(C.TRADE_LOG):
+        rows = C.load_trade_log_rows()
+        if rows:
             bought, sold = {}, {}
-            for row in csv.DictReader(open(C.TRADE_LOG, encoding="utf-8-sig")):
+            for row in rows:
                 code = (row.get("code") or "").strip()
                 if not code:
                     continue
@@ -117,12 +118,7 @@ def main():
 
     print("[4/4] 记录清仓委托 ...")
     if log_rows:
-        os.makedirs(os.path.dirname(C.TRADE_LOG), exist_ok=True)
-        with open(C.TRADE_LOG, "a", encoding="utf-8-sig", newline="") as f:
-            w = csv.writer(f)
-            if not os.path.exists(C.TRADE_LOG) or os.path.getsize(C.TRADE_LOG) == 0:
-                w.writerow(["time", "code", "side", "vol", "price", "score", "order_id"])
-            w.writerows(log_rows)
+        C.append_trade_rows(log_rows)
         print("    清仓委托已记录 ->", C.TRADE_LOG)
     trader.stop()
     print("    ✅ 清仓完成（模拟盘）")
