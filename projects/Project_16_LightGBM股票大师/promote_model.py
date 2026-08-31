@@ -60,6 +60,8 @@ def main():
     ap.add_argument("--yes", action="store_true", help="跳过确认")
     ap.add_argument("--dry-run", action="store_true", help="只校验不落盘")
     ap.add_argument("--note", default="", help="登记备注（可选）")
+    ap.add_argument("--test-ic", default="", help="候选 test IC（写入绑定记录，供 auto_promote.py 下次门禁对比）")
+    ap.add_argument("--icir", default="", help="候选 ICIR（写入绑定记录）")
     args = ap.parse_args()
 
     suffix = normalize_suffix(args.suffix)
@@ -148,6 +150,14 @@ def main():
             "candidate": os.path.basename(cand),
             "note": args.note,
         }
+        # 指标入档：auto_promote.py 下次门禁据此做「相对不退步」判断（G3）
+        try:
+            if args.test_ic != "":
+                binding["test_ic"] = float(args.test_ic)
+            if args.icir != "":
+                binding["icir"] = float(args.icir)
+        except ValueError:
+            print("!! --test-ic/--icir 非数值，已忽略（不影响 promote）")
         with open(BINDING, "w", encoding="utf-8") as f:
             json.dump(binding, f, ensure_ascii=False, indent=2)
         print(f"已写入模型-面板绑定记录 -> {BINDING}（面板 {pdate}）")

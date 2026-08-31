@@ -1,4 +1,4 @@
-# coding: utf-8
+﻿# coding: utf-8
 # ============================================================
 # 项目16 LightGBM股票大师 · 定时任务调度器
 # 用法:
@@ -21,6 +21,11 @@ param(
 $ErrorActionPreference = "Continue"
 # Python 子进程 stdout 统一 UTF-8，防 GBK 控制台对 ✅ 等字符 UnicodeEncodeError（2026-08-28 daily 链路 3 处崩溃根因）
 $env:PYTHONIOENCODING = "utf-8"
+# 配套：PowerShell 侧解码也必须 UTF-8，否则 Run-Py 用管道把 Python 的 UTF-8 输出交给 Log 时
+# 会按 GBK（中文 Windows 默认 [Console]::OutputEncoding）解码，中文日志落成乱码
+# （2026-08-31 发现：retrain_20260831 日志全篇乱码，导致周更结果不可读，只能靠猜）
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
 
 # ---- 项目路径 ----
 $proj = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -77,6 +82,8 @@ try {
         exit 0
     }
     Log "确认 A 股交易日，执行 [$Mode]"
+    # ---- 确保飞书卡片回调服务存活（长驻守护；未运行则拉起，已运行则跳过）----
+    & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $proj "start_card_webhook.ps1")
 
     switch ($Mode) {
         "daily" {
@@ -139,12 +146,28 @@ try {
             # 写入带日期后缀的候选模型（lgb_model_v3_retrain_YYYYMMDD.txt），不覆盖正式模型 lgb_model_v3.txt
             $retrainTag = "_retrain_" + (Get-Date -Format 'yyyyMMdd')
             Run-Py "train_optuna.py --panel-file data/feature_panel_v3.parquet --meta-file data/features_v3.json --n-trials 20 --model-tag $retrainTag"
-            # 模型-面板同步提示：面板已重建、正式模型仍绑旧面板 → 应跑 promote_model.py 提升候选
+            # ---- 条件式自动上线（2026-08-31 立）：门禁全过才 promote，任一不过则拒绝上线并告警 ----
+            # 背景：promote_model.py 是唯一写生产模型的入口且默认交互确认，无人值守的 retrain 调不动它，
+            #       导致「面板已更新、正式模型未同步」，若无人接管次日 09:15 会旧模型吃新面板。
+            # 机制：auto_promote.py 把人工拍板编码为 G0~G6 门禁（IC 下限/不退步/ICIR/分位方向/新面板），
+            #       全过才自动 promote；任一不过则 exit 1，正式模型保持不变，交人工介入。
+            $candModel = "D:/QuantLab/models/lgb_model_v3$retrainTag.txt"
+            if (Test-Path $candModel) {
+                Run-Py "auto_promote.py --candidate $candModel --yes"
+                if ($LASTEXITCODE -ne 0) {
+                    Log "!! [自动上线] 门禁未通过，候选未上线 —— 正式模型保持不变，需人工核对 data/optuna_report.json 与上方 FAIL 项"
+                } else {
+                    Log "[自动上线] 门禁通过，候选已提升为正式模型"
+                }
+            } else {
+                Log "!! [自动上线] 未找到候选模型 $candModel，跳过（重训可能失败）"
+            }
+            # 复核：面板与正式模型是否同版（自动上线成功则应 exit 0）
             Run-Py "verify_model_panel_sync.py"
             if ($LASTEXITCODE -ne 0) {
-                Log "!! [模型-面板同步] 面板已更新但正式模型未 promote —— 请用 promote_model.py 提升今日候选 lgb_model_v3$retrainTag.txt"
+                Log "!! [模型-面板同步] 面板与正式模型版本仍不一致，需人工介入（data/model_panel_binding.json）"
             } else {
-                Log "[模型-面板同步] 面板与正式模型同版（本周期未重建面板？）"
+                Log "[模型-面板同步] 面板与正式模型同版，OK"
             }
         }
         "factor" {

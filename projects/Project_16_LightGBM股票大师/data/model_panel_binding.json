@@ -1,10 +1,12 @@
 {
   "formal_model": "lgb_model_v3.txt",
-  "model_mtime": 1787893695.8681872,
-  "model_trees": 2837,
+  "model_mtime": 1788170879.8043938,
+  "model_trees": 6694,
   "panel_file": "feature_panel_v3.parquet",
-  "panel_max_date": "2026-08-27",
-  "promote_time": "20260828_144515",
-  "candidate": "lgb_model_v3_retrain_20260828.txt",
-  "note": "V1.2 promote：面板重建8/27后重训，新面板测试集IC 0.0394>正式0.0380"
+  "panel_max_date": "2026-08-28",
+  "promote_time": "20260831_234947",
+  "candidate": "lgb_model_v3_retrain_20260831.txt",
+  "note": "V1.3: 面板重建至8-28重训(4,778,966行/27特征), testIC 0.04319>0.0394, ICIR 0.3743, 分位收益单调, 消除面板8-28喂旧模型的分布不一致 | 指标基准已补录(testIC/icir)供 auto_promote G3 对比",
+  "test_ic": 0.043189,
+  "icir": 0.374285
 }
