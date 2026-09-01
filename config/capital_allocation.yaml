@@ -38,6 +38,12 @@ strategies:
     config_file: "D:/QMT_POOL/p13_huang529_config.yaml"
     note: "529信号日更CSV管道+09:35开盘执行；T-1信号补槽12只、1/12等权、止损-12%/到期60交易日/trail15默认关；虚拟子账户，绝不抢占他人资金/持仓（T-20260817-001 任务书T5登记）"
 
+  - key: g2_bridge
+    name: "G2大QMT文件桥(Project_16换仓top2)"
+    capital_base: 100000
+    max_hold: 2
+    note: "G2版(大QMT 70180771)换仓top2等权、评分红线60；资金池独立D:/QMT_POOL/g2_bridge/g2_strategy_capital.json(70180771戳)；与V1.3(miniQMT 67014907)完全隔离，G2绝不纳管/卖出他人持仓（T-20260831-001 登记 2026-09-01）"
+
   # ---- 新增策略在此追加（取消注释并填值）----
   # - key: xxx
   #   name: "新策略名"

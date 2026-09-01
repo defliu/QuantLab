@@ -442,3 +442,11 @@
 
 * fills 记录 P16\_20260901\_0001/0003=CANCELED vol0（历史假记录，实为已成交孤儿）需在外部对账时注意剔除；0004/0007/0008=CANCELED（撤单链路测试，均无成交，非孤儿）。
 
+## 2026-09-01 晚·G2 基础设置搭建（代码级全套 + 配置补齐收官，与 V1.3 完全隔离）
+
+* **① G2 独立配置**：`g2_config.py`（账号 70180771/桥路径/资金池/参数），**绝不 import V1.3 qmt_config**；独立资金池 `D:/QMT_POOL/g2_bridge/g2_strategy_capital.json`（初始 10 万，account_id 戳）。
+* **② G2 脚本**：`rebalance_g2.py`（每日换仓，先卖后买，只认 G2 账本 positions_cfg+fills FIFO，T+1 锁定自动跳过卖出，dry-run 默认；20260901 验证 8 只过红线/BUY top2/3 只孤儿 T+1 skip）；`reconcile_g2.py`（日终对账，持仓差额/孤儿预警，验证捕获 600028 超额 100 股）；`G2_RUNBOOK.md` 运行手册。
+* **③ 隔离硬约束**：账号 70180771 vs 67014907、资金池/候选/持仓归属独立、G2 绝不调 qmt_trader、绝不纳管他人持仓。
+* **④ 配置补齐（2026-09-01）**：G2 计划任务已建（Paused 未启用）：`30344e79` G2换仓 09:50 + `4cf3db92` G2日终对账 15:45（工作日，与 V1.3 09:45/15:40 错开 5 分钟）；`capital_allocation.yaml` 双镜像登记 `g2_bridge` 10 万/2 只，`check_capital_allocation.py` 退出码 0 PASS（4 策略共 40 万 ≤ 账户 1000 万）。
+* **⑤ 剩余验证层面（明日开盘）**：SELL 主链路（09-02 清 500 股孤儿仓）→ rebalance_g2 dry-run 观察 → G2 计划任务 resume → 灰度切换（旧 miniQMT 67014907 保留 ≥1 月回滚）。
+
