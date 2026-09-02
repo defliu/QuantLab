@@ -29,10 +29,26 @@ LIVE = DC.LIVE_DIR
 REAL = os.path.join(DATA, "real")
 SELECT = os.path.join(DATA, "selections", "g2")
 
-G2_MODEL = r"c:\Users\Administrator\.trae-cn\work\6a856dd08ac25249ed9d6c30\lgb_model_v3_g2_strong_real_20260825_1964t.txt"
-G2_META = os.path.join(DATA, "features_v3_g2_strong_real_20260825.json")
+G2_MODEL, G2_META = DC.g2_live()  # 读 live 指针（周更重训 promote 后自动跟随），缺失回退 08-25 初始 live
 SNAP = os.path.join(LIVE, "g2_latest_features.parquet")
 LIVE_LOG = os.path.join(REAL, "paper_forward_live.csv")
+
+
+def _append_live_dedup(rows):
+    """幂等追加 paper_forward_live.csv：读现有 → concat → 按 (date, code) 去重 → 原子写回。
+
+    修复 T-20260831（审计）指出的 8/28 重复追加 4 次：定时任务重入/重跑不再产生重复行。
+    """
+    new = pd.DataFrame(rows)
+    if os.path.exists(LIVE_LOG):
+        old = pd.read_csv(LIVE_LOG, encoding="utf-8-sig")
+        df = pd.concat([old, new], ignore_index=True)
+    else:
+        df = new
+    df = df.drop_duplicates(subset=["date", "code"], keep="last")
+    tmp = LIVE_LOG + ".tmp"
+    df.to_csv(tmp, index=False, encoding="utf-8-sig")
+    os.replace(tmp, LIVE_LOG)
 
 
 def main():
@@ -129,16 +145,15 @@ def main():
         md.append(f"| {i} | {r['ts_code']} | {r['prob']:.3f} | {r['total_new']:.0f} | {r['SC_F1']:.0f} | "
                   f"{r['SC_F2']:.0f} | {r['SC_F3']:.0f} | {r['SC_F4']:.0f} | {r['SC_F5']:.0f} | {r['SC_F6']:.0f} |")
     md += ["", "> ⚠️ F2 为主力净额实时值（新浪当日，预选池内逐股采集，未命中回退周更）；F5 为增量库当日行业涨幅自算。",
-           "> ⚠️ 其余新因子（lhb/北向/研报/行业资金流）为 E:/astock 周更最新可用值（可能滞后数天）；买入时需按一字板/停牌复核可执行性。",
+           "> ⚠️ 其余新因子（lhb/北向/研报/行业资金流）为 D:/astock 周更最新可用值（可能滞后数天）；买入时需按一字板/停牌复核可执行性。",
            "> 独立研究信号，不构成投资建议。"]
     md_path = os.path.join(SELECT, f"{date_str}_g2_selection.md")
     with open(md_path, "w", encoding="utf-8") as f:
         f.write("\n".join(md))
-    # 追加 live 日志（code 必须用 ts_code，不能用 iterrows 的整数 index）
+    # 追加 live 日志（code 必须用 ts_code，不能用 iterrows 的整数 index）；幂等去重
     rows = [{"date": target.date(), "code": s["ts_code"], "total_new": s["total_new"], "prob": s["prob"]}
             for _, s in picks.iterrows()]
-    pd.DataFrame(rows).to_csv(LIVE_LOG, mode="a", header=not os.path.exists(LIVE_LOG),
-                              index=False, encoding="utf-8-sig")
+    _append_live_dedup(rows)
     print("    CSV:", csv)
     print("    MD :", md_path)
     print("    live log:", LIVE_LOG)

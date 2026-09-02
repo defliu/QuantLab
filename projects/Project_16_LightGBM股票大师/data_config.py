@@ -4,18 +4,19 @@
 集中管理所有脚本的数据源/输出/模型路径，避免散落硬编码。
 部署时：修改 ASTOCK_DIR / UNIVERSE / MODEL_DIR 指向服务器路径即可。
 """
+import json
 import os
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # ---- 主数据（周更权威快照，只读）----
-ASTOCK_DIR = "E:/astock"
+ASTOCK_DIR = "D:/astock"     # 2026-08-28 服务器部署：原为 D:/astock（原开发机盘符），本机无 E 盘；主库已迁至 D:/astock
 MAIN_DAILY = os.path.join(ASTOCK_DIR, "daily", "stock_daily.parquet")
 FINANCE_DIR = os.path.join(ASTOCK_DIR, "finance")
 BASIC_DIR = os.path.join(ASTOCK_DIR, "basic")
 
 # ---- 行情增量目录（2026-08-28 新增，研发/回测使用）----
-# 用户约定：每周行情增量数据以"周区间"子目录形式放入 E:/astock/Updatedata，
+# 用户约定：每周行情增量数据以"周区间"子目录形式放入 D:/astock/Updatedata，
 # 每个子目录内为独立 parquet（stock_daily.parquet / stock_1min_data.parquet 等）。
 # 读取时按"主仓 + 增量合并"处理：增量目录按日期去重后覆盖/追加到主仓，增量优先。
 UPDATE_DATA_DIR = os.path.join(ASTOCK_DIR, "Updatedata")
@@ -38,6 +39,26 @@ MODEL_DIR = "D:/QuantLab/models"
 # ---- 项目输出目录 ----
 DATA_DIR = os.path.join(PROJECT_DIR, "data")
 LIVE_DIR = os.path.join(PROJECT_DIR, "data_live")
+
+# ---- G2 生产模型 live 指针（2026-09-01 补：g2_strong_real 周更重训落地）----
+# g2_live_model.json 由 train_g2.py --promote 写入；缺失/损坏时回退 08-25 初始 live 模型。
+G2_LIVE_POINTER = os.path.join(DATA_DIR, "g2_live_model.json")
+G2_MODEL_FALLBACK = os.path.join(MODEL_DIR, "lgb_model_v3_g2_strong_real_20260825_1964t.txt")
+G2_META_FALLBACK = os.path.join(DATA_DIR, "features_v3_g2_strong_real_20260825.json")
+
+
+def g2_live():
+    """返回 (model_path, meta_path)：读取 G2 live 指针；缺失/损坏回退 08-25 初始 live。"""
+    try:
+        if os.path.exists(G2_LIVE_POINTER):
+            with open(G2_LIVE_POINTER, encoding="utf-8") as f:
+                d = json.load(f)
+            if d.get("model_path") and d.get("meta_path") and \
+                    os.path.exists(d["model_path"]) and os.path.exists(d["meta_path"]):
+                return d["model_path"], d["meta_path"]
+    except Exception:
+        pass
+    return G2_MODEL_FALLBACK, G2_META_FALLBACK
 
 
 def list_update_weeks():

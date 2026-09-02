@@ -100,10 +100,15 @@ try {
             }
             if ($fresh) {
                 Log "今天增量更新成功，继续 merge + deploy"
-                $latest = (& $py -c "import pandas as pd; d=pd.read_parquet(r'data_live\incremental_daily.parquet', columns=['trade_date']); print(d['trade_date'].max().strftime('%Y-%m-%d'))" | Select-Object -Last 1).Trim()
+                $latest = (& $py "get_latest_incr_date.py" | Select-Object -Last 1).Trim()
                 Log "最新交易日: $latest"
                 if ($latest) {
                     Run-Py "merge_live_features.py --date $latest"
+                    # ---- 每日刷新 v3 面板（2026-09-01 落地，T-20260901-001）：合并增量重建 v2 + 切片 v3 ----
+                    # 背景：此前面板只在周更重训(refresh_panel_v3)时更新，周中面板落后（如 9/1 仍用 8/28）。
+                    # 现在每天增量入库后刷新面板到最新交易日，次日 09:15 候选自动用最新数据；约 10 分钟。
+                    # 模型保持周更 promote（1 天增量分布差异可接受），verify 已放宽 ≤7 自然日差异不告警。
+                    Run-Py "refresh_panel_v3.py"
                     Run-Py "deploy_predict.py --model v3 --top-k 10"
                 } else {
                     Log "未能确定最新交易日，跳过 merge/deploy"
@@ -134,7 +139,7 @@ try {
             Run-Py "qmt_monitor.py --once --auto-sell"
         }
         "retrain" {
-            Log "[周更重训] 开始（约1小时）"
+            Log "[周更重训] 开始（约1.5-2小时，含 G2 模型重训）"
             # 0) 重训前备份当前正式模型，防止覆盖（SERVER_DEPLOY.md 六、安全与备份 第2条要求）
             $formalModel = "D:/QuantLab/models/lgb_model_v3.txt"
             if (Test-Path $formalModel) {
@@ -168,6 +173,28 @@ try {
                 Log "!! [模型-面板同步] 面板与正式模型版本仍不一致，需人工介入（data/model_panel_binding.json）"
             } else {
                 Log "[模型-面板同步] 面板与正式模型同版，OK"
+            }
+            # ---- G2 模型周更重训（2026-09-01 补：g2_strong_real 生产主模型，V2.0 审计认定）----
+            # 背景：此前 g2_strong_real 只在 08-25 通宵研究训练一次后冻结，周更只 promote V1.3；
+            # train_g2.py 构建 43 特征面板 + 训练 + 门禁（IC>=max(0.03,当前live)）+ 提升 live 指针，
+            # deploy_predict_g2 / build_g2_daily 自动读最新 live（data/g2_live_model.json）。
+            $g2LivePointer = Join-Path $proj "data\g2_live_model.json"
+            $g2Cur = $null
+            if (Test-Path $g2LivePointer) {
+                try { $g2Cur = (Get-Content $g2LivePointer -Raw | ConvertFrom-Json).model_path } catch { }
+            }
+            if ($g2Cur -and (Test-Path $g2Cur)) {
+                $g2LiveBak = Join-Path $proj ("versions\models\lgb_model_v3_g2_strong_real_pre_retrain_" + (Get-Date -Format 'yyyyMMdd_HHmmss') + ".txt")
+                Copy-Item $g2Cur $g2LiveBak -Force
+                Log "已备份 G2 live 模型 -> $g2LiveBak"
+            } else {
+                Log "G2 live 指针缺失，跳过备份（train_g2 失败时回退 08-25 初始 live）"
+            }
+            Run-Py "train_g2.py --promote"
+            if ($LASTEXITCODE -ne 0) {
+                Log "!! [G2重训] 门禁未过或训练失败，G2 live 保持不变，需人工核查（data/g2_live_model.json）"
+            } else {
+                Log "[G2重训] 门禁通过，G2 live 已更新"
             }
         }
         "factor" {

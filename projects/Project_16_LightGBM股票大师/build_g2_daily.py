@@ -3,10 +3,10 @@
 
 独立于 V1.1：不碰 run_scheduled.ps1 / deploy_predict.py / feature_panel_v3.parquet / lgb_model_v3.txt。
 数据分层（与 merge_live_features 一致）：
-  主库 E:/astock（周更权威，只读）+ data_live/incremental_daily.parquet（每日增量）
+  主库 D:/astock（周更权威，只读）+ data_live/incremental_daily.parquet（每日增量）
   → 重算 19 个量价特征（真实最新日）
   基础面板 feature_panel_v3_enh.parquet asof → 14 个财务/事件/行业特征（慢变量近似）
-  E:/astock 周更因子（moneyflow / lhb / northbound / research / board）→ 10 个 g2 新因子（最新可用≤目标日，前向填充，诚实标注滞后）
+  D:/astock 周更因子（moneyflow / lhb / northbound / research / board）→ 10 个 g2 新因子（最新可用≤目标日，前向填充，诚实标注滞后）
 
 输出：data_live/g2_latest_features.parquet（43 特征，目标日，与 features_v3_g2_strong_real 同序）
 
@@ -29,7 +29,7 @@ LIVE = DC.LIVE_DIR
 ASTOCK = DC.ASTOCK_DIR
 INCR = os.path.join(LIVE, "incremental_daily.parquet")
 PANEL_ENH = os.path.join(DATA, "feature_panel_v3_enh.parquet")
-G2_META = os.path.join(DATA, "features_v3_g2_strong_real_20260825.json")
+G2_META = DC.g2_live()[1]  # 读 live 指针的 meta（周更重训 promote 后自动跟随），缺失回退 08-25 初始 live
 OUT = os.path.join(LIVE, "g2_latest_features.parquet")
 
 RAW_COLS = ["close", "pct_chg", "vol", "amount", "turnover_rate", "volume_ratio",
@@ -152,9 +152,9 @@ def main():
         else:
             latest[c] = np.nan
 
-    print("[4/6] g2 新因子（东财当日 → MCP 当日 → E:/astock 周更回退） ...")
-    # 龙虎榜净买/次数：优先东财 datacenter 当日（方案B全自动，复刻 E:/astock 去重口径），
-    # 次选悟道 MCP 当日文件（方案A），均缺失则回退 E:/astock 周更
+    print("[4/6] g2 新因子（东财当日 → MCP 当日 → D:/astock 周更回退） ...")
+    # 龙虎榜净买/次数：优先东财 datacenter 当日（方案B全自动，复刻 D:/astock 去重口径），
+    # 次选悟道 MCP 当日文件（方案A），均缺失则回退 D:/astock 周更
     lhb = RT.fetch_lhb_eastmoney(target.strftime("%Y-%m-%d"))
     src = "东财"
     if not lhb:
@@ -171,9 +171,9 @@ def main():
         tl_g = tl.groupby(["ts_code", "trade_date"]).agg(lhb_net=("net_amount", "sum"), lhb_count=("net_amount", "size")).reset_index()
         for c in ["lhb_net", "lhb_count"]:
             latest[c] = latest["ts_code"].map(asof_latest(tl_g, [c]).get(c, 0.0) if len(tl_g) else {}).fillna(0.0)
-        print("    龙虎榜无当日源，回退 E:/astock 周更（可能滞后数天）")
+        print("    龙虎榜无当日源，回退 D:/astock 周更（可能滞后数天）")
     # 北向持股变动
-    # 北向持股变动（上游 2024-08 起个股持股改季频披露，无当日值，保持 E:/astock 周更/季频快照）
+    # 北向持股变动（上游 2024-08 起个股持股改季频披露，无当日值，保持 D:/astock 周更/季频快照）
     try:
         hk = pd.read_parquet(os.path.join(ASTOCK, "northbound", "hk_hold_full.parquet"))
         hk["trade_date"] = pd.to_datetime(hk["trade_date"])
@@ -184,7 +184,7 @@ def main():
     except Exception as e:
         latest["north_chg"] = 0.0
         print(f"    北向数据读取失败（{e}），置 0")
-    # 研报评级/数量：优先东财 reportapi 当日（已落地），缺失回退 E:/astock 周更
+    # 研报评级/数量：优先东财 reportapi 当日（已落地），缺失回退 D:/astock 周更
     rc_em = RT.fetch_research_eastmoney(target.strftime("%Y-%m-%d"))
     if rc_em:
         latest["rc_rating"] = latest["ts_code"].map(lambda c: (rc_em.get(c) or {}).get("rc_rating", 0.0)).fillna(0.0)
@@ -198,7 +198,7 @@ def main():
         rc_g = rc.groupby(["ts_code", "trade_date"]).agg(rc_num=("rating", "size"), rc_rating=("rc_rating_up", "mean")).reset_index()
         for c in ["rc_rating", "rc_num"]:
             latest[c] = latest["ts_code"].map(asof_latest(rc_g, [c]).get(c, 0.0) if len(rc_g) else {}).fillna(0.0)
-        print("    研报无当日源，回退 E:/astock 周更（可能滞后数天）")
+        print("    研报无当日源，回退 D:/astock 周更（可能滞后数天）")
     # 个股五档资金流（moneyflow）
     mf = pd.read_parquet(os.path.join(ASTOCK, "moneyflow", "moneyflow.parquet")).reset_index()
     mf["trade_date"] = pd.to_datetime(mf["trade_date"])
@@ -263,7 +263,7 @@ def main():
         print(f"    实时覆盖 {hit}/{len(rt_codes)} 只 | 未命中回退周更值")
         # 诚实标注：把实时覆盖的日期写入说明（用增量库目标日）
     else:
-        print("    未指定 --realtime-f2，F2 用 E:/astock 周更值（可能滞后数天）")
+        print("    未指定 --realtime-f2，F2 用 D:/astock 周更值（可能滞后数天）")
 
     print("[5/6] 组装 43 特征并保存 ...")
     latest["trade_date"] = target
@@ -275,9 +275,9 @@ def main():
     print("[6/6] 说明")
     print("    - 量价特征为最新真实日（增量库）；财务/事件/行业特征为基础面板 asof 近似")
     print("    - F5 板块涨幅：增量库自算当日行业涨幅（成交额加权，881 板块，与回测同分类）")
-    print("    - F2 主力净额：指定 --realtime-f2 时为新浪当日实时（逐股）；否则 E:/astock 周更（可能滞后数天）")
-    print("    - 其余 g2 新因子（lhb/北向/研报/行业资金流）为 E:/astock 周更最新可用值（诚实标注滞后）")
-    print("    - 主数据 E:/astock 未修改；V1.1 资产未触碰")
+    print("    - F2 主力净额：指定 --realtime-f2 时为新浪当日实时（逐股）；否则 D:/astock 周更（可能滞后数天）")
+    print("    - 其余 g2 新因子（lhb/北向/研报/行业资金流）为 D:/astock 周更最新可用值（诚实标注滞后）")
+    print("    - 主数据 D:/astock 未修改；V1.1 资产未触碰")
 
 
 if __name__ == "__main__":
