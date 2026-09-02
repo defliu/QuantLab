@@ -34,15 +34,63 @@ def today_str():
     return time.strftime("%Y%m%d")
 
 
+def _latest_incr_date():
+    """增量库最新交易日（data_live/update_meta.json incremental_range[1]）；读不到返回 None。
+
+    G2 候选由 deploy_predict_g2 基于增量库最新日生成，故用此值做候选新鲜度基准（P0-1，2026-09-02）。
+    """
+    try:
+        meta = os.path.join(os.path.dirname(G.DATA_DIR), "data_live", "update_meta.json")
+        with open(meta, encoding="utf-8") as f:
+            d = json.load(f)
+        rng = d.get("incremental_range") or []
+        if len(rng) == 2:
+            return str(rng[1])
+    except Exception:
+        pass
+    return None
+
+
+def _latest_avail_candidate(date, top_n):
+    """扫描 g2/ 目录取最新数据日的候选；新鲜度须 == 增量库最新日，否则宁缺毋滥中止。
+
+    候选文件以「数据日」命名（deploy_predict_g2 输出，如 20260901_g2_top2.csv），
+    而调用方传「运行日」（如 20260902）。运行日候选缺失属正常（候选天然滞后一天），
+    自动回退最新数据日候选；但若其数据日落后于增量库最新日，说明 09:25 候选生成失败，
+    绝不用过期候选交易。同时移除原逻辑回退 V1.3 selection_full.csv 的违规路径（隔离红线）。
+    返回 (csv_path, note)；无可用候选返回 (None, 原因)。
+    """
+    sel = G.G2_SELECT_DIR
+    if not os.path.isdir(sel):
+        return None, "g2 选股目录不存在: %s" % sel
+    pat = "_g2_top%d.csv" % top_n
+    cands = []
+    for fn in os.listdir(sel):
+        if fn.endswith(pat) and fn[:8].isdigit():
+            cands.append((fn[:8], os.path.join(sel, fn)))
+    if not cands:
+        return None, "g2 选股 CSV 不存在: %s" % os.path.join(sel, "%s_g2_top%d.csv" % (date, top_n))
+    cands.sort()
+    d, path = cands[-1]
+    latest_incr = _latest_incr_date()
+    if latest_incr and d != latest_incr:
+        return None, ("g2 候选数据日 %s 落后于增量库最新日 %s（09:25 候选生成失败？），"
+                      "宁缺毋滥中止，绝不用过期候选" % (d, latest_incr))
+    return path, "运行日候选缺失，回退到最新数据日 %s 的候选" % d
+
+
 def load_g2_selection(date, top_n):
-    """读 g2 选股 CSV → 目标清单（按 total 降序取 topN，total>=REDLINE）。"""
+    """读 g2 选股 CSV → 目标清单（按 total 降序取 topN，total>=REDLINE）。
+
+    先按运行日 <date> 精确匹配；缺失则回退最新数据日候选（见 _latest_avail_candidate）。
+    绝不回退 V1.3 的 selection_full.csv（G2/V1.3 隔离红线）。
+    """
     csv_path = os.path.join(G.G2_SELECT_DIR, "%s_g2_top%d.csv" % (date, top_n))
+    note = "g2 选股 %d 只（红线 %.0f）" % (top_n, G.REDLINE)
     if not os.path.exists(csv_path):
-        alt = os.path.join(G.DATA_DIR, "selections", "%s_selection_full.csv" % date)
-        if os.path.exists(alt):
-            csv_path = alt
-        else:
-            return [], "g2 选股 CSV 不存在: %s" % csv_path
+        csv_path, note = _latest_avail_candidate(date, top_n)
+        if csv_path is None:
+            return [], note
     picks = []
     with open(csv_path, encoding="utf-8-sig") as f:
         for row in csv.DictReader(f):
