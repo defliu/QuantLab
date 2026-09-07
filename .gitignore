@@ -58,3 +58,7 @@ mcp/
 
 # 数据源 API 密钥（不入库）
 config/data_source_keys.json
+
+# 游离垃圾（2026-09-07 工作区清理：暂不删除，仅不入库）
+projects/Project_16_LightGBM股票大师/output.txt
+projects/Project_16_LightGBM股票大师/projects/
