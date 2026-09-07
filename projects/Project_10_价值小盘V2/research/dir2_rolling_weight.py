@@ -30,7 +30,7 @@ def p(*a):
     log.append(s)
 
 # ---- 构建 EP z-score (行业中性) ----
-basic = pd.read_parquet(r"E:/astock/basic/stock_basic.parquet")
+basic = pd.read_parquet(r"D:/astock/basic/stock_basic.parquet")
 ind_map = dict(zip(basic["ts_code"], basic["industry"].fillna("其他")))
 
 

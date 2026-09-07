@@ -1,7 +1,7 @@
 # coding=utf-8
 """用真实数据验证 RPS 加速度因子的 IC（决定性结论）。
 
-从 E:/astock 读全 A 日线，计算 RPS 加速度因子 + 前向收益，测 IC/ICIR。
+从 D:/astock 读全 A 日线，计算 RPS 加速度因子 + 前向收益，测 IC/ICIR。
 若 IC 全负或接近 0，则确认该因子在 A 股无预测力（与通宵研究一致）。
 
 用法：
@@ -17,7 +17,7 @@ import pandas as pd
 def load_sample(n_codes=500, start="2023-01-01", end="2025-12-31"):
     """用 astock_reader 加载样本股票日线。"""
     from data.astock_reader import AstockParquetReader
-    reader = AstockParquetReader("E:/astock/daily/stock_daily.parquet", adjustment="qfq")
+    reader = AstockParquetReader("D:/astock/daily/stock_daily.parquet", adjustment="qfq")
     # 读全 A 覆盖的代码（reader 会自己处理 index）
     cov = reader.coverage(codes=None, start_date=start, end_date=end)
     all_codes = sorted(cov.keys()) if isinstance(cov, dict) else list(cov)

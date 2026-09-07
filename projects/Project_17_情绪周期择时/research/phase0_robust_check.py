@@ -21,7 +21,7 @@ for c in ["limit_up_count", "max_lianban", "fengban_ratio", "prev_limit_premium"
     print(f"  {c}: 非NaN占比 {nn:.1%}")
 
 # 重建 pool_fwd（若未缓存则快速重建）
-ASTOCK = r"E:\astock"
+ASTOCK = r"D:\astock"
 if pool is None:
     daily = pd.read_parquet(f"{ASTOCK}\\daily\\stock_daily.parquet",
                             columns=["close", "circ_mv", "is_st", "listed_days"]).reset_index()

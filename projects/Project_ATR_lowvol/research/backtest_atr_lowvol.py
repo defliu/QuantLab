@@ -1,6 +1,6 @@
 # coding: utf-8
 """
-ATR 低波动策略 — 离线回测（基于全景说明书界定的第一数据源 E:/astock）
+ATR 低波动策略 — 离线回测（基于全景说明书界定的第一数据源 D:/astock）
 忠实还原 atr_lowvol/strategy_atr.py 的选股 + 风控规则：
   选股: ATR(14)%<6 + 换手率1-8% + 近5日成交额降序取前3(持仓上限)
   卖出: 止损-8% / 止盈+20% / 移动止损(从峰值回落-10%) / 条件失效(持仓A%%>=6 或 换手越界)
@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import duckdb
 
-PARQUET = "E:/astock/daily/stock_daily.parquet"
+PARQUET = "D:/astock/daily/stock_daily.parquet"
 OUT_DIR = "D:/QMT_STRATEGIES/backtest_results"
 os.makedirs(OUT_DIR, exist_ok=True)
 
@@ -240,7 +240,7 @@ wr = win / len(sell_trades) if sell_trades else 0
 
 summary = {
     "strategy": "ATR_LOWVOL",
-    "data_source": "E:/astock/daily/stock_daily.parquet",
+    "data_source": "D:/astock/daily/stock_daily.parquet",
     "period": [BACKTEST_START, str(bt["date"].max().date())],
     "params": {"atr_threshold": ATR_THRESHOLD, "turnover": [MIN_TURNOVER, MAX_TURNOVER],
                "stop_loss": STOP_LOSS, "take_profit": TAKE_PROFIT,

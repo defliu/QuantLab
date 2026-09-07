@@ -24,10 +24,10 @@ import pandas as pd
 
 sys.path.insert(0, r"D:\QuantLab")
 
-DAILY_PATH = "E:/astock/daily/stock_daily.parquet"
-FINA_PATH = "E:/astock/finance/fina_indicator.parquet"
-BASIC_PATH = "E:/astock/basic/stock_basic.parquet"
-BM_PATH = "F:/backtest_workspace/data/duckdb/benchmark_index.duckdb"
+DAILY_PATH = "D:/astock/daily/stock_daily.parquet"
+FINA_PATH = "D:/astock/finance/fina_indicator.parquet"
+BASIC_PATH = "D:/astock/basic/stock_basic.parquet"
+BM_PATH = "D:/astock/benchmark/benchmark_index.duckdb"
 
 START_DATE = "2019-01-01"
 END_DATE = "2026-06-30"

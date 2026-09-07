@@ -53,7 +53,7 @@ def main():
         print("=" * 60)
         print("数据源: %s" % src)
         if src == "astock":
-            reader = AstockParquetReader(bt.get("path") or "E:/astock/daily/stock_daily.parquet",
+            reader = AstockParquetReader(bt.get("path") or "D:/astock/daily/stock_daily.parquet",
                                          adjustment=bt.get("adjustment", "hfq"))
         else:
             reader = GpsjDuckDBReader(adjustment=bt.get("adjustment", "hfq"))

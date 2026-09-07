@@ -1,0 +1,58 @@
+# ATR 低波动 + 每日风险 overlay（崩盘空仓 / 低波动 regime 门控）
+# 验证方向：不动合格域、不动已被证伪的 vol_target（见闭环波动率控制实验），
+# 仅在持仓期叠加尾部/regime 守卫，专治 -24.8% 最大回撤。
+# 对照基线：config/atr_lowvol_fw.yaml（无 overlay）。
+backtest:
+  name: atr_lowvol_riskguard_fw
+  start_date: "2019-01-02"
+  end_date: "2026-06-30"
+  initial_cash: 1000000.0
+  benchmark_code: "000300.SH"
+  benchmark_db_path: "D:/astock/benchmark/benchmark_index.duckdb"
+
+data:
+  source: astock
+  path: "D:/astock/daily/stock_daily.parquet"
+  adjustment: hfq
+  fundamentals: false
+
+universe:
+  csv: "D:/QuantLab/config/full_a_sh_sz.csv"
+
+execution:
+  price: next_open
+  slippage: 0.001
+  commission_rate: 0.00025
+  tax_rate: 0.0001
+
+strategy: atr_lowvol
+trading_model: next_open
+
+strategy_params:
+  rebalance_freq: monthly
+  n_hold: 8
+  atr_win: 14
+  atr_pct_max: 0.06
+  turnover_min: 1.0
+  turnover_max: 8.0
+  quality_gate: 1
+  momentum_gate: 1
+  stop_loss: -0.08
+  # --- 组合层（保持基线，不叠加已证伪的 vol_target）---
+  position_sizing: equal
+  target_leverage: 1.0
+  industry_cap: 0.0
+  max_positions: 0
+  min_position_value: 0.0
+  # --- 每日风险 overlay（2026-08-29 新增，risk/ 包）---
+  # 崩盘空仓：市场等权累计收益 <= crash_threshold 触发，强制转现 crash_cooldown 日
+  crash_guard: 1
+  crash_lookback: 5
+  crash_threshold: -0.07
+  crash_cooldown: 5
+  # 低波动 regime 门控：当前波动低于历史中位数比例 > 阈值才持仓，否则转现。
+  # 注意：与框架既有 market_gate(MA 跌破空仓) 同属 regime 过滤，二者同开易重复，
+  #       建议先单开 crash_guard 看回撤改善，再决定是否叠加 regime_gate。
+  regime_gate: 0
+  regime_lookback: 60
+  regime_vol_percentile_threshold: 0.50

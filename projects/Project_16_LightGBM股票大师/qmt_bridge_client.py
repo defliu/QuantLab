@@ -254,8 +254,51 @@ def read_asset(date=None):
 
 
 def read_heart(date=None):
-    date = date or _today()
+    """读心跳。date 缺省时读 state 目录最新 heart_<date>.json（桥每天写新心跳，
+    跨日运行时"数据日期(date)"≠"桥运行日"，存活判断应看最新心跳，避免误判桥死）。"""
+    if not date:
+        try:
+            files = [f for f in os.listdir(STATE_DIR) if f.startswith("heart_") and f.endswith(".json")]
+            if files:
+                files.sort(reverse=True)  # YYYYMMDD 字典序 = 日期序
+                return _read_json(os.path.join(STATE_DIR, files[0]))
+        except Exception:
+            pass
+        return None
     return _read_json(_heart_path(date))
+
+
+def notify_feishu(text):
+    """G2 飞书文本通知（私聊，bot 身份 + 清理 hermes/agent 环境变量回退本地 config）。
+    供 rebalance/reconcile 等全自动任务复用；失败仅记录不阻断主流程。"""
+    import subprocess
+
+    import g2_config as G
+    cli = getattr(G, "LARK_CLI", "")
+    uid = getattr(G, "FEISHU_OPEN_ID", "")
+    if not cli or not uid:
+        print("[通知] 未配置 LARK_CLI/FEISHU_OPEN_ID，跳过")
+        return False
+    env = dict(os.environ)
+    env.pop("LARKSUITE_CLI_APP_ID", None)
+    env.pop("LARKSUITE_CLI_USER_ACCESS_TOKEN", None)
+    env.pop("HERMES_HOME", None)
+    env.pop("OPENCLAW_HOME", None)
+    env.pop("LARK_CHANNEL", None)
+    env["LARKSUITE_CLI_STRICT_MODE"] = "off"
+    env["LARKSUITE_CLI_NO_UPDATE_NOTIFIER"] = "1"
+    env["LARKSUITE_CLI_NO_SKILLS_NOTIFIER"] = "1"
+    try:
+        r = subprocess.run(
+            [cli, "im", "+messages-send", "--user-id", uid,
+             "--msg-type", "text", "--text", text, "--as", "bot"],
+            capture_output=True, text=True, encoding="utf-8", timeout=15, env=env)
+        ok = r.returncode == 0 and '"ok": true' in r.stdout
+        print("[通知] 飞书%s: %s" % ("成功" if ok else "失败", (r.stdout or r.stderr).strip()[:120]))
+        return ok
+    except Exception as e:
+        print("[通知] 飞书异常: %s" % e)
+        return False
 
 
 def wait_fill(strategy_order_id, timeout=300, poll=2, date=None):

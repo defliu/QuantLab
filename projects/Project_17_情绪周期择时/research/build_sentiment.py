@@ -15,7 +15,7 @@ import pandas as pd
 
 pd.set_option("display.width", 200)
 
-ASTOCK = r"E:\astock"
+ASTOCK = r"D:\astock"
 OUT = r"D:\QuantLab\projects\Project_17_情绪周期择时\results"
 os_mkdir = __import__("os").makedirs
 os_mkdir(OUT, exist_ok=True)
@@ -173,7 +173,7 @@ for v in verdict:
 # 8. 报告落盘
 md = f"""# Project_17 Phase 0：情绪温度计有效性验证（预注册）
 
-> 运行日期：2026-08-26 ｜ 数据：E:/astock（涨停明细 2019-11-28 ~ 2026-08-21，日线 2009-01 ~ 2026-08-14）
+> 运行日期：2026-08-26 ｜ 数据：D:/astock（涨停明细 2019-11-28 ~ 2026-08-21，日线 2009-01 ~ 2026-08-14）
 > 判据冻结于 `specs/任务书_v1.md`，本报告为一次性预注册检验，未调参。
 
 ## 一、情绪序列概览

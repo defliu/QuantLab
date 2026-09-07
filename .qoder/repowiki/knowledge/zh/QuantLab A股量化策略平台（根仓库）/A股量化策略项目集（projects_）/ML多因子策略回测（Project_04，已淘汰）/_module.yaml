@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_04_ml_multifactor
+title: ML多因子策略回测（Project_04，已淘汰）
+scope:
+    - projects/Project_04_ML多因子策略/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 17163972-34a1-4a19-b871-a7bf90959361
+kk_ordinal: 16
+kk_cards:
+    overview:
+        id: de9edeb3-f584-4bf7-8018-eeea8b0cbd8a
+        title: ML多因子策略回测（Project_04，已淘汰）
+    architecture_design:
+        id: 5393b238-3b70-45ed-82be-cdfbaae954f6
+        title: ML多因子策略回测（Project_04，已淘汰）
+    tech_stack:
+        id: dfe855f5-3694-4b8c-beab-d33ba7b2ff92
+        title: ML多因子策略回测（Project_04，已淘汰）
+    coding_conventions:
+        id: 5c512022-55ef-49d3-81f6-d1a7dbbc1ddb
+        title: ML多因子策略回测（Project_04，已淘汰）
+    unique_setup_and_commands:
+        id: 0e505f5d-68e5-4283-9388-b8f684a9a677
+        title: ML多因子策略回测（Project_04，已淘汰）

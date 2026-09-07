@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: risk_layer
+title: 风控叠加层（risk_ 每日风险守卫）
+scope:
+    - risk/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: bb17f33a-4fb1-4a73-8692-c3d67b225553
+kk_ordinal: 10
+kk_cards:
+    overview:
+        id: d464c98d-878f-44b1-881d-6e3d49d71195
+        title: 风控叠加层（risk_ 每日风险守卫）
+    architecture_design:
+        id: 4a342d8d-d4fc-453c-a77d-d632775e5def
+        title: 风控叠加层（risk_ 每日风险守卫）
+    tech_stack:
+        id: 2f25a422-2b6d-426e-b096-a2b3a42bc021
+        title: 风控叠加层（risk_ 每日风险守卫）
+    coding_conventions:
+        id: 36410aa1-1338-40e2-b810-ba30221a4422
+        title: 风控叠加层（risk_ 每日风险守卫）
+    unique_setup_and_commands:
+        id: c1751168-2803-4dac-a128-6826b8905113
+        title: 风控叠加层（risk_ 每日风险守卫）

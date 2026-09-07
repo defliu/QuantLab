@@ -1,8 +1,8 @@
 # coding: utf-8
-"""探查 E:/astock/daily/stock_daily.parquet，确认回测可用字段与阈值合理性。"""
+"""探查 D:/astock/daily/stock_daily.parquet，确认回测可用字段与阈值合理性。"""
 import duckdb
 
-PARQUET = "E:/astock/daily/stock_daily.parquet"
+PARQUET = "D:/astock/daily/stock_daily.parquet"
 con = duckdb.connect()
 
 print("=== 1. SCHEMA ===")

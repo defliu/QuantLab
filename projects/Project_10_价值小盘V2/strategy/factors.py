@@ -12,7 +12,7 @@ import sys
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, r"E:\QuantLab")
+sys.path.insert(0, r"D:\QuantLab")
 from factors.base import FactorBase
 
 

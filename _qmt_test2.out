@@ -1,0 +1,13 @@
+download ERR: Exception('行情服务连接断开',)
+--- 尝试 get_market_data_ex(transactioncount1d) ---
+get_market_data_ex ERR: Exception('无法连接行情服务！',)
+Traceback (most recent call last):
+  File "D:/QuantLab/_qmt_test2.py", line 28, in <module>
+  File "D:/QMT交易端模拟/bin.x64/Lib/site-packages\xtquant\xtdata.py", line 472, in get_market_data_ex
+    ori_data = get_market_data_ex_ori(query_field_list, stock_list, period, start_time, end_time, count, dividend_type, fill_data)
+  File "D:/QMT交易端模拟/bin.x64/Lib/site-packages\xtquant\xtdata.py", line 386, in get_market_data_ex_ori
+    client = get_client()
+  File "D:/QMT交易端模拟/bin.x64/Lib/site-packages\xtquant\xtdata.py", line 134, in get_client
+    raise Exception("无法连接行情服务！")
+Exception: 无法连接行情服务！
+

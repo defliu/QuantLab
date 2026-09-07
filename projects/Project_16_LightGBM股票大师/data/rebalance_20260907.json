@@ -1,0 +1,44 @@
+{
+  "date": "20260907",
+  "executed_live": true,
+  "executed_at": "2026-09-07 10:17:09",
+  "tier": 2,
+  "target": [
+    {
+      "code": "601999.SH",
+      "name": "",
+      "total": 69.5,
+      "prob": 0.5571
+    },
+    {
+      "code": "601579.SH",
+      "name": "",
+      "total": 66.5,
+      "prob": 0.577
+    }
+  ],
+  "strategy_capital": 95897.6,
+  "target_value_each": 45551.36,
+  "sell": [],
+  "buy": [
+    {
+      "code": "601579.SH",
+      "vol": 1900,
+      "held_vol": 0,
+      "held_value": 0.0,
+      "price": 23.96,
+      "total": 66.5,
+      "action": "补仓"
+    }
+  ],
+  "trim": [],
+  "hold": [
+    "003005.SZ",
+    "300413.SZ",
+    "601999.SH"
+  ],
+  "locked": [],
+  "guard_note": [
+    "买601579.SH:FILLED"
+  ]
+}

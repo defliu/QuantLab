@@ -4,7 +4,7 @@
 Duck-typed match for AstockParquetReader / DuckDBDailyReader 4-method interface:
   load_window / trading_calendar / coverage / close(code, date)
 
-口径对齐 (已验证 2025-01-06 / 2024-06-03 / 2019-05-06 与 E:/astock 同股同日逐字段一致):
+口径对齐 (已验证 2025-01-06 / 2024-06-03 / 2019-05-06 与 D:/astock 同股同日逐字段一致):
   - adj_factor / 换手率 / 流通市值 / 成交量 / 成交额 / pe_ttm / pb 与 astock 完全相同 (同源 tushare)
   - astock close = 不复权价 == gpsj '不复权_收盘价'；gpsj '收盘价' 是前复权价(不用!)
   - 本 reader 一律取 gpsj '不复权_*' 列 + '复权因子'，adjustment 逻辑与 astock_reader 一致
@@ -14,6 +14,7 @@ Duck-typed match for AstockParquetReader / DuckDBDailyReader 4-method interface:
 """
 import datetime as _dt
 import logging
+import os
 
 import duckdb
 import pandas as pd
@@ -21,7 +22,23 @@ import pandas as pd
 log = logging.getLogger(__name__)
 
 DATA_SOURCE_GPSJ = "gpsj"
-GPSJ_DB_PATH = "E:/huicexitong/runtime/sj/gpsj.duckdb"
+# 2026-08-29：本机无 E 盘，该文件已缺失（gpsj 交叉验证暂不可用）。
+# 恢复方式二选一：设置环境变量 GPSJ_DB_PATH，或直接改这里的默认路径。
+GPSJ_DB_PATH = os.environ.get("GPSJ_DB_PATH", "E:/huicexitong/runtime/sj/gpsj.duckdb")
+
+
+def is_available(db_path=None):
+    """备用数据源当前是否可用（文件存在且非空）。
+
+    交叉验证脚本必须先调本函数：不可用则跳过并在报告中显式标注，
+    不得静默跳过，也不得因缺源而阻断主流程。
+    """
+    if db_path is None:
+        db_path = GPSJ_DB_PATH
+    try:
+        return os.path.isfile(db_path) and os.path.getsize(db_path) > 0
+    except OSError:
+        return False
 
 # gpsj 中文列 -> 框架标准列 (gpsj '收盘价' 是 qfq，一律用 '不复权_*')
 _COL_MAP = {
@@ -51,6 +68,12 @@ class GpsjDuckDBReader(object):
             raise ValueError("adjustment must be one of raw/qfq/hfq, got: %s" % adjustment)
         if db_path is None:
             db_path = GPSJ_DB_PATH
+        if not is_available(db_path):
+            raise FileNotFoundError(
+                "gpsj 备用数据源不可用: %s\n"
+                "  - 本机无 E 盘，该文件已缺失（2026-08-29 确认）。\n"
+                "  - 恢复方式: 设置环境变量 GPSJ_DB_PATH 指向新位置，或修改 gpsj_reader.GPSJ_DB_PATH。\n"
+                "  - 交叉验证脚本应先调 gpsj_reader.is_available() 判断，不可用时跳过并标注，不要直接构造本类。" % db_path)
         self.db_path = db_path
         self.data_source = data_source
         self.adjustment = adjustment

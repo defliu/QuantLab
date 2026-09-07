@@ -53,7 +53,7 @@ def connect():
         def on_order_error(self, e):
             _log("order error: %s" % str(e))
 
-    trader = XtQuantTrader(r"E:\国金QMT交易端模拟\userdata_mini", int(time.time()))
+    trader = XtQuantTrader(r"D:\国金QMT交易端模拟\userdata_mini", int(time.time()))
     trader.register_callback(_CB())
     trader.start()
     rc = trader.connect()

@@ -1,0 +1,54 @@
+{
+  "003005.SZ": {
+    "name": "竞业达",
+    "price": 18.82,
+    "prev_close": 18.48,
+    "open": 17.64,
+    "high": 19.39,
+    "low": 17.5,
+    "vol": 329176,
+    "pe": -93.04,
+    "turnover": 24.53,
+    "pct_chg": 1.839826839826839,
+    "source": "tencent"
+  },
+  "300413.SZ": {
+    "name": "芒果超媒",
+    "price": 20.61,
+    "prev_close": 21.25,
+    "open": 21.0,
+    "high": 21.8,
+    "low": 20.22,
+    "vol": 1307337,
+    "pe": 57.94,
+    "turnover": 12.8,
+    "pct_chg": -3.0117647058823556,
+    "source": "tencent"
+  },
+  "601999.SH": {
+    "name": "出版传媒",
+    "price": 6.98,
+    "prev_close": 7.15,
+    "open": 6.8,
+    "high": 7.14,
+    "low": 6.77,
+    "vol": 326234,
+    "pe": 40.99,
+    "turnover": 5.92,
+    "pct_chg": -2.3776223776223766,
+    "source": "tencent"
+  },
+  "601579.SH": {
+    "name": "会稽山",
+    "price": 23.63,
+    "prev_close": 24.07,
+    "open": 24.49,
+    "high": 25.68,
+    "low": 23.61,
+    "vol": 298435,
+    "pe": 40.55,
+    "turnover": 6.22,
+    "pct_chg": -1.828001661819698,
+    "source": "tencent"
+  }
+}

@@ -2,7 +2,7 @@
 """诊断 ATR 回测 mask：逐条件统计通过数，定位过滤过狠的环节。"""
 import duckdb, pandas as pd, numpy as np
 
-PARQUET = "E:/astock/daily/stock_daily.parquet"
+PARQUET = "D:/astock/daily/stock_daily.parquet"
 con = duckdb.connect()
 df = con.execute(f"""
     SELECT ts_code, CAST(trade_date AS DATE) AS date,

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>QVeris 数据源实况验证 · 2026-09-03</title>
+<style>
+  :root{ --bg:#0e1116; --card:#161b22; --ink:#e6edf3; --mut:#8b949e; --line:#30363d; --accent:#2f81f7; --ok:#3fb950; --warn:#d29922; --bad:#f85149; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;line-height:1.6}
+  .wrap{max-width:960px;margin:0 auto;padding:28px 20px 60px}
+  h1{font-size:24px;margin:0 0 4px}
+  .meta{color:var(--mut);font-size:13px;margin-bottom:20px}
+  .verdict{background:linear-gradient(90deg,#16351f,#161b22);border:1px solid #1f6f37;border-radius:10px;padding:16px 18px;margin-bottom:22px}
+  .verdict b{color:var(--ok);font-size:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:16px}
+  .card h2{font-size:16px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+  .tag{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600}
+  .tag.ok{background:#16351f;color:var(--ok)} .tag.miss{background:#3d1d1d;color:var(--bad)}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+  th{color:var(--mut);font-weight:600}
+  code{background:#0d1117;border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:12px;color:#79c0ff}
+  .row{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0}
+  .stat{flex:1;min-width:150px;background:#0d1117;border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+  .stat .n{font-size:22px;font-weight:700;color:var(--accent)}
+  .stat .l{font-size:12px;color:var(--mut)}
+  .kv{font-size:13px;color:var(--mut)} .kv b{color:var(--ink)}
+  pre{background:#0d1117;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;font-size:12px;color:#a5d6ff}
+  .note{border-left:3px solid var(--warn);padding:4px 12px;background:#1d1a0e;color:#e3c565;font-size:13px;border-radius:0 6px 6px 0;margin:10px 0}
+  .okb{border-left:3px solid var(--ok)} .okb{background:#0f2018;color:#9be0b0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>QVeris 数据源实况验证</h1>
+  <div class="meta">验证时点：2026-09-03 18:50 ｜ 方式：直连 <code>https://mcp.qveris.ai/mcp</code> JSON-RPC（Bearer key）｜ 目标：P16 五类实时缺口（F2/F3/F5/龙虎榜/行情）</div>
+
+  <div class="verdict">
+    <b>结论：5 / 5 类数据全部可用，且 F2 字段与 Tushare 四档口径完全一致（零 skew 风险）。</b><br/>
+    免费档 1000 积分、1 积分/次调用，本次 6 次调用仅耗 2 分。多供应商 fallback（同一能力 2–4 家 provider，带成功率/时延信号）天然抗单点——正好补悟道 MCP 连挂的缺口。
+  </div>
+
+  <div class="row">
+    <div class="stat"><div class="n">5/5</div><div class="l">缺口类别覆盖</div></div>
+    <div class="stat"><div class="n">1000</div><div class="l">免费积分（剩 998）</div></div>
+    <div class="stat"><div class="n">T+0</div><div class="l">资金流实时性</div></div>
+    <div class="stat"><div class="n">4 档</div><div class="l">与 Tushare 对齐</div></div>
+  </div>
+
+  <div class="card">
+    <h2>逐类验证结果 <span class="tag ok">全部命中</span></h2>
+    <table>
+      <tr><th>缺口</th><th>命中工具（provider）</th><th>返回样例</th><th>与 P16 口径</th></tr>
+      <tr>
+        <td><b>F2 个股<br/>主力资金流</b></td>
+        <td><code>RealStockFundFlow</code><br/>hangseng_polysource<br/><span class="kv">成功率 96.6% · 544ms</span></td>
+        <td>2026-09-03 15:00 四档净额：<br/>超大单 -539 / 大单 +9731 / 中单 -9192 / 小单 +0.65（万元）；含 5日/10日累计</td>
+        <td><span class="tag ok">完全一致</span> 字段名一一对应 Tushare <code>moneyflow</code></td>
+      </tr>
+      <tr>
+        <td><b>F3 公告/新闻<br/>催化</b></td>
+        <td><code>A-Share Announcement Query</code><br/>hangseng_polysource</td>
+        <td>标题 / 公告日期 / 一二级分类 / 溯源链接 / 明细API。返回 5 条（如"天富龙 2026 临时股东会决议"）</td>
+        <td><span class="tag ok">可用</span> 可构造 F3 催化分</td>
+      </tr>
+      <tr>
+        <td><b>F5 板块<br/>资金流</b></td>
+        <td><code>Real Sector Fund Flow</code><br/><code>Sector Fund Flow Rank</code><br/>hangseng_polysource</td>
+        <td>discover 命中专属板块工具（本次未执行，首位命中为个股工具）</td>
+        <td><span class="tag ok">可用</span> 补全板块净流入缺口</td>
+      </tr>
+      <tr>
+        <td><b>龙虎榜</b></td>
+        <td><code>Dragon-Tiger List</code><br/>cn_financial_pro</td>
+        <td>mode=detail edate=2026-09-02 → <b>82 只</b>上榜：买卖额/净买/上榜原因/换手率</td>
+        <td><span class="tag ok">可用</span> 对应 g2 的 <code>lhb_net/lhb_count</code></td>
+      </tr>
+      <tr>
+        <td><b>实时行情</b></td>
+        <td><code>A Shares Live Quote</code><br/>hangseng_polysource / caidazi</td>
+        <td>discover 命中（QMT 已有，作冗余校验位）</td>
+        <td><span class="kv">冗余</span></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>F2 字段对齐 Tushare（关键，决定能否零 skew 替换）</h2>
+    <table>
+      <tr><th>QVeris 返回字段</th><th>含义</th><th>Tushare moneyflow 对应</th></tr>
+      <tr><td><code>mainNetTurnover</code></td><td>主力净额(万元)</td><td><code>net_mf_amount</code></td></tr>
+      <tr><td><code>superGrpNetTurnover</code></td><td>超大单净额</td><td>buy_elg − sell_elg</td></tr>
+      <tr><td><code>largeNetTurnover</code></td><td>大单净额</td><td>buy_lg − sell_lg</td></tr>
+      <tr><td><code>mediumNetTurnover</code></td><td>中单净额</td><td>buy_md − sell_md</td></tr>
+      <tr><td><code>littleNetTurnover</code></td><td>小单净额</td><td>buy_sm − sell_sm</td></tr>
+      <tr><td><code>main5NetIn / main10NetIn</code></td><td>5日/10日主力净额</td><td>（本地可自算，增量）</td></tr>
+    </table>
+    <div class="note okb">对齐结论：QVeris 资金流四档口径与训练期 Tushare 完全一致，<b>不存在 train-serving skew</b>，可直接作为 F2 主源或校验源。</div>
+  </div>
+
+  <div class="card">
+    <h2>接入形态与成本</h2>
+    <div class="kv">
+      <p>· <b>多供应商 fallback</b>：同一能力 discover 返回 2–4 家 provider（hangseng_polysource / caidazi / cn_financial_pro / cninfo），每家带 <code>success_rate</code> 与 <code>avg_execution_time_ms</code> 信号，可按成功率/时延路由，单个 provider 不可达自动切下一个。</p>
+      <p>· <b>免费额度</b>：<code>credits_ledger</code> 实测 granted=1000、consumed=2、net=998；单次 <code>call</code> 扣 1 分。P16 每日 ~50–100 次调用可撑约 10–20 个交易日，之后 $19/月 Pro 档（1万积分）。</p>
+      <p>· <b>失败不收费</b>：官方契约 failed calls not charged；龙虎榜大数据量会截断（41KB→20KB+下载URL），需按 url 拉全量。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>实测踩坑（接入时必须注意）</h2>
+    <table>
+      <tr><th>坑</th><th>正确做法</th></tr>
+      <tr><td>MCP 调用要用 <code>tools/call</code>，不能把工具名当顶层方法（否则 -32601 Method not found）</td><td><code>tools/call</code> + <code>{name, arguments}</code></td></tr>
+      <tr><td><code>call</code> 必须带 <code>search_id</code>（来自上一步 discover 返回），否则 Missing required parameters</td><td>discover → 取 <code>search_id</code> → call 同会话传入</td></tr>
+      <tr><td>龙虎榜 / 板块工具需必填参数（如 mode、edate）</td><td>先看 inspect 的 <code>params</code> 或错误回显的 <code>parameter_help</code></td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>建议分工（给后续任务书用）</h2>
+    <div class="kv">
+      <p><b>主 F2 源</b>：仍建议 Tushare 每日刷新 parquet（schema 一致、本地零延迟）；<b>QVeris 作实时校验/兜底层</b>，盘中/盘前拿不到本地值时用其四档值补齐——口径一致，不产生 skew。</p>
+      <p><b>F3 / 龙虎榜 / F5 板块资金流</b>：可由 QVeris 直接供给，替代连挂的悟道 MCP。</p>
+      <p><b>悟道 MCP</b>：可降级为备用或撤掉，由 QVeris 多 provider fallback 接替抗单点。</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

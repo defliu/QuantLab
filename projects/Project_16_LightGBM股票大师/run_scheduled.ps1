@@ -148,31 +148,43 @@ try {
                 Log "已备份正式模型 -> $modelBak"
             }
             Run-Py "refresh_panel_v3.py"
-            # 写入带日期后缀的候选模型（lgb_model_v3_retrain_YYYYMMDD.txt），不覆盖正式模型 lgb_model_v3.txt
-            $retrainTag = "_retrain_" + (Get-Date -Format 'yyyyMMdd')
-            Run-Py "train_optuna.py --panel-file data/feature_panel_v3.parquet --meta-file data/features_v3.json --n-trials 20 --model-tag $retrainTag"
-            # ---- 条件式自动上线（2026-08-31 立）：门禁全过才 promote，任一不过则拒绝上线并告警 ----
-            # 背景：promote_model.py 是唯一写生产模型的入口且默认交互确认，无人值守的 retrain 调不动它，
-            #       导致「面板已更新、正式模型未同步」，若无人接管次日 09:15 会旧模型吃新面板。
-            # 机制：auto_promote.py 把人工拍板编码为 G0~G6 门禁（IC 下限/不退步/ICIR/分位方向/新面板），
-            #       全过才自动 promote；任一不过则 exit 1，正式模型保持不变，交人工介入。
-            $candModel = "D:/QuantLab/models/lgb_model_v3$retrainTag.txt"
-            if (Test-Path $candModel) {
-                Run-Py "auto_promote.py --candidate $candModel --yes"
-                if ($LASTEXITCODE -ne 0) {
-                    Log "!! [自动上线] 门禁未通过，候选未上线 —— 正式模型保持不变，需人工核对 data/optuna_report.json 与上方 FAIL 项"
-                } else {
-                    Log "[自动上线] 门禁通过，候选已提升为正式模型"
-                }
-            } else {
-                Log "!! [自动上线] 未找到候选模型 $candModel，跳过（重训可能失败）"
-            }
-            # 复核：面板与正式模型是否同版（自动上线成功则应 exit 0）
-            Run-Py "verify_model_panel_sync.py"
             if ($LASTEXITCODE -ne 0) {
-                Log "!! [模型-面板同步] 面板与正式模型版本仍不一致，需人工介入（data/model_panel_binding.json）"
+                Log "!! [周更重训] refresh_panel_v3 失败（exit=$LASTEXITCODE）—— 面板未重建，跳过 V1.3 候选训练与自动上线（避免在旧面板上训练候选，模型与数据必须同版联动）；G2 重训使用独立面板，继续执行"
+                $skipV13 = $true
             } else {
-                Log "[模型-面板同步] 面板与正式模型同版，OK"
+                $skipV13 = $false
+            }
+            # 写入带日期后缀的候选模型（lgb_model_v3_retrain_YYYYMMDD.txt），不覆盖正式模型 lgb_model_v3.txt
+            if (-not $skipV13) {
+                $retrainTag = "_retrain_" + (Get-Date -Format 'yyyyMMdd')
+                Run-Py "train_optuna.py --panel-file data/feature_panel_v3.parquet --meta-file data/features_v3.json --n-trials 20 --model-tag $retrainTag"
+                # ---- 条件式自动上线（2026-08-31 立）：门禁全过才 promote，任一不过则拒绝上线并告警 ----
+                # 背景：promote_model.py 是唯一写生产模型的入口且默认交互确认，无人值守的 retrain 调不动它，
+                #       导致「面板已更新、正式模型未同步」，若无人接管次日 09:15 会旧模型吃新面板。
+                # 机制：auto_promote.py 把人工拍板编码为 G0~G6 门禁（IC 下限/不退步/ICIR/分位方向/新面板），
+                #       全过才自动 promote；任一不过则 exit 1，正式模型保持不变，交人工介入。
+                # T-20260903 修复：G6 面板同步只在 promote 成功后做硬校验（确认绑定已更新）；
+                #       门禁拒绝（坏模型被拦）属设计行为，不再触发面板同步硬校验，避免「拒绝被误报为系统故障」。
+                $candModel = "D:/QuantLab/models/lgb_model_v3$retrainTag.txt"
+                if (Test-Path $candModel) {
+                    Run-Py "auto_promote.py --candidate $candModel --yes"
+                    if ($LASTEXITCODE -ne 0) {
+                        Log "!! [自动上线] 门禁未通过，候选未上线 —— 正式模型保持不变（G0~G6 拒绝坏模型属设计行为，非故障；G6 面板同步不拦截本次拒绝，需人工核对 data/optuna_report.json 与上方 FAIL 项）"
+                        Run-Py "verify_model_panel_sync.py --warn-only"
+                        Log "[模型-面板同步]（门禁拒绝后 warn-only，仅供信息，不阻断）"
+                    } else {
+                        Log "[自动上线] 门禁通过，候选已提升为正式模型"
+                        # 仅 promote 成功后做硬校验：绑定必须与面板同版（gap=0），失败说明绑定写入异常
+                        Run-Py "verify_model_panel_sync.py"
+                        if ($LASTEXITCODE -ne 0) {
+                            Log "!! [模型-面板同步] promote 后绑定仍不一致 —— 绑定写入异常，需人工介入（data/model_panel_binding.json）"
+                        } else {
+                            Log "[模型-面板同步] 面板与正式模型同版，OK"
+                        }
+                    }
+                } else {
+                    Log "!! [自动上线] 未找到候选模型 $candModel，跳过（重训可能失败）"
+                }
             }
             # ---- G2 模型周更重训（2026-09-01 补：g2_strong_real 生产主模型，V2.0 审计认定）----
             # 背景：此前 g2_strong_real 只在 08-25 通宵研究训练一次后冻结，周更只 promote V1.3；

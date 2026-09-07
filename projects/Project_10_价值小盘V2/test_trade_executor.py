@@ -8,7 +8,7 @@
 """
 import time
 import sys
-sys.path.insert(0, "E:/QuantLab/projects/Project_10_价值小盘V2")
+sys.path.insert(0, "D:/QuantLab/projects/Project_10_价值小盘V2")
 import trade_executor as TE
 
 ACCOUNT = "70180771"

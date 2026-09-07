@@ -1,14 +1,14 @@
 # coding: utf-8
-"""昨日推荐复盘卡片推送：昨日 G2 Top2 / TOP10 今日表现 vs 大盘。
+"""昨日推荐复盘卡片推送：昨日 G2 候选池 / TOP10 今日表现 vs 大盘。
 
 数据源：
-  - 昨日候选：data/selections/<昨日>_selection_full.csv（top10）+ <昨日>_g2_top2.csv（G2 top2）
+  - 昨日候选：data/selections/<昨日>_selection_full.csv（top10）+ g2/<昨日>_g2_top10.csv（G2 候选池 top10）
   - 今日行情：data/cache/past_quotes_<今日>.json
         {"date": "20260902", "hs300_pct": -0.26,
          "stocks": {"001309.SZ": {"last": 421.5, "pct": 1.2}, ...}}
     由 09:25 任务采集（昨日推荐股今日实时行情，腾讯 API 批量）后写入。
 
-卡片结构：摘要（Top10 平均/Top2/跑赢跑输大盘）+ G2 Top2 表现 + TOP10 表现表 + 数据源/时间戳。
+卡片结构：摘要（Top10 平均/候选池/跑赢跑输大盘）+ G2 候选池表现 + TOP10 表现表 + 数据源/时间戳。
 数据不足显示 "—"，绝不编造。
 
 用法：
@@ -76,8 +76,8 @@ def _load_data(date):
     rows = _load_csv(os.path.join(SELECT_DIR, "%s_selection_full.csv" % y))
     rows.sort(key=lambda r: _f(r.get("total")), reverse=True)
     top10 = [{"code": r.get("ts_code", ""), "name": r.get("name", ""), "total": r.get("total")} for r in rows[:10]]
-    # 昨日 G2 top2
-    g2 = _load_csv(os.path.join(SELECT_DIR, "%s_g2_top2.csv" % y))
+    # 昨日 G2 候选池 Top10（g2/ 子目录，对齐 deploy_predict_g2 --top 10）
+    g2 = _load_csv(os.path.join(SELECT_DIR, "g2", "%s_g2_top10.csv" % y))
     g2 = [{"code": r.get("ts_code", ""), "name": r.get("name", ""), "total": r.get("score_total", r.get("total"))} for r in g2]
     # 今日行情
     qp = os.path.join(CACHE_DIR, "past_quotes_%s.json" % date)
@@ -120,11 +120,11 @@ def _build_card(data, date):
         btxt = ("（%s大盘 %s%%）" % ("跑赢" if beat >= 0 else "跑输", _fmt_pct(hs))) if beat is not None else ""
         sum_lines.append("· TOP10 平均 **%s** %s" % (_fmt_pct(avg10), btxt))
     if avg2 is not None:
-        sum_lines.append("· G2 Top2 平均 **%s**" % _fmt_pct(avg2))
+        sum_lines.append("· G2 候选池平均 **%s**" % _fmt_pct(avg2))
     if hs is None:
         sum_lines.append("· （未提供大盘 HS300 涨跌）")
 
-    # G2 Top2 表现
+    # G2 候选池表现
     g2_lines = ["| 昨日 | 代码 | 名称 | 今涨跌% |", "|---|---|---|---|"]
     for r in data["g2"]:
         g2_lines.append("| %s分 | %s | %s | %s |" % (
@@ -142,7 +142,7 @@ def _build_card(data, date):
 
     elements = [{"tag": "markdown", "content": "\n".join(sum_lines)}]
     if data["g2"]:
-        elements.append({"tag": "markdown", "content": "**G2 Top2 今日表现**"})
+        elements.append({"tag": "markdown", "content": "**G2 候选池今日表现**"})
         elements.append({"tag": "markdown", "content": "\n".join(g2_lines)})
     if data["top10"]:
         elements.append({"tag": "markdown", "content": "**TOP10 今日表现**　<font color='grey'>🟢跑赢大盘 🔴跑输</font>"})

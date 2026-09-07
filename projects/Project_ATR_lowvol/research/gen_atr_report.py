@@ -64,7 +64,7 @@ html = f"""<!DOCTYPE html>
 </style></head>
 <body>
 <h1>ATR 低波动策略 · 回测看板</h1>
-<div class="meta">数据源 E:/astock/daily/stock_daily.parquet ｜ 区间 {s['period'][0]} ~ {s['period'][1]} ｜
+<div class="meta">数据源 D:/astock/daily/stock_daily.parquet ｜ 区间 {s['period'][0]} ~ {s['period'][1]} ｜
 参数 ATR&lt;{s['params']['atr_threshold']}% · 换手{s['params']['turnover'][0]}-{s['params']['turnover'][1]}% · 止损{s['params']['stop_loss']*100:.0f}% · 止盈{s['params']['take_profit']*100:.0f}% · 移动止损{s['params']['trailing_stop']*100:.0f}% · 持仓上限{s['params']['max_hold']} · 单边成本{s['params']['cost_oneway']*100:.1f}%</div>
 <div class="cards">{card_html}</div>
 <div class="panel"><b>净值曲线 & 回撤</b><canvas id="c1" height="90"></canvas></div>

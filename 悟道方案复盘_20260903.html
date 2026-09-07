@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>悟道数据源方案复盘 · 2026-09-03</title>
+<style>
+  :root{ --bg:#f4f6f9; --card:#fff; --ink:#1a1d21; --mut:#5b6470; --line:#e3e8ef; --accent:#2f6df0; --ok:#1a9e5c; --warn:#e08a00; --bad:#d8443c; }
+  body{ font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif; background:var(--bg); color:var(--ink); margin:0; padding:32px; line-height:1.6; }
+  .wrap{ max-width:1040px; margin:0 auto; }
+  h1{ font-size:24px; margin:0 0 4px; }
+  .meta{ color:var(--mut); font-size:13px; margin-bottom:20px; }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px 22px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+  h2{ font-size:17px; margin:0 0 12px; padding-left:10px; border-left:4px solid var(--accent); }
+  .verdict{ background:linear-gradient(135deg,#1f2a44,#2f6df0); color:#fff; border:none; }
+  .verdict h2{ color:#fff; border-color:#9bb8ff; }
+  .verdict p{ margin:6px 0; font-size:14.5px; }
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; margin-top:8px; }
+  th,td{ border:1px solid var(--line); padding:9px 10px; text-align:left; vertical-align:top; }
+  th{ background:#eef2f8; font-weight:600; }
+  td.ctr{ text-align:center; }
+  .tag{ display:inline-block; padding:2px 9px; border-radius:20px; font-size:12px; font-weight:600; }
+  .t-bad{ background:#fdecea; color:var(--bad); }
+  .t-warn{ background:#fef3e0; color:var(--warn); }
+  .t-ok{ background:#e4f6ec; color:var(--ok); }
+  .t-low{ background:#eef2f8; color:#48566b; }
+  code{ background:#eef2f8; padding:1px 6px; border-radius:5px; font-size:12.5px; color:#234; }
+  .quote{ border-left:3px solid var(--line); padding-left:12px; color:var(--mut); font-size:13px; margin:10px 0; }
+  ul{ margin:8px 0; padding-left:20px; } li{ margin:5px 0; }
+  .foot{ font-size:12px; color:var(--mut); margin-top:18px; border-top:1px solid var(--line); padding-top:12px; }
+  b.hl{ color:var(--bad); }
+  b.gd{ color:var(--ok); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>悟道数据源方案复盘</h1>
+  <div class="meta">调研时点：2026-09-03 ｜ 目的：判断"悟道有没有更好的解决方案"解决 P16 实时链路 9-02/9-03 连挂 ｜ 方法：登录态工作台无法直接渲染 → 改用公开站 data.quicktiny.cn 全量产品矩阵 + 本机日志 + 配置文件三方交叉验证</div>
+
+  <div class="card verdict">
+    <h2>结论（先看这里）</h2>
+    <p><b>悟道没有"另一个更好的产品"</b>——它只有 freemium 的 MCP / REST 两套通道，<b>没有 SLA / 企业付费档</b>（公开文档只提"免费额度 + 按调用量升级"）。</p>
+    <p>但针对你 9-02/9-03 的"连挂"，悟道公开站确实暴露了<b>两条现成且明显更优的用法</b>，比"继续等 MCP 重连"强得多：</p>
+    <p>① <b>改用 REST 通道 <code>/api/openclaw</code></b> —— 直接绕开 P16 运行时里<b>从未真正装好的 MCP 插件</b>（连挂头号嫌疑）；<br>
+       ② <b>免费档升级付费</b> —— 解除 <code>FREE_TIER_MARKET_OPEN_RESTRICTED</code>（交易时段受限，恰好命中午盘 9:25/9:45 的调用窗口）。</p>
+    <p>架构层面：<b>F2 主力资金流的"稳源"仍是 Tushare <code>moneyflow</code>（200/年）</b>，悟道只该做 F3/F5/竞价扩展层，且必须带熔断。</p>
+  </div>
+
+  <div class="card">
+    <h2>一、根因复盘：连挂不是"悟道挂了"，是"P16 没接上"</h2>
+    <table>
+      <tr><th style="width:24%">证据</th><th>内容</th><th style="width:18%">指向</th></tr>
+      <tr>
+        <td><code>config/data_source_keys.json</code></td>
+        <td>悟道条目状态原文：<code>"registered-key; MCP 插件未安装，需在应用端接入"</code></td>
+        <td class="ctr"><span class="tag t-bad">致命</span></td>
+      </tr>
+      <tr>
+        <td>部署核对清单（8-31）</td>
+        <td>写"悟道 mcp_wudao 已配置可用（实测 market_overview + 龙虎榜 50 条）"——这是<b>手动 / 另一客户端的一次性验证</b>，不等于定时任务运行环境里有该 MCP</td>
+        <td class="ctr"><span class="tag t-warn">矛盾点</span></td>
+      </tr>
+      <tr>
+        <td>运行日志 9-02 / 9-03</td>
+        <td>"<b>mcp_wudao 四工具不可达</b>" / "悟道 capital_flow 不可达"，单日"不可达"计数 10 → 30 次</td>
+        <td class="ctr"><span class="tag t-bad">症状</span></td>
+      </tr>
+    </table>
+    <p class="quote">推断链：定时任务运行环境里<b>悟道 MCP 插件从未安装</b> → 运行时调用 <code>mcp_wudao</code> 直接失败 → 日志记"不可达"。这完美解释了"8-31 手动能、9-02/9-03 自动不能"的断层。问题大概率在<b>客户端接入层，不在悟道服务端</b>——这正是 REST 通道能根治的点。</p>
+  </div>
+
+  <div class="card">
+    <h2>二、悟道产品矩阵（公开站全量，2026-09-03）</h2>
+    <table>
+      <tr><th style="width:22%">通道 / 能力</th><th>说明</th><th style="width:16%">P16 现状</th></tr>
+      <tr><td><b>MCP Server</b><br><code>/api/mcp</code></td><td>远程 HTTP MCP，<code>tools/list</code> + <code>tools/call</code>，63 工具，readOnly。P16 当前唯一用法</td><td class="ctr"><span class="tag t-bad">连挂</span></td></tr>
+      <tr><td><b>REST API 兜底</b><br><code>/api/openclaw</code></td><td>官方明确：<i>"如果客户端暂时不支持 MCP，可以回退到 /api/openclaw REST API"</i>，<b>同一套 63 工具</b>，Bearer 同款 key。Python <code>requests</code> 直连即可</td><td class="ctr"><span class="tag t-low">未使用</span></td></tr>
+      <tr><td>SKILL.md 兼容层</td><td>仅作旧工作流说明，不新增能力</td><td class="ctr"><span class="tag t-low">未使用</span></td></tr>
+      <tr><td>新增能力<br>（相对 8-31）</td><td>事件日历 / 短线催化 / 两融·北向 / 指数行情 / ETF 行情 / 可转债行情；另 3 个场景包：集合竞价复盘、题材·板块研究、个股短线归因</td><td class="ctr"><span class="tag t-low">未接入</span></td></tr>
+      <tr><td>覆盖类别（11 类）</td><td>行情、涨停生态、资金与板块、集合竞价、市场情报、资讯查询、事件与催化日历、自然语言选股、基本面、海外披露、自选股管理</td><td class="ctr">—</td></tr>
+    </table>
+    <p class="quote">关键：<b>MCP 与 REST 是同一后端、同一 63 工具、同一 Bearer key</b>。差别只在"传输层"。既然失败是传输层"不可达"，换 REST 等于换一条没坏的路进同一个机房。</p>
+  </div>
+
+  <div class="card">
+    <h2>三、免费档交易时段受限 —— 第二根因嫌疑</h2>
+    <p>悟道错误契约（data.quicktiny.cn/stock-agent-data-status.html）明列 6 类状态，其中两条与本次强相关：</p>
+    <table>
+      <tr><th style="width:30%">错误码</th><th>含义</th><th style="width:18%">与本次的关联</th></tr>
+      <tr><td><code>FREE_TIER_MARKET_OPEN_RESTRICTED</code></td><td>免费档在<b>交易时段（盘中）</b>被限流 / 限制访问</td><td class="ctr"><span class="tag t-warn">高度嫌疑</span></td></tr>
+      <tr><td><code>RATE_LIMIT_EXCEEDED</code> / <code>DAILY_LIMIT_EXCEEDED</code></td><td>调用频次 / 日额度超限</td><td class="ctr"><span class="tag t-low">可能</span></td></tr>
+    </table>
+    <p><b>强关联点</b>：P16 调悟道的时点 = <b>9:25（盘前竞价）+ 9:45（盘前复核）</b>，正好是交易时段。若当前 key 在<b>免费档</b>，盘中受限完全可能表现为调用失败。</p>
+    <p>但需诚实标注：日志原文写的是"<b>不可达</b>"（连接失败），而非结构化错误码 <code>FREE_TIER_MARKET_OPEN_RESTRICTED</code>。所以"盘中受限"是<b>嫌疑而非确证</b>——两种可能：① 插件未装（连接失败）为主因；② 即便装好，免费档盘中仍会被限。两种都要靠下面方案同时堵。</p>
+  </div>
+
+  <div class="card">
+    <h2>四、三条通道对比（解决 F2/F3/F5/竞价）</h2>
+    <table>
+      <tr><th style="width:16%">维度</th><th>悟道 MCP（现状）</th><th>悟道 REST（建议）</th><th>Tushare moneyflow（F2 权威）</th></tr>
+      <tr><td>传输层</td><td>MCP 客户端插件</td><td class="gd">直连 HTTP</td><td>直连 HTTP</td></tr>
+      <tr><td>依赖</td><td class="hl">运行时插件须已安装</td><td class="gd">仅 requests 库</td><td>仅 requests 库</td></tr>
+      <tr><td>9-02/9-03 表现</td><td class="hl">不可达</td><td class="gd">同后端，绕开插件层</td><td class="gd">独立于悟道，不受影响</td></tr>
+      <tr><td>盘中限制</td><td colspan="2" class="ctr">免费档 <code>FREE_TIER_MARKET_OPEN_RESTRICTED</code> —— 需升付费档</td><td class="gd">200/年，无此限制</td></tr>
+      <tr><td>覆盖</td><td colspan="2">F2 估算 + F3 催化 + F5 板块 + 竞价 + 龙虎榜 + 研报 + 事件日历（强在信息面）</td><td>F2 四档主力净流入（训练同口径，零 skew）</td></tr>
+      <tr><td>适合角色</td><td colspan="2">扩展 / 校验层</td><td class="gd">F2 权威源</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>五、推荐落地顺序（按性价比，未实施，等你拍板）</h2>
+    <ul>
+      <li><b>方案 A · 悟道改 REST（P0，零成本，动代码）</b><br>
+        把 P16 里 <code>mcp_wudao</code> 调用改为 Python <code>requests</code> 直连 <code>https://stock.quicktiny.cn/api/openclaw</code>，Bearer 用同一 key。直接消除"插件未安装"死点。需先确认 openclaw 的入参/出参 schema（文档称与 MCP 工具同构）。</li>
+      <li><b>方案 B · 升付费档（P0/P1，视 key 档位）</b><br>
+        先确认 data_source_keys 里的 <code>lb_...</code> key 是免费还是付费。若免费 → 升级以解除盘中限制；若已是付费 → 排除盘中受限这根因。</li>
+      <li><b>方案 C · 健康探测 + 熔断（P1，动代码）</b><br>
+        连续失败 ≥ 2 天自动转备份并告警，别每天 9:25 干等超时（现状痛点）。</li>
+      <li><b>方案 D · F2 权威源回 Tushare（P1，200/年）</b><br>
+        每日 19:30 自动刷新 Tushare <code>moneyflow</code> 落 parquet，盘前 F2 读本地——这是 F2 稳定性的<b>根本解</b>，悟道退为校验位。</li>
+      <li><b>方案 E · 盘中调用移至盘后（P2）</b><br>
+        悟道擅长的 F3/F5/竞价复盘类，尽量放 15:00 后；盘中只留真正必需的校验。</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>六、一句总结</h2>
+    <p>悟道"更好的方案"不是换产品，而是<b>换通道（MCP→REST）+ 升档（免费→付费）+ 降权重（F2 权威交给 Tushare）</b>。其中<b>改 REST 这一条性价比最高</b>——它针对的恰好是日志里"插件未安装"这个可被实锤的死点，且零成本。</p>
+  </div>
+
+  <div class="foot">
+    数据来源：① 悟道公开站 data.quicktiny.cn（产品矩阵 / MCP 错误契约 / API 选型对比，2026-09-03 抓取）；② 本机 <code>config/data_source_keys.json</code>（key 状态）；③ P16 运行日志与 <code>crosscheck_20260902/20260903.json</code>（一手失败记录）。<br>
+    未做实况连通测试：本沙箱对外网 stock.quicktiny.cn 返回 HTTP=000（无外网出口），故"REST 通道可达性"为依据官方文档推断，非活体验证；上线 A 方案前需在可联网环境用真实 key 探一次 <code>/api/openclaw</code> 返回结构。
+  </div>
+
+</div>
+</body>
+</html>

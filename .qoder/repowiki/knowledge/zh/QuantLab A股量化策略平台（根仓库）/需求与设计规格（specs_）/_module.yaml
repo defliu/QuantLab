@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: specs_docs
+title: 需求与设计规格（specs/）
+scope:
+    - specs/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 0ad87ca5-bfa1-443a-b571-41f332022d32
+kk_ordinal: 13
+kk_cards:
+    overview:
+        id: 6bd5594b-32b6-4614-a4cb-702460a50809
+        title: 需求与设计规格（specs/）
+    architecture_design:
+        id: 96d87b03-02be-49dc-9449-be651c8a8b8a
+        title: 需求与设计规格（specs/）
+    tech_stack:
+        id: 610632be-99df-4d6a-85ac-52dc8d235641
+        title: 需求与设计规格（specs/）
+    coding_conventions:
+        id: 1aac73ac-4b7c-4a3b-8a8b-93531d3a9a78
+        title: 需求与设计规格（specs/）
+    unique_setup_and_commands:
+        id: 7fde7192-be4f-4370-a2d3-27ef48d64ded
+        title: 需求与设计规格（specs/）

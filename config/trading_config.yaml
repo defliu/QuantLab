@@ -4,7 +4,7 @@
 account:
   id: "70180771"
   # QMT路径（根据实际安装位置调整）
-  path: "E:\\国金QMT交易端模拟\\userdata_mini"
+  path: "D:\\国金QMT交易端模拟\\userdata_mini"
   session_id: 670149
 
 trading:
@@ -42,8 +42,8 @@ notification:
 # 数据源配置
 data:
   source: "astock"               # 主数据源
-  astock_path: "E:/astock"       # astock数据路径
-  cache_dir: "E:/QuantLab/data/cache"
+  astock_path: "D:/astock"       # astock数据路径
+  cache_dir: "D:/QuantLab/data/cache"
   
 # 策略配置（示例）
 # 注意: 权重与 Project_01/strategy/scoring.py 的 FACTOR_WEIGHTS 保持一致

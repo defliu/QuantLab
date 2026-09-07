@@ -251,6 +251,14 @@
 
 * 8/26 该定时曾失败一次（0x800710E0，23:05 触发，调度环境一次性问题）；8/27 起 LastTaskResult=0。
 
+* **2026-09-04 二次管道修复（T-20260904-009）：backfill 连续 4 天回填 0 笔却 exit 0，前向验证实际有效样本 N=0**：
+
+  * **根因（数据源分裂）**：`paper_forward.py` 的 backfill 只依赖 `DC.read_main_daily`（MAIN_DAILY + Updatedata **人工周更**目录），**主库停在 8/28**；而 g2 选股侧（`build_g2_daily.py`/`deploy_predict_g2.py`）用的是 `data_live/incremental_daily.parquet`（每日自动更新，已到 9/4）。结果：**候选每天照常产生、收益一笔也算不出**——63 笔候选回填 0 笔（45 笔因主库无晚于候选日的交易日、18 笔因持有期窗口越界），且日志照打 `[...] OK`，连续 4 天无人察觉。此前 PROJECT_MEMORY 记的"9 个交易日样本"是**候选数**而非**已回填数**，属记账口径误导。
+  * **教训（与 8/28 那次同源，必须固化）**：**任何"两个数据源各管一段"的管道，一旦生成侧与核算侧不同源，必然出现"能出信号、无法验证"的死局**；判据是「候选日期最大值 > 收益数据源最新日」，应作为每日硬断言。
+  * **已修**：①`paper_forward.py` 新增 `load_open_panel()`：主库 + `data_live/incremental_daily.parquet` 合并（增量优先），并打印「主库最新 / 增量最新 / 合并后」三行便于一眼定位；②数据源停更（合并后最新交易日距今 >5 自然日）**exit 2**，`paper_forward_daily.ps1` 捕获并转发，使计划任务 LastTaskResult 非 0 → fail-loud；③写回前按 (date,code) 去重（此前 9/4 出现 2 行重复，会重复计权）；④已回填的 ret 不因数据源抖动回退；⑤新增 `forward_stats.py`（**只读**）按「同窗口全市场等权」逐笔配对算超额（与回测 `market_daily` 横截面等权同源），输出 TOP2（实盘口径）/ 全部两档，报告 `data/real/forward_stats_YYYYMMDD.md`，已接入 16:45 定时。
+  * **修复后首批结果（8 笔 = 8/17~8/20 各 2 只，N=10 open→open）**：绝对 **+1.110%** vs 同窗口全市场等权 **+1.643%** → **超额 -0.533%，t=-0.24，超额胜率 62.5%**。逐笔：8/17 −7.73%/+2.04%、8/18 −6.02%/−8.82%、8/19 +3.08%/+3.14%、8/20 +8.75%/+1.29%（超额口径）。**同日两票高度同向**（8/19 两只 +6.35%/+6.41%），ANOVA 粗估组内相关 ICC ρ≈0.68 → **有效独立观测约 4.8 个，远小于 8 笔**（ρ 估计仅基于 4 组配对，误差极大，仅取数量级）。**结论：样本不足，不作任何判定；G2 不得据此 promote 或加仓。** 约 **9/15** 达 30 笔（TOP2 口径，2 笔/交易日）；若按 30 个独立观测计约需至 **10 月中**。
+  * **次生缺陷（T-20260904-010，待拍板）**：`deploy_predict_g2.py` 把 Top10 `picks` 全量写 live，而实盘 `g2_config.py:30 TOP_N=2` → 9/2 起候选口径由 2 只/天变 10 只/天（**中途变更且无人察觉**）。已加 `rank` 列（1..N，按 total_new 降序），`forward_stats.py` 双轨输出；待拍板主判定用 TOP2 子集（对齐实盘、累积慢 5 倍）还是 Top10 全集。
+
 ### 评分卡参数寻优（2026-08-28，T-20260828-004）
 
 * **背景**：用户质疑 F1-F6 权重与 F2/F5/F6 阶梯阈值"拍脑门定"。核查确认：LightGBM 超参（train\_optuna.py Optuna）、红线 58→60/N=5/10、止损止盈均做过寻优，但 **SC\_WEIGHTS 与阶梯阈值从未寻优**（继承 Project\_15 手工值）。
@@ -258,6 +266,14 @@
 * **产物**：`optimize_scorecard.py`（复用 scan\_rotate\_cost\_real 可执行引擎，walk-forward IS 2024-07~~2025-12 / OOS 2026-01~~08，固定红线58/TOP2/N10/滑点0.1%）+ `data/real/scorecard_optim_report.md`。
 
 * **结论（稳健性检查为准）**：①权重寻优**稳健有效**（IS 前10 在 OOS 10/10 超基线，均值 +0.18% 日超额 vs 基线 +0.05%）；②F5/F6 阈值寻优**稳健有效**（10/10）；③**F2 资金阶梯阈值寻优是负优化（OOS 0/10 超基线）→ 生产默认 F2 阈值保持不动**。生产默认权重 F1=0.25 偏优 F1/F4、压制 F5 确实不优。
+
+### V1.x 卖出规则变更（2026-09-05，T-20260904-001 已实施；版本归因 2026-09-06 修正：PK_OUT 非 V1.3 引入）
+
+* **版本归因澄清（2026-09-06）**：PK_OUT 从 **V1.0 起（git 2634f5d，2026-08-22）就存在于 `rebalance_daily.py`**，是 V1.x 系列长期存在的规则；V1.3（2026-08-31）仅模型换版（6694树/27特征，VERSIONS.md 登记「评分卡/双轨/红线/TOP 均不变」），未改卖出规则。WB 复盘标题「V1.3 的卖出条件比回测多 PK_OUT」属归因不精确，实为「V1.x 自 V1.0 起就存在」。ablate 报告/回测引擎注释已同步修正。
+* **PK_OUT（掉出 top2 即卖）已从 `rebalance_daily.py` 删除**，改为「满 HOLD_DAYS=5 交易日到期才卖」的到期制（ablation 证明 PK_OUT 在 N=3/5/10 各吃掉 −0.11/−0.23/−0.26pp 日超额，且把平均持有压到 ~1.2 日）。实现：sell_plan 仅对「掉出 top2 且 `_trading_days_between(上次BUY日,今日)>=HOLD_DAYS`」的持仓生成（reason=`MATURE`，remark=`planA_mature`）；仍在 top2 的持仓无论持有多久都保留（避免同日卖买抖动）；无买入记录者视为已满期。
+* **重要边界**：删 PK_OUT 仅止血（回测 OFF 组日超额仍 −0.26%~−0.003%，全负/近零），非盈利动作；V1.x 真实 viability 仍以前向实盘样本 + G2 干净跑完一轮 N=10 为准。改动**未提交**（`rebalance_daily.py.bak_20260905_094409` 为实施前备份），待下个交易日实盘复盘确认后再 commit。
+* **定时任务同步（2026-09-06 核对+修正）**：①09:45 开盘实时复核任务（15868a74）调用 `rebalance_daily.py --date --top T --live`，**不传 --hold-days → 自动用脚本默认 HOLD_DAYS=5**，无需改参数；message 已补充「卖出=到期制 MATURE（PK_OUT 已删）」说明，防执行 agent 按旧逻辑理解。②10:05 兜底 `rebalance_daily_guard.ps1` 标记2 原用 `SELL reason in (PK_OUT,TRIM_OVR,POOL_ADJ)` 识别换仓成交——**删 PK_OUT 后新卖出 reason=MATURE 未被识别，兜底会误判「09:45 未执行」→ 10:05 重复换仓**，已改为 `(MATURE,TRIM_OVR,POOL_ADJ,PK_OUT)`（保留历史兼容）。③其余任务（09:15候选/09:25集合竞价/11:35午休/15:40盘后/夜间检修/G2换仓对账）均不依赖卖出 reason 语义，无需改；G2 侧 HOLD_DAYS=10 独立不受影响。
+* 防复发：不要再给 V1.x 加「排名掉出即卖」类日频翻转规则；任何新卖出规则须先跑 `ablate_pkout.py` 开关对照（PK_OUT ablation 模板）确认 ≤0 拖累。
 
 * **推荐组合（研究结论，未落盘）**：权重 F1=0.17/F2=0.26/F3=0.22/F4=0.07/F5=0.17/F6=0.12；F5 阈值 >4/1.5/0.5/-1；F6 阈值 12-25/3-40；F2 保持默认。推荐组合 OOS 日超额 +0.22%（基线 +0.05%）、回撤 -18.5%（基线 -20.8%）。
 
@@ -316,6 +332,14 @@
 * **盘前关键指标交叉验证（2026-08-31，T-20260831-005）**：9:25 任务 3.6 步双源对拍 F2 资金/行情/F5 板块写 `data/cache/crosscheck_<date>.json`；`review_full._read_crosscheck` 对不一致候选打 `[交叉验证]` 预警 + selection\_full 标注（只预警不阻塞），dry-run 验证 300456 触发 F2 资金预警正确；单元测试 `research/tests/test_crosscheck.py` 16/16 PASS。
 
 * **每日刷新面板落地（2026-09-01，T-20260901-001）**：此前面板只在周更重训时更新（refresh\_panel\_v3 供 run\_scheduled.ps1 retrain 模式），周中面板落后（9/1 仍用 8/28，8/31 增量已入库未合并）。已改：① `run_scheduled.ps1` daily 模式在 merge\_live\_features 后、deploy\_predict 前加 `refresh_panel_v3.py`（每天增量入库后刷新面板到最新交易日，约 10 分钟，次日 09:15 候选自动用最新数据）；② `verify_model_panel_sync.py` 面板>绑定差异放宽到 **≤7 自然日**不告警（每日刷新正常领先，周更 promote 归零），超过才告警要求重训。**dtype bug 修复**：pandas 2.2 日期键 `merge_asof` 报 `datetime64[ns] vs [us]` 不匹配——`build_features_v2.py` 4 处日期键统一 `astype("datetime64[ns]")`（df trade\_date / fin ann\_date / event\_merge ev\_key / dv ann\_date）。验证：面板刷新到 8/31 成功，verify exit=0 一致。注意：模型 V1.3 训练于 8/28 面板、每日喂新面板为 1 天增量差异可接受，周更 promote 对齐。
+
+* **悟道改直连客户端（2026-09-03，T-20260903-001，复盘** **`悟道方案复盘_20260903.html`** **落地修正）**：**排查结论**——① 报告推断的 `/api/openclaw` REST 路径实测 **404 不存在**（报告未实测的推断值）；② 悟道真实端点为 **`https://stock.quicktiny.cn/api/mcp`（JSON-RPC POST + Bearer key）**，实测 tools/list 65 工具、market\_overview/intraday\_main\_flow/dragon\_tiger 全部调通；③ **key 盘中可用**（13:12/15:05 均调通 intraday\_main\_flow，排除 FREE\_TIER\_MARKET\_OPEN\_RESTRICTED 盘中受限根因）；④ **9-02/9-03 连挂真根因 = 项目级** **`.mcp.json`** **未含 mcp\_wudao**（定时任务环境加载不到全局 MCP 插件 → 调用"不可达"），data\_source\_keys.json 旧登记"插件未安装"已过时。**修复**——① 新增 `scripts/wudao_client.py`（urllib 零依赖直连 /api/mcp，CLI `python scripts/wudao_client.py <tool> '<json_args>'`，失败 exit!=0 打 \[WUDAO-ERR]）；② 项目 `.mcp.json` 加 `wudao`（streamable-http + Bearer，已 gitignore）；③ `config/data_source_keys.json` 悟道条目更新 url+status；④ 9:25/9:45/11:35/15:40 四任务指令悟道调用全部改为 `scripts/wudao_client.py` 直连。**验证**：客户端 market\_overview（上涨1846/下跌3570/强度43）、intraday\_main\_flow（香农芯创 +4.92亿 开盘红）、dragon\_tiger（50条）、news\_hotlist 均实测通过，链路健康。**教训**：定时任务（Schedule）环境与交互环境 MCP 配置可能不同，远程数据源一律写 Python 直连客户端（如 caihui/wudao），勿依赖客户端插件层。
+
+* **F3/F5/基础行情加悟道 + 熔断路由（2026-09-03，T-20260903-002）**：用户拍板——①悟道加入 F3/F5/基础行情/大盘指数链做备选源：F3 用 `official_announcements`/`research_reports`/`cls_news`（公告/研报/财联社），F5 用 `theme_intraday_capital`/`sector_analysis`（题材资金/板块分析），基础行情用 `stock_rank`/`valuation_snapshot`，大盘指数用 `index_market`；②新增**熔断路由** **`scripts/data_source_router.py`**——各源不稳定（TDX 6日3挂/悟道插件连挂/iFind 口径存疑），熔断器让故障源快速短路：取数前 `check <源>`（OPEN 跳过/PROBE·OK 才调用）+ 调用后 `record <源> ok|fail [ms]`，连续失败 ≥3 次熔断 300s、熔断期过半开探测、成功立即恢复，状态持久化 `data/cache/datasource_health.json`（多任务共用）。CLI 测试通过（fail×3→OPEN→record ok→恢复，其它源不受影响）。9:25/9:45/11:35/15:40 四任务取数规则已固化（v8，F3/F5/基础行情加悟道备选 + 全链熔断）；`MCP数据源配置说明书.md` 升 v8（扩展指标组 ③④⑤⑥ 完整链 + ⑦ 熔断路由 + 编排表/职责表更新）。
+
+* **夜间检修任务落地（2026-09-03，T-20260903-003）**：用户拍板——每日 01:00 检修确保次日策略可运行/数据最新/面板已更新，全模块覆盖（A-G）。已建：①`scripts/nightly_check.py`（A 数据完整性\[增量/主源/财务PIT] / B 面板模型同步\[面板落后自动 refresh\_panel\_v3 重刷] / C 调度任务健康 / D 数据源连通性+熔断恢复\[腾讯/悟道探活 record ok] / E QMT进程/桥心跳/账本戳/对账 / F 磁盘/旧文件清理/脚本冒烟 / G 报告+告警；`--fix` 自动修复，`data/cache/nightly_check_<date>.md` 报告）；②Schedule「夜间检修(项目16)」e05e526a 01:00 工作日（核对次日 6 任务 Active + 检修报告 + 飞书告警 + 盘前晨报，不阻塞次日 9:15）。**首次 dry-run 即抓到真实问题**：B1 面板最新日 9/2 ≠ 最近交易日 9/3（当天 16:30 refresh 未到位）→ 正是检修价值；A4 财务 PIT 8/21 为季报披露制正常。A4 修复：income ann\_date 混合格式需 `pd.to_datetime(errors='coerce')`。
+
+* **Tushare moneyflow 升级为 F2 权威主源（2026-09-03，T-20260903-004）**：用户充 Tushare 会员后评估 WB 交付（`P16_Tushare主数据源升级说明.md` + `scripts/refresh_tushare_moneyflow.py`）——**采用**。核心：①**单位坑已实测修复**：Tushare `moneyflow` 原生 amount=万元（600519.SH 9-02 RAW `buy_lg_amount=81094.1` 实测），parquet 同万元，**禁止 ÷1e4**（初版误除导致偏小 1e4 倍，已归档 bad 版+回滚 .bak+重刷）；②增量刷新正确（读最新→次日刷到 T-1、分页 5000、keep=last 去重、.bak 备份原子写）；③`deploy_predict_g2.py` F2 自适应（快照新鲜→Tushare 主源、滞后→回退新浪兜底）已实码（L100-130）；④token 已填（data_source_keys.json ACTIVE）；⑤moneyflow.parquet 已刷到 **9/2**（消除 8/21 滞后 11 天）；⑥**补建缺失的 19:30 刷新任务**（WB 文档声称 268d2dd9 实际不存在 → 新建「Tushare刷新」c63cff58 19:30 工作日）；⑦夜间检修 nightly_check 加 A3 moneyflow 新鲜度检查、任务核对清单 6→7 个；⑧配置说明书 v8 总表+扩展指标组标注 Tushare F2 权威主源（**与评分卡实时 F2 区分**：Tushare T-1 日频做模型特征层 mf_main_net 等 43 特征，评分卡 F2 9:45 当日仍用东财/悟道）。**经验**：信任交付前必须核实"声称的定时任务/产物是否真实存在"（268d2dd9 不存在即例）。
 
 * **待验证（09-01）**：09:15 出 model\_top10.csv → 09:25 写 F3 缓存 → 09:45 跳过 deploy 直接复核+下单。
 
@@ -444,12 +468,131 @@
 
 ## 2026-09-01 晚·G2 基础设置搭建（代码级全套 + 配置补齐收官，与 V1.3 完全隔离）
 
-* **① G2 独立配置**：`g2_config.py`（账号 70180771/桥路径/资金池/参数），**绝不 import V1.3 qmt_config**；独立资金池 `D:/QMT_POOL/g2_bridge/g2_strategy_capital.json`（初始 10 万，account_id 戳）。
-* **② G2 脚本**：`rebalance_g2.py`（每日换仓，先卖后买，只认 G2 账本 positions_cfg+fills FIFO，T+1 锁定自动跳过卖出，dry-run 默认；20260901 验证 8 只过红线/BUY top2/3 只孤儿 T+1 skip）；`reconcile_g2.py`（日终对账，持仓差额/孤儿预警，验证捕获 600028 超额 100 股）；`G2_RUNBOOK.md` 运行手册。
-* **③ 隔离硬约束**：账号 70180771 vs 67014907、资金池/候选/持仓归属独立、G2 绝不调 qmt_trader、绝不纳管他人持仓。
+* **① G2 独立配置**：`g2_config.py`（账号 70180771/桥路径/资金池/参数），**绝不 import V1.3 qmt\_config**；独立资金池 `D:/QMT_POOL/g2_bridge/g2_strategy_capital.json`（初始 10 万，account\_id 戳）。
+
+* **② G2 脚本**：`rebalance_g2.py`（每日换仓，先卖后买，只认 G2 账本 positions\_cfg+fills FIFO，T+1 锁定自动跳过卖出，dry-run 默认；20260901 验证 8 只过红线/BUY top2/3 只孤儿 T+1 skip）；`reconcile_g2.py`（日终对账，持仓差额/孤儿预警，验证捕获 600028 超额 100 股）；`G2_RUNBOOK.md` 运行手册。
+
+* **③ 隔离硬约束**：账号 70180771 vs 67014907、资金池/候选/持仓归属独立、G2 绝不调 qmt\_trader、绝不纳管他人持仓。
+
 * **④ 配置补齐（2026-09-01）**：G2 计划任务已建（Paused 未启用）：`30344e79` G2换仓 09:50 + `4cf3db92` G2日终对账 15:45（工作日，与 V1.3 09:45/15:40 错开 5 分钟）；`capital_allocation.yaml` 双镜像登记 `g2_bridge` 10 万/2 只，`check_capital_allocation.py` 退出码 0 PASS（4 策略共 40 万 ≤ 账户 1000 万）。
-* **⑤ 上线（2026-09-01 晚诚哥拍板 09-02 正式上线）**：G2 计划任务已 resume（Active）：`30344e79` 换仓 09:50 + `4cf3db92` 对账 15:45，09-02 首日自动运行；换仓任务加「当日候选缺失→中止」保护；候选管道已由 09:25 任务（b0254f11 Active）覆盖；孤儿仓 500 股由 09:50 换仓自动卖出（非目标持仓），不再单独跑 clear_orphans（避免双重卖出）；上线后观察 ≥1 交易日稳定再切（旧 miniQMT 67014907 保留 ≥1 月回滚）。
-* **⑥ 飞书推送升级（2026-09-01 晚）**：新增 `push_review_card.py`（TOP10 打分明细卡，4 项拍板：TOP10 全量/双表[速览6列+六因子8列]/Top5 重点卡/09:25 预估版）。丰富版(09:50)读 `selection_full.csv`（F1-F6 实时+当日主力资金+量比+板块+催化）；预估版(09:25)读 `model_top10.csv`(SC_F1-F6 模型预估) + `crosscheck_<date>.json`(当日资金/现价/板块) + `review_<date>.json`(F3 催化)，缺失显示"—"绝不编造。09-01 真实数据双模式验证通过（10 只/模式），丰富版测试卡真发飞书 bot 成功。任务接线：`30344e79` 加第6步推丰富版、`b0254f11` 加第6步推预估版、`15868a74`（V1.3 09:45 复核）加第6步推丰富版。用法：`python push_review_card.py --date <YYYYMMDD> [--estimate] [--summary "大盘|动作"] [--no-send]`。
-* **⑦ 持仓卡片升级（2026-09-01 晚）**：新增 `push_holdings_card.py`（持仓卡片：摘要[总浮盈亏/资金池/已实现] + 逐股卡[现价/涨跌/浮盈亏/主力/量比/板块/建议/预警] + 汇总表）。任务写 `data/cache/holdings_<date>.json`（schema 见模块头部）→ `--type midday|close` 推送。09-01 真实持仓测试卡真发飞书成功。接线：`095bbe1b`（11:35 午休）加第5步推 midday、`9a41d7f7`（15:40 盘后）加第5步推 close。用法：`python push_holdings_card.py --date <YYYYMMDD> --type midday|close [--no-send]`。
-* **⑧ 推送三批优化全量实施（2026-09-01 晚，诚哥拍板）**：第一批决策缺口：`push_fill_card.py`（成交回报卡，g2=G2桥fills/v13=rebalance json 双源，成交明细+未成交）＋ `push_past_review_card.py`（昨日推荐复盘，读昨日 selection_full+g2_top2 + 今日 past_quotes_<date>.json，算 top10/top2 今日表现 vs 大盘 HS300）＋ `push_review_card.py` 加 `--action`（📌操作建议置顶：买入/卖出/仓位）＋ `--holdings`（持仓→目标换仓对比）。第二批体验：Top3 重点卡加"查看行情"按钮（open_url 东财）、降级/交叉验证⚠️标注上移个股行、数据口径＋数据截至时间戳明确。第三批：`push_alert_card.py`（管道健康告警：候选缺失/桥未存活/对账异常主动推）＋ `push_review_card.py` Top3 精简（4-10 仅表内）＋ 09:50 G2 改推成交回报卡替代重复 TOP10 卡（⑧合并，TOP10 卡由 V1.3 09:45 推）＋ `push_daily_summary_card.py`（15:45 盘后总览，V1.3 持仓 + G2 成交/对账合一）。任务接线：`b0254f11` 加第7步昨日复盘、`15868a74` 加第7步成交回报+候选缺失告警、`30344e79` 改第6步成交回报+告警、`4cf3db92` 加第5步盘后总览+对账异常告警。全部模块 py_compile 通过、09-01 真实数据构建通过，成交回报/持仓卡真发飞书成功。
+
+* **⑤ 上线（2026-09-01 晚诚哥拍板 09-02 正式上线）**：G2 计划任务已 resume（Active）：`30344e79` 换仓 09:50 + `4cf3db92` 对账 15:45，09-02 首日自动运行；换仓任务加「当日候选缺失→中止」保护；候选管道已由 09:25 任务（b0254f11 Active）覆盖；孤儿仓 500 股由 09:50 换仓自动卖出（非目标持仓），不再单独跑 clear\_orphans（避免双重卖出）；上线后观察 ≥1 交易日稳定再切（旧 miniQMT 67014907 保留 ≥1 月回滚）。
+
+* **⑥ 飞书推送升级（2026-09-01 晚）**：新增 `push_review_card.py`（TOP10 打分明细卡，4 项拍板：TOP10 全量/双表\[速览6列+六因子8列]/Top5 重点卡/09:25 预估版）。丰富版(09:50)读 `selection_full.csv`（F1-F6 实时+当日主力资金+量比+板块+催化）；预估版(09:25)读 `model_top10.csv`(SC\_F1-F6 模型预估) + `crosscheck_<date>.json`(当日资金/现价/板块) + `review_<date>.json`(F3 催化)，缺失显示"—"绝不编造。09-01 真实数据双模式验证通过（10 只/模式），丰富版测试卡真发飞书 bot 成功。任务接线：`30344e79` 加第6步推丰富版、`b0254f11` 加第6步推预估版、`15868a74`（V1.3 09:45 复核）加第6步推丰富版。用法：`python push_review_card.py --date <YYYYMMDD> [--estimate] [--summary "大盘|动作"] [--no-send]`。
+
+* **⑦ 持仓卡片升级（2026-09-01 晚）**：新增 `push_holdings_card.py`（持仓卡片：摘要\[总浮盈亏/资金池/已实现] + 逐股卡\[现价/涨跌/浮盈亏/主力/量比/板块/建议/预警] + 汇总表）。任务写 `data/cache/holdings_<date>.json`（schema 见模块头部）→ `--type midday|close` 推送。09-01 真实持仓测试卡真发飞书成功。接线：`095bbe1b`（11:35 午休）加第5步推 midday、`9a41d7f7`（15:40 盘后）加第5步推 close。用法：`python push_holdings_card.py --date <YYYYMMDD> --type midday|close [--no-send]`。
+
+* **⑧ 推送三批优化全量实施（2026-09-01 晚，诚哥拍板）**：第一批决策缺口：`push_fill_card.py`（成交回报卡，g2=G2桥fills/v13=rebalance json 双源，成交明细+未成交）＋ `push_past_review_card.py`（昨日推荐复盘，读昨日 selection\_full+g2\_top2 + 今日 past\_quotes\_<date>.json，算 top10/top2 今日表现 vs 大盘 HS300）＋ `push_review_card.py` 加 `--action`（📌操作建议置顶：买入/卖出/仓位）＋ `--holdings`（持仓→目标换仓对比）。第二批体验：Top3 重点卡加"查看行情"按钮（open\_url 东财）、降级/交叉验证⚠️标注上移个股行、数据口径＋数据截至时间戳明确。第三批：`push_alert_card.py`（管道健康告警：候选缺失/桥未存活/对账异常主动推）＋ `push_review_card.py` Top3 精简（4-10 仅表内）＋ 09:50 G2 改推成交回报卡替代重复 TOP10 卡（⑧合并，TOP10 卡由 V1.3 09:45 推）＋ `push_daily_summary_card.py`（15:45 盘后总览，V1.3 持仓 + G2 成交/对账合一）。任务接线：`b0254f11` 加第7步昨日复盘、`15868a74` 加第7步成交回报+候选缺失告警、`30344e79` 改第6步成交回报+告警、`4cf3db92` 加第5步盘后总览+对账异常告警。全部模块 py\_compile 通过、09-01 真实数据构建通过，成交回报/持仓卡真发飞书成功。
+
+## 2026-09-02 ·G2 首日实盘 P0：status=55 误当废单 → 双倍建仓（600262 3000→6400 / 300964 800→1000）
+
+> 触发：G2 首日 09-02 手动 rebalance --live 后，fills 只回 2 笔（600262 3000/300964 800），但 positions 显示 600262=6400、300964=1000（多 3400/200 股）。QMT 委托记录 6 笔全同价（15.77/57.03），恰为初始 2 笔 + 4 笔废单重试（600262 2200/1000/200 + 300964 200）。
+> **排查关键**：QMT 端策略日志（`D:\QMT交易端模拟\userdata\log\XtClient_FormulaOutput_20260902.log`）完整还原 `[REJECTED-RETRY-1/2/3]` 时序；桥 seq=1 只发 2 笔、fills 只回 2 笔 → 6 笔全为桥自身 `_handle_rejected_retry` 所为，**非绕桥、非第二下单者**。
+
+* **根因（桥状态机）**：`_check_pending_orders` 1b 分支 `if status == 55` 把「部成活跃态」当「废单」→ `_handle_rejected_retry` **不撤原单**直接 `_do_passorder` 重报剩余量。55 在模拟端=原单仍在挂单继续成交（DIAG 实锤 3000 单 `m_nVolumeTraded=400/m_nVolumeTotal=2600/status=55`）→ 原单继续成交到 3000 + 重报单（2200/1000/200）也全成交 = 6400。300964 同理 800+200=1000。注释自己都写"55 部成是活跃态不能算死"（CONFIRM\_DEAD\_STATUS=53,54,57），但 1b 却 `status==55` 当废单，自相矛盾。
+
+* **修复（BUILD\_TAG 20260902-161814，源文件** **`strategy/strategy_p16_g2_bridge_src.py`）**：
+
+  1. 1b 分支 `status == 55` → `status == 57`（55 部成走 1a/1d 等原单自然成交满；57 真废单才走重试）。
+  2. `_handle_rejected_retry` 加重报前死透确认（对齐 `_handle_timeout_retry` 纪律）：短轮询反查原单（4×0.5s），原单已全成交 → FILLED 收尾绝不重报；原单仍活跃 → 延后 60s 复查（`REJECTED-UNCONFIRMED`）绝不重报；死透（53/54/57 或查不到）才重报 remaining。
+
+* **验证**：`build_p16_g2.py` 重建 exit 0（py\_compile + Py3.6 禁用语法扫描 + GBK 写出 + BUILD\_TAG 替换）；产物验证 MOCK=0/f-string=0/walrus=0/`status==55` 残留=0/`status==57` 生效=1/`# coding=gbk` 头/BUILD\_TAG=20260902-161814。
+
+* **遗留（09-02 当日，T+1 锁定无法撤销/卖出）**：600262 实持 6400（超额 3400）、300964 实持 1000（超额 200），bridge fills 账本仍只记 3000/800 —— **账本与实际持仓不一致**，对账/换仓时必须按 positions 实际持仓核对，明日换仓按目标差额自然处理。
+
+* **部署要求（硬）**：QMT 端 `python/STRATEGY_P16_G2_BRIDGE.py` 是 QMT 加密密文（MiFBOec 头），**无法脚本覆盖**，必须在 QMT 界面重新加载 `build/strategy_p16_g2_bridge.py`（BUILD\_TAG=20260902-161814），以心跳 `build_tag` 为部署生效判据（PROJECT\_MEMORY L437 红线）。
+
+* **教训**：① 状态码语义（55 部成 vs 57 废单）在模拟端必须 DIAG 实锤，不能按注释/直觉写分支；② 废单/超时重报前必须先确认原单死透（不撤原单就重报 = 双倍建仓），此纪律已对齐 timeout\_retry；③ 账本 fills 与 QMT 实际持仓可能脱钩，positions 是唯一真相（AGENTS「账户 position 唯一真相」红线）。
+
+## 2026-09-02 ·G2 实盘与回测口径对齐：N=10 持有期（用户拍板「回测有意义的前提是实盘对齐」）
+
+> 背景：回测/前向（`scan_rotate_cost_real.py` N=10 卖出条件 `(i-buy_i)>=N+1`、`paper_forward.py --hold 10`）为「买入后持有 10 个交易日」，
+> 但实盘 `rebalance_g2.py` 原逻辑「每日对齐 top2、掉出即卖」——两者不一致，用户指出「不然回测的意义在哪」。
+
+* **实盘对齐改动（rebalance\_g2.py + g2\_config.py + deploy\_predict\_g2.py）**：
+
+  1. `g2_config.HOLD_DAYS = 10`（对齐回测 N=10）+ `SELECT_TOP = 10`（候选池大小）。
+  2. `deploy_predict_g2.py --top 10`（默认改 10）产出 `_g2_top10.csv`，对齐回测 TOP10 候选池，不再只产 top2。
+  3. `rebalance_g2.py` 卖出对齐回测 simulate 真实语义：**持仓满 10 交易日到期 → SELL**（不看是否在候选池内；止损/止盈桥内风控不动）。未满 10 日 → 不卖（`[SKIP] 持有未满10日`）。
+  4. `rebalance_g2.py` 买入：**仅当持仓数 < TOP\_N(2)** 时从 Top10 池选 total\_new 最高、不在持仓、过红线的补足（对齐回测 `while len(hold) < TOP`，避免持仓膨胀超 2 只）。
+  5. 持仓建仓日持久化：`data/rebalance_g2/g2_hold_dates.json`（`{code:"YYYYMMDD"}`），`_update_hold_dates` 新BUY记当日/SELL清仓移除/保护仓保留，live 落盘、dry-run 预览。
+  6. 交易日计数：`is_trade_day.is_trade_day()` 逐日判断（主库日历快照滞后到 8/20 也 OK——未覆盖日期走「默认交易日+节假日表」fallback，9/25-27 中秋、10/1-7 国庆正确排除）。**坑：日历文件里日期带** **`T00:00:00`** **后缀，不能裸** **`in cal`** **集合匹配，必须走 is\_trade\_day()**。
+  7. 消费方同步改读 Top10：`premarket_g2_check.py`（盘前核对）、`push_past_review_card.py`（复盘卡，G2 部分改读 `g2/` 子目录 top10，顺带修了原读顶层 `data/selections/` 过期副本的路径缺陷）；docstring 清理（push\_alert\_card/rebalance\_g2/g2\_config/paper\_forward\_daily.ps1/周一检查清单）。
+
+* **首次初始化（已做）**：600262/300964 建仓日=20260902；9/3 起持有未满 10 日 → 不卖不买，持仓保持 2 只。
+
+* **验证记录**：未满10日不卖 ✅（9/2建仓→9/11=7日不卖 / 9/16=10日可卖）；满10日到期 SELL+从 Top10 池补足 ✅；持仓不膨胀 ✅；建仓日持久化 ✅；Top10 候选生成（真实 deploy 产 10 只全过红线）+ 消费方改读 ✅；py\_compile 通过 ✅。
+
+* **注意**：`qmt_bridge_client.build_orders_from_g2`（top\_k=2 参数化）未被 G2 主流程调用，保持不动；VERSIONS.md L229 印证 N=10 为回测最优换仓周期（约 2 周）。
+
+## 2026-09-02 收工总结（今日已做 + 待完成）
+
+### ✅ 今日已做（G2 首日实盘 + 两项 P0 级修复）
+
+1. **实盘实时链路修复（build\_g2\_daily.py，P0）**：增量库列名 `volume` vs `RAW_COLS` 期望 `vol` 不匹配 → `vol_ratio_5_20` 等量价特征实盘全 NaN（train-serving skew）。加 `volume→vol` rename 修复，缺失率 100%→0.21%，候选分数恢复正常（600262 0.6117→0.6268 / 300964 0.5890→0.6107）。
+2. **G2 首日实盘执行**：手动 `rebalance_g2.py --live` 写桥（seq=1，600262 3000\@15.77 + 300964 800\@57.03），QMT 10:07 全部成交。
+3. **双倍建仓 P0 定位+修复（bridge 状态机）**：`status==55`（部成活跃态）被误当废单 → 不撤原单直接重报 → 600262 3000→6400 / 300964 800→1000。修复：1b 分支 55→57 + `_handle_rejected_retry` 加死透确认（BUILD\_TAG 20260902-161814）。详见上方「G2 首日实盘 P0」节。
+4. **实盘与回测口径对齐（N=10 + Top10 候选池）**：`rebalance_g2.py` 改为回测 simulate 真实语义——卖出=持仓满 10 交易日到期（逐票滚动，不看是否在池内，止损/止盈桥内处理）；买入=持仓<2 时从 Top10 池选 total\_new 最高补足。`deploy_predict_g2 --top 10` 产 Top10 池。持仓建仓日持久化 `g2_hold_dates.json`。详见上方「N=10 持有期」节。
+5. **消费方同步**：premarket\_g2\_check / push\_past\_review\_card（顺带修顶层过期副本路径缺陷）/ 各 docstring 全部改读 Top10。
+6. **新增工具**：`premarket_g2_check.py`（盘前核对：心跳 build\_tag + Top10 候选 + 超额持仓三项）。
+7. **positions\_cfg 成本锚自动化（T-20260902-005，P1）**：新增 `gen_positions_cfg_g2.py`（G2 持仓 code ∩ 账户持仓 avg\_price 含费成本 → 写 `cmd/positions_cfg_<date>.json`），集成 rebalance --live（换仓后生成）+ reconcile（对账前刷新校准），空仓/无持仓安全跳过、幂等。已补 9/2 缺口（600262 6400\@15.7841 / 300964 1000\@57.0989）。
+8. **F6 估值补字段（T-20260902-006，P0，9/3 早盘前）**：增量日估值滞后 11 天（fill\_cols 用主库 8/21 旧值）→ 改为「增量日逐日用主库每股慢变量 × 当日真实 close 反推」：pe\_ttm/pb/dv\_ttm/circ\_mv/turnover\_rate 全部反映当日价格，口径交叉验证误差 0.00%。重建快照 + 重生成候选（Top10 仍含 300475/002641）。**V1.1 merge\_live\_features.py 同款问题仅标注不动（非实盘）**。
+9. **G2 自动化梳理（T-20260902-007）**：**TRAE 自动化面板已有** `30344e79`（G2换仓 09:50）+ `4cf3db92`（G2日终对账 15:45），均 Active（`30344e79`/`4cf3db92` 是 TRAE 任务 ID，非 Windows 计划任务）。曾误建 Windows 计划任务 `Quant_G2_Rebalance`/`Quant_G2_Reconcile` 与 TRAE 重复（双跑会重复下单），**已删 Windows 任务 + ps1 脚本**，只保留 TRAE。代码优化保留（TRAE 任务同样生效）：`rebalance_g2.py` 桥存活读最新心跳（修复误判）+ `qmt_bridge_client.notify_feishu`（rebalance/reconcile 复用）+ reconcile 飞书通知。**教训**：查定时任务先看 TRAE 面板（Schedule list）再查 Windows schtasks。
+10. **文档**：G2\_RUNBOOK（第四/六/九节更新为 TRAE 任务）、PROJECT\_MEMORY（今日 P0×3 + 收工总结）、全局控制台看板（T-20260902-001\~007）已更新。
+
+### ⏳ 待完成 / 明日（9/3）清单
+
+1. **【用户·必须手动】开盘前 QMT 界面重载** **`build/strategy_p16_g2_bridge.py`（BUILD\_TAG=20260902-161814）**——当前 QMT 端心跳仍是旧版 `20260901-142420`，不重载则双倍建仓 P0 修复不生效。重载后核对心跳 `build_tag` 变 161814。
+2. **【Agent】9/3 盘前**：`miniqmt venv python premarket_g2_check.py --date 20260902`（三项核对）。
+3. **【Agent】9/3 换仓**：`rebalance_g2.py --date 20260902` dry-run（600262/300964 持有未满 10 日 → 预期不卖不买，持仓保持 2 只）→ 确认后 --live。
+4. **【Agent】9/3 盘中**：盯心跳/委托，确认不再出现 `[REJECTED-RETRY]`（P0 修复验证点）。
+5. **【Agent】9/3 15:45 对账**：`reconcile_g2.py --date 20260902`，账本 vs positions 差额核对。
+6. **【遗留·超额持仓】9/2 实持 600262=6400 / 300964=1000**（账本只记 3000/800），已 T+1 锁定；按 N=10 逻辑满 10 日（约 9/16）到期卖出时按 positions 实际持仓数量卖出，对账/换仓以 positions 为唯一真相。
+7. **【观察】N=10 逐票滚动首轮验证**：9/16 前后验证"满10日到期 SELL + 从 Top10 池补足"实际执行正确。
+8. **【数据】交易日历快照滞后到 8/20**：is\_trade\_day 已 fallback 处理（默认交易日+节假日表），主库周更后自然恢复，无需人工干预。
+9. **【可选·未做】`qmt_bridge_client.build_orders_from_g2`** **仍 top\_k=2**（未被 G2 主流程调用，保持不动；如需统一可后续对齐）。
+
+## 2026-09-07 会话沉淀（出场规则 ablation 独立验证 + ATR2.0 前向验证挂观察）
+
+> 看板 T-20260907-001。事件源：WB 评估文档 `data/real/exit_ablation_20260907_thr58-60.md`（追盈止损出场规则横向对照，红线58/60 × N5/10 × 8 模式）。
+
+### 独立验证结论（脚本 verify_exit_ablation.py，只读复算 + 三重统计口径）
+
+1. **报告数字 100% 复现**：28 组配对 t 的 delta_pp/t 全零偏差；口径自检（红线58 fixed 偏差 -0.012/+0.024pp）、出场原因构成逐行一致。报告无计算错误。
+2. **重叠观测假设被实测证伪**：配对日差序列（mode−fixed）AC1 仅 -0.19~+0.10，Newey-West(lag10) 修正后 t 几乎不变（个别反而增大：60/N=10 ATR2.0 1.90→2.21、58/N=5 ma5 -1.98→-2.66）。原因：两组合大部分日子持仓相同，差异序列近似白噪声。→ 报告的 t 未被高估。
+3. **逐笔 Welch 口径（独立观测近似）把显著性进一步压低**：28 组逐笔 |t| 最大仅 1.63（ma5 负向）；ATR2.0(60/N=10) 逐笔 t=1.18（每笔差 +1.63pp，n=108 vs 105）。→ "无任何出场规则显著优于 fixed"的结论成立且比报告更强。
+4. **回撤结论的边界**：live_trail 降回撤只在 N=10 两档明显（58: -31.6%→-21.0%；60: -30.8%→-20.5%）；58/N=5 档 Calmar 反而恶化（-0.31→-0.67）。回撤差异同样未做显著性检验，仅 516 日单条路径。
+5. **纪律结论**：28 组无一显著 → 不改任何实盘出场参数；唯一可确认排除项=时间止损/跌破MA5（提前斩仓类，全档大额负向）；ATR2.0(60/N=10) 作为唯一"正方向稳定未达显著"候选 → 挂前向验证观察，不落盘。
+
+### 落地：出场规则前向验证管道（paper_forward_exit.py）
+
+- **新增只读脚本** `paper_forward_exit.py`：对 `paper_forward_live.csv` rank≤2（实盘口径，g2_config.TOP_N=2）候选，逐笔模拟 none/fixed/live_trail/atr20（可用 --rules 加 atr25/atr30/time/ma5），规则逻辑与 `scan_rotate_cost_real.simulate(exec_ok=True)` 分支逐行对齐（峰值用"截至昨日"判定再并入今日 high、一字跌停顺延、T+1 次日可卖、ATR 建仓日快照、MATURE 优先）。持仓 N=10 open→open。
+- **口径自检 `--selfcheck` 8/8 精确复现 backfill**（差 ~1e-16，机器精度）→ 入场索引/交易日历/open 面板与 backfill 完全一致。
+- **已接入 `paper_forward_daily.ps1` 步骤5**（16:45 每日，fail-loud：exit≠0 → EXIT-RULE-ALERT 且任务 exit 2）。
+- **产物**：`data/real/paper_forward_exit_live.csv`（逐笔明细）+ `paper_forward_exit_<date>.md`（判定报告：N≥30 且 atr20 vs live_trail 逐笔配对 t>2 才建议拍板落盘）。
+- **当前基线**：8 笔到期样本（8/17~8/20 入场）：fixed/live_trail 均值 +2.171%、ATR2.0 +1.147%、none +1.110%；n<30 不作判定。按 2 笔/交易日需再约 11 个交易日达标。
+- **与现有 G2 前向管道的关系**：G2 前向（forward_stats）验证的是"选股 alpha（持有10日不动）"，出场规则前向验证的是"同一批入场下哪种出场规则更好"——两者互补、互不干扰，共享同一候选源。
+
+### 追盈语义 bug 修复（2026-09-07，T-20260907-002，用户拍板"激活+8%+保本底线 + 四处同步"）
+
+- **问题（601579 实锤）**：601579 当天 10:17 买入（23.96×1900，V1.3 67014907）即触发「高点回撤8%」追盈信号，T+1 卖不掉；且 peak 只需 >成本(任意微盈) 即追踪，回撤 8% 触发时可能是亏损卖出——**"追盈=追跌"**。
+- **量化**（analyze_trail_semantics.py，红线60/N=10，647 笔同入场）：现语义 TRAIL 132 次/**64% 亏损**、TRAIL 均值 **-1.10%**；激活+8% 后 TRAIL 74 次/35% 亏损、均值 **+1.79%**，整体均值 +2.575%→+2.676%、胜率 +1.7pp（修复不损收益）。
+- **修复内容（4+1 处同步）**：
+  1. `qmt_config.py` 加 `TRAILING_ACTIVATE_PCT=0.08`；
+  2. `qmt_monitor.py evaluate()` 加 `sellable_vol` 参数（can_use=0 不评估不并峰）+ 激活阈值 + 保本底线 `line=max(cost, high×0.92)`；
+  3. G2 桥 `strategy_p16_g2_bridge_src.py` 同改（can_use 检查前移到 peak 更新前），`build/strategy_p16_g2_bridge.py` 重建 **BUILD_TAG=20260907-151202**；
+  4. `scan_rotate_cost_real.py`：`TRAIL_ACTIVATE_PCT`（env BT_TRAIL_ACTIVATE 默认 0.08）+ 峰值 T+1 卫生（`(i-buy_i)>=2` 才并入当日 high）+ live_trail 分支激活/保本；
+  5. `paper_forward_exit.py` 同改（前向基线同步）。
+- **修复后 ablation（exit_ablation_20260907 重跑，报告已标注语义修复版）**：live_trail 红线58/N=10 日超额 +0.003%→**+0.147%**、回撤 -31.6%→**-18.9%**、Calmar 1.96；红线60/N=10 +0.015%→**+0.132%**、胜率 62.2%、Calmar 1.60；**fixed 基线四档与修复前逐行一致（无污染）**；ATR2.0(60/N=10) 旧 +0.199/t1.90 降至 +0.071/t0.75（旧优势部分源自峰值 bug，T-20260907-001 的前向对比仍有效但动机弱化）。逐笔 Welch：live_trail 60/N=10 +1.03pp/笔 t=0.79（不显著）。
+- **待办（部署）**：①G2 桥 QMT 端重载 151202 产物（核对心跳 build_tag）；②V1.3 monitor 重启盯盘任务即可（无构建）；③次日 16:45 paper_forward_exit 自动按新语义跑。
+- **遗留说明**：ATR 模式的 ATR_TRAIL（`peak>o_buy`）未加激活阈值（候选规则、波动率自适应），本次只修实盘在跑的 live_trail；如需一致可后续单列。
+
+### V1.3 超买事故修复（2026-09-07，T-20260907-003，用户拍板）
+
+- **事故**：09-07（到期制新代码首个实盘日）原有 300413+003005（09-04 买入）一笔未卖，又买 601999(6600@6.9)+601579(1900@23.96)，持仓 2→4 只，总占用 ~17.6 万 ≈ 资金池 95,897 的 **1.84 倍**（突破本金）。
+- **根因（两层叠加）**：①卖出=到期制（T-20260904-001）→ 未满 N=5 的持仓保留，持仓不回落（原 PK_OUT 掉出即卖已删）；②买入无持仓数上限 + P0 校验只算"当日新增买入额"（POOL_BUY_CAP=资金池×0.95），不算"现有持仓市值" → 新票叠加、突破本金。
+- **修复（rebalance_daily.py）**：①**持仓数上限**：买入名额 `slots = TOP_N − 卖出后仍持仓数`，新增买入（held_vol=0）按 total 降序取前 slots 只，补仓（已持有）不受限——对齐回测 simulate「持仓始终 ≤ TOP」；②**资金存量校验（校验3）**：保留持仓市值（未卖持仓 vol×现价，取价失败用成本兜底）+已买+本单 ≤ 资金池×deploy_pct×1.02，超限 POOL_BLOCK；③展示/落盘/live json 统一用 exec_buys。guard 幂等标记2 已能识别 BUY 成交，未改（0 卖出日由 json executed_live 标记兜底）。
+- **验证**：py_compile OK；四场景逻辑测试（事故态 slots=0 → 0 新增；全到期卖2补2；卖1留1补1；target 已持有时拦截新票）；今日 dry-run 跑通（当前 4 只全持有 → 0 新增）。
+- **生效**：rebalance_daily.py 为普通脚本（09:45 TRAE 任务 + 10:05 guard 直接调用），次日自动生效，无需构建/QMT 重载。
+- **遗留**：今日 4 只存量不自动减，按到期制逐只满 N=5 自然消化（300413/003005 最早约 09-10 可卖）；如需人工回 2 只另行拍板。**纪律教训**：改卖出规则（删 PK_OUT/改到期制）时必须同步检查买入侧护栏（持仓数上限/资金存量），否则首日即暴露叠加超买。
 

@@ -2,14 +2,15 @@
 """g2 实时数据采集模块（F2 主力资金 / F5 行业板块当日涨幅）。
 
 独立于 V1.1：不 import deploy_predict.py / run_scheduled.ps1 / lgb_model_v3.txt / feature_panel_v3.parquet。
-供 build_g2_daily.py / deploy_predict_g2.py 复用，把 g2 的 F2/F5 从 E:/astock 周更 parquet
-换成当日实时数据，实时失败时回退周更值（诚实标注滞后）。
+供 build_g2_daily.py / deploy_predict_g2.py 复用。F2 主源已切换为 Tushare moneyflow 每日快照（零 skew），
+F5 仍为当日自算；新浪当日资金流仅作 F2 缺失兜底（实时失败时回退周更值，诚实标注滞后）。
 
 数据源（2026-08-25 实测）：
-  F2 主力净额（当日）：新浪资金流 MoneyFlow.ssl_qsfx_lscjfb（免费、免 Key、当日已更新）
+  F2 主力净额（主源）：Tushare moneyflow 每日 19:30 刷新（四档，零 skew 训练口径，单位万元）
+  F2 主力净额（兜底）：新浪资金流 MoneyFlow.ssl_qsfx_lscjfb（免费、免 Key、当日已更新），仅当 Tushare 快照缺失时使用
     - r0_net=超大单净额(元), r1_net=大单净额(元) -> 主力净流入 = r0_net + r1_net
-    - 口径与 E:/astock moneyflow 的 buy_lg+buy_elg-sell_lg-sell_elg 一致（大单+超大单净额）
-    - 单位换算：E:/astock moneyflow 单位=万元，新浪单位=元 -> 除以 1e4 对齐训练口径
+    - 口径与 D:/astock moneyflow 的 buy_lg+buy_elg-sell_lg-sell_elg 一致（大单+超大单净额）
+    - 单位换算：D:/astock moneyflow 单位=万元，新浪单位=元 -> 除以 1e4 对齐训练口径
     - 注意：批量 daima=a,b 实测返回空，必须逐股请求
   F5 行业板块当日涨幅：增量库当日行情 + 同花顺行业成分自算（881 板块）
     - 同花顺 881 板块指数涨幅 = 成分股当日涨跌幅按成交额加权平均（口径近似，行业分类一致）
@@ -221,7 +222,7 @@ def compute_industry_pct_daily(incr_df, comp_df):
 #       {"stockCode": "600487", "stockName": "亨通光电", "reason": "...", "netBuy": 184959.32(万元)},
 #       ...
 #   ]}
-# 注意：MCP 返回 netBuy 单位为【万元】，E:/astock top_list.net_amount 单位为【元】（已实测 8/21 交叉验证吻合），
+# 注意：MCP 返回 netBuy 单位为【万元】，D:/astock top_list.net_amount 单位为【元】（已实测 8/21 交叉验证吻合），
 #       g2 模型训练 lhb_net 用元 → 读取时 ×1e4 转元，避免量纲 bug（与 F2 同类坑）。
 def _mcp_code_to_ts(code):
     """MCP 龙虎榜 stockCode('600487') -> ts_code('600487.SH')"""
@@ -275,16 +276,16 @@ def fetch_lhb_from_mcp_file(date_str, lhb_dir=None):
 # 龙虎榜全自动采集 —— 东财 datacenter（方案B，2026-08-25 落地）
 # ---------------------------------------------------------------------------
 # 背景：悟道 MCP 龙虎榜口径准但不可进自动管线；东财 datacenter 纯 Python 可全自动。
-# 实证（8/21 全市场交叉验证）：E:/astock top_list 与东财 RPT_DAILYBILLBOARD_DETAILS 同源，
-# 但 E:/astock 对多原因上榜股【去重保留 1 行】。去重规则已实证确定：
+# 实证（8/21 全市场交叉验证）：D:/astock top_list 与东财 RPT_DAILYBILLBOARD_DETAILS 同源，
+# 但 D:/astock 对多原因上榜股【去重保留 1 行】。去重规则已实证确定：
 #   1) 按股票去重【不求和】（多原因时净额可能相同（同份数据），也可能不同）
-#   2) 若该股有「连续3日/连续三个交易日 涨幅或跌幅偏离累计」记录 → 取这条（E:/astock 实测全取多日累计那条）
+#   2) 若该股有「连续3日/连续三个交易日 涨幅或跌幅偏离累计」记录 → 取这条（D:/astock 实测全取多日累计那条）
 #   3) 否则取任一条（净额相同）
 # 单位：BILLBOARD_NET_AMT 为【元】，与 g2 训练 lhb_net 一致（不需换算）。
 # 零外部依赖：直接用 urllib 调东财 datacenter（不经 industry-researcher 插件，自包含）。
-# Fallback 链（调用方 build_g2_daily 用）：东财当日 → MCP 文件当日 → E:/astock 周更。
+# Fallback 链（调用方 build_g2_daily 用）：东财当日 → MCP 文件当日 → D:/astock 周更。
 _EM_DC_URL = "https://datacenter-web.eastmoney.com/api/data/v1/get"
-# 多日累计偏离原因关键词（按 E:/astock 实测优先级排列：连续10日异常波动 > 连续3日累计偏离）
+# 多日累计偏离原因关键词（按 D:/astock 实测优先级排列：连续10日异常波动 > 连续3日累计偏离）
 _LHB_MULTI_DAYS_KW = ("连续10个交易日", "连续三个交易日", "连续3个交易日", "连续3个交易日内")
 
 
@@ -302,7 +303,7 @@ def _em_http_get(url, params, timeout=15):
 
 
 def fetch_lhb_eastmoney(date_str):
-    """东财 datacenter 龙虎榜当日全市场（方案B，复刻 E:/astock 去重口径）。
+    """东财 datacenter 龙虎榜当日全市场（方案B，复刻 D:/astock 去重口径）。
 
     date_str: 'YYYY-MM-DD'
     返回 {ts_code: {"lhb_net": 元, "lhb_count": int}}；失败/无数据 -> {}（调用方回退）。
@@ -367,7 +368,7 @@ def fetch_lhb_eastmoney(date_str):
 # 字段：stockCode / emRatingName（中文评级：买入/增持/持有...）
 # 口径对齐：g2 训练用 {"买入":2,"增持":1,"持有":0,"中性":-1,"减持":-2,"卖出":-3}
 #          东财 emRatingName 与训练同一套中文评级，直接走同一映射。
-# 聚合：rc_num = 当日该股研报条数（仅计有评级的），rc_rating = 当日评级分均值（与 E:/astock 一致）。
+# 聚合：rc_num = 当日该股研报条数（仅计有评级的），rc_rating = 当日评级分均值（与 D:/astock 一致）。
 # 分页：单日可能 >100 条（8/25 达 100 满页），循环拉全。
 _RATING_MAP = {"买入": 2, "增持": 1, "持有": 0, "中性": -1, "减持": -2, "卖出": -3}
 _REPORT_API = "https://reportapi.eastmoney.com/report/list"
@@ -391,7 +392,7 @@ def fetch_research_eastmoney(date_str):
 
     date_str: 'YYYY-MM-DD'
     返回 {ts_code: {"rc_rating": 均值(映射分), "rc_num": 条数}}；失败/无数据 -> {}（调用方回退周更）。
-    注：仅计有 emRatingName 的研报（无评级 7.4% 不纳入，与 E:/astock 行为一致）。
+    注：仅计有 emRatingName 的研报（无评级 7.4% 不纳入，与 D:/astock 行为一致）。
     """
     all_items = []
     page = 1

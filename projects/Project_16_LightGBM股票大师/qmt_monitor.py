@@ -38,6 +38,7 @@ for _stream in ("stdout", "stderr"):
         pass
 
 import qmt_config as C
+import qmt_card as QC  # 盯盘信号 → 飞书 Card 2.0 交互卡片
 
 # 加载 xtquant（放末尾，避免覆盖本环境的 numpy）
 sys.path.append(C.XTPACK)
@@ -158,20 +159,27 @@ def get_ticks(watchlist):
     return xtdata.get_full_tick(watchlist)
 
 
-def evaluate(position_cost, tick, peak_high):
-    """返回 (动作, 说明)。peak_high 为该持仓历史最高价。"""
+def evaluate(position_cost, tick, peak_high, sellable_vol=0):
+    """返回 (动作, 说明)。peak_high 为该持仓历史最高价；sellable_vol<=0（T+1 锁定）不评估、不并入峰值。
+
+    T-20260907-002 修复：①T+1 锁定(can_use=0)的当日买入直接跳过信号评估（买了卖不掉，报信号=噪音）；
+    ②追盈加激活阈值（峰值须 ≥ 成本×(1+TRAILING_ACTIVATE_PCT) 才追踪）+ 保本底线
+    line=max(成本, peak×(1-TRAILING_PCT))，杜绝"高点仅微盈即回撤8%"在亏损位以追盈名义卖出。
+    """
     last = float(tick.get("lastPrice", 0))
     if last <= 0:
         return "NO_DATA", "无行情"
     if position_cost is None or position_cost <= 0:
         return "HOLD", f"无成本信息(成本={position_cost})，跳过信号判断"
+    if sellable_vol <= 0:
+        return "HOLD", f"T+1锁定(可卖0)，不评估卖出信号"
     high = max(float(tick.get("high", last)), last, peak_high)
     if last <= position_cost * (1 + C.STOP_LOSS_PCT):
         return "SELL_STOP", f"现价{last:.2f} 跌破止损位{cost_stop(position_cost):.2f}"
     if last >= position_cost * (1 + C.TAKE_PROFIT_PCT):
         return "SELL_TAKE_PROFIT", f"现价{last:.2f} 达止盈位{cost_tp(position_cost):.2f}"
-    if high > position_cost:
-        trailing_line = high * (1 - C.TRAILING_PCT)
+    if high >= position_cost * (1 + C.TRAILING_ACTIVATE_PCT):
+        trailing_line = max(position_cost, high * (1 - C.TRAILING_PCT))
         if last <= trailing_line:
             return "SELL_TRAILING", f"从高点{high:.2f}回撤{C.TRAILING_PCT:.0%}，触发移动止盈(线{trailing_line:.2f})"
     return "HOLD", f"现价{last:.2f} 正常"
@@ -210,32 +218,37 @@ def _sell(code, vol, price):
 # ---- 飞书推送（lark-cli bot 私聊通道，未配置则跳过）----
 
 def notify_feishu(text):
-    """通过 lark-cli bot 身份私聊推送文本。返回是否成功。"""
+    """通过 lark-cli 推送文本。默认目标取 LARK_PUSH_CHAT_ID（群发），否则私聊 FEISHU_OPEN_ID。"""
     cli = getattr(C, "LARK_CLI", "") or ""
     uid = getattr(C, "FEISHU_OPEN_ID", "") or ""
-    if not cli or not uid:
-        print("    (未配置 LARK_CLI/FEISHU_OPEN_ID，跳过飞书推送)")
+    chat_id = getattr(C, "LARK_PUSH_CHAT_ID", "") or ""
+    as_ident = getattr(C, "LARK_PUSH_AS", "bot") or "bot"
+    if not cli or (not uid and not chat_id):
+        print("    (未配置 LARK_CLI/FEISHU_OPEN_ID/LARK_PUSH_CHAT_ID，跳过飞书推送)")
         return False
+    target = ["--chat-id", chat_id] if chat_id else ["--user-id", uid]
     try:
         import subprocess
-        env = dict(os.environ)
-        # 外部注入的 app 只有 user token、无 bot 凭据且 strict-mode=user 会挡住 bot；
-        # 移除注入并关闭 strict-mode，让 lark-cli 用 config.json 里的 Trae app(cli_aa0f...，有 bot 凭据)
-        env.pop("LARKSUITE_CLI_APP_ID", None)
-        env.pop("LARKSUITE_CLI_USER_ACCESS_TOKEN", None)
-        env["LARKSUITE_CLI_STRICT_MODE"] = "off"
-        env["LARKSUITE_CLI_NO_UPDATE_NOTIFIER"] = "1"
-        env["LARKSUITE_CLI_NO_SKILLS_NOTIFIER"] = "1"
         r = subprocess.run(
-            [cli, "im", "+messages-send", "--user-id", uid, "--text", text, "--as", "bot"],
-            capture_output=True, text=True, encoding="utf-8", timeout=15, env=env,
+            [cli, "im", "+messages-send"] + target + ["--text", text, "--as", as_ident],
+            capture_output=True, text=True, encoding="utf-8", timeout=15,
+            env=QC._env_for_cli(as_ident),
         )
         ok = r.returncode == 0
-        print(f"    飞书推送: {'成功' if ok else '失败'} {(r.stdout or r.stderr).strip()[:120]}")
+        print(f"    飞书推送[{as_ident}] {'群' if chat_id else '私聊'}: {'成功' if ok else '失败'} {(r.stdout or r.stderr).strip()[:120]}")
         return ok
     except Exception as e:
         print(f"    !! 飞书推送异常: {e!r}")
         return False
+
+
+def push_signals_cards(signals):
+    """信号 → 卡片：默认目标私聊 FEISHU_OPEN_ID（LARK_PUSH_CHAT_ID 非空时改为群发）。
+    返回是否发送成功。"""
+    ok_any = False
+    for s in signals:
+        ok_any |= QC.send_lark_card(QC.build_signal_card(s))
+    return ok_any
 
 
 def build_push_text(signals):
@@ -321,9 +334,10 @@ def main():
             if not tick:
                 print(f"    {code}: 无行情")
                 continue
-            action, note = evaluate(cost, tick, peak.get(code, cost))
+            action, note = evaluate(cost, tick, peak.get(code, cost), sellable.get(code, vols.get(code, 0)))
             last = float(tick.get("lastPrice", 0))
-            peak[code] = max(peak.get(code, cost), last)
+            if sellable.get(code, vols.get(code, 0)) > 0:  # T+1 锁定不并入峰值（T-20260907-002）
+                peak[code] = max(peak.get(code, cost), last)
             flag = {"HOLD": ".", "SELL_STOP": "[STOP]", "SELL_TAKE_PROFIT": "[TP]", "SELL_TRAILING": "[TRAIL]"}.get(action, "?")
             print(f"    {flag} {code} 现价{last:>7.2f} | 成本{cost:>7.2f} | {note}")
             if action == "HOLD":
@@ -355,7 +369,10 @@ def main():
                 json.dump({"time": time.strftime("%Y-%m-%d %H:%M:%S"), "signals": signals},
                           f, ensure_ascii=False, indent=2)
             print(f"    [ALERT] 触发 {len(signals)} 条信号，已写入 {C.SIGNAL_FILE}")
-            notify_feishu(build_push_text(signals))
+            # 信号 → 推 Card 2.0 交互卡片（群发 + 可选私聊）；全失败时回退纯文本摘要（保证触达）
+            card_ok = push_signals_cards(signals)
+            if not card_ok:
+                notify_feishu(build_push_text(signals))
         else:
             notify_feishu(f"【盯盘 {time.strftime('%H:%M')}】无触发信号，持仓正常，持有中")
 

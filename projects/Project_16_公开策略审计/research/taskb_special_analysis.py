@@ -9,7 +9,7 @@ import pandas as pd
 
 PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RESULTS = os.path.join(PROJ, "results")
-BASE = r"E:/astock"
+BASE = r"D:/astock"
 
 
 def load_weekly_rets(name):

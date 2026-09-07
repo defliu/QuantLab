@@ -23,7 +23,7 @@ import pandas as pd
 PROJ = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(PROJ, "data")
 REAL = os.path.join(DATA, "real")
-ASTOCK = "E:/astock"
+ASTOCK = "D:/astock"
 LOG = os.path.join(REAL, "OVERNIGHT_OPT_20260825_PROGRESS.log")
 REPORT = os.path.join(REAL, "OVERNIGHT_OPT_20260825_RESULT.md")
 PY = sys.executable

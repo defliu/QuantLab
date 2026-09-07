@@ -25,7 +25,7 @@ except ImportError as e:
     print(f"   错误: {e}")
     print("\n解决方案:")
     print("  方案1: 从QMT安装目录复制")
-    print("    copy E:\\国金QMT交易端模拟\\bin.x64\\Lib\\site-packages\\xtquant C:\\Python310\\Lib\\site-packages\\")
+    print("    copy D:\\国金QMT交易端模拟\\bin.x64\\Lib\\site-packages\\xtquant C:\\Python310\\Lib\\site-packages\\")
     print("  方案2: 使用QMT内置Python")
     sys.exit(1)
 

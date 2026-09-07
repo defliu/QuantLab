@@ -21,7 +21,7 @@ sys.path.insert(0, r"D:\QuantLab")
 
 RESULTS = os.path.join(PROJ, "results")
 os.makedirs(RESULTS, exist_ok=True)
-BASE = r"E:/astock"
+BASE = r"D:/astock"
 
 # 注册本策略进 registry（薄入口负责，避免改全局 strategy/ 目录）
 import importlib.util

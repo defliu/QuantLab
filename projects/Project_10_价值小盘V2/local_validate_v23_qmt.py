@@ -7,8 +7,10 @@ import sys, os, time, json
 
 PROJ_DIR = os.path.dirname(os.path.abspath(__file__))
 QUANTLAB = os.path.dirname(os.path.dirname(PROJ_DIR))
-sys.path.insert(0, PROJ_DIR)
+# 2026-08-29 修正：PROJ_DIR 必须在 QUANTLAB 之前，否则 `strategy` 会解析到
+# 根目录的 strategy/（无 scoring.py）而屏蔽掉项目内 strategy/。
 sys.path.insert(0, QUANTLAB)
+sys.path.insert(0, PROJ_DIR)
 
 from broker.local_context import LocalContext, connect_data, load_strategy_source
 

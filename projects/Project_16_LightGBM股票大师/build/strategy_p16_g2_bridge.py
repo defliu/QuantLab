@@ -21,7 +21,7 @@ import traceback
 # ============================================================
 # ³£Á¿
 # ============================================================
-BUILD_TAG = "20260901-142420"
+BUILD_TAG = "20260907-151202"
 
 BRIDGE_DIR = "D:/QMT_POOL/g2_bridge"
 CMD_DIR = os.path.join(BRIDGE_DIR, "cmd")
@@ -50,6 +50,7 @@ ACTIVE_SKIP_STATUS = (53, 54, 57)    # active_only Ê±Ìø¹ıÖÕÌ¬£¨55²¿³ÉÊÇ»îÔ¾Ì¬²»Ä
 STOP_LOSS_PCT = 0.07
 TAKE_PROFIT_PCT = 0.15
 TRAILING_PCT = 0.08
+TRAIL_ACTIVATE_PCT = 0.08   # ×·Ó¯¼¤»îãĞÖµ£¨2026-09-07 ĞŞ¸´£¬T-20260907-002£©£º·åÖµ¡İ³É±¾¡Á(1+ãĞÖµ)²Å×·×Ù£¬·À"×·Ó¯=×·µø"
 
 # ·´²é²ÎÊı
 LOOKUP_RETRIES = 6
@@ -544,13 +545,62 @@ def _process_cancels(C, cancel_data, date):
 # pending ×´Ì¬»ú
 # ============================================================
 def _handle_rejected_retry(C, date, sid, info, now, deal_vol):
-    """status=55 ·Ïµ¥£ºÀÛ¼ÆÒÑ³É½»µ½filled_so_far£¬¼ÆretryÖØ±¨Ê£ÓàÁ¿£»retryºÄ¾¡ÔòABANDON¡£"""
-    global _g_today_abandon_count
+    """status=57 Õæ·Ïµ¥£ºÏÈÈ·ÈÏÔ­µ¥ËÀÍ¸²ÅÖØ±¨Ê£ÓàÁ¿£»Ô­µ¥ÈÔ»îÔ¾ÔòÑÓºó¸´²é¾ø²»ÖØ±¨¡£
+    2026-09-02 P0 ĞŞ¸´£º55=²¿³É(»îÔ¾Ì¬£¬Ô­µ¥ÈÔÔÚ³É½»)Ôø±»Îóµ±·Ïµ¥Ö±½ÓÖØ±¨ ¡ú Ô­µ¥+ÖØ±¨µ¥Ë«³É½»
+    = Ë«±¶½¨²Ö£¨Êµ´¸ 600262 3000¡ú6400£©¡£¶ÔÆë timeout_retry ¼ÍÂÉ£ºËÀÍ¸(53/54/57»ò²é²»µ½)²ÅÖØ±¨¡£
+    ×¢Òâµ÷ÓÃ·½ÒÑÏŞ¶¨ status==57£»´Ë´¦¶ş´ÎÈ·ÈÏÊÇË«±£ÏÕ£¬·ÀÄ£Äâ¶Ë×´Ì¬ÂëÓïÒåÆ¯ÒÆ¡£"""
+    global _g_today_fill_count, _g_today_abandon_count
     code = info["code"]
     action = info["action"]
     vol = info.get("vol", 0)
-    filled_so_far = info.get("filled_so_far", 0) + deal_vol
+    cur_vol = info.get("cur_vol", vol)
     retry = info.get("retry", 0)
+
+    # ËÀÍ¸È·ÈÏ£¨¶ÌÂÖÑ¯4¡Á0.5s£©£ºÔ­µ¥ÈÔ»îÔ¾/ÒÑ³É½»Âú£¬¾ø²»ÖØ±¨
+    dead = False
+    saw_order = False
+    filled_now = 0
+    for _ in range(4):
+        time.sleep(0.5)
+        _oid2, m2 = _lookup_order(C, code, cur_vol, action, sid=sid, active_only=False)
+        if m2 is None:
+            continue
+        saw_order = True
+        st2 = int(getattr(m2, "m_nOrderStatus", 0) or 0)
+        dv2 = _extract_deal_volume(m2, fallback_vol=cur_vol)
+        if dv2 >= cur_vol:
+            filled_now = dv2
+            break
+        if st2 in CONFIRM_DEAD_STATUS:
+            dead = True
+            break
+    if not saw_order:
+        dead = True
+    # Ô­µ¥Êµ¼ÊÒÑÈ«³É½» ¡ú FILLED ÊÕÎ²£¬¾ø²»ÖØ±¨
+    if filled_now > 0:
+        total_deal = info.get("filled_so_far", 0) + filled_now
+        print("[P16G2][FILLED] %s %s Ô­µ¥ÒÑÈ«³É½» deal=%d" % (sid, code, total_deal))
+        _add_or_update_fill(date, {
+            "strategy_order_id": sid,
+            "code": info.get("bridge_code", code),
+            "action": action,
+            "vol": total_deal,
+            "price": info.get("price", 0),
+            "status": "FILLED",
+            "sysid": info.get("sysid", ""),
+            "reason": info.get("risk_reason", "filled, original still active"),
+            "ts": _now_str(),
+        })
+        _g_pending.pop(sid, None)
+        _g_today_fill_count += 1
+        return
+    if not dead:
+        # Ô­µ¥Î´È·ÈÏËÀÍ¸£¨ÈÔ»îÔ¾£©¡ú ÑÓºó60s¸´²é£¬²»ÖØ±¨²»¼ÆÊı£¨·ÀË«±¶³Ö²Ö£©
+        print("[P16G2][REJECTED-UNCONFIRMED] %s %s Ô­µ¥Î´ËÀÍ¸£¬ÑÓºó60s¸´²é" % (sid, code))
+        info["time"] = now - PENDING_TIMEOUT + 60
+        return
+
+    filled_so_far = info.get("filled_so_far", 0) + deal_vol
     info["filled_so_far"] = filled_so_far
     if retry >= MAX_RETRY:
         print("[P16G2][ABANDON] %s %s ·Ïµ¥retry=%d filled=%d" % (sid, code, retry, filled_so_far))
@@ -562,7 +612,7 @@ def _handle_rejected_retry(C, date, sid, info, now, deal_vol):
             "price": info.get("price", 0),
             "status": "ABANDONED",
             "sysid": info.get("sysid", ""),
-            "reason": info.get("risk_reason", "rejected status=55, retry exhausted"),
+            "reason": info.get("risk_reason", "rejected status=57, retry exhausted"),
             "ts": _now_str(),
         })
         _g_pending.pop(sid, None)
@@ -815,9 +865,12 @@ def _check_pending_orders(C, date):
             _g_pending.pop(sid, None)
             _g_today_fill_count += 1
             continue
-        # 1b) ·Ïµ¥ ¡ú ¼ÆretryÖØ±¨Ê£ÓàÁ¿
-        if status == 55:
-            print("[P16G2][REJECTED] %s %s status=55·Ïµ¥ deal=%d" % (sid, code, deal_vol))
+        # 1b) ·Ïµ¥(57ÖÕÌ¬) ¡ú ¼ÆretryÖØ±¨Ê£ÓàÁ¿
+        # 2026-09-02 P0 ĞŞ¸´£º55=²¿³É(»îÔ¾Ì¬£¬Ô­µ¥ÈÔÔÚ³É½»)£¬²»ÊÇ·Ïµ¥£¡Îóµ±·Ïµ¥Ö±½ÓÖØ±¨Ê£ÓàÁ¿
+        # ÇÒ²»³·Ô­µ¥ ¡ú Ô­µ¥¼ÌĞø³É½» + ÖØ±¨µ¥Ò²³É½» = Ë«±¶½¨²Ö£¨9/2 Êµ´¸ 600262 3000¡ú6400£©¡£
+        # 55 ×ß 1d/1a µÈÔ­µ¥×ÔÈ»³É½»Âú£»Ö»ÓĞ status=57(Õæ·Ïµ¥ÖÕÌ¬) ²ÅÖØ±¨¡£
+        if status == 57:
+            print("[P16G2][REJECTED] %s %s status=57·Ïµ¥ deal=%d" % (sid, code, deal_vol))
             _handle_rejected_retry(C, date, sid, info, now, deal_vol)
             continue
         # 1c) ³·ÀàÖÕÌ¬(53,54) ¡ú CANCELED ÊÕÎ²£¨vol=total_deal£¬·ÀÂ©¼Æ×îºó³É½»£©
@@ -938,6 +991,10 @@ def _check_risk_signals(C, date):
         last = float(tick.get("lastPrice", 0) or 0)
         if last <= 0:
             continue
+        can_use = info.get("can_use", info.get("vol", 0))
+        if can_use <= 0:
+            # T+1 ÎÀÉú£¨T-20260907-002£©£ºµ±ÈÕÂòÈë(T+1Ëø)²»ÆÀ¹ÀÂô³öĞÅºÅ¡¢²»²¢Èë·åÖµ£¨±ÜÃâÂòÈëÈÕ¸ßµãÎÛÈ¾×·Ó¯·åÖµ£©
+            continue
         high = max(float(tick.get("high", last) or last), last, info.get("peak", cost))
         info["peak"] = high
         action = "HOLD"
@@ -948,13 +1005,13 @@ def _check_risk_signals(C, date):
             action, note = "SELL_STOP", "ÏÖ¼Û%.2f µøÆÆÖ¹ËğÎ»%.2f" % (last, stop_line)
         elif last >= tp_line:
             action, note = "SELL_TAKE_PROFIT", "ÏÖ¼Û%.2f ´ïÖ¹Ó¯Î»%.2f" % (last, tp_line)
-        elif high > cost and last <= high * (1 - TRAILING_PCT):
-            action, note = "SELL_TRAILING", "´Ó¸ßµã%.2f »Ø³·%.0f%% ´¥·¢×·Ó¯(Ïß%.2f)" % (
-                high, TRAILING_PCT * 100, high * (1 - TRAILING_PCT))
+        elif info["peak"] >= cost * (1 + TRAIL_ACTIVATE_PCT):
+            # ×·Ó¯¼¤»îãĞÖµ + ±£±¾µ×Ïß£¨T-20260907-002£©£º·åÖµ¡İ³É±¾¡Á(1+8%)²Å×·×Ù£»Ïß=max(³É±¾,peak¡Á0.92)
+            trail_line = max(cost, info["peak"] * (1 - TRAILING_PCT))
+            if last <= trail_line:
+                action, note = "SELL_TRAILING", "´Ó¸ßµã%.2f »Ø³·%.0f%% ´¥·¢×·Ó¯(Ïß%.2f)" % (
+                    info["peak"], TRAILING_PCT * 100, trail_line)
         if action == "HOLD":
-            continue
-        can_use = info.get("can_use", info.get("vol", 0))
-        if can_use <= 0:
             continue
         # ´¥·¢ ¡ú ¼Ç·ÀÖØ¸´±ê¼Ç ¡ú passorder Âô³ö ¡ú ×ß pending ×´Ì¬»ú
         _g_risk_sold.add(code)

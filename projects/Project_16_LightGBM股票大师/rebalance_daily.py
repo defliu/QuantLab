@@ -5,7 +5,7 @@
   1) 读当日完整版清单 data/selections/<date>_selection_full.csv
   2) 目标持仓 = 清单中 total>=红线(58) 的前 TOP(2) 只（按 total 降序）
   3) 读当前策略持仓（QMT 实时，volume>0 才算持仓；成本用 open_price，缺则本地买入价补）
-  4) 卖出：持仓中不在目标 top2 的 → 卖（数量=今日可卖 can_use_volume；T+1 锁定的今天不卖）
+  4) 卖出（到期制，替代原 PK_OUT 日频翻转）：持仓掉出目标 top2 且已满 hold_days(默认5) 交易日 → 卖（数量=今日可卖 can_use_volume；T+1 锁定的今天不卖；持仓未满期限者保留，不再日频翻转）
   5) 买入（等权对齐，2026-08-24 修复）：
      - 资金池基准 = strategy_capital.json 的 capital（初始10万 + 已实现盈亏 + 策略持仓浮盈），
        收益滚动、亏损不补；买入预算绝不用账户全量资金。
@@ -33,6 +33,7 @@ import json
 import os
 import sys
 import time
+from datetime import datetime, date, timedelta
 
 import qmt_config as C
 import strategy_capital as SC
@@ -42,6 +43,7 @@ sys.path.append(C.XTPACK)
 
 REDLINE = 58.0
 TOP_N = 2
+HOLD_DAYS = 5  # 持有期满交易日数（到期制卖出，替代原 PK_OUT 日频翻转；T-20260904-001）
 CAP_FILE = os.path.join(os.path.dirname(C.TRADE_LOG), "strategy_capital.json")
 
 
@@ -65,6 +67,54 @@ def load_strategy_capital():
 
 def today_str():
     return time.strftime("%Y%m%d")
+
+
+def _parse_date(s):
+    """'YYYYMMDD' -> date 对象（解析失败回退今天）。"""
+    try:
+        return datetime.strptime(s, "%Y%m%d").date()
+    except (ValueError, TypeError):
+        return date.today()
+
+
+def _build_last_buy_dates():
+    """从成交记录构建 {code: 最近一次 BUY 日期(date)}，用于到期制持仓天数判定。
+
+    无买入记录（如转入持仓）的 code 不出现在此 dict → 调用方视为已满期（held=999）。
+    """
+    last = {}
+    for row in C.load_trade_log_rows():
+        if row.get("side") != "BUY":
+            continue
+        code = (row.get("code") or "").strip()
+        t = row.get("time") or ""
+        if not code or not t:
+            continue
+        fmt = "%Y-%m-%d %H:%M:%S" if " " in t else "%Y-%m-%d"
+        try:
+            d = datetime.strptime(t[:19] if " " in t else t, fmt).date()
+        except ValueError:
+            continue
+        if code not in last or d > last[code]:
+            last[code] = d
+    return last
+
+
+def _trading_days_between(d0, d1):
+    """d0 之后到 d1（含）的交易日数（近似：跳过周末，忽略法定假日）。
+
+    买入日 d0 当日不可卖（T+1），从 d0+1 起算持有交易日；用于到期制判定
+    （持仓满 HOLD_DAYS 交易日即触发到期卖出）。
+    """
+    if not d0 or not d1 or d1 <= d0:
+        return 0
+    n, cur = 0, d0
+    one = timedelta(days=1)
+    while cur < d1:
+        cur += one
+        if cur.weekday() < 5:
+            n += 1
+    return n
 
 
 def load_selection(csv_path, top_n):
@@ -185,12 +235,12 @@ def _fetch_price(code):
     return None
 
 
-def _sell(trader, account, code, vol, price):
+def _sell(trader, account, code, vol, price, remark="planA_mature"):
     from xtquant import xtconstant
     price_type = xtconstant.LATEST_PRICE if C.AUTO_SELL_PRICE_TYPE == "LATEST" else xtconstant.FIX_PRICE
     px = 0.0 if price_type == xtconstant.LATEST_PRICE else round(price * 0.995, 2)
     return trader.order_stock(account, code, xtconstant.STOCK_SELL, vol, price_type, px,
-                              "traework_rebalance", "planA_pk_out")
+                              "traework_rebalance", remark)
 
 
 def _buy(trader, account, code, vol, price):
@@ -204,6 +254,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default=today_str(), help="清单日期 YYYYMMDD（默认今天）")
     ap.add_argument("--top", type=int, default=TOP_N, help="目标持仓数（大盘降半仓传 1）")
+    ap.add_argument("--hold-days", type=int, default=HOLD_DAYS, help="持有期满交易日数（到期制卖出，替代 PK_OUT 日频翻转）")
     ap.add_argument("--live", action="store_true", help="真实换仓（默认 dry-run）")
     args = ap.parse_args()
 
@@ -239,24 +290,37 @@ def main():
         positions, volumes, sellable = {}, {}, {}
 
     target_codes = {t["code"] for t in target}
-    sell_plan = []  # 被 PK 出局的可卖持仓
+    sell_plan = []  # 到期/调出卖出（含 reason 字段）
     hold_plan = []
     locked = []
+    today_d = _parse_date(args.date)
+    last_buy = _build_last_buy_dates()
     for code, cost in positions.items():
         if code in target_codes:
+            hold_plan.append(code)          # 仍在 top2 → 继续持有（到期也续期，避免同日卖买抖动）
+            continue
+        # 到期制：掉出 top2 但持仓未满 hold_days 交易日 → 保留，不再日频翻转（修复 PK_OUT train-serving skew, T-20260904-001）
+        ent = last_buy.get(code)
+        held = _trading_days_between(ent, today_d) if ent else 999
+        if held < args.hold_days:
             hold_plan.append(code)
             continue
         v = sellable.get(code, 0)
         if v > 0:
-            sell_plan.append({"code": code, "cost": cost, "vol": v})
+            sell_plan.append({"code": code, "cost": cost, "vol": v, "reason": "MATURE"})
         else:
             locked.append(code)  # T+1 锁定，今天不能卖
     # 等权目标数 = 实际目标数（含已持有的 target）
     n_target = max(len(target), 1)
 
+    # 大盘风控部署比例（WORKFLOW_DEPLOY.md 九 / 2026-08-31 实盘确认）：
+    #   T=2 常态满仓：资金池×95%；T=1 降半仓：资金池×50%（只持 1 只，金额半仓）；
+    #   T=0 空仓由调用方以 --top 0 处理（本脚本 top=0 时 target 为空即不买）。
+    deploy_pct = 0.50 if args.top == 1 else (1 - C.RESERVE_CASH_PCT)
+
     # 策略资金池（初始10万 + 已实现盈亏 + 策略持仓浮盈）；买入预算一律以此为准，绝不用账户全量资金
     capital = load_strategy_capital()
-    target_value = capital * (1 - C.RESERVE_CASH_PCT) / n_target  # 每只 target 目标市值
+    target_value = capital * deploy_pct / n_target  # 每只 target 目标市值
 
     # 对每只 target 计算目标股数与当前持有股数的差（按目标股数，而非市值差额）：
     #   目标股数 = 目标市值 ÷ 现价（向下取整到整手），避免市值差额取整后仍超配；
@@ -296,18 +360,34 @@ def main():
                 buy_orders.append({"code": code, "vol": 0, "held_vol": held_vol, "held_value": held_value,
                                    "price": price, "total": t["total"], "action": "超配但T+1锁定/不足一手"})
 
+    # ---- T-20260907-003 修复：持仓数上限（对齐回测 simulate「持仓始终 ≤ TOP」）----
+    # 背景：09-07 到期制（T-20260904-001）首个实盘日，非 target 持仓（300413/003005）未满 N=5 被保留，
+    #       买入侧无持仓数上限 + P0 校验不含存量市值 → 又买 601999/601579 → 4 只、总占用≈资金池 1.84 倍。
+    # 语义：买入名额 = TOP − 卖出后仍持有的票数；补仓（已持有票，不增加持仓数）不受名额限制；
+    #       新增买入（held_vol=0，会叠加持仓数）按 total 降序取前 slots 只。
+    sell_codes = {s["code"] for s in sell_plan}
+    n_after_sell = len([c for c in positions if c not in sell_codes])
+    slots = max(0, args.top - n_after_sell)
+    _new_buys = [b for b in buy_orders if b.get("vol") and (b.get("held_vol") or 0) <= 0]
+    _topups = [b for b in buy_orders if b.get("vol") and (b.get("held_vol") or 0) > 0]
+    if len(_new_buys) > slots:
+        print(f"    [T-20260907-003] 卖出后仍持 {n_after_sell} 只 ≥ 目标 {args.top}，"
+              f"新增买入名额仅 {slots} 只 → 仅保留最高分 {slots} 只（防超买叠加，原计划 {len(_new_buys)} 只新增）")
+    _new_buys.sort(key=lambda b: -(b.get("total") or 0))
+    exec_buys = _topups + _new_buys[:slots]
+
     print("=" * 64)
     print(f"[方案A 换仓计划·等权对齐] {args.date} | 清单: {os.path.basename(sel_path)}")
     print(f"  持仓来源: {src} | 当前持仓 {len(positions)} 只 | 目标 top{n_target}: {[t['code'] for t in target]}")
     print(f"  策略资金池 ≈ {capital:,.0f} 元（初始10万+盈亏滚动，不使用账户全量资金）")
-    print(f"  每只目标市值 ≈ {target_value:,.0f} 元 = 资金池×{1 - C.RESERVE_CASH_PCT:.0%}÷{n_target}")
-    print(f"  {'卖出(PK出局)':<14}{'数量':<8}{'动作'}")
+    print(f"  每只目标市值 ≈ {target_value:,.0f} 元 = 资金池×{deploy_pct:.0%}÷{n_target}")
+    print(f"  {'卖出(到期/调出)':<16}{'数量':<8}{'动作'}")
     for s in sell_plan:
         print(f"  {s['code']:<14}{s['vol']:<8}卖出")
     for c in locked:
         print(f"  {c:<14}{'':<8}⚠️ T+1 锁定今日不卖")
     print(f"  {'目标调整':<14}{'当前→目标':<22}{'动作'}")
-    for o in buy_orders:
+    for o in exec_buys:
         print(f"  {o['code']:<14}{o['held_value']:>12,.0f}→{target_value:>10,.0f}  {o['action']}")
     for o in trim_orders:
         print(f"  {o['code']:<14}{o['held_value']:>12,.0f}→{target_value:>10,.0f}  {o['action']}")
@@ -318,7 +398,7 @@ def main():
         # 落盘计划
         plan = {"date": args.date, "target": target,
                 "strategy_capital": round(capital, 2), "target_value_each": round(target_value, 2),
-                "sell": sell_plan, "buy": [o for o in buy_orders if o.get("vol")],
+                "sell": sell_plan, "buy": [o for o in exec_buys if o.get("vol")],
                 "trim": trim_orders, "hold": hold_plan, "locked": locked}
         out = os.path.join(os.path.dirname(C.TRADE_LOG), f"rebalance_{args.date}.json")
         with open(out, "w", encoding="utf-8") as f:
@@ -336,18 +416,20 @@ def main():
     log_rows = []
     guard_note = []  # 委托守护结果汇总
 
-    # 1) 卖出被 PK 的持仓（委托守护：未成撤单重试，涨跌停跳过）
+    # 1) 卖出到期/调出持仓（委托守护：未成撤单重试，涨跌停跳过）
     for s in sell_plan:
         price = _fetch_price(s["code"])
         if not price or price <= 0:
             print(f"    !! {s['code']} 取价失败，跳过卖出")
             continue
-        r = order_guard.order_with_guard(trader, account, s["code"], "SELL", s["vol"], price, "planA_pk_out")
-        print(f"    卖出 {s['code']} {s['vol']}股 -> {r['note']}")
+        reason = s.get("reason", "MATURE")
+        remark = "planA_mature" if reason == "MATURE" else "planA_pk_out"
+        r = order_guard.order_with_guard(trader, account, s["code"], "SELL", s["vol"], price, remark)
+        print(f"    卖出 {s['code']} {s['vol']}股 [{reason}] -> {r['note']}")
         guard_note.append(f"卖{s['code']}:{r['action']}")
         if r["ok"] and r["traded_vol"] > 0:
             log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), s["code"], "SELL",
-                             r["traded_vol"], price, "PK_OUT", r["order_id"]])
+                             r["traded_vol"], price, reason, r["order_id"]])
 
     # 2) 减仓超配 target（先卖，回笼资金；委托守护）
     for t in trim_orders:
@@ -361,16 +443,29 @@ def main():
     # ---- P0 资金池硬校验（2026-08-27 补强）：买入预算一律以策略资金池为硬上限 ----
     # 教训：8/24 bug1 用账户全量可用资金(asset.cash)买入 300684 939万，远超 10 万资金池。
     # 此处从策略资金池推导买入总额上限与单票上限，下单前逐笔校验，超限直接拒绝+报警（fail-loud）。
-    POOL_BUY_CAP = capital * (1 - C.RESERVE_CASH_PCT)          # 当日买入总额硬上限 = 资金池×95%
-    SINGLE_CAP = target_value                                   # 单票硬上限 = 资金池×95%÷目标数
+    POOL_BUY_CAP = capital * deploy_pct                     # 当日买入总额硬上限 = 资金池×部署比例（T=1 半仓 50%）
+    SINGLE_CAP = target_value                               # 单票硬上限 = 资金池×部署比例÷目标数
     if not (POOL_BUY_CAP > 0 and SINGLE_CAP > 0):
         print("    !! [P0-资金池校验] 资金池<=0，拒绝全部买入（防超买）")
         POOL_BUY_CAP = SINGLE_CAP = 0.0
     placed_buy_total = 0.0  # 已放置买入金额累计
     print(f"    [P0-资金池校验] 当日买入上限 {POOL_BUY_CAP:,.0f} 元 | 单票上限 {SINGLE_CAP:,.0f} 元")
 
-    # 3) 补仓/买入 target（委托守护；资金池硬校验 + 实际可用资金双重上限，防超买）
-    for b in buy_orders:
+    # T-20260907-003 资金存量校验：保留持仓市值 = 卖出计划外持仓 vol × 现价（现价失败用成本兜底）。
+    # 与持仓数上限互为第二道保险：即使名额逻辑漏放行，总占用（保留市值+本次买入）也不得突破资金池×deploy_pct。
+    retain_value = 0.0
+    for _c in positions:
+        if _c in sell_codes:
+            continue
+        _px = _fetch_price(_c)
+        if not _px or _px <= 0:
+            _px = positions.get(_c) or 0.0
+        retain_value += (volumes.get(_c, 0) or 0) * _px
+    if retain_value > 0:
+        print(f"    [T-20260907-003] 卖出后保留持仓市值 ≈ {retain_value:,.0f} 元（纳入资金池校验）")
+
+    # 3) 补仓/买入 target（委托守护；资金池硬校验 + 持仓数上限 + 实际可用资金，防超买）
+    for b in exec_buys:
         if not b.get("vol"):
             continue
         asset2 = trader.query_stock_asset(account)
@@ -391,6 +486,13 @@ def main():
             print(f"    !! [P0-资金池校验] 累计买入 {placed_buy_total + order_amt:,.0f} > 资金池上限 {POOL_BUY_CAP:,.0f}，拒绝（防超买）")
             guard_note.append(f"买{b['code']}:POOL_BLOCK")
             continue
+        # T-20260907-003 校验 3：总占用（保留持仓市值 + 已买 + 本单）不得超过资金池×deploy_pct
+        # 修复 09-07 超买：卖出未发生时（到期制保留持仓），原校验只算"当日新增"导致突破本金
+        if retain_value + placed_buy_total + order_amt > POOL_BUY_CAP * 1.02:
+            print(f"    !! [T-20260907-003-存量校验] 保留持仓 {retain_value:,.0f} + 已买 {placed_buy_total:,.0f} + 本单 {order_amt:,.0f} "
+                  f"> 资金池上限 {POOL_BUY_CAP:,.0f}，拒绝（防突破本金）")
+            guard_note.append(f"买{b['code']}:POOL_BLOCK")
+            continue
         placed_buy_total += order_amt
         r = order_guard.order_with_guard(trader, account, b["code"], "BUY", vol, b["price"], "planA_new_top")
         print(f"    买入 {b['code']} {vol}股 -> {r['note']}")
@@ -405,6 +507,24 @@ def main():
     if log_rows and C.TRADE_LOG:
         C.append_trade_rows(log_rows)
         print("    成交记录 ->", C.TRADE_LOG)
+
+    # 保存执行结果（9:45 任务 step4 要求 + 10:05 Windows 兜底任务的幂等标记，T-20260903-002）
+    plan = {
+        "date": args.date,
+        "executed_live": True,
+        "executed_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "tier": args.top,
+        "target": target,
+        "strategy_capital": round(capital, 2),
+        "target_value_each": round(target_value, 2),
+        "sell": sell_plan, "buy": [o for o in exec_buys if o.get("vol")],
+        "trim": trim_orders, "hold": hold_plan, "locked": locked,
+        "guard_note": guard_note,
+    }
+    out = os.path.join(os.path.dirname(C.TRADE_LOG), f"rebalance_{args.date}.json")
+    with open(out, "w", encoding="utf-8") as f:
+        json.dump(plan, f, ensure_ascii=False, indent=2, default=str)
+    print("    执行结果已保存:", out)
     trader.stop()
 
 

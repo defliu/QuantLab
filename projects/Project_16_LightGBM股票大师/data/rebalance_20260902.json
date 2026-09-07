@@ -1,0 +1,79 @@
+{
+  "date": "20260902",
+  "mode": "LIVE",
+  "market_risk": {
+    "hs300": 4565.73,
+    "hs300_pct": -0.99,
+    "T": 2,
+    "deploy_pct": 0.95,
+    "note": "沪深300 -0.99%(腾讯09:53)/-0.997%(iFind09:53)，均 > -1.0%，正常仓位 T=2"
+  },
+  "candidates_file": "data/selections/20260901_model_top10.csv",
+  "selection_file": "data/selections/20260902_selection_full.csv",
+  "target_top2": [
+    {"code": "300413.SZ", "name": "芒果超媒", "total": 75.0},
+    {"code": "002190.SZ", "name": "成飞集成", "total": 69.0}
+  ],
+  "strategy_capital": 98505.35,
+  "target_value_each": 46790.04,
+  "pool_buy_cap": 93580.08,
+  "orders": [
+    {
+      "code": "600267.SH",
+      "name": "海正药业",
+      "side": "SELL",
+      "vol": 3900,
+      "price": 11.91,
+      "action": "PK_OUT",
+      "order_id": "1082139580",
+      "status": "FILLED",
+      "time": "2026-09-02 09:54:54"
+    },
+    {
+      "code": "001309.SZ",
+      "name": "德明利",
+      "side": "SELL",
+      "vol": 100,
+      "price": 418.53,
+      "action": "PK_OUT",
+      "order_id": "1082139586",
+      "status": "FILLED",
+      "time": "2026-09-02 09:54:58"
+    },
+    {
+      "code": "300413.SZ",
+      "name": "芒果超媒",
+      "side": "BUY",
+      "vol": 2200,
+      "price": 20.70,
+      "action": "planA_new_top",
+      "order_id": "1082139593",
+      "status": "FILLED",
+      "time": "2026-09-02 09:55:01",
+      "amount": 45540.0
+    },
+    {
+      "code": "002190.SZ",
+      "name": "成飞集成",
+      "side": "BUY",
+      "vol": 1700,
+      "price": 27.40,
+      "action": "planA_new_top",
+      "order_id": "1082139599",
+      "status": "FILLED",
+      "time": "2026-09-02 09:55:04",
+      "amount": 46580.0
+    }
+  ],
+  "total_buy_amount": 92120.0,
+  "guard_summary": "卖600267.SH:FILLED | 卖001309.SZ:FILLED | 买300413.SZ:FILLED | 买002190.SZ:FILLED",
+  "data_sources": {
+    "basic_quote": "tencent(09:50) + ifind stock_highfreq(09:51)",
+    "F2_main_inflow": "mx_dongcai 当日口径 09:51 (main_net_inflow_date=20260902)",
+    "F3_catalyst": "9:25 缓存 review_20260902.json",
+    "F5_sector": "ifind sector_data 行业指数 09:52",
+    "note": "mcp_tdx/悟道 capital_flow/sina 板块源今日不可达，降级腾讯+iFind+东财mx，已如实标注；未编造缺失字段"
+  },
+  "trade_log_appended": true,
+  "account_id": "67014907"
+}

@@ -9,7 +9,7 @@ from pathlib import Path
 from datetime import datetime
 
 # 数据路径（astock 第一数据源）
-DAILY_PATH = "E:/astock/daily/stock_daily.parquet"
+DAILY_PATH = "D:/astock/daily/stock_daily.parquet"
 START_DATE = "2018-01-01"
 END_DATE = "2026-06-30"
 
@@ -54,7 +54,7 @@ COMMISSION = 0.0003  # 佣金万三
 STAMP_TAX = 0.001  # 印花税千一
 SLIPPAGE = 0.001  # 滑点千一
 
-OUTPUT_DIR = "E:/QuantLab/projects/Project_02_双均线趋势策略/reports"
+OUTPUT_DIR = "D:/QuantLab/projects/Project_02_双均线趋势策略/reports"
 
 
 def run_backtest(start_date="2020-01-01", end_date="2026-06-30"):

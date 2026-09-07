@@ -1,0 +1,355 @@
+{
+  "date": "20260902",
+  "stocks": {
+    "002628.SZ": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": -1034000.0,
+            "asof": "2026-09-02 09:38"
+          }
+        },
+        "note": "悟道capital_flow源不可用(mcp_wudao不可达)，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 5.48
+          },
+          "sina_hq": {
+            "last": 5.45
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差0.55%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "见review/行业",
+            "pct": null,
+            "asof": "2026-09-02"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking仅热点板块(未覆盖该行业)，东财mx行业指数未返回当日涨幅，今日行业涨幅源不可用(仅定性)"
+      }
+    },
+    "002346.SZ": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": -455900.0,
+            "asof": "2026-09-02 09:38"
+          }
+        },
+        "note": "悟道capital_flow源不可用(mcp_wudao不可达)，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 19.62
+          },
+          "sina_hq": {
+            "last": 19.62
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差0.00%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "见review/行业",
+            "pct": null,
+            "asof": "2026-09-02"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking仅热点板块(未覆盖该行业)，东财mx行业指数未返回当日涨幅，今日行业涨幅源不可用(仅定性)"
+      }
+    },
+    "002190.SZ": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": 11920000.0,
+            "asof": "2026-09-02 09:38"
+          }
+        },
+        "note": "悟道capital_flow源不可用(mcp_wudao不可达)，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 26.9
+          },
+          "sina_hq": {
+            "last": 26.8
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差0.37%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "见review/行业",
+            "pct": null,
+            "asof": "2026-09-02"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking仅热点板块(未覆盖该行业)，东财mx行业指数未返回当日涨幅，今日行业涨幅源不可用(仅定性)"
+      }
+    },
+    "300413.SZ": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": -172800000.0,
+            "asof": "2026-09-02 09:38"
+          }
+        },
+        "note": "悟道capital_flow源不可用(mcp_wudao不可达)，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": false,
+        "sources": {
+          "tencent": {
+            "last": 21.02
+          },
+          "sina_hq": {
+            "last": 21.25
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差1.08%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "见review/行业",
+            "pct": null,
+            "asof": "2026-09-02"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking仅热点板块(未覆盖该行业)，东财mx行业指数未返回当日涨幅，今日行业涨幅源不可用(仅定性)"
+      }
+    },
+    "600498.SH": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": -10130000.0,
+            "asof": "2026-09-02 09:38"
+          }
+        },
+        "note": "悟道capital_flow源不可用(mcp_wudao不可达)，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 40.47
+          },
+          "sina_hq": {
+            "last": 40.4
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差0.17%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "见review/行业",
+            "pct": null,
+            "asof": "2026-09-02"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking仅热点板块(未覆盖该行业)，东财mx行业指数未返回当日涨幅，今日行业涨幅源不可用(仅定性)"
+      }
+    },
+    "600267.SH": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": -4483000.0,
+            "asof": "2026-09-02 09:38"
+          }
+        },
+        "note": "悟道capital_flow源不可用(mcp_wudao不可达)，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 11.92
+          },
+          "sina_hq": {
+            "last": 11.88
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差0.34%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "见review/行业",
+            "pct": null,
+            "asof": "2026-09-02"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking仅热点板块(未覆盖该行业)，东财mx行业指数未返回当日涨幅，今日行业涨幅源不可用(仅定性)"
+      }
+    },
+    "600103.SH": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": -21430000.0,
+            "asof": "2026-09-02 09:38"
+          }
+        },
+        "note": "悟道capital_flow源不可用(mcp_wudao不可达)，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": false,
+        "sources": {
+          "tencent": {
+            "last": 4.07
+          },
+          "sina_hq": {
+            "last": 3.88
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差4.90%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "见review/行业",
+            "pct": null,
+            "asof": "2026-09-02"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking仅热点板块(未覆盖该行业)，东财mx行业指数未返回当日涨幅，今日行业涨幅源不可用(仅定性)"
+      }
+    },
+    "300434.SZ": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": 1852000.0,
+            "asof": "2026-09-02 09:38"
+          }
+        },
+        "note": "悟道capital_flow源不可用(mcp_wudao不可达)，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 11.17
+          },
+          "sina_hq": {
+            "last": 11.19
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差0.18%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "见review/行业",
+            "pct": null,
+            "asof": "2026-09-02"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking仅热点板块(未覆盖该行业)，东财mx行业指数未返回当日涨幅，今日行业涨幅源不可用(仅定性)"
+      }
+    },
+    "603663.SH": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": -7910000.0,
+            "asof": "2026-09-02 09:38"
+          }
+        },
+        "note": "悟道capital_flow源不可用(mcp_wudao不可达)，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 41.32
+          },
+          "sina_hq": {
+            "last": 41.3
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差0.05%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "见review/行业",
+            "pct": null,
+            "asof": "2026-09-02"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking仅热点板块(未覆盖该行业)，东财mx行业指数未返回当日涨幅，今日行业涨幅源不可用(仅定性)"
+      }
+    },
+    "300001.SZ": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": -6809000.0,
+            "asof": "2026-09-02 09:38"
+          }
+        },
+        "note": "悟道capital_flow源不可用(mcp_wudao不可达)，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 33.56
+          },
+          "sina_hq": {
+            "last": 33.55
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差0.03%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "见review/行业",
+            "pct": null,
+            "asof": "2026-09-02"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking仅热点板块(未覆盖该行业)，东财mx行业指数未返回当日涨幅，今日行业涨幅源不可用(仅定性)"
+      }
+    }
+  }
+}

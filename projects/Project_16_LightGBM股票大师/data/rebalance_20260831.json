@@ -1,0 +1,61 @@
+{
+  "date": "20260831",
+  "market_risk": {
+    "hs300_pct": -1.09,
+    "hs300_source": "腾讯 qt.gtimg.cn (09:52:27) 交叉验证 TDX -1.12% (09:52:19)",
+    "t_value": 1,
+    "t_rule": "-1.5%~-1.0% 降半仓：--top 1、金额50%"
+  },
+  "target": [
+    {
+      "code": "300456.SZ",
+      "name": "赛微电子",
+      "total": 86.0,
+      "prob": 0.5624
+    }
+  ],
+  "strategy_capital": 98505.35,
+  "deploy_pct": 0.5,
+  "target_value_each": 49252.68,
+  "sell": [
+    {
+      "code": "000737.SZ",
+      "name": "北方铜业",
+      "vol": 3100,
+      "price": 14.75,
+      "order_id": 1082141166,
+      "status": "FILLED"
+    },
+    {
+      "code": "300684.SZ",
+      "name": "中石科技",
+      "vol": 500,
+      "price": 91.2,
+      "order_id": 1082141184,
+      "status": "FILLED"
+    }
+  ],
+  "buy": [
+    {
+      "code": "300456.SZ",
+      "name": "赛微电子",
+      "vol": 1200,
+      "held_vol": 0,
+      "held_value": 0.0,
+      "price": 40.49,
+      "order_id": 1082142226,
+      "status": "FILLED",
+      "amount": 48588,
+      "action": "买入"
+    }
+  ],
+  "trim": [],
+  "hold": [],
+  "locked": [],
+  "guard": "卖000737.SZ:FILLED | 卖300684.SZ:FILLED | 买300456.SZ:FILLED",
+  "account_id": "67014907",
+  "qmt_position_after": {
+    "300456.SZ": {"vol": 1200, "can_use": 0, "note": "T+1锁定"}
+  },
+  "notes": "大盘沪深300 -1.09% 落入半仓区间，T=1 只持1只（赛微电子），部署金额=资金池50%(49,253元)；实买 1200股×40.49=48,588元。三笔委托全部一次成交 FILLED。"
+}

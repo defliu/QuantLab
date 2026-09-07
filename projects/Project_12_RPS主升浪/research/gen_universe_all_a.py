@@ -12,7 +12,7 @@
 import pyarrow.parquet as pq
 import csv
 
-PARQUET_PATH = "E:/astock/daily/stock_daily.parquet"
+PARQUET_PATH = "D:/astock/daily/stock_daily.parquet"
 OUTPUT_PATH = "D:/QuantLab/data/universe_all_a.csv"
 
 def main():

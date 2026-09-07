@@ -18,9 +18,11 @@
 > 接手本项目或开展任何新任务前，**先查知识中心**：`.qoder/repowiki/` 是本项目的知识沉淀，任何人都可以通过它快速建立全局认知，再进入代码细节。
 
 - **位置**：`.qoder/repowiki/`（Qoder repowiki 自动生成与维护，内容随代码演化）
-- **知识卡**：`knowledge/zh/` 为模块级知识卡，`knowledge/zh/_index.yaml` 是索引，覆盖根项目、QMT 券商接口与实盘执行、DuckDB、LightGBM、Tushare、YAML 配置系统、业务术语表、日志/错误处理/构建部署等主题
-- **内容文档**：`zh/content/` 为体系化文档，包括快速开始、项目概述、API 参考（数据/因子/回测/策略/配置/券商接口）、回测引擎核心、因子研究系统、实盘交易系统（QMT 接口集成/风控/部署）、数据层架构、最佳实践与案例、测试与验证框架、部署与运维、项目管理
-- **使用方式**：人工可直接阅读 Markdown；AI agent 可通过知识检索能力按主题检索，或直接读 `_index.yaml` + `快速开始.md` 起步
+- **入口**：先读 `zh/content/知识库导航.md`（全库地图），再读 `zh/content/快速开始.md`
+- **知识卡**：`knowledge/zh/` 为模块级知识卡（每张固定五篇：概述 / 架构设计 / 技术栈 / 编码规范 / 特殊配置与命令），索引为 `knowledge/zh/_index.yaml`。已覆盖：根项目、数据读取层、因子库与因子引擎、回测引擎、QMT Broker 适配器、策略库、配置集、MCP 服务进程、记忆存储、因子研究与策略审计脚本集，以及 **风控叠加层 `risk/`、LightGBM 模型资产库 `models/`、需求与设计规格 `specs/`、回测框架验证套件 `projects/verification/`、候选策略研究 `research_study/`、Project_04（已淘汰）**；策略项目集 `projects/` 下 Project_01~18 与 ATR 低波各有独立卡
+- **内容文档**：`zh/content/` 为体系化文档，含快速开始、术语表、项目概述与系统架构设计（数据层 / 因子框架）、**API 参考（数据层 / 因子与回测 / 配置与券商接口）**、回测引擎核心、**因子研究系统**、实盘交易系统、**风控与资金管理**、**数据源与基础设施**、策略系统、验证与测试、部署与运维、**项目管理**、**最佳实践与案例**
+- **使用方式**：人工可直接阅读 Markdown；AI agent 可通过知识检索能力按主题检索，或直接读 `知识库导航.md` + `快速开始.md` 起步
+- **维护**：新增模块时在 `knowledge/zh/` 建目录（五张卡 + `_module.yaml`）并在 `_index.yaml` 登记；新增主题文档放 `zh/content/<主题>/` 并在 `知识库导航.md` 登记
 - **优先级**：本文件（AGENTS.md）与代码是权威源；知识中心若与代码/本文件冲突，以代码和本文件为准，并更新知识中心或标注差异
 - **维护**：开发中如需补充知识，直接在对应模块知识卡或内容文档下编辑；索引文件由 repowiki 自动导出
 - **全局研究视图**：`研究总览与路线图.md` 一眼看清"以前研究过什么 / 踩过什么坑 / 现在研究什么 / 未来研究什么"；旧项目史料在 `archive/legacy_qmt_strategies/`。
@@ -137,8 +139,8 @@
   - `成交记录_*.txt`：交易记录
   - `*_sell_state_*.json`：卖出状态持久化
   - `strategy_log_*.txt`：每日策略执行日志
-- 数据源路径：`E:/astock/`（daily/finance/basic parquet 文件）。
-- QMT 路径：`E:\国金QMT交易端模拟`。
+- 数据源路径：`D:/astock/`（daily/finance/basic + 分钟线 parquet，唯一权威数据源，2026-08-29 起）。
+- QMT 路径：`D:\国金QMT交易端模拟`（本机无 E 盘，2026-08-29 修正）。
 - 实盘状态持久化：`data/broker_state.json`。
 
 ## 数据层约定
@@ -147,8 +149,8 @@
 - 财务数据必须 PIT 安全：使用 `ann_date`/`f_ann_date` 过滤，禁止使用未来财务数据。
 - `filter_func` 模式：市值等过滤条件以 callable 传入评分函数，在函数内部应用（预过滤会降低收益）。
 - 数据缓存：`data/cache/` 目录，过期时间 1 天。
-- 主数据源 `E:/astock/` 是买断离线资产（2009 起、财务全量、PIT 字段齐）；`adj_factor` 是后复权因子，前复权价 = 原始价 × (adj_factor / 最新 adj_factor)。
-- **备用数据源（回测交叉验证，全局规则）**：`E:/huicexitong/runtime/sj/gpsj.duckdb`（`data/gpsj_reader.py` 鸭子类型 reader，与 astock_reader 同 4 方法接口）。口径与 E:/astock 同源：adj_factor/换手率/市值/成交额/不复权价逐字段一致（已验 2025 全年 ATR MAX5 回测差异 0）。**注意 gpsj `收盘价` 列是前复权价，禁止直接用**，reader 已封装为取 `不复权_*` 列 + `复权因子`；全市场覆盖仅 2015-01 起，2015 前非全市场不可用于全市场选股对比。**每个新策略/因子回测定稿后，必须用备用数据源随机抽取 1 个自然年做同区间对比**，两源 CAGR/最大回撤应基本一致（差异 >1pp 需排查数据口径），模板 `research_audit/compare_gpsj_astock_2025.py`。
+- 主数据源 `D:/astock/` 是买断离线资产（2009 起、财务全量、PIT 字段齐）；`adj_factor` 是后复权因子，前复权价 = 原始价 × (adj_factor / 最新 adj_factor)。目录结构：`daily/stock_daily.parquet`（2009-01-05 ~ 2026-08-21，1457 万行 × 33 列）、`basic/stock_basic.parquet`（5892 只）、`finance/*.parquet`（8 张财务表）、`min_{1,5,15,30,60}min/<ts_code>.parquet`（各 5826 只，含 trade_time）。
+- **备用数据源（回测交叉验证，全局规则）**：`E:/huicexitong/runtime/sj/gpsj.duckdb`（`data/gpsj_reader.py` 鸭子类型 reader，与 astock_reader 同 4 方法接口）。口径与 D:/astock 同源：adj_factor/换手率/市值/成交额/不复权价逐字段一致（已验 2025 全年 ATR MAX5 回测差异 0）。**注意 gpsj `收盘价` 列是前复权价，禁止直接用**，reader 已封装为取 `不复权_*` 列 + `复权因子`；全市场覆盖仅 2015-01 起，2015 前非全市场不可用于全市场选股对比。**每个新策略/因子回测定稿后，必须用备用数据源随机抽取 1 个自然年做同区间对比**，两源 CAGR/最大回撤应基本一致（差异 >1pp 需排查数据口径），模板 `research_audit/compare_gpsj_astock_2025.py`。**源不可用时的降级规则（2026-08-29 立，当前即处于此状态）**：先调 `data/gpsj_reader.py` 的 `is_available()`；返回 False 则脚本打印 `[SKIP]` 并 `return 0`，**在报告显著位置标注「单源结论（仅 astock），未经备用源交叉验证」**，既不静默跳过、也不阻断交付。恢复方式：设置环境变量 `GPSJ_DB_PATH` 或改 `gpsj_reader.GPSJ_DB_PATH` 默认路径。
 - look-ahead 是回测第一杀手：复权 look-ahead、宇宙选择 look-ahead（静态池套全期）、撮合 look-ahead（盘中取当日 close）都击中过；"盘中 vs 尾盘对照差异 >30pp 且方向反转"是验证 look-ahead 的干净方法。
 
 ## 因子层约定
@@ -225,3 +227,16 @@
 - **DE 产物必须审核**: DE 结论不保证正确（曾把日期标记 bug 的伪差异归因于持仓延续），opencode 需用原始数据独立验证后再落盘，发现错误要纠正 DE 并重写报告。
 - **教训**: DE 报告文本引用旧文档时可能把过时结论当结论输出（audit13 报告直接复述了被证伪的归因），审核时以原始数据为准。
 - **【强制】DE 工作必须全程盯梢，不得派完就等**: 这是基本流程。派任务后立即确认进程在跑（`deveco.exe` 存活 + 有无审计子进程），并主动向诚哥报告"DE 在跑/空闲"。长时间任务用轮询盯盘（PowerShell 循环查输出文件落盘 + DE CPU 是否增长）。判定卡死的信号：输出文件长时间不落盘 + CPU 墙钟利用率 <5%（如 11 分钟只涨 ~11s CPU）。一旦 2 次轮询确认卡死 → 立即 KillingDE 进程重派，并改用两步委派（第一步只写脚本贴 diff 审核，通过后第二步只运行），不要等 DE 自己超时。DE 进程 `deveco.exe` 从启动 PID 稳定；若 DE 假跑（时间戳变了内容没变）要识破。
+
+## 持久记忆（engram MCP）
+
+- **已接入 `engram` 持久记忆**（MCP server：`engram`，二进制 `C:\Users\Administrator\bin\engram.exe` v1.20.0，DB `~/.engram/engram.db`）。WorkBuddy 与 Trae 双客户端均已注册并验证可用。
+- **项目隔离**：WorkBuddy 指向 `--project=QuantLab`（大小写归一为 `quantlab`）；Traework 指向 `--project=Traework`。两工作区记忆互不污染。
+- **Memory Protocol（agent 必须遵循）**：
+  - 会话开始：先 `mem_current_project` 确认项目，再 `mem_search` 检索相关历史，避免重复调查。
+  - 做出决策 / 修 bug / 发现约定后：**立即 `mem_save`**（不要等被问）。
+  - 会话结束前：`mem_session_summary` 保存目标 / 发现 / 产出 / 下一步。
+  - 上下文压缩后：先 `mem_session_summary` 持久化，再 `mem_context` 恢复。
+- **中文检索硬约束（实测已验证）**：engram 底层 FTS5 `unicode61` 对中文连续串整体成一个 token，**纯中文查询必然 miss**。所有记忆条目必须采用「**英文锚点标题 + 中文说明正文**」写法（Tushare / moneyflow / Project_16 / QMT / passorder / IC / LightGBM / ATR 等英文锚点天然充足），检索一律用英文锚点。
+- **存储铁律（防 MCP 不可见）**：记忆一律经 **MCP 工具**落库（MCP 进程带 `--project` 覆盖，条目正确绑定项目）。**禁止用 CLI 裸 `engram save`**——CLI 裸存不绑定项目（落到 `project=""`），MCP 的 `quantlab` 作用域会把它排除，导致 WorkBuddy 检索不到。已发生一次（id5 游离）并清理。
+- engram 是**增量**层，与 WorkBuddy 三层记忆（云 conversation_search / 用户级 MEMORY.md / 工作区日志）并存，不迁移。选型与验证报告见 `Agent记忆工具选型对比_20260904.md`。

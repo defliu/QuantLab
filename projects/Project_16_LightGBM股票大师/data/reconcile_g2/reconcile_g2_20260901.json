@@ -1,0 +1,127 @@
+{
+  "date": "20260901",
+  "account_id": "70180771",
+  "generated_at": "2026-09-01 14:48:29",
+  "fills": [
+    {
+      "strategy_order_id": "P16_20260901_0001",
+      "code": "601988.SH",
+      "action": "BUY",
+      "vol": 0,
+      "price": 6.61,
+      "status": "CANCELED",
+      "reason": "debug 撤单链路测试"
+    },
+    {
+      "strategy_order_id": "P16_20260901_0002",
+      "code": "601988.SH",
+      "action": "BUY",
+      "vol": 100,
+      "price": 6.3,
+      "status": "FILLED",
+      "reason": "deal confirmed"
+    },
+    {
+      "strategy_order_id": "P16_20260901_0003",
+      "code": "600028.SH",
+      "action": "BUY",
+      "vol": 0,
+      "price": 5.49,
+      "status": "CANCELED",
+      "reason": "debug 撤单链路测试"
+    },
+    {
+      "strategy_order_id": "P16_20260901_0004",
+      "code": "600028.SH",
+      "action": "BUY",
+      "vol": 0,
+      "price": 5.54,
+      "status": "CANCELED",
+      "reason": "cancel forced (60s no confirm), rely on positions"
+    },
+    {
+      "strategy_order_id": "P16_20260901_0005",
+      "code": "600028.SH",
+      "action": "BUY",
+      "vol": 100,
+      "price": 5.54,
+      "status": "FILLED",
+      "reason": "filled before cancel"
+    },
+    {
+      "strategy_order_id": "P16_20260901_0006",
+      "code": "601398.SH",
+      "action": "BUY",
+      "vol": 100,
+      "price": 8.1,
+      "status": "FILLED",
+      "reason": "filled before cancel"
+    },
+    {
+      "strategy_order_id": "P16_20260901_0007",
+      "code": "600028.SH",
+      "action": "BUY",
+      "vol": 0,
+      "price": 5.3,
+      "status": "CANCELED",
+      "reason": "cancel confirmed"
+    },
+    {
+      "strategy_order_id": "P16_20260901_0008",
+      "code": "600028.SH",
+      "action": "BUY",
+      "vol": 0,
+      "price": 5.2,
+      "status": "CANCELED",
+      "reason": "cancel confirmed"
+    },
+    {
+      "strategy_order_id": "P16_20260901_0009",
+      "code": "600028.SH",
+      "action": "BUY",
+      "vol": 0,
+      "price": 5.2,
+      "status": "CANCELED",
+      "reason": "cancel confirmed"
+    }
+  ],
+  "pending": [],
+  "orphans": [
+    {
+      "code": "600028.SH",
+      "vol": 100,
+      "hint": "账户比 G2 账本多 100 股（孤儿/重复建仓，G2 不主动处理，仅预警）"
+    }
+  ],
+  "ledger": {
+    "601988.SH": 200,
+    "600028.SH": 100,
+    "601398.SH": 100
+  },
+  "asset": {
+    "account_id": "70180771",
+    "date": "20260901",
+    "updated_at": "2026-09-01 14:48:22",
+    "total_asset": 9996330.68,
+    "cash_available": 9993079.68,
+    "market_value": 3251.0
+  },
+  "issues": [
+    "持仓差额: 600028.SH 账户比账本多 100 股",
+    "发现 1 只持仓超额（孤儿/重复），G2 不主动处理，仅预警"
+  ],
+  "fills_total": 9,
+  "fills_by_status": {
+    "CANCELED": 6,
+    "FILLED": 3
+  },
+  "pending_count": 0,
+  "account_positions": {
+    "600028.SH": 200,
+    "601398.SH": 100,
+    "601988.SH": 200
+  },
+  "deltas": {
+    "600028.SH": 100
+  }
+}

@@ -45,9 +45,16 @@ import pandas as pd
 
 import data_sources as ds
 
+try:
+    import scripts.tushare_source as TS
+except Exception:
+    TS = None
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 SELECT_DIR = os.path.join(HERE, "data", "selections")
 DEFAULT_REVIEW = os.path.join(HERE, "data", "tdx_review.json")
+# Tushare moneyflow 本地快照（每日 19:30 刷新至 T-1，P16 F2 权威口径，T-20260903 与 G2 对齐）
+MF_PATH = "D:/astock/moneyflow/moneyflow.parquet"
 
 SC_WEIGHTS = {"F1": 0.25, "F2": 0.20, "F3": 0.20, "F4": 0.15, "F5": 0.10, "F6": 0.10}
 
@@ -67,6 +74,59 @@ def score_f2(net_inflow, liangbi):
     if net_inflow <= -1e8:
         return 1.0  # 净流出超1亿
     return 2.0  # 净流出缩量
+
+
+def _valid_main_inflow(s, rdate):
+    """F2 主力资金时效校验（T-20260831-003，2026-08-31 实锤）：
+    8/31 TDX 503 → F2 降级 iFind 前一日口径，300456 用「8/28 主力净流入 +5.26 亿」打出 F2=10，
+    而东财实际 8/28 为 -2.79 亿、8/31 当日 -1.25 亿 —— 方向完全相反，TOP1 名不副实（86→68 分）。
+    规则：复核数据带 main_net_inflow_date 且 != 当日时，视为无当日资金（F2=5 中性分），
+    绝不用旧数据/错口径打高分。数据源未提供日期戳（字段缺失）时不拦截（保持原行为）。"""
+    v = s.get("main_net_inflow", np.nan)
+    asof = str(s.get("main_net_inflow_date", "") or "")
+    if asof and asof != str(rdate):
+        code = s.get("ts_code", "")
+        if not (isinstance(v, float) and np.isnan(v)):
+            print(f"    !! {code} 主力资金为 {asof} 口径(非当日 {rdate})，F2 按缺失处理(5分)防旧数据虚高")
+        return np.nan
+    return v
+
+
+def _tushare_f2_map(codes):
+    """读本地 Tushare moneyflow parquet（每日 19:30 刷新至 T-1，权威四档口径），取候选最新交易日主力净额。
+
+    主力净额 = (buy_lg_amount + buy_elg_amount - sell_lg_amount - sell_elg_amount)，Tushare 原生单位万元 → ×1e4 转元
+    （与 score_f2 阈值 5e7/1e7/1e8 元口径一致，与 g2 mf_main_net 同源，零 train-serving skew）。
+    返回 {ts_code: {"main_net": 元, "asof": YYYYMMDD, "source": "tushare_<asof>"}}；失败/缺失返回空 dict。"""
+    if not os.path.exists(MF_PATH):
+        return {}
+    try:
+        mf = pd.read_parquet(MF_PATH, columns=["buy_lg_amount", "buy_elg_amount", "sell_lg_amount", "sell_elg_amount"])
+        mf = mf[mf.index.get_level_values("ts_code").isin(codes)]
+        if mf.empty:
+            return {}
+        last = mf.index.get_level_values("trade_date").max()
+        day = mf[mf.index.get_level_values("trade_date") == last]
+        out = {}
+        for code, r in day.groupby(level="ts_code"):
+            r = r.iloc[-1]
+            main_wan = float(r["buy_lg_amount"] + r["buy_elg_amount"] - r["sell_lg_amount"] - r["sell_elg_amount"])
+            out[code] = {"main_net": main_wan * 1e4, "asof": last.strftime("%Y%m%d"), "source": "tushare_%s" % last.strftime("%Y%m%d")}
+        return out
+    except Exception as e:
+        print("    !! tushare F2 读取失败: %s" % e)
+        return {}
+
+
+def _f2_value(tsh, tsh_fresh, s, rdate, code):
+    """F2 主净额取值：tushare 本地快照（T-1 权威，新鲜 lag<=2）优先 → 实时复核源 → NaN。
+    返回 (net_inflow_yuan_or_nan, f2_source_label)。T-20260903：与 G2 对齐 tushare 第一数据源。"""
+    if tsh_fresh and code in tsh:
+        return tsh[code]["main_net"], tsh[code]["source"]
+    v = _valid_main_inflow(s, rdate)
+    if not (isinstance(v, float) and np.isnan(v)):
+        return v, "realtime"
+    return np.nan, "missing"
 
 
 def score_f5(industry_pct):
@@ -110,6 +170,49 @@ def _norm_stock(s):
     return out
 
 
+def _read_catalyst_cache(date):
+    """读 9:25 集合竞价任务的 F3 催化缓存 data/cache/review_<date>.json。
+    返回 {ts_code: {"catalyst_score": float, "catalyst_note": str}} 或 None（无缓存/读失败）。
+    F3 催化（新闻/公告）为事件性数据、盘内变化小，9:25 采集缓存、9:45 缺失时兜底；
+    F2 主力资金 / F5 板块涨幅保持 9:45 实时（分档敏感、分钟级波动）。"""
+    path = os.path.join(HERE, "data", "cache", "review_%s.json" % date)
+    try:
+        with open(path, encoding="utf-8") as f:
+            d = json.load(f)
+        cats = d.get("catalysts")
+        if not isinstance(cats, dict):
+            return None
+        return cats
+    except Exception:
+        return None
+
+
+def _read_crosscheck(date):
+    """读 9:25 集合竞价任务的盘前交叉验证 data/cache/crosscheck_<date>.json。
+    返回 {ts_code: {"fund_flow": {...}, "quote": {...}, "sector": {...}}} 或 None。
+    用于对多源不一致的关键指标预警（防 F2 类数据源口径事故，T-20260831-003）。"""
+    path = os.path.join(HERE, "data", "cache", "crosscheck_%s.json" % date)
+    try:
+        with open(path, encoding="utf-8") as f:
+            d = json.load(f)
+        return d.get("stocks") or None
+    except Exception:
+        return None
+
+
+def _crosscheck_warns(cc, code):
+    """汇总某候选交叉验证不一致项，返回预警列表（如 ["F2资金:两源方向不一致"]）。"""
+    item = (cc or {}).get(code)
+    if not item:
+        return []
+    warns = []
+    for key, label in (("fund_flow", "F2资金"), ("quote", "行情"), ("sector", "F5板块")):
+        sub = item.get(key) or {}
+        if sub.get("ok") is False:
+            warns.append("%s:%s" % (label, sub.get("note") or "多源不一致"))
+    return warns
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--candidates", required=True, help="deploy_predict 输出的候选 CSV 路径")
@@ -127,6 +230,25 @@ def main():
         review = {"date": time.strftime("%Y%m%d"), "stocks": []}
     rdate = str(review.get("date", time.strftime("%Y%m%d")))
     stocks = {s["ts_code"]: _norm_stock(s) for s in review["stocks"]}
+
+    # F3 催化缓存兜底（9:25 集合竞价任务写 data/cache/review_<date>.json）
+    # 仅当实时复核缺失 catalyst（字段缺/NaN）时用缓存；显式 0=真实无催化，不动。
+    cache = _read_catalyst_cache(rdate)
+    if cache:
+        n_f3 = 0
+        for code, s in stocks.items():
+            c = cache.get(code)
+            if not c:
+                continue
+            cur = s.get("catalyst_score")
+            if cur is None or (isinstance(cur, float) and np.isnan(cur)):
+                s["catalyst_score"] = c.get("catalyst_score", 0.0)
+                s["catalyst_note"] = c.get("catalyst_note", "")
+                src = str(s.get("source", "") or "")
+                s["source"] = (src + "+cache") if src else "cache"
+                n_f3 += 1
+        if n_f3:
+            print(f"  [F3缓存] 从 9:25 缓存补 catalyst {n_f3} 只 (data/cache/review_{rdate}.json)")
 
     # 检查缺失 → 多数据源回退
     missing_codes = [r["ts_code"] for _, r in cand.iterrows() if r["ts_code"] not in stocks]
@@ -158,6 +280,60 @@ def main():
             print(f"  回退成功: {set(s.get('source','') for s in stocks.values() if s.get('source'))}")
 
     print(f"[1/3] 候选 {len(cand)} 只 + 复核数据 {rdate} (来源: {set(s.get('source','') for s in stocks.values())})")
+
+    # F2 主源 = Tushare moneyflow 本地快照（T-1 权威口径，每日 19:30 刷新；新鲜 lag<=2 天作为主源）
+    tsh_map = _tushare_f2_map(list(cand["ts_code"]))
+    tsh_fresh = False
+    if tsh_map:
+        asof = pd.to_datetime(next(iter(tsh_map.values()))["asof"], format="%Y%m%d")
+        lag = (pd.Timestamp.now().normalize() - asof).days
+        tsh_fresh = lag <= 2
+        if tsh_fresh:
+            print(f"  [F2主源] Tushare moneyflow 本地快照 {asof.date()}（滞后 {lag} 天 ≤2）→ 权威口径主源")
+        else:
+            print(f"  [F2主源] Tushare 快照滞后 {lag} 天 >2 → 回退实时源")
+
+    # T-20260903 三源补充（全部 fail-safe，失败回退现有逻辑）：
+    #   F5 = 申万一级行业 T-1 自算（本地 sw_l1 成分 + 增量库收盘）权威
+    #   F6 = Tushare daily_basic T-1（交叉验证 + 实时缺失时权威兜底）
+    #   F3 = Tushare forecast/express 业绩公告（实时/9:25缓存均缺失时兜底）
+    sw_map, db_map, ea_map = {}, {}, {}
+    if TS is not None:
+        try:
+            asof_t = rdate
+            if "trade_date" in cand.columns and len(cand):
+                asof_t = str(cand["trade_date"].iloc[0]).strip()
+            _codes = list(cand["ts_code"])
+            try:
+                sw_map = TS.sw_l1_pct_map(_codes, asof_t)
+                if sw_map:
+                    print("  [F5主源] 申万一级行业 T-1 自算（%s）: %s" % (
+                        next(iter(sw_map.values()))["asof"],
+                        ", ".join("%s=%s%.2f%%" % (c, v["sw_l1"], v["pct"]) for c, v in sw_map.items())))
+            except Exception as e:
+                print("  !! sw_l1 行业读取失败: %s" % e)
+            try:
+                db_map = TS.daily_basic_map(_codes, asof_t)
+                if db_map:
+                    print("  [F6校验] Tushare daily_basic %s 覆盖 %d/%d 只" % (asof_t, len(db_map), len(_codes)))
+            except Exception as e:
+                print("  !! daily_basic 读取失败: %s" % e)
+            try:
+                ea_map = TS.earnings_anns_map(_codes, asof_t)
+                if ea_map:
+                    print("  [F3公告] Tushare 业绩预告/快报覆盖 %d 只: %s" % (len(ea_map), ", ".join(sorted(ea_map))))
+            except Exception as e:
+                print("  !! forecast/express 读取失败: %s" % e)
+        except Exception as e:
+            print("  !! Tushare 三源取数失败（整体降级）: %s" % e)
+
+    # 盘前交叉验证标注（9:25 写 data/cache/crosscheck_<date>.json，防 F2 类口径事故）
+    cc = _read_crosscheck(rdate)
+    if cc:
+        cc_bad = sum(1 for c in cand["ts_code"] if _crosscheck_warns(cc, c))
+        if cc_bad:
+            print(f"  [交叉验证] {cc_bad} 只候选存在指标不一致，详见明细")
+
     rows = []
     for _, r in cand.iterrows():
         code = r["ts_code"]
@@ -165,11 +341,54 @@ def main():
         if s is None:
             print(f"    !! 候选 {code} 无任何数据源可用，跳过")
             continue
-        f2 = score_f2(s.get("main_net_inflow", np.nan), s.get("liangbi", np.nan))
+        cwarns = _crosscheck_warns(cc, code) if cc else []
+        if cwarns:
+            print(f"    !! [交叉验证] {code} {'; '.join(cwarns)}")
+        main_net, f2_src = _f2_value(tsh_map, tsh_fresh, s, rdate, code)
+        f2 = score_f2(main_net, s.get("liangbi", np.nan))
+        # F3 催化：实时 > 9:25缓存（上面已回填）> Tushare 业绩公告兜底（T-20260903）
         f3 = float(s.get("catalyst_score", 0.0))
-        f5 = score_f5(s.get("industry_pct", np.nan))
+        f3_note = s.get("catalyst_note", "")
+        f3_src = ""
+        if (np.isnan(f3) or f3 == 0.0) and not f3_note:
+            ea = ea_map.get(code)
+            if ea:
+                f3 = float(ea["score"])
+                f3_note = ea["note"]
+                f3_src = "tushare_anns"
+        if np.isnan(f3):
+            f3 = 0.0
+        # F5 板块：申万一级行业 T-1 权威（新鲜则优先）> 实时 industry_pct 兜底
+        sw = sw_map.get(code)
+        if sw is not None and "pct" in sw:
+            f5 = score_f5(sw["pct"])
+            f5_src = "sw_l1_%s" % sw["asof"]
+            ind_used = sw["pct"]
+            ind_label = "%s(%s)" % (sw["sw_l1"], f5_src)
+        else:
+            f5 = score_f5(s.get("industry_pct", np.nan))
+            f5_src = "realtime"
+            ind_used = s.get("industry_pct", np.nan)
+            ind_label = "实时行业"
+        # F6 估值：实时 PE 优先；缺失时 Tushare daily_basic T-1 权威兜底；两者都在做交叉验证
         pe_ttm = s.get("pe_ttm", np.nan)
         turnover = s.get("turnover", np.nan)
+        tcb_warn = ""
+        db = db_map.get(code)
+        if db is not None:
+            tpe = db.get("pe_ttm", np.nan)
+            if not np.isnan(tpe):
+                if np.isnan(pe_ttm):
+                    pe_ttm = tpe
+                    if np.isnan(turnover):
+                        turnover = db.get("turnover_rate", np.nan)
+                else:
+                    try:
+                        ratio = abs(float(pe_ttm) - float(tpe)) / max(abs(float(tpe)), 1e-9)
+                        if ratio > 0.5 or (float(pe_ttm) < 0) != (float(tpe) < 0):
+                            tcb_warn = "F6校验:实时PE(%.1f) vs Tushare T-1(%.1f)差异大" % (pe_ttm, tpe)
+                    except Exception:
+                        pass
         f1 = float(r["SC_F1"])
         f4 = float(r["SC_F4"])
         f6 = score_f6(pe_ttm, turnover) if not np.isnan(pe_ttm) else float(r["SC_F6"])
@@ -183,8 +402,14 @@ def main():
             "main_net_inflow": s.get("main_net_inflow", np.nan),
             "liangbi": s.get("liangbi", np.nan),
             "industry_pct": s.get("industry_pct", np.nan),
-            "catalyst_note": s.get("catalyst_note", ""),
+            "catalyst_note": f3_note,
             "source": s.get("source", ""),
+            "f2_source": f2_src,
+            "f5_source": f5_src,
+            "ind_used": ind_used,
+            "ind_label": ind_label,
+            "crosscheck_warn": "; ".join(cwarns),
+            "tushare_crosscheck": tcb_warn,
         })
 
     out = pd.DataFrame(rows).sort_values("total", ascending=False).reset_index(drop=True)
@@ -222,16 +447,19 @@ def main():
     lines += ["", "## 实时复核明细"]
     for i, (_, r) in enumerate(out.iterrows(), 1):
         net = f"{r['main_net_inflow']/1e4:.0f} 万" if not np.isnan(r["main_net_inflow"]) else "—"
-        ind = f"{r['industry_pct']:.2f}%" if not np.isnan(r["industry_pct"]) else "—"
+        ind = f"{r['ind_used']:.2f}%" if not np.isnan(r["ind_used"]) else "—"
         lb = f"{r['liangbi']:.2f}" if not np.isnan(r["liangbi"]) else "—"
         src = f" (来源: {r['source']})" if r.get("source") else ""
         lines += [
             f"### {i}. {r['ts_code']} {r['name']}（总分 {r['total']:.1f}）{src}",
-            f"- F2 资金：今日主力净额 **{net}**，量比 {lb} → {r['F2']:.0f} 分",
+            f"- F2 资金：今日主力净额 **{net}**，量比 {lb} → {r['F2']:.0f} 分（来源: {r.get('f2_source','')}）",
             f"- F3 催化：{r['catalyst_note'] or '—'} → {r['F3']:.0f} 分",
-            f"- F5 板块：所属行业当日 **{ind}** → {r['F5']:.0f} 分",
-            "",
+            f"- F5 板块：{r['ind_label']} **{ind}** → {r['F5']:.0f} 分",
         ]
+        if r.get("tushare_crosscheck"):
+            lines.append(f"- ⚠️ {r['tushare_crosscheck']}")
+        lines.append(f"- ⚠️ 盘前交叉验证：{r['crosscheck_warn']}" if r.get("crosscheck_warn") else "- 盘前交叉验证：无异常")
+        lines.append("")
     lines += [
         "---",
         "> ⚠️ 免责声明：本清单为模型 + 多数据源实时数据复核的研究信号，不构成投资建议。",

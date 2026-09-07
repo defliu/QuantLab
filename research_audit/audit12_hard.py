@@ -1,16 +1,16 @@
 # coding=utf-8
-"""审计12：V2-B 三项硬验证 —— 换手率/成本敏感性、涨跌停状态机模拟、鲁棒性(牛熊/压力/容量)
-输出：E:\QuantLab\research_audit\audit12_结果.txt"""
+r"""审计12：V2-B 三项硬验证 —— 换手率/成本敏感性、涨跌停状态机模拟、鲁棒性(牛熊/压力/容量)
+输出：D:\QuantLab\research_audit\audit12_结果.txt"""
 import sys, time, os
-sys.path.insert(0, r"E:\QuantLab")
-sys.path.insert(0, r"E:\QuantLab\projects\Project_01_多因子IC小盘Alpha")
+sys.path.insert(0, r"D:\QuantLab")
+sys.path.insert(0, r"D:\QuantLab\projects\Project_01_多因子IC小盘Alpha")
 import pandas as pd
 import numpy as np
 from research.multi_factor_ic.config import DAILY_PATH, START_DATE, END_DATE
 from research.multi_factor_ic.data_loader import get_rebalance_dates
 
-os.makedirs(r"E:\QuantLab\research_audit", exist_ok=True)
-OUT = r"E:\QuantLab\research_audit\audit12_结果.txt"
+os.makedirs(r"D:\QuantLab\research_audit", exist_ok=True)
+OUT = r"D:\QuantLab\research_audit\audit12_结果.txt"
 _log = []
 def log(*args):
     s = " ".join(str(a) for a in args)
@@ -40,10 +40,10 @@ suspend = daily["suspend_type"].fillna("N")
 panel = panel.loc[~is_st & ~suspend.isin(["S", "R", "R&S"])]
 log("panel:", panel.shape)
 
-basic = pd.read_parquet(r"E:/astock/basic/stock_basic.parquet")
+basic = pd.read_parquet(r"D:/astock/basic/stock_basic.parquet")
 ind_map = dict(zip(basic["ts_code"], basic["industry"].fillna("其他")))
 
-fin = pd.read_parquet(r"E:/astock/finance/fina_indicator.parquet")
+fin = pd.read_parquet(r"D:/astock/finance/fina_indicator.parquet")
 fin = fin[["ts_code", "end_date", "ann_date", "bps", "roe", "profit_dedt", "debt_to_assets"]].copy()
 fin["ann_date"] = pd.to_datetime(fin["ann_date"], errors="coerce")
 fin = fin.dropna(subset=["ann_date"])

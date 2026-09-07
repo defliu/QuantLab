@@ -136,7 +136,7 @@ html = """<!doctype html><html lang=zh><head><meta charset=utf-8>
 <li><b>最优组合</b>：RANKVOL+质量双排序（rankvol_M_Q）年化 13.21%、夏普 0.668、样本外 +26.49%（夏普 0.94），样本内外双正；缺点是回撤仍约 -29%（低特质波组合在 2025 动量行情中偏集中）。</li>
 <li><b>诚实提示</b>：+52% 含 2025 低波/质量风格极端占优的贡献（样本外仍正，非运气），<b>前向预期应打折</b>；且 100 只×10万=每只仅 1000 元，实盘需放大资金或用波动率平价压缩只数。</li>
 </ul>
-<p style="color:#999;font-size:11px">数据源 E:/astock ｜ 脚本 backtest_atr_lowvol_v2.py（REBAL/VOLM/QUALITY/ATWIN/NHOLD 可调）</p>
+<p style="color:#999;font-size:11px">数据源 D:/astock ｜ 脚本 backtest_atr_lowvol_v2.py（REBAL/VOLM/QUALITY/ATWIN/NHOLD 可调）</p>
 </body></html>"""
 
 with open(os.path.join(OUT,"atr_lowvol_experiments_report.html"),"w",encoding="utf-8") as f:

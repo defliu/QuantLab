@@ -9,15 +9,15 @@ ATR 低波动策略 v3 — 多因子复合 (回测 + 实验开关)
 其余沿用 v2:
   - 合格域: 换手[1,8]% & amt5>0 & vol>0 & 非ST & 上市>=60日
   - VOLM=atr/rankvol/ivol ; REBAL=M/Q ; QUALITY ; VOLTARGET ; INDCAP ; WEIGHT ; LOT ; CAPITAL
-数据源: E:/astock/daily/stock_daily.parquet (含 pb) ; ROE: fina_indicator.parquet
+数据源: D:/astock/daily/stock_daily.parquet (含 pb) ; ROE: fina_indicator.parquet
 """
 import time, json, os
 import numpy as np
 import pandas as pd
 import duckdb
 
-PARQUET   = "E:/astock/daily/stock_daily.parquet"
-FINA      = "E:/astock/finance/fina_indicator.parquet"
+PARQUET   = "D:/astock/daily/stock_daily.parquet"
+FINA      = "D:/astock/finance/fina_indicator.parquet"
 OUT_DIR   = "D:/QMT_STRATEGIES/backtest_results"
 os.makedirs(OUT_DIR, exist_ok=True)
 
@@ -39,6 +39,8 @@ MIN_LOT_VALUE = float(os.environ.get("MINLOT", "1500"))
 VT_CAP   = float(os.environ.get("VT_CAP", "1.0"))    # 杠杆上限(波动率目标化); >1 需两融
 LEVMULT  = float(os.environ.get("LEVMULT", "1.0"))   # 恒定杠杆(两融); >1 时允许 cash 为负(借入)
 MOMGATE  = os.environ.get("MOMGATE", "0") == "1"     # 动量门控: 低波质量选中再剔除 12-1 月动量<=0 的近期输家
+MASK_LIMIT = os.environ.get("MASK", "0") == "1"       # 涨跌停/停牌掩码前置(报告P0): ATR% 用剔除不可成交bar的clean序列
+PRICECAP  = float(os.environ.get("PRICECAP", "0") or 0)  # 真实价上限(元); 0=关。FIX_v4 用 50
 
 # ---- 固定参数 ----
 ATR_WINDOW     = int(os.environ.get("ATWIN", "14"))
@@ -50,8 +52,8 @@ MAX_TOTAL_RATIO= 0.95
 COST           = 0.001
 DD_EXIT        = -0.15
 INIT_CAPITAL   = float(os.environ.get("CAPITAL", "100000"))
-WARMUP_START   = "2021-01-01"
-BACKTEST_START = "2023-01-01"
+WARMUP_START   = os.environ.get("WARMUP", "2021-01-01")
+BACKTEST_START = os.environ.get("BTSTART", "2023-01-01")
 VT_TARGET = 0.10
 VT_FLOOR  = 0.20
 INDCAP_PCT = 0.15
@@ -75,6 +77,8 @@ if LEVMULT != 1.0:
     parts.append("x%.1f"%LEVMULT)
 if MOMGATE:
     parts.append("MG")
+if MASK_LIMIT:
+    parts.append("MASK")
 if VOLM == "atr" and ATR_WINDOW != 14:
     parts.insert(0, "atr%d" % ATR_WINDOW)
 TAG = "_".join(parts)
@@ -98,7 +102,8 @@ print("[1] 加载 %s ..." % PARQUET)
 con = duckdb.connect()
 df = con.execute(f"""
     SELECT ts_code, CAST(trade_date AS DATE) AS date,
-           open, high, low, close, vol, amount, turnover_rate, adj_factor, is_st, pb
+           open, high, low, close, vol, amount, turnover_rate, adj_factor, is_st, pb,
+           up_limit, down_limit, suspend_type
     FROM read_parquet('{PARQUET}')
     WHERE CAST(trade_date AS DATE) >= DATE '{WARMUP_START}'
 """).fetchdf()
@@ -110,6 +115,15 @@ for c in ["open","high","low","close"]:
 df["is_st"] = (df["is_st"] == 1.0)
 df["bp"] = np.where((df["pb"]>0) & (~df["pb"].isna()), 1.0/df["pb"], np.nan)
 df = df.sort_values(["ts_code","date"]).reset_index(drop=True)
+if MASK_LIMIT:
+    _susp = df["suspend_type"].fillna("").astype(str)
+    _bad = (_susp != "") & (_susp != "N")
+    _rc = np.where(df["adj_factor"] > 0, df["adj_close"] / df["adj_factor"], df["adj_close"])
+    _up = (df["up_limit"] > 0) & (np.abs(_rc - df["up_limit"]) < 1e-6)
+    _dn = (df["down_limit"] > 0) & (np.abs(_rc - df["down_limit"]) < 1e-6)
+    df["mask_limit"] = (_bad | (df["vol"] <= 0) | _up | _dn).values
+else:
+    df["mask_limit"] = False
 
 print("[2] 计算 ATR(%d)%% ..." % ATR_WINDOW)
 g = df.groupby("ts_code", sort=False)
@@ -118,7 +132,11 @@ df["tr1"] = df["adj_high"] - df["adj_low"]
 df["tr2"] = (df["adj_high"] - df["prev_close"]).abs()
 df["tr3"] = (df["adj_low"]  - df["prev_close"]).abs()
 df["tr"]  = df[["tr1","tr2","tr3"]].max(axis=1)
-df["atr14"] = g["tr"].transform(lambda s: s.rolling(ATR_WINDOW, min_periods=ATR_WINDOW).mean())
+if MASK_LIMIT:
+    df["tr_clean"] = df["tr"].where(~df["mask_limit"].astype(bool))
+    df["atr14"] = g["tr_clean"].transform(lambda s: s.rolling(ATR_WINDOW, min_periods=ATR_WINDOW).mean())
+else:
+    df["atr14"] = g["tr"].transform(lambda s: s.rolling(ATR_WINDOW, min_periods=ATR_WINDOW).mean())
 df["atr_pct"] = df["atr14"] / df["adj_close"] * 100.0
 df["amt5"] = g["amount"].transform(lambda s: s.rolling(5, min_periods=5).sum())
 df["bar_idx"] = g.cumcount()
@@ -164,7 +182,7 @@ if INDCAP:
     print("[4c] 加载行业映射 (stock_basic.industry) ...")
     con3 = duckdb.connect()
     ind_df = con3.execute(
-        "SELECT ts_code, industry FROM read_parquet('E:/astock/basic/stock_basic.parquet') "
+        "SELECT ts_code, industry FROM read_parquet('D:/astock/basic/stock_basic.parquet') "
         "WHERE industry IS NOT NULL").fetchdf()
     con3.close()
     IND = dict(zip(ind_df["ts_code"].astype(str), ind_df["industry"].astype(str)))
@@ -187,7 +205,14 @@ def eligible_at(d):
     sub = bt[bt["date"] == d]
     m = (sub["turnover_rate"] >= MIN_TURNOVER) & (sub["turnover_rate"] <= MAX_TURNOVER) & \
         (sub["amt5"] > 0) & (sub["vol"] > 0) & (~sub["is_st"]) & (sub["bar_idx"] >= MIN_BARS)
+    if PRICECAP > 0:
+        _rc = sub["adj_close"] / sub["adj_factor"]
+        m = m & (_rc <= PRICECAP)
+    if MASK_LIMIT:
+        m = m & (~sub["mask_limit"].astype(bool))
     cand = sub[m].copy()
+    if MASK_LIMIT:
+        cand = cand[cand["atr_pct"].notna()]
     lv_col = "atr_pct" if VOLM == "atr" else "vol_est"
 
     if COMBINE:

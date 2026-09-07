@@ -74,3 +74,24 @@
 ### 坑：QMT 客户端为自绘界面（无障碍树稀疏）
 - QMT 客户端界面控件为**自绘**（非系统原生控件），无障碍树稀疏，自动化无法读取"交易费用/成交明细"等栏位。
 - **应对**：此类信息由人工提供 GUI 截图核对。本次模拟盘"交易费用"栏截图核对结果：佣金 5 元（万2 最低5元）/ 印花税 2.22 元（万5 卖出）/ 过户费 0.04 元（万0.1 沪市），与实盘费率一致 → 结算统一按实盘费率（见 `qmt_config.py`）。
+
+---
+
+## 七、大QMT（交易端模拟）passorder 代码格式（2026-08-31 迁移实锤，T-20260831-002）
+
+### 坑：下单代码必须 `600522.SH`（数字在前），禁止 `SH.600522`
+
+- **现象**：大QMT 文件桥策略 passorder 返回 `ret=0`，但委托**从未进通道**：委托界面无记录、`get_trade_detail_data` 查无此单、`userdata\users\70180771\XtTradeData` 委托库 0 字节；策略端 PENDING-NO-ORDER 空转 300s 重试，全是废单。
+- **根因**：`_to_qmt_code` 把桥协议 `600522.SH` 翻转成 `SH.600522` 传 passorder。QMT 主日志 `userdata\log\XtClient_20260831.log` 实锤：
+  ```
+  parserParam func:passorder, opType:23, orderType:1101, accountID:70180771, orderCode:600522SH, prType:5, modelPrice:35.14
+  [msg service] 下单代码 [600522SH] 不合法!
+  ```
+  QMT 把 `SH.600522` 解析为 `600522SH`（数字尾挂交易所）→ 校验不合法 → **静默废单**（ret=0 仅异步接口受理，不报错）。
+- **对照**：ATR（`atr_ew_holdings.json` 实盘持仓 `601985.SH`）与 Project_10（build 里 `600000.SH`）都是**数字在前**，实盘成交正常。
+- **修复（已落盘 BUILD_TAG=20260831-151459）**：
+  1. `_to_qmt_code` 原样返回 `600522.SH`，不再翻转；
+  2. `_norm_code` 用 `split('.')[0]` 取 6 位数字（原 `[-1]` 误取交易所后缀）；
+  3. 风控纳管 / 持仓快照裸码补 `.SH`/`.SZ` **后缀**（原补 `SH.` 前缀）。
+- **判断委托真进通道**：QMT 主日志出现 `CTradeClient::order [order] ... acc: 2_..._70180771`；只有 `parserParam` + 「不合法」就是废单。
+- **排查手法**：废单时先看 QMT 主日志（`userdata\log\XtClient_<date>.log`），不是 FormulaOutput 策略日志；`passorder` 消息在 msg service / parserParam 段。

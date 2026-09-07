@@ -55,7 +55,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default=None, help="目标交易日，缺省取快照最新日")
     ap.add_argument("--threshold", type=float, default=60.0)
-    ap.add_argument("--top", type=int, default=2)
+    ap.add_argument("--top", type=int, default=10, help="候选池数量（默认10，对齐回测 TOP10；rebalance 从池中按 total_new 选 TOP_N 持仓）")
     ap.add_argument("--pool", type=int, default=100)
     args = ap.parse_args()
 
@@ -92,27 +92,42 @@ def main():
         if c not in pre.columns:
             pre[c] = np.nan
     # F2 评分卡口径：main_net 需为「元」（score_f2 阈值 5e7/1e7/1e8 均为元）
-    # 快照 mf_main_net 是 moneyflow 五档「万元」，转元后作为评分卡 fallback；industry_pct 取 F5 当日自算值
+    # 快照 mf_main_net 是 moneyflow 五档「万元」，转元后作为评分卡主值；industry_pct 取 F5 当日自算值
     if "main_net" not in pre.columns and "mf_main_net" in pre.columns:
         pre["main_net"] = pre["mf_main_net"] * 1e4
     if "industry_pct" not in pre.columns and "ind_pct_ths" in pre.columns:
         pre["industry_pct"] = pre["ind_pct_ths"]
-    # F2 实时覆盖：对预选池逐股拉新浪当日主力净额（main_net_yuan 直接为「元」，评分卡口径）
+    # ---- F2 主数据源自适应（2026-09-03 升级 Tushare moneyflow 为主源）----
+    # Tushare 每日 19:30 刷新后快照新鲜（滞后<=2天）-> F2 用 Tushare 主源（零 skew 训练同口径）
+    # 否则回退原逻辑：新浪当日实时覆盖（避免 Tushare 滞后时 F2 反而变旧）
     import g2_realtime as RT
+    MF_PATH = os.path.join(DC.ASTOCK_DIR, "moneyflow", "moneyflow.parquet") \
+        if hasattr(DC, "ASTOCK_DIR") else "D:/astock/moneyflow/moneyflow.parquet"
+    mf_fresh = False
+    try:
+        _mf = pd.read_parquet(MF_PATH, columns=["net_mf_amount"])
+        _latest = pd.Timestamp(_mf.index.get_level_values("trade_date").max())
+        mf_fresh = (target - _latest).days <= 2
+    except Exception as _e:
+        print(f"    [F2] 读 Tushare 快照失败（{_e}），回退新浪兜底")
     pool_codes = pre["ts_code"].astype(str).tolist()
     rt = RT.fetch_main_net_sina(pool_codes, target_date=target.strftime("%Y-%m-%d"))
     rt_hit = 0
     for c in pool_codes:
-        if c not in rt:
-            continue
         m = pre["ts_code"].astype(str) == c
-        pre.loc[m, "main_net"] = rt[c].get("main_net_yuan", np.nan)
-        if "mf_main_net" in pre.columns:
-            pre.loc[m, "mf_main_net"] = rt[c].get("mf_main_net", np.nan)
-        if "mf_main_ratio" in pre.columns:
-            pre.loc[m, "mf_main_ratio"] = rt[c].get("mf_main_ratio", np.nan)
-        rt_hit += 1
-    print(f"    F2 实时覆盖 {rt_hit}/{len(pool_codes)} 只（新浪当日主力净额，元口径）| 未命中回退快照周更(×1e4)")
+        if not m.any():
+            continue
+        _snap = pre.loc[m, "main_net"].iloc[0] if "main_net" in pre.columns else np.nan
+        # 仅当主源缺失/为0 时才用新浪兜底；新鲜时信任 Tushare 主源
+        if c in rt and (not mf_fresh or pd.isna(_snap) or _snap == 0):
+            pre.loc[m, "main_net"] = rt[c].get("main_net_yuan", np.nan)
+            if "mf_main_net" in pre.columns:
+                pre.loc[m, "mf_main_net"] = rt[c].get("mf_main_net", np.nan)
+            if "mf_main_ratio" in pre.columns:
+                pre.loc[m, "mf_main_ratio"] = rt[c].get("mf_main_ratio", np.nan)
+            rt_hit += 1
+    _src = "Tushare每日快照(主源)" if mf_fresh else "新浪当日(兜底,Tushare滞后)"
+    print(f"    F2 主源={_src}；新浪兜底覆盖 {rt_hit}/{len(pool_codes)} 只")
     # F5 为快照当日自算板块涨幅（build_g2_daily 已算），此处直接用 pre 的 industry_pct
     sc = SR.compute_real_scorecard(pre, est)
     pre["total_new"] = sc["total_new_real"].values
@@ -144,15 +159,18 @@ def main():
     for i, (_, r) in enumerate(out.iterrows(), 1):
         md.append(f"| {i} | {r['ts_code']} | {r['prob']:.3f} | {r['total_new']:.0f} | {r['SC_F1']:.0f} | "
                   f"{r['SC_F2']:.0f} | {r['SC_F3']:.0f} | {r['SC_F4']:.0f} | {r['SC_F5']:.0f} | {r['SC_F6']:.0f} |")
-    md += ["", "> ⚠️ F2 为主力净额实时值（新浪当日，预选池内逐股采集，未命中回退周更）；F5 为增量库当日行业涨幅自算。",
+    md += ["", "> ⚠️ F2(主力净额)：主源为 Tushare moneyflow 每日快照（零 skew 训练同口径），仅当快照缺失时用新浪当日兜底；F5 为增量库当日行业涨幅自算。",
            "> ⚠️ 其余新因子（lhb/北向/研报/行业资金流）为 D:/astock 周更最新可用值（可能滞后数天）；买入时需按一字板/停牌复核可执行性。",
            "> 独立研究信号，不构成投资建议。"]
     md_path = os.path.join(SELECT, f"{date_str}_g2_selection.md")
     with open(md_path, "w", encoding="utf-8") as f:
         f.write("\n".join(md))
     # 追加 live 日志（code 必须用 ts_code，不能用 iterrows 的整数 index）；幂等去重
-    rows = [{"date": target.date(), "code": s["ts_code"], "total_new": s["total_new"], "prob": s["prob"]}
-            for _, s in picks.iterrows()]
+    # rank=1..N 按 total_new 降序（picks 已 nlargest 排序）；实盘 g2_config.TOP_N=2，
+    # 前向统计时 rank<=2 即实盘口径子集，Top10 全集用于更快累积 N>30 样本。
+    rows = [{"date": target.date(), "code": s["ts_code"], "rank": rk,
+             "total_new": s["total_new"], "prob": s["prob"]}
+            for rk, (_, s) in enumerate(picks.iterrows(), 1)]
     _append_live_dedup(rows)
     print("    CSV:", csv)
     print("    MD :", md_path)

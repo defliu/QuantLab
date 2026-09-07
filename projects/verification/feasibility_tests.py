@@ -52,7 +52,7 @@ def f2_liquidity():
     print("\n[F-2] 流动性评估...")
     
     # 加载数据估算
-    daily = pd.read_parquet("E:/astock/daily/stock_daily.parquet")
+    daily = pd.read_parquet("D:/astock/daily/stock_daily.parquet")
     
     idx = daily.index
     dates = idx.get_level_values("trade_date")

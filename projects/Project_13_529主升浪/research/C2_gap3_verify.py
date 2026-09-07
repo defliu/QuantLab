@@ -63,7 +63,7 @@ def generate_gap3_signal_table():
         orig_table = json.load(f)
 
     # 加载日线数据获取开盘价
-    df = pd.read_parquet(r"E:/astock/daily/stock_daily.parquet")
+    df = pd.read_parquet(r"D:/astock/daily/stock_daily.parquet")
     df = df.reset_index()
     df = df[['trade_date', 'ts_code', 'open', 'close']].copy()
 

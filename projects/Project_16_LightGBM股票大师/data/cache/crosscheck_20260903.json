@@ -1,0 +1,385 @@
+{
+  "date": "20260903",
+  "stocks": {
+    "002628.SZ": {
+      "fund_flow": {
+        "ok": true,
+        "sources": {
+          "tdx": {
+            "main_net_yuan": -3055374.5,
+            "asof": "2026-09-03 09:39"
+          },
+          "mx_dongcai": {
+            "main_net_yuan": -4108000.0,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "悟道capital_flow不可达，用TDX(首优先)vs东财mx当日两源对拍；TDX与东财mx方向一致(负)量级比1.34"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 5.39
+          },
+          "tdx": {
+            "last": 5.38
+          }
+        },
+        "note": "sina globalStockQuoteRealtime不可达，用TDX现价对拍；腾讯vsTDX最新价一致(差0.19%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "tdx": {
+            "sector_pct": 0.16,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可达，仅TDX行业涨幅单源(无法两源对拍)"
+      }
+    },
+    "002346.SZ": {
+      "fund_flow": {
+        "ok": true,
+        "sources": {
+          "tdx": {
+            "main_net_yuan": 1130557.62,
+            "asof": "2026-09-03 09:39"
+          },
+          "mx_dongcai": {
+            "main_net_yuan": 1066000.0,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "悟道capital_flow不可达，用TDX(首优先)vs东财mx当日两源对拍；TDX与东财mx方向一致(正)量级比1.06"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 19.31
+          },
+          "tdx": {
+            "last": 19.32
+          }
+        },
+        "note": "sina globalStockQuoteRealtime不可达，用TDX现价对拍；腾讯vsTDX最新价一致(差0.05%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "tdx": {
+            "sector_pct": 1.31,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可达，仅TDX行业涨幅单源(无法两源对拍)"
+      }
+    },
+    "002190.SZ": {
+      "fund_flow": {
+        "ok": true,
+        "sources": {
+          "tdx": {
+            "main_net_yuan": -6812740.0,
+            "asof": "2026-09-03 09:39"
+          },
+          "mx_dongcai": {
+            "main_net_yuan": -11220000.0,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "悟道capital_flow不可达，用TDX(首优先)vs东财mx当日两源对拍；TDX与东财mx方向一致(负)量级比1.65"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 25.91
+          },
+          "tdx": {
+            "last": 25.84
+          }
+        },
+        "note": "sina globalStockQuoteRealtime不可达，用TDX现价对拍；腾讯vsTDX最新价一致(差0.27%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "tdx": {
+            "sector_pct": 1.0,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可达，仅TDX行业涨幅单源(无法两源对拍)"
+      }
+    },
+    "300413.SZ": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "tdx": {
+            "main_net_yuan": 29628672.0,
+            "asof": "2026-09-03 09:39"
+          },
+          "mx_dongcai": {
+            "main_net_yuan": -24380000.0,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "悟道capital_flow不可达，用TDX(首优先)vs东财mx当日两源对拍；两源反向: TDX +29628672元 vs 东财mx -24380000元，主力口径分歧"
+      },
+      "quote": {
+        "ok": false,
+        "sources": {
+          "tencent": {
+            "last": 22.3
+          },
+          "tdx": {
+            "last": 22.77
+          }
+        },
+        "note": "sina globalStockQuoteRealtime不可达，用TDX现价对拍；腾讯vsTDX最新价差2.06%(快速波动时点差,需9:45复核)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "tdx": {
+            "sector_pct": 4.11,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可达，仅TDX行业涨幅单源(无法两源对拍)"
+      }
+    },
+    "600498.SH": {
+      "fund_flow": {
+        "ok": true,
+        "sources": {
+          "tdx": {
+            "main_net_yuan": -79483336.0,
+            "asof": "2026-09-03 09:39"
+          },
+          "mx_dongcai": {
+            "main_net_yuan": -103000000.0,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "悟道capital_flow不可达，用TDX(首优先)vs东财mx当日两源对拍；TDX与东财mx方向一致(负)量级比1.30"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 39.47
+          },
+          "tdx": {
+            "last": 39.46
+          }
+        },
+        "note": "sina globalStockQuoteRealtime不可达，用TDX现价对拍；腾讯vsTDX最新价一致(差0.03%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "tdx": {
+            "sector_pct": 0.36,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可达，仅TDX行业涨幅单源(无法两源对拍)"
+      }
+    },
+    "600267.SH": {
+      "fund_flow": {
+        "ok": true,
+        "sources": {
+          "tdx": {
+            "main_net_yuan": -997409.25,
+            "asof": "2026-09-03 09:39"
+          },
+          "mx_dongcai": {
+            "main_net_yuan": -2043000.0,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "悟道capital_flow不可达，用TDX(首优先)vs东财mx当日两源对拍；TDX与东财mx方向一致(负)量级比2.05"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 11.8
+          },
+          "tdx": {
+            "last": 11.79
+          }
+        },
+        "note": "sina globalStockQuoteRealtime不可达，用TDX现价对拍；腾讯vsTDX最新价一致(差0.08%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "tdx": {
+            "sector_pct": -0.02,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可达，仅TDX行业涨幅单源(无法两源对拍)"
+      }
+    },
+    "600103.SH": {
+      "fund_flow": {
+        "ok": true,
+        "sources": {
+          "tdx": {
+            "main_net_yuan": -17120304.0,
+            "asof": "2026-09-03 09:39"
+          },
+          "mx_dongcai": {
+            "main_net_yuan": -14330000.0,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "悟道capital_flow不可达，用TDX(首优先)vs东财mx当日两源对拍；TDX与东财mx方向一致(负)量级比1.19"
+      },
+      "quote": {
+        "ok": false,
+        "sources": {
+          "tencent": {
+            "last": 3.77
+          },
+          "tdx": {
+            "last": 3.82
+          }
+        },
+        "note": "sina globalStockQuoteRealtime不可达，用TDX现价对拍；腾讯vsTDX最新价差1.31%(快速波动时点差,需9:45复核)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "tdx": {
+            "sector_pct": 0.11,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可达，仅TDX行业涨幅单源(无法两源对拍)"
+      }
+    },
+    "300434.SZ": {
+      "fund_flow": {
+        "ok": true,
+        "sources": {
+          "tdx": {
+            "main_net_yuan": -779351.688,
+            "asof": "2026-09-03 09:39"
+          },
+          "mx_dongcai": {
+            "main_net_yuan": -968300.0,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "悟道capital_flow不可达，用TDX(首优先)vs东财mx当日两源对拍；TDX与东财mx方向一致(负)量级比1.24"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 11.21
+          },
+          "tdx": {
+            "last": 11.23
+          }
+        },
+        "note": "sina globalStockQuoteRealtime不可达，用TDX现价对拍；腾讯vsTDX最新价一致(差0.18%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "tdx": {
+            "sector_pct": 0.08,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可达，仅TDX行业涨幅单源(无法两源对拍)"
+      }
+    },
+    "603663.SH": {
+      "fund_flow": {
+        "ok": true,
+        "sources": {
+          "tdx": {
+            "main_net_yuan": -2484574.0,
+            "asof": "2026-09-03 09:39"
+          },
+          "mx_dongcai": {
+            "main_net_yuan": -1096000.0,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "悟道capital_flow不可达，用TDX(首优先)vs东财mx当日两源对拍；TDX与东财mx方向一致(负)量级比2.27"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 40.7
+          },
+          "tdx": {
+            "last": 40.81
+          }
+        },
+        "note": "sina globalStockQuoteRealtime不可达，用TDX现价对拍；腾讯vsTDX最新价一致(差0.27%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "tdx": {
+            "sector_pct": 0.42,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可达，仅TDX行业涨幅单源(无法两源对拍)"
+      }
+    },
+    "300001.SZ": {
+      "fund_flow": {
+        "ok": true,
+        "sources": {
+          "tdx": {
+            "main_net_yuan": -3965025.0,
+            "asof": "2026-09-03 09:39"
+          },
+          "mx_dongcai": {
+            "main_net_yuan": -3771000.0,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "悟道capital_flow不可达，用TDX(首优先)vs东财mx当日两源对拍；TDX与东财mx方向一致(负)量级比1.05"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 33.9
+          },
+          "tdx": {
+            "last": 33.99
+          }
+        },
+        "note": "sina globalStockQuoteRealtime不可达，用TDX现价对拍；腾讯vsTDX最新价一致(差0.26%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "tdx": {
+            "sector_pct": 1.26,
+            "asof": "2026-09-03 09:39"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可达，仅TDX行业涨幅单源(无法两源对拍)"
+      }
+    }
+  }
+}

@@ -23,13 +23,18 @@ from backtest.execution import fill_buy, fill_sell
 from backtest.portfolio import Portfolio
 from backtest.analyzer import compute_metrics
 from backtest.rebalance import target_weights_to_decision
+from risk.daily_overlay import build_daily_risk_overlay
 
 log = logging.getLogger(__name__)
 
 _STRATEGY_CORE_VERSION = "0.2.0"
 _SUMMARY_SCHEMA_VERSION = "0.2"
 
-DEFAULT_BENCHMARK_DB = "F:/backtest_workspace/data/duckdb/benchmark_index.duckdb"
+# 2026-08-29：F 盘不存在，基准 duckdb 已缺失（全盘无此文件，且 D:/astock 内无指数
+# 数据可自建）。改为环境变量可配置，指不到就优雅降级（见 _load_benchmark_series）。
+# 恢复方式：设置环境变量 BENCHMARK_DB_PATH，或直接改这里的默认路径。
+DEFAULT_BENCHMARK_DB = os.environ.get(
+    "BENCHMARK_DB_PATH", "D:/astock/benchmark/benchmark_index.duckdb")
 
 # 让策略侧 evaluate_day 拿到的 bench 序列足以算 MA60 / MA120 等长窗口指标。
 _BENCHMARK_LEAD_IN_DAYS = 120
@@ -321,6 +326,9 @@ def run_backtest(
     pending = None
     n_days = len(calendar)
 
+    # 2026-08-29：每日风险 overlay（crash_guard / regime_gate），默认双关，零影响。
+    risk_overlay = build_daily_risk_overlay(strategy_config)
+
     for i, today in enumerate(calendar):
         if i > 0:
             pf.advance_holding_days()
@@ -416,6 +424,10 @@ def run_backtest(
                 strategy_config=strategy_config,
                 aux_data=aux_data_for_eval,
             )
+            # 每日风险 overlay：崩盘空仓 / 低波动 regime 门控（默认关，不影响既有回测）
+            if risk_overlay.enabled:
+                decision = risk_overlay.apply(
+                    decision, today, pf, window, strategy_config, industry_map)
             if "target_weights" in decision:
                 tw = decision["target_weights"]
                 # 保留策略侧 strategy_specific 诊断：target_weights_to_decision
@@ -518,15 +530,26 @@ def run_backtest(
         open_positions=pf.position_list(),
     )
 
-    is_short_sample = (n_days < 252) or (not benchmark_available)
+    # 2026-08-29 修正：基准缺失不应把长周期回测误判成"短样本"——原写法
+    # `or (not benchmark_available)` 会让任何长度的回测都盖上"仅用于 MVP 管线验证"。
+    # 拆成两个独立信号，各自给各自的结论限定。
+    is_short_sample = (n_days < 252)
     months = round(n_days / 21.0, 1)
+    _warn_parts = []
+    if is_short_sample:
+        _warn_parts.append(
+            u"样本期约 %s 个月（不足 1 年），仅用于 MVP 管线验证，不可作为策略最终定论" % months)
+    if not benchmark_available:
+        _warn_parts.append(
+            u"基准不可用（%s）：超额收益/IR/跟踪误差为空，本结论不能用于相对收益判断"
+            % (benchmark_note or u"未配置 benchmark_code / benchmark_db_path"))
     sample_warning = {
-        "is_short_sample":  bool(is_short_sample),
-        "requested_range":  [start_date, end_date],
-        "actual_range":     [actual_min, actual_max],
-        "trading_days":     n_days,
-        "warning":          (u"样本期约 %s 个月，仅用于 MVP 管线验证，不可作为策略最终定论"
-                             % months) if is_short_sample else "",
+        "is_short_sample":   bool(is_short_sample),
+        "benchmark_missing": bool(not benchmark_available),
+        "requested_range":   [start_date, end_date],
+        "actual_range":      [actual_min, actual_max],
+        "trading_days":      n_days,
+        "warning":           u"；".join(_warn_parts),
     }
 
     from backtest.hashing import compute_data_hash

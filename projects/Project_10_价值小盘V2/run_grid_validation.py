@@ -21,7 +21,7 @@
 """
 import sys, os, time
 # 插入顺序注意: Project_10 最后插入 => sys.path[0]=Project_10, `strategy.*` 解析到本项目模块
-# 2026-08-06 迁移修正: E:\QuantLab -> D:\QuantLab
+# 2026-08-06 迁移修正: D:\QuantLab -> D:\QuantLab
 sys.path.insert(0, r"D:\QuantLab\projects\Project_01_多因子IC小盘Alpha")
 sys.path.insert(0, r"D:\QuantLab")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -76,10 +76,10 @@ is_st = daily["is_st"].astype(bool)
 suspend = daily["suspend_type"].fillna("N")
 panel = panel.loc[~is_st & ~suspend.isin(["S", "R", "R&S"])]
 
-basic = pd.read_parquet(r"E:/astock/basic/stock_basic.parquet")
+basic = pd.read_parquet(r"D:/astock/basic/stock_basic.parquet")
 ind_map = dict(zip(basic["ts_code"], basic["industry"].fillna("其他")))
 
-fin = pd.read_parquet(r"E:/astock/finance/fina_indicator.parquet")
+fin = pd.read_parquet(r"D:/astock/finance/fina_indicator.parquet")
 fin = fin[["ts_code", "end_date", "ann_date", "bps", "roe", "profit_dedt", "debt_to_assets"]].copy()
 fin["ann_date"] = pd.to_datetime(fin["ann_date"], errors="coerce")
 fin = fin.dropna(subset=["ann_date"])

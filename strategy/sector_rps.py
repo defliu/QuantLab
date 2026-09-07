@@ -1,7 +1,7 @@
 # coding: utf-8
 """板块（行业）RPS 计算模块 —— RPS 主升浪策略 v1.1 板块层。
 
-从 E:/astock/basic/stock_basic.parquet 加载行业归属，计算行业 RPS。
+从 D:/astock/basic/stock_basic.parquet 加载行业归属，计算行业 RPS。
 行业 RPS = 行业指数过去 N 日涨幅在全行业的百分位（0-100）。
 
 用法：
@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 
 class SectorRPS:
     def __init__(self, stock_basic_path=None, industry_map=None):
-        self.stock_basic_path = stock_basic_path or "E:/astock/basic/stock_basic.parquet"
+        self.stock_basic_path = stock_basic_path or "D:/astock/basic/stock_basic.parquet"
         self._industry_map = industry_map  # {code: industry}
         self._loaded = False
 

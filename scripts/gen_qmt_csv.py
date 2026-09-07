@@ -29,8 +29,8 @@ import numpy as np
 
 sys.stdout.reconfigure(encoding="utf-8")
 
-DAILY = r"E:\astock\daily\stock_daily.parquet"
-BASIC = r"E:\astock\basic\stock_basic.parquet"
+DAILY = r"D:\astock\daily\stock_daily.parquet"
+BASIC = r"D:\astock\basic\stock_basic.parquet"
 OUT_DIR = r"D:\QMT_POOL"
 
 N_MONTHS = 36   # 历史分位窗口 (策略 HP_WINDOW)

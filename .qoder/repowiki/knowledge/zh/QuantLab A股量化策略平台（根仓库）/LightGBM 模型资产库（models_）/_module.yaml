@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: model_assets
+title: LightGBM 模型资产库（models/）
+scope:
+    - models/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 6e4c16f7-95d7-497d-99ae-f8dab84c53fd
+kk_ordinal: 11
+kk_cards:
+    overview:
+        id: 6c228b61-357e-4004-9397-f8f465e7e564
+        title: LightGBM 模型资产库（models/）
+    architecture_design:
+        id: 4b85c416-9534-4cbe-ada5-6c8e47718a74
+        title: LightGBM 模型资产库（models/）
+    tech_stack:
+        id: 895ec3b6-3728-4aec-bd13-f5f90ee877b5
+        title: LightGBM 模型资产库（models/）
+    coding_conventions:
+        id: f267bfda-d960-441c-92e4-e651e08466ab
+        title: LightGBM 模型资产库（models/）
+    unique_setup_and_commands:
+        id: 3fb70b7f-0dac-4dba-994d-587c356cc297
+        title: LightGBM 模型资产库（models/）

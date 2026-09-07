@@ -1,9 +1,9 @@
 # coding=utf-8
 """一键更新数据：astock parquet + CSV
 
-数据源: E:/量化/行情数据更新池/
+数据源: D:/量化/行情数据更新池/
 目标:
-  1. E:/astock/daily/stock_daily.parquet (增量更新)
+  1. D:/astock/daily/stock_daily.parquet (增量更新)
   2. D:/QMT_POOL/mfic_fin_data.csv (重新生成)
 
 用法: python scripts/update_data.py
@@ -12,9 +12,9 @@ import os
 import pandas as pd
 import numpy as np
 
-ASTOCK_PATH = "E:/astock/daily/stock_daily.parquet"
+ASTOCK_PATH = "D:/astock/daily/stock_daily.parquet"
 CSV_PATH = "D:/QMT_POOL/mfic_fin_data.csv"
-UPDATE_POOL = "E:/量化/行情数据更新池"
+UPDATE_POOL = "D:/量化/行情数据更新池"
 
 
 def normalize_dates(df):

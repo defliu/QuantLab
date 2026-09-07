@@ -1,0 +1,22 @@
+{
+  "date": "20260903",
+  "executed_live": true,
+  "executed_at": "2026-09-03 10:2x",
+  "data_asof": "2026-09-03 10:17 (TDX quotes + 东财mx 资金, 悟道不可达)",
+  "tier": 2,
+  "target": [
+    {"code": "300413.SZ", "name": "芒果超媒", "total": 70.0, "prob": 0.582},
+    {"code": "002190.SZ", "name": "成飞集成", "total": 61.0, "prob": 0.616}
+  ],
+  "strategy_capital": 98505.35,
+  "target_value_each": 46790.04,
+  "sell": [
+    {"code": "300413.SZ", "name": "芒果超媒", "vol": 100, "price": 21.4, "action": "减仓超配", "status": "FILLED", "order_id": 1082137674}
+  ],
+  "buy": [
+    {"code": "002190.SZ", "name": "成飞集成", "vol": 100, "price": 25.99, "action": "补仓", "status": "FILLED", "order_id": 1082137680}
+  ],
+  "hold": ["300413.SZ", "002190.SZ"],
+  "locked": [],
+  "note": "按 9:45 任务设定补跑（当天 09:45 计划任务未触发）。目标 top2=芒果超媒+成飞集成（均已是持仓），故仅做等权微调：减芒果 100 股/补成飞 100 股。F2 用东财mx 当日口径（悟道不可达），F5 TDX 单源，F3 用 9:25 缓存。"
+}

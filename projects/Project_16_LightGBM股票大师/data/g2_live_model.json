@@ -1,0 +1,16 @@
+{
+  "model_path": "D:/QuantLab/models\\lgb_model_v3_g2_strong_real_20260907_3281t.txt",
+  "meta_path": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\features_v3_g2_strong_real_20260907.json",
+  "trained_date": "20260907",
+  "trees": 3281,
+  "test_ic": 0.07942,
+  "quantile_fwd_ret": {
+    "1": -0.00159,
+    "2": 0.00247,
+    "3": 0.00354,
+    "4": 0.00435,
+    "5": 0.00785
+  },
+  "promoted_at": "2026-09-07 17:51:22",
+  "note": "g2_strong_real 周更重训 live 指针；由 train_g2.py --promote 写入"
+}

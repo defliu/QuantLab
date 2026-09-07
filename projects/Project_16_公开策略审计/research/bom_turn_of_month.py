@@ -26,7 +26,7 @@ RESULTS = os.path.join(PROJ, "results")
 os.makedirs(RESULTS, exist_ok=True)
 
 ETF_CSV = r"D:/QuantLab/data/etf_daily/510300_SH.csv"
-DB_PATH = r"F:/backtest_workspace/data/duckdb/benchmark_index.duckdb"
+DB_PATH = r"D:/astock/benchmark/benchmark_index.duckdb"
 ETF_COST = 0.0001 * 2  # 佣金单边万1，ETF 免印花税，round trip
 INDEX_START = "2009-01-05"
 INDEX_END = "2026-06-12"

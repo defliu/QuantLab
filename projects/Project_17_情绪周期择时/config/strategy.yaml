@@ -6,10 +6,10 @@ project:
   spec: specs/任务书_v1.md
 
 data:
-  board_daily: E:/astock/board/ths_daily.parquet
-  board_index: E:/astock/board/ths_index.parquet
-  limit_list_d: E:/astock/lhb/limit_list_d.parquet
-  stock_daily: E:/astock/daily/stock_daily.parquet
+  board_daily: D:/astock/board/ths_daily.parquet
+  board_index: D:/astock/board/ths_index.parquet
+  limit_list_d: D:/astock/lhb/limit_list_d.parquet
+  stock_daily: D:/astock/daily/stock_daily.parquet
 
 sentiment:
   start_date: "20200101"     # 主回测期起点（涨停明细 2019-11-28 起）

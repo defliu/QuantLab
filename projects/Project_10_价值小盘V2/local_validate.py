@@ -9,15 +9,18 @@ import time
 # 路径设置
 PROJ_DIR = os.path.dirname(os.path.abspath(__file__))
 QUANTLAB = os.path.dirname(os.path.dirname(PROJ_DIR))  # QuantLab 根
-sys.path.insert(0, PROJ_DIR)
+# 2026-08-29 修正：PROJ_DIR 必须在 QUANTLAB 之前。原顺序把 QUANTLAB 插在最前，
+# 导致 `from strategy.scoring import V2Scorer` 解析到根目录 strategy/（无
+# scoring.py）而报 ModuleNotFoundError，项目内 strategy/ 被屏蔽。
 sys.path.insert(0, QUANTLAB)
+sys.path.insert(0, PROJ_DIR)
 
 from broker.local_context import LocalContext, connect_data, load_strategy_source
 from strategy.scoring import V2Scorer
 
 # ============ 配置 ============
 POOL_DIR = r"D:\QMT_POOL"
-DATA_DIR = r"E:/astock"
+DATA_DIR = r"D:/astock"
 N_SHOW = 20  # 显示前N只
 
 

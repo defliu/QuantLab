@@ -1006,7 +1006,7 @@ def _execute_buy(C, code):
             if amount <= 0:
                 return
         # 下单（生产级11参数格式，末尾必须传C：opType, orderType, accountid, orderCode, prType, modelprice, volume, remark, quickTrade, extra, C）
-        # 参考: E:/QuantLab 内自包含的 11 参数 passorder 封装（生产验证过）
+        # 参考: D:/QuantLab 内自包含的 11 参数 passorder 封装（生产验证过）
         # 买入用市价单(price_type=5, price=-1)，确保成交；不能用9参数无C格式（模拟端报 request_id 错误）
         passorder(23, 1101, ACCOUNT_ID, code, 5, -1, amount, "V2买入", 2, "", C)
         # 记录待成交订单 + 当日下单（对账用）
@@ -1051,7 +1051,7 @@ def _execute_sell(C, code):
         entry_price = _entry_prices.get(code, price)
         entry_date = _entry_dates.get(code, _get_market_time(C).strftime("%Y-%m-%d"))
         # 下单（生产级11参数格式，末尾必须传C；卖出用市价单 price_type=5 确保成交）
-        # 参考: E:/QuantLab 内自包含的 11 参数 passorder 封装（生产验证过）
+        # 参考: D:/QuantLab 内自包含的 11 参数 passorder 封装（生产验证过）
         passorder(24, 1101, ACCOUNT_ID, code, 5, -1, amount, "V2卖出", 2, "", C)
         # 记录待成交订单 + 当日下单（对账用，保留原成本价/日期用于部分成交/回滚恢复）
         _pending_orders[code] = {

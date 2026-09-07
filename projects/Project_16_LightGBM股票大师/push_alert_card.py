@@ -2,7 +2,7 @@
 """管道健康告警卡片：候选缺失 / 桥心跳停 / 任务失败 / 对账异常 时主动推送。
 
 用法：
-  python push_alert_card.py --title "G2 候选缺失" --body "20260902_g2_top2.csv 不存在，已中止换仓" --level error
+  python push_alert_card.py --title "G2 候选缺失" --body "20260902_g2_top10.csv 不存在，已中止换仓" --level error
   python push_alert_card.py --title "桥心跳异常" --body "last_heartbeat 3 分钟未刷新" --level warn --no-send
 """
 import argparse

@@ -59,7 +59,7 @@ canvas{background:#fff;border:1px solid #ddd;margin-top:12px}
 code{background:#eee;padding:1px 5px;border-radius:3px}
 </style></head><body>
 <h1>ATR 低波动策略 v3 — 冲 15% 年化：优化方向实证</h1>
-<p>数据源 <code>E:/astock</code> (2009-2026-07, 全A Tushare口径, 后复权)；回测 2023-01 ~ 2026-07；单边成本 0.1%；月/季频；合格域=换手[1,8]%% &amp; 有成交 &amp; 非ST &amp; 上市≥60日。</p>
+<p>数据源 <code>D:/astock</code> (2009-2026-07, 全A Tushare口径, 后复权)；回测 2023-01 ~ 2026-07；单边成本 0.1%；月/季频；合格域=换手[1,8]%% &amp; 有成交 &amp; 非ST &amp; 上市≥60日。</p>
 
 <div class="note"><b>一句话结论：</b>纯低波+质量在当下样本只能给 ~10%% 年化；<b>15%%+ 只有两条现实路径</b>——① 给组合加 <b>1.5x 两融杠杆</b>（季频+质量+动量门控+VT+行业cap+30~50只 vol-parity），回测 15~18%%；② 把本金加到 <b>~100万</b> 做 100只等权（无杠杆）。价值/动量"排序加权"在 2023-26 反而拖累，<b>不要用</b>；"动量门控"(剔除近期输家)是免费增益。</div>
 

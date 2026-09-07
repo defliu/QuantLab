@@ -1,5 +1,5 @@
 # coding: utf-8
-"""备用数据源 (E:/huicexitong/gpsj.duckdb) vs 主数据源 (E:/astock) 同区间 ATR MAX5 回测对比.
+"""备用数据源 (E:/huicexitong/gpsj.duckdb) vs 主数据源 (D:/astock) 同区间 ATR MAX5 回测对比.
 
 口径已对齐验证: gpsj 取 '不复权_*' 列 + '复权因子'，与 astock raw 口径逐字段一致。
 区间: 2025 全年 (两源均有数据; gpsj 数据最新 2026-04-03，不越界)。
@@ -20,7 +20,7 @@ if PROJECT_ROOT not in sys.path:
 from backtest.hashing import compute_config_hash, compute_universe_hash
 from backtest.engine import run_backtest
 from data.astock_reader import AstockParquetReader
-from data.gpsj_reader import GpsjDuckDBReader
+from data.gpsj_reader import GpsjDuckDBReader, GPSJ_DB_PATH, is_available
 from data.universe import load_universe
 
 CONFIG = "D:/QuantLab/projects/Project_ATR_lowvol/config/atr_10w_price50_a_max.yaml"
@@ -30,6 +30,13 @@ END = "2025-12-31"
 
 def main():
     logging.basicConfig(level=logging.INFO)
+    # 备用源不可用时（2026-08-29 起：本机无 E 盘，gpsj.duckdb 缺失）跳过并显式标注，
+    # 不静默跳过、也不因缺源报错退出 —— 结论为单源（astock）结论。
+    if not is_available():
+        print("[SKIP] gpsj 交叉验证未执行：备用数据源不可用 -> %s" % GPSJ_DB_PATH)
+        print("[SKIP] 恢复方式：设置环境变量 GPSJ_DB_PATH，或修改 data/gpsj_reader.py 的 GPSJ_DB_PATH。")
+        print("[SKIP] 本次回测结论为【单源结论（仅 astock）】，未经备用源交叉验证，报告中须显式标注。")
+        return 0
     cfg = yaml.safe_load(open(CONFIG, encoding="utf-8"))
     bt = dict(cfg["backtest"])
     bt["start_date"] = START
@@ -52,7 +59,7 @@ def main():
         print("=" * 60)
         print("数据源: %s" % src)
         if src == "astock":
-            reader = AstockParquetReader(bt.get("path") or "E:/astock/daily/stock_daily.parquet",
+            reader = AstockParquetReader(bt.get("path") or "D:/astock/daily/stock_daily.parquet",
                                          adjustment=bt.get("adjustment", "hfq"))
         else:
             reader = GpsjDuckDBReader(adjustment=bt.get("adjustment", "hfq"))

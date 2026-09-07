@@ -2,7 +2,7 @@
 """检查 stock_basic.parquet 的 industry 字段覆盖率。"""
 import pyarrow.parquet as pq
 
-PATH = "E:/astock/basic/stock_basic.parquet"
+PATH = "D:/astock/basic/stock_basic.parquet"
 t = pq.read_table(PATH)
 df = t.to_pandas()
 

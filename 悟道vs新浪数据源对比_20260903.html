@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>悟道 MCP vs 新浪财经 · 实时数据源对比</title>
+<style>
+  :root{ --bg:#f4f6f9; --card:#fff; --ink:#1a1d21; --mut:#5b6470; --line:#e3e8ef; --accent:#2f6df0; --ok:#1a9e5c; --warn:#e08a00; --bad:#d8443c; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.6}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 60px}
+  h1{font-size:24px;margin:0 0 4px}
+  .meta{color:var(--mut);font-size:13px;margin-bottom:18px}
+  .card{background:var(--card);border:1px solid #e6ebf2;border-radius:12px;padding:18px 20px;margin:16px 0;box-shadow:0 1px 3px rgba(20,30,50,.05)}
+  h2{font-size:18px;margin:26px 0 8px}
+  h3{font-size:15px;margin:18px 0 6px;color:#2a2f37}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:10px 0}
+  th,td{border:1px solid #e3e8ef;padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:#eef3fb;font-weight:600}
+  td.ctr{text-align:center}
+  .tag{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:600}
+  .t-ok{background:#e6f7ee;color:var(--ok)}
+  .t-warn{background:#fdf0db;color:var(--warn)}
+  .t-bad{background:#fbe7e5;color:var(--bad)}
+  .t-neu{background:#eef1f5;color:var(--mut)}
+  .score{font-weight:700;font-size:15px}
+  .note{font-size:12.5px;color:var(--mut);margin-top:6px}
+  .verdict{border-left:5px solid var(--accent);background:#f0f6ff}
+  .errata{background:#fff7e6;border:1px solid #f0a020;border-radius:8px;padding:12px 16px;margin:14px 0;font-size:13.5px}
+  code{background:#eef1f5;padding:1px 5px;border-radius:4px;font-size:12.5px}
+  .disc{font-size:12px;color:var(--mut);border-top:1px dashed #d6dde6;margin-top:30px;padding-top:12px}
+  .bar{height:8px;border-radius:4px;background:#e6ebf2;overflow:hidden;margin-top:4px}
+  .bar > i{display:block;height:100%}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>悟道 MCP vs 新浪财经 · 实时数据源对比</h1>
+<div class="meta">对比时点：2026-09-03 ｜ 目的：判断 P16 实时链路中「悟道」与「新浪」哪家更划算（成本 / 覆盖 / 稳定性 / 合规）｜ 方法：官方文档核对 + 本机 9-02~9-03 运行日志实证</div>
+
+<div class="card verdict">
+  <b>结论（先看这里）</b>
+  <p style="margin:8px 0 0">
+  若只论 <b>F2 主力资金流</b> 一项且不计合规：<b>新浪零成本最直接</b>。但若计入<b>合规授权 + 覆盖广度 + 长期稳定性</b>，<b>悟道更划算</b>——它在免费额度内可一份覆盖 F2/F3/F5/竞价/龙虎榜/研报，且是商业授权服务。
+  但两者近期都不稳（新浪 8/31 曾 TDX 503 降级、悟道 9-02~9-03 连挂两天），<b>真正的划算方案是：用 Tushare <code>moneyflow</code>（200 元/年）做 F2 权威源，悟道/新浪退为校验位</b>。
+  </p>
+</div>
+
+<h2>一、逐维对比</h2>
+<table>
+  <tr><th style="width:16%">维度</th><th style="width:42%">悟道 A股股票数据 MCP</th><th style="width:42%">新浪财经接口</th></tr>
+  <tr>
+    <td><b>成本</b></td>
+    <td>有<b>每日免费额度</b>（具体档位需开发者控制台查看）；超出部分付费，公开页未列价目。对 P16 量级（候选池 ~10–50 只/日、数次调用）边际成本≈0。</td>
+    <td><b>0 元</b>。完全免费、无需注册、无密钥。但属于<b>非官方破解接口</b>，无商业授权。</td>
+  </tr>
+  <tr>
+    <td><b>覆盖范围</b></td>
+    <td><b>63 个只读工具</b>：行情/分时/K线、涨停梯队、<b>资金流向（个股+板块）</b>、龙虎榜、<b>研报</b>、<b>集合竞价</b>、题材热度、事件/催化日历、基本面、盘后复盘工作流。</td>
+    <td>窄：主要是<b>实时行情 + 五档</b>、历史 K 线、以及 <code>money.finance.sina.com.cn</code> 的<b>个股主力净额</b>（F2）。无板块资金流、无龙虎榜、无研报、无竞价净额。</td>
+  </tr>
+  <tr>
+    <td><b>在 P16 中的角色</b></td>
+    <td>备用/扩展层：<code>mcp_wudao</code> 提供 capital_flow、龙虎榜、板块、竞价、新闻。是 F3 催化、F5 板块、竞价预判的唯一真实外部源候选。</td>
+    <td><b>F2 主源</b>：<code>g2_realtime.py:43</code> 用 <code>SINA_FF_URL</code>（vCSMarketData）拉 r0_net+r1_net 主力净额。是当前 F2 实时计算的直接来源。</td>
+  </tr>
+  <tr>
+    <td><b>稳定性（实证）</b></td>
+    <td><span class="tag t-bad">近期不稳</span> 9-02、9-03 连续两天 <code>mcp_wudao 四工具不可达</code> / <code>悟道 capital_flow 不可达</code>（见 crosscheck 日志，单日"不可达"出现 30 次）。</td>
+    <td><span class="tag t-warn">偶发降级</span> 8/31 出现 TDX 503 → F2 降级到 iFind 前一日口径（用陈旧值当实时）。无 SLA，格式/限流随时变。</td>
+  </tr>
+  <tr>
+    <td><b>合规</b></td>
+    <td><span class="tag t-ok">授权</span> 商业 MCP 服务，API Key 认证即代表使用授权，适合实盘/准实盘。</td>
+    <td><span class="tag t-bad">灰</span> 新浪官方从未发布此 API（infoway 明确警示）。程序化交易报备语境下，实盘使用有合规隐患。</td>
+  </tr>
+  <tr>
+    <td><b>集成复杂度</b></td>
+    <td>中：需 MCP 客户端支持 + Bearer API Key，或回退 REST <code>/api/openclaw</code>。多一层服务依赖。</td>
+    <td>低：直接 HTTP GET，curl/requests 即可。P16 已内嵌。</td>
+  </tr>
+  <tr>
+    <td><b>数据延迟</b></td>
+    <td>盘后/盘中结构化推送（MCP 工具返回，时效取决于服务端）。</td>
+    <td>实时报价约 <b>15 秒延迟</b>（文档标注）；资金流为日级汇总，盘前无"当日"值。</td>
+  </tr>
+</table>
+
+<h2>二、综合评分（满分 5）</h2>
+<table>
+  <tr><th>维度</th><th class="ctr">悟道</th><th class="ctr">新浪</th><th>说明</th></tr>
+  <tr><td>成本</td><td class="ctr">4.5</td><td class="ctr">5.0</td><td>新浪绝对免费；悟道免费额度内≈0，付费价未公开略扣</td></tr>
+  <tr><td>覆盖广度</td><td class="ctr">5.0</td><td class="ctr">2.0</td><td>悟道 63 工具覆盖 F2/F3/F5/竞价/龙虎榜/研报；新浪仅 F2</td></tr>
+  <tr><td>稳定性</td><td class="ctr">2.0</td><td class="ctr">2.5</td><td>两者近期均不稳；新浪至少已内嵌且有降级链</td></tr>
+  <tr><td>合规</td><td class="ctr">4.5</td><td class="ctr">1.5</td><td>悟道授权；新浪非官方破解接口</td></tr>
+  <tr><td>集成</td><td class="ctr">3.0</td><td class="ctr">4.5</td><td>新浪直连最简单</td></tr>
+  <tr><td><b>加权合计</b></td><td class="ctr"><b>3.6</b></td><td class="ctr"><b>3.1</b></td><td>悟道略优（合规+覆盖拉分），但稳定性两项均偏弱</td></tr>
+</table>
+<div class="note">加权方式：成本 20% + 覆盖 25% + 稳定性 20% + 合规 20% + 集成 15%。</div>
+
+<h2>三、对 P16 的实际价值判断</h2>
+<div class="card">
+  <h3>F2 主力资金流</h3>
+  <p>新浪是当前<b>主源</b>（g2_realtime.py 直接调用），悟道仅作交叉验证候选。两者都非"权威口径"：权威口径是 Tushare <code>moneyflow</code> 四档（训练期绑定、零 skew）。因此 F2 的"划算"应看<b>谁能更稳地逼近 Tushare 口径</b>，而非谁免费。</p>
+  <h3>F3 新闻催化（权重 0.20）</h3>
+  <p><b>只有悟道能补</b>。新浪无新闻/公告源；P16 已有 <code>rc_rating</code>（研报，来自东财）和 <code>lhb_net</code>（龙虎榜，来自东财）可作替代构造，但悟道的研报/事件日历工具是更直接的 F3 真实源。这是悟道相对新浪的<b>决定性优势</b>。</p>
+  <h3>F5 板块 / 竞价预判</h3>
+  <p>板块涨幅本地 OHLCV 自算（不依赖外部）；板块净流入本地同花顺已有。竞价净额：新浪无，<b>悟道 <code>auctionMainNetAmount</code> 是唯一候选</b>——这正是此前建议用悟道兜底 mcp_tdx 竞价单点的原因。</p>
+</div>
+
+<h2>四、推荐部署（按划算程度排序）</h2>
+<table>
+  <tr><th style="width:8%">序</th><th style="width:24%">动作</th><th style="width:30%">理由</th><th style="width:38%">注意</th></tr>
+  <tr><td class="ctr">1</td><td><b>Tushare moneyflow 做 F2 权威源</b><br>（200 元/年，2000 积分）</td><td>口径与训练一致、零 skew、授权稳定；每日 19:30 后刷新落 parquet，消除 11 天滞后。</td><td>需确认账号积分；这是"最划算"的根基。</td></tr>
+  <tr><td class="ctr">2</td><td><b>悟道保留为扩展/校验层</b></td><td>一份覆盖 F3/F5/竞价/龙虎榜/研报；免费额度内边际成本≈0；商业授权合规。</td><td>须加<b>健康探测 + 熔断</b>（连挂 ≥2 天自动转备份），否则 9-02/9-03 的连挂会拖垮盘前。</td></tr>
+  <tr><td class="ctr">3</td><td><b>新浪降为 F2 实时校验位</b></td><td>已内嵌、零成本、直连简单；作 Tushare 值的日内波动校验尚可。</td><td>不建议作主源（合规灰 + 15 秒延迟 + 偶发降级）；实盘口径下优先退居。</td></tr>
+</table>
+
+<div class="errata">
+  <b>关键事实（来自本机实证，非推测）</b>
+  <ul>
+    <li>9-02 / 9-03：<code>crosscheck_*.json</code> 中"悟道 capital_flow 不可达 / mcp_wudao 四工具不可达"连续出现，单日"不可达"计数 30 次。</li>
+    <li>8-31：新浪 F2 取数 TDX 503 → 降级到 iFind 前一日口径（用 8/28 陈旧值当实时）。</li>
+    <li>悟道付费价目公开页未列，需开发者控制台（stock.quicktiny.cn/developer）核对；新浪永远 0 元但无授权。</li>
+  </ul>
+</div>
+
+<div class="disc">
+  <b>数据来源</b>：悟道能力/价格来自官方站 data.quicktiny.cn 与 MCP 目录（mcpfind / lobehub / mcprepository，2026-09-03 检索）；新浪接口特性来自 CSDN / infoway 技术博客（公开，非一手官方文档）；稳定性来自 P16 本机 <code>crosscheck_20260902.json</code> / <code>crosscheck_20260903.json</code> 与 <code>review_full.py</code> 日志（一手）。
+  <p style="margin:8px 0 0"><b>免责声明</b>：以上内容基于公开资料与本地运行日志，仅供参考，不构成投资建议。市场有风险，投资需谨慎。</p>
+</div>
+
+</div>
+</body>
+</html>

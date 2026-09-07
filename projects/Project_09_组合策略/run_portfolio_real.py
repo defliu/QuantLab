@@ -9,8 +9,8 @@ import numpy as np
 from pathlib import Path
 
 # 配置
-DAILY_PATH = "E:/astock/daily/stock_daily.parquet"
-FINANCE_PATH = "E:/astock/finance/fina_indicator.parquet"
+DAILY_PATH = "D:/astock/daily/stock_daily.parquet"
+FINANCE_PATH = "D:/astock/finance/fina_indicator.parquet"
 START_DATE = "2020-01-01"
 END_DATE = "2026-06-30"
 INITIAL_CAPITAL = 1_000_000
@@ -321,7 +321,7 @@ def run_backtest():
             print(f"  {year}年: 收益{yr_ret:.1f}%, 回撤{yr_dd:.1f}%")
     
     # 保存
-    OUTPUT_DIR = "E:/QuantLab/projects/Project_09_组合策略/results"
+    OUTPUT_DIR = "D:/QuantLab/projects/Project_09_组合策略/results"
     Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
     eq.to_csv(f"{OUTPUT_DIR}/portfolio_real_equity.csv", index=False)
     if len(trades_df) > 0:

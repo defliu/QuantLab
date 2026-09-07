@@ -17,6 +17,7 @@
 用法：python verify_model_panel_sync.py
 接线：run_scheduled.ps1 daily（盘后）/ retrain（周更后）自动调用，exit!=0 日志告警。
 """
+import argparse
 import datetime
 import json
 import os
@@ -49,6 +50,10 @@ def panel_max_date():
 
 
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--warn-only", action="store_true",
+                    help="仅报告不一致项、不改变退出码（供周更门禁拒绝后的信息提示，避免误报为系统故障）")
+    args = ap.parse_args()
     issues = []
 
     if not os.path.exists(BINDING):
@@ -81,8 +86,9 @@ def main():
     if bind_panel is None:
         issues.append("绑定记录缺失 panel_max_date")
     else:
-        if cur_panel > bind_panel:
-            issues.append(f"面板已更新至 {cur_panel}，但正式模型仍绑定 {bind_panel} —— 需重训候选并 promote（模型与数据必须同版联动）")
+        gap = (cur_panel - bind_panel).days
+        if gap > 7:
+            issues.append(f"面板最新日 {cur_panel} 比绑定 {bind_panel} 超前 {gap} 天(>7) —— 已多日未周更重训 promote（模型与数据必须同版联动）")
         elif cur_panel < bind_panel:
             issues.append(f"面板最新日 {cur_panel} 小于绑定 {bind_panel}（面板回退/异常）")
 
@@ -94,6 +100,9 @@ def main():
     if issues:
         for it in issues:
             print("!! " + it)
+        if args.warn_only:
+            print("校验结果: 不一致（--warn-only，仅提示，不阻断）")
+            sys.exit(0)
         print("校验结果: 不一致 (exit=1)")
         sys.exit(1)
 

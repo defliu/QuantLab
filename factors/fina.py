@@ -1,7 +1,7 @@
 # coding: utf-8
 """General fundamental as-of loader (point-in-time, no look-ahead).
 
-Source: E:/astock/finance/fina_indicator.parquet
+Source: D:/astock/finance/fina_indicator.parquet
 Provides:
   - get_fina_asof(code, date, field): latest value of any field as of date
   - is_roe_stable(code, date, n):     ROE>0 for the last n reported quarters
@@ -14,7 +14,7 @@ there is a single cache (no double-load of the 300k-row parquet).
 import numpy as np
 import pandas as pd
 
-ASTOCK_FINA_PATH = "E:/astock/finance/fina_indicator.parquet"
+ASTOCK_FINA_PATH = "D:/astock/finance/fina_indicator.parquet"
 _FIELDS = ["roe", "fcff", "fcfe", "ocfps"]
 
 _CACHE = None

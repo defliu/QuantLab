@@ -4,11 +4,11 @@
 Usage:
     python -m scripts.run_backtest --config config/atr_lowvol_fw.yaml
 
-Reads yaml from D:/QuantLab/config/, reads E:/astock parquet (READ-ONLY),
+Reads yaml from D:/QuantLab/config/, reads D:/astock parquet (READ-ONLY),
 writes 6 result files to D:/QuantLab/reports/<run_id>_<config>/.
 
 Boundaries:
-  - Reads E:/astock (READ-ONLY)
+  - Reads D:/astock (READ-ONLY)
   - Writes only under results dir (default D:/QuantLab/reports)
   - Never imports xtquant / passorder
 """

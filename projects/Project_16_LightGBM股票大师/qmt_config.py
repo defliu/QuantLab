@@ -12,7 +12,10 @@ import os
 import time
 
 # ---- miniQMT 客户端路径 ----
-QMT_PATH = r"E:\国金QMT交易端模拟"
+# 2026-08-30 用户确认：使用 D:\国金QMT交易端模拟（含 users\67014907 登录记录 + XTPACK，完整有效）。
+# 注意：本机另有一套 D:\QMT交易端模拟 亦完整（曾部署指向，2026-08-29 实测 trade connect=0），
+# 两套并存时勿同时运行交易实例，避免 userdata_mini 连接冲突（connect=-1）。
+QMT_PATH = r"D:\国金QMT交易端模拟"
 USERDATA = os.path.join(QMT_PATH, "userdata_mini")          # xtquant 连接路径
 XTPACK = os.path.join(QMT_PATH, "bin.x64", "Lib", "site-packages")  # xtquant 包位置
 
@@ -44,6 +47,7 @@ TRANS_RATE = 0.00001                   # 过户费（仅沪市 60 开头，双�
 STOP_LOSS_PCT = -0.07                  # 止损线（成本价 -7%）
 TAKE_PROFIT_PCT = 0.15                 # 止盈线（成本价 +15%）
 TRAILING_PCT = 0.08                    # 移动止盈：最高价回撤 8% 平仓
+TRAILING_ACTIVATE_PCT = 0.08           # 移动止盈激活阈值（2026-09-07 修复，T-20260907-002）：峰值须 ≥ 成本×(1+阈值) 才开始追踪，防"追盈=追跌"
 MONITOR_INTERVAL = 5                   # 盯盘轮询间隔（秒）
 MONITOR_WATCHLIST = [                  # 盯盘股票池（可含持仓与候选）
     "603969.SH", "300919.SZ", "001260.SZ", "603066.SH", "300201.SZ",
@@ -58,9 +62,29 @@ AUTO_SELL_PRICE_TYPE = "LATEST"        # 卖出价类型: LATEST=市价(最新�
 SIGNAL_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "qmt_signal.json")  # 盯盘预警输出
 TRADE_LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "qmt_trade_log.csv")  # 成交记录
 
-# ---- 飞书推送（lark-cli bot 私聊通道，已验证连通）----
+# ---- 飞书推送（lark-cli 私聊通道）----
 LARK_CLI = r"C:\Users\Administrator\.trae-cn\plugins\trae-remote-official\lark\1.0.4\bin\lark-cli.exe"  # lark-cli 可执行文件
-FEISHU_OPEN_ID = "ou_76deaecde50e10576f8fdc8ba954a7b0"  # 接收人 open_id（刘诚，bot 私聊已测试连通）
+# 接收人 open_id（刘诚）。open_id 是「应用维度」的：
+#   bot cli_aade2524ddbd9bd6 下刘诚 = ou_bd13444d8ea53c28249c669f43f3eeff（已验证可私聊，2026-08-29 实测）
+#   （刘诚为「股票投研群」群主：user 视角群主 ou_34f40... == 刘诚，bot 视角群主 ou_bd13444... 即本值）
+#   注意：ou_76dea... 属于 cli_aa0f... 应用，跨应用无效，勿用。
+FEISHU_OPEN_ID = "ou_bd13444d8ea53c28249c669f43f3eeff"
+# 群发目标：留空 = 只私聊 FEISHU_OPEN_ID（2026-08-29 用户决定取消群发）。
+#   如需群发，填群 chat_id（如股票投研群 oc_f436148efffabf9383cf7075bca9b17f）。
+LARK_PUSH_CHAT_ID = ""
+# 是否同时私聊 FEISHU_OPEN_ID（当前仅私聊，此开关保留备用；True 时在群发基础上追加私聊）
+LARK_PUSH_DM = False
+# 推送身份：本机 = "bot"（走 ~/.lark-cli/config.json 的 cli_aade2524ddbd9bd6 应用，secret 在系统 keychain）。
+LARK_PUSH_AS = "bot"
+
+# ---- 飞书卡片回调（card.action.trigger 验签与落库）----
+# LARK_ENCRYPT_KEY：飞书开放平台「事件与回调 → 卡片回传交互」页面的 Encrypt Key。
+# 留空 = 跳过签名校验（仅限本机开发调试）；公网部署务必填写，否则回调可被伪造。
+LARK_ENCRYPT_KEY = ""
+# 卡片按钮回调（加入关注）落库文件：追加被关注标的，供盯盘合并与审计。
+WATCH_CARD_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "qmt_watch_cards.json")
+CALLBACK_HOST = "0.0.0.0"   # 回调服务监听地址
+CALLBACK_PORT = 9001        # 回调服务监听端口（配合内网穿透对外暴露）
 
 
 # ---- 账本 account_id 戳（红线 T-20260823-004，2026-08-28 补齐 P16）----

@@ -52,3 +52,9 @@ reports/
 .trae-html-share-packages/
 mcp/
 
+
+# MCP 配置含 token，不提交
+.mcp.json
+
+# 数据源 API 密钥（不入库）
+config/data_source_keys.json

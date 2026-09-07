@@ -2,7 +2,7 @@
 """检查 benchmark_index.duckdb 结构。"""
 import duckdb
 
-con = duckdb.connect("F:/backtest_workspace/data/duckdb/benchmark_index.duckdb")
+con = duckdb.connect("D:/astock/benchmark/benchmark_index.duckdb")
 try:
     tables = con.execute("SHOW TABLES").fetchdf()
     print("=== 表 ===")

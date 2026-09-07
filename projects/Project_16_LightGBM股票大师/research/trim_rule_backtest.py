@@ -8,7 +8,7 @@
 
 口径：
   - 大盘 = 全市场个股当日收益率中位数（等权市场代理，与模型 rel_mom_20 同口径）
-  - 主力净额 = buy_lg + buy_elg - sell_lg - sell_elg（E:/astock/moneyflow，周更）
+  - 主力净额 = buy_lg + buy_elg - sell_lg - sell_elg（D:/astock/moneyflow，周更）
   - 前向收益 = 收盘(ffill 停牌) 未来 k 个交易日收益, 与市场同期相减得超额
   - 宇宙 = is_st==0 且 上市>=120 交易日
 """
@@ -24,7 +24,7 @@ PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 项目根
 RES = os.path.join(PROJ, "research", "results")
 os.makedirs(RES, exist_ok=True)
 
-A = r"E:\astock"
+A = r"D:\astock"
 START = "2020-01-01"
 END = "2026-08-21"  # moneyflow 最后日
 N_LIST = [2, 3, 5]
@@ -100,7 +100,7 @@ def main():
     report.append(f"# 风控规则回测：连续N日跑输大盘 + 主力持续净流出M日 → 减仓")
     report.append("")
     report.append(f"> 生成时间 {time.strftime('%Y-%m-%d %H:%M:%S')} ｜ 区间 {START} ~ {END} ｜ 大盘=全市场收益中位数")
-    report.append(f"> 口径：主力净额=买大单+买超大-卖大单-卖超大（E:/astock/moneyflow 周更）；前向=收盘(停牌ffill)未来k交易日；宇宙=非ST且上市≥120交易日")
+    report.append(f"> 口径：主力净额=买大单+买超大-卖大单-卖超大（D:/astock/moneyflow 周更）；前向=收盘(停牌ffill)未来k交易日；宇宙=非ST且上市≥120交易日")
     report.append(f"> 宇宙行数 {len(df):,}；仅研究回测，不构成投资建议、未接入正式版本")
     report.append("")
 

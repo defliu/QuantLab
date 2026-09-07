@@ -32,7 +32,7 @@ RESULTS = os.path.join(PROJ, "results")
 OUT_DIR = os.path.join(RESULTS, "riskstack_out")
 AUX_CACHE = os.path.join(RESULTS, "riskstack_aux_cache.pkl")
 SUMMARY_CSV = os.path.join(RESULTS, "riskstack_summary.csv")
-BASE = r"E:/astock"
+BASE = r"D:/astock"
 CFG_YAML = os.path.join(PROJ, "config", "cai_market_a4.yaml")
 
 # 注册 Project_16 内两个策略（薄入口负责，不改全局 strategy/ 目录）

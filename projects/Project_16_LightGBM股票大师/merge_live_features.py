@@ -2,7 +2,7 @@
 """合并视图 v2：主库(历史) + 临时增量库 → 用合并行情重算最新日量价特征。
 
 数据分层：
-  主数据 E:/astock（周更权威快照）→ 只读，绝不修改
+  主数据 D:/astock（周更权威快照）→ 只读，绝不修改
   临时库 data_live/incremental_daily.parquet（xtdata 每日增量 OHLCV）→ 独立
   本脚本输出 data_live/latest_features.parquet（最新日 v3 特征），供 deploy 预测
 
@@ -157,7 +157,7 @@ def main():
     print("    快照:", OUT)
     print("    特征数:", len(feat_cols), "| 行数:", len(latest))
 
-    print("[5/5] 主数据 E:/astock 未修改 ✅（临时库独立）")
+    print("[5/5] 主数据 D:/astock 未修改 ✅（临时库独立）")
     print("    下一步: deploy 可用 --date 2026-08-19 基于此快照预测（需将快照作为面板输入）")
 
 

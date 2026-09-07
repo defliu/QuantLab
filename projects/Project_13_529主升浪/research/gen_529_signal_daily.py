@@ -142,7 +142,7 @@ def main():
     else:
         import pandas as pd
         df_dates = pd.read_parquet(
-            "E:/astock/daily/stock_daily.parquet", columns=[]).index.get_level_values("trade_date")
+            "D:/astock/daily/stock_daily.parquet", columns=[]).index.get_level_values("trade_date")
         target = str(sorted(set(df_dates))[-1])[:10]
     print("=== 529 信号日更: 目标日 %s ===" % target)
 

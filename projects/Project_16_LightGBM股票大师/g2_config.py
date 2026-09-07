@@ -3,7 +3,7 @@
 
 - 账号：70180771（国金QMT模拟端大QMT），信号层留外部、执行走桥 D:/QMT_POOL/g2_bridge
 - 资金池：独立文件 g2_strategy_capital.json（不读 V1.3 data/strategy_capital.json）
-- 候选：data/selections/g2/<date>_g2_top2.csv（deploy_predict_g2 产出），不混 V1.3 D_model_top10
+- 候选：data/selections/g2/<date>_g2_top10.csv（deploy_predict_g2 --top 10 产出，对齐回测 TOP10），不混 V1.3 D_model_top10
 - 边界红线：只能动 G2 自己账本（positions_cfg/fills）的票，绝不纳管/卖出他人持仓
 """
 import json
@@ -27,10 +27,15 @@ START_CAPITAL = 100000.0             # 初始 10 万
 G2_CAPITAL_FILE = os.path.join(BRIDGE_DIR, "g2_strategy_capital.json")
 
 # ---- 交易参数（对齐 V1.3 口径） ----
-TOP_N = 2                            # 目标持仓数（等权）
+TOP_N = 2                            # 目标持仓数（等权，对齐回测 TOP）
+SELECT_TOP = 10                      # 候选池大小（对齐回测 TOP10；deploy_predict_g2 --top 10 产出 _g2_top10.csv）
 RESERVE_CASH_PCT = 0.05              # 保留现金 5%（总仓 95%）
 MIN_ORDER_VOL = 100                  # 整手
 REDLINE = 60.0                       # g2 评分红线（deploy_predict_g2 --threshold 60 已过滤）
+HOLD_DAYS = 10                       # 持有期（交易日，对齐回测 N=10：满 N 个交易日到期卖出，止损/止盈优先）
+
+# 持仓建仓日持久化（rebalance_g2 维护：{code: "YYYYMMDD"}）
+HOLD_DATES_FILE = os.path.join(DATA_DIR, "rebalance_g2", "g2_hold_dates.json")
 
 # ---- 飞书（沿用同一接收人，仅推送通道） ----
 FEISHU_OPEN_ID = "ou_bd13444d8ea53c28249c669f43f3eeff"

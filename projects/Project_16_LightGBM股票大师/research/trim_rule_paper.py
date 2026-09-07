@@ -5,7 +5,7 @@
 ⚠️ 依据 research/results/trim_rule_backtest_report.md（2020-2026 回测）：该信号前向收益无
     显著预测力（证伪），本脚本只用于观察它在当前持仓上的触发情况，不代表建议执行减仓。
 用法：python research/trim_rule_paper.py
-数据：E:/astock daily + moneyflow（周更，可能滞后数日，见日志提示）
+数据：D:/astock daily + moneyflow（周更，可能滞后数日，见日志提示）
 """
 import os
 import sys
@@ -17,7 +17,7 @@ import pandas as pd
 PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PROJ)
 
-A = r"E:\astock"
+A = r"D:\astock"
 N_DEFAULT = 3
 M_DEFAULT = 3
 

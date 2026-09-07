@@ -23,9 +23,9 @@ END = "2026-06-30"
 MIN_IC_N = 30  # 每期最少样本
 REBAL_FREQ = "M"  # 月频IC
 
-DAILY_PATH = r"E:/astock/daily/stock_daily.parquet"
-DIV_PATH = r"E:/astock/finance/dividend.parquet"
-BASIC_PATH = r"E:/astock/basic/stock_basic.parquet"
+DAILY_PATH = r"D:/astock/daily/stock_daily.parquet"
+DIV_PATH = r"D:/astock/finance/dividend.parquet"
+BASIC_PATH = r"D:/astock/basic/stock_basic.parquet"
 
 OUT_DIR = r"D:\QuantLab\projects\Project_10_价值小盘V2\results"
 os.makedirs(OUT_DIR, exist_ok=True)
@@ -333,7 +333,7 @@ def main():
     lines.append("# A1+A2 因子 IC Kill Test（果仁 P0/P1 验证）\n")
     lines.append("> 通宵批次任务书 T-20260817-004")
     lines.append("> 运行时间: %s" % time.strftime("%Y-%m-%d %H:%M:%S"))
-    lines.append("> 数据: E:/astock, PIT circ_mv 域快照, 月频 rankIC")
+    lines.append("> 数据: D:/astock, PIT circ_mv 域快照, 月频 rankIC")
     lines.append("> 区间: %s ~ %s\n" % (START, END))
 
     # 数据预检结果

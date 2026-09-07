@@ -8,7 +8,7 @@ import os
 import re
 from datetime import datetime
 
-LOG_DIR = r"E:\国金QMT交易端模拟\userdata\log"
+LOG_DIR = r"D:\国金QMT交易端模拟\userdata\log"
 
 def check_orders():
     """检查今日委托状态"""

@@ -2,7 +2,7 @@
 """多因子IC测试配置"""
 
 # 数据路径
-DATA_DIR = "E:/astock"
+DATA_DIR = "D:/astock"
 DAILY_PATH = f"{DATA_DIR}/daily/stock_daily.parquet"
 BASIC_PATH = f"{DATA_DIR}/basic/stock_basic.parquet"
 FINANCE_PATH = f"{DATA_DIR}/finance/fina_indicator.parquet"
@@ -43,4 +43,4 @@ WINSORIZE_PCT = (0.01, 0.99)
 NEUTRALIZE_INDUSTRY = True
 
 # 输出目录（QuantLab 本地 reports）
-OUTPUT_DIR = "E:/QuantLab/projects/Project_01_多因子IC小盘Alpha/reports"
+OUTPUT_DIR = "D:/QuantLab/projects/Project_01_多因子IC小盘Alpha/reports"

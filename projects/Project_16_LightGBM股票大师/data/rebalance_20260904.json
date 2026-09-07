@@ -1,0 +1,46 @@
+{
+  "date": "20260904",
+  "target": [
+    {
+      "code": "300413.SZ",
+      "name": "芒果超媒",
+      "total": 69.0,
+      "prob": 0.567
+    },
+    {
+      "code": "003005.SZ",
+      "name": "竞业达",
+      "total": 66.5,
+      "prob": 0.5644
+    }
+  ],
+  "strategy_capital": 95897.6,
+  "target_value_each": 45551.36,
+  "sell": [],
+  "buy": [
+    {
+      "code": "300413.SZ",
+      "vol": 100,
+      "held_vol": 2000,
+      "held_value": 42500.0,
+      "price": 21.25,
+      "total": 69.0,
+      "action": "补仓"
+    },
+    {
+      "code": "003005.SZ",
+      "vol": 100,
+      "held_vol": 2300,
+      "held_value": 42504.0,
+      "price": 18.48,
+      "total": 66.5,
+      "action": "补仓"
+    }
+  ],
+  "trim": [],
+  "hold": [
+    "003005.SZ",
+    "300413.SZ"
+  ],
+  "locked": []
+}

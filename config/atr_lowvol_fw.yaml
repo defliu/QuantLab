@@ -6,11 +6,11 @@ backtest:
   end_date: "2026-07-31"
   initial_cash: 1000000.0
   benchmark_code: "000300.SH"      # 沪深300 作基准（若 duckdb 无数据会自动禁用）
-  benchmark_db_path: "F:/backtest_workspace/data/duckdb/benchmark_index.duckdb"
+  benchmark_db_path: "D:/astock/benchmark/benchmark_index.duckdb"
 
 data:
-  source: astock                   # 第一数据源 E:/astock
-  path: "E:/astock/daily/stock_daily.parquet"
+  source: astock                   # 第一数据源 D:/astock
+  path: "D:/astock/daily/stock_daily.parquet"
   adjustment: hfq                  # 后复权
   fundamentals: false              # ROE 走 factors/roe.py 自带 asof，不依赖此
 

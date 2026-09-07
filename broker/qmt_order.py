@@ -15,7 +15,7 @@ QMT 委托买卖标准模块（防坑版）
     本模块 send_limit_order / send_market_order 严格按正确签名封装，调用方只管传 (code, price, volume)。
 
 坑2【P1】miniQMT 本地端没有 get_trade_detail_data -> 反查必失败 -> 持仓状态错乱
-    本地 miniQMT（E:\\国金QMT交易端模拟）的 C 对象没有 get_trade_detail_data 方法。
+    本地 miniQMT（D:\\国金QMT交易端模拟）的 C 对象没有 get_trade_detail_data 方法。
     若依赖反查确认成交，每次都抛异常返回 None -> 买入被误判为 pending ->
     超时回滚把刚建的 ledger 删掉（"回滚持仓"）-> 账户实则已成交但策略以为没持仓 ->
     下次再平衡重复买入 / 持仓失联。

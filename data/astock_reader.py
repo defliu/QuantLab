@@ -1,12 +1,12 @@
 # coding: utf-8
 """Astock parquet reader — duck-typed match for DuckDBDailyReader.
 
-Data source: E:\\astock\\daily\\stock_daily.parquet (tushare daily data, 2009+).
+Data source: D:\\astock\\daily\\stock_daily.parquet (tushare daily data, 2009+).
 Implements the same 4-method duck-typed interface as DuckDBDailyReader:
   load_window / trading_calendar / coverage / close(code, date)
 
 Constraints:
-  - Read-only; no writes to E:\\astock\\
+  - Read-only; no writes to D:\\astock\\
   - Output columns aligned with DuckDBDailyReader: date, open, high, low, close, vol, amount
   - Code format: tushare ts_code (e.g. "000001.SZ")
 """
@@ -19,7 +19,7 @@ import pandas as pd
 log = logging.getLogger(__name__)
 
 DATA_SOURCE_ASTOCK = "astock"
-ASTOCK_DAILY_PATH = "E:/astock/daily/stock_daily.parquet"
+ASTOCK_DAILY_PATH = "D:/astock/daily/stock_daily.parquet"
 
 
 class AstockParquetReader(object):

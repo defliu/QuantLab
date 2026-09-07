@@ -9,7 +9,7 @@ import os
 import numpy as np
 import pandas as pd
 
-BASE = r"E:/astock"
+BASE = r"D:/astock"
 OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "results")
 os.makedirs(OUT, exist_ok=True)
 

@@ -244,9 +244,9 @@ html = """<!DOCTYPE html>
 <div class="section"><h2>数据来源</h2>
   <table>
     <tr><th>项目</th><th>值</th></tr>
-    <tr><td>行情数据</td><td>E:/astock/daily/stock_daily.parquet（含 total_mv）</td></tr>
-    <tr><td>财务数据</td><td>E:/astock/finance/fina_indicator.parquet（PIT 按 ann_date）</td></tr>
-    <tr><td>退市信息</td><td>E:/astock/basic/stock_basic.parquet → D:/QMT_POOL/delist_info.csv</td></tr>
+    <tr><td>行情数据</td><td>D:/astock/daily/stock_daily.parquet（含 total_mv）</td></tr>
+    <tr><td>财务数据</td><td>D:/astock/finance/fina_indicator.parquet（PIT 按 ann_date）</td></tr>
+    <tr><td>退市信息</td><td>D:/astock/basic/stock_basic.parquet → D:/QMT_POOL/delist_info.csv</td></tr>
     <tr><td>回测引擎</td><td>projects/Project_10_价值小盘V2/runner.py（v2.3：delist_screen + buffer_keep=160）</td></tr>
     <tr><td>交易成本</td><td>单边千一（佣金+印花税+滑点合并口径）</td></tr>
     <tr><td>风控</td><td>8%止损 / 60天持有上限 / 15%组合回撤断路器</td></tr>

@@ -37,7 +37,7 @@ def p(*a):
 def build_ttm_div_yield():
     """构造 TTM 股息率宽表 (index=全部交易日, columns=ts_code, value=股息率)"""
     t0 = time.time()
-    div = pd.read_parquet(r"E:/astock/finance/dividend.parquet")
+    div = pd.read_parquet(r"D:/astock/finance/dividend.parquet")
     div = div[div["div_proc"].astype(str).str.strip() == "实施"].copy()  # 仅已实施
     div = div[div["ex_date"].notna()].copy()                            # 有除息日
     div["ex_date"] = pd.to_datetime(div["ex_date"])

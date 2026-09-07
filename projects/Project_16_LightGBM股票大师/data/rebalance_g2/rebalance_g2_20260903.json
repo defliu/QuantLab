@@ -1,0 +1,99 @@
+{
+  "date": "20260903",
+  "account_id": "70180771",
+  "capital": 100000.0,
+  "pool": [
+    {
+      "code": "300475.SZ",
+      "total": 70.5
+    },
+    {
+      "code": "002641.SZ",
+      "total": 69.0
+    },
+    {
+      "code": "300001.SZ",
+      "total": 67.0
+    },
+    {
+      "code": "300748.SZ",
+      "total": 66.5
+    },
+    {
+      "code": "603893.SH",
+      "total": 65.0
+    },
+    {
+      "code": "002772.SZ",
+      "total": 64.5
+    },
+    {
+      "code": "301150.SZ",
+      "total": 64.5
+    },
+    {
+      "code": "002965.SZ",
+      "total": 63.5
+    },
+    {
+      "code": "601636.SH",
+      "total": 63.5
+    },
+    {
+      "code": "601118.SH",
+      "total": 63.0
+    }
+  ],
+  "ledger": {},
+  "note": "g2 候选池 10 只（红线 60）",
+  "hold_days": 10,
+  "hold_dates": {
+    "600262.SH": "20260902",
+    "300964.SZ": "20260902"
+  },
+  "sells": [],
+  "buys": [
+    {
+      "code": "300475.SZ",
+      "vol": 200,
+      "price": 172.35,
+      "held": 0,
+      "target_vol": 200,
+      "total": 70.5
+    },
+    {
+      "code": "002641.SZ",
+      "vol": 11800,
+      "price": 4.0,
+      "held": 0,
+      "target_vol": 11800,
+      "total": 69.0
+    }
+  ],
+  "skips": [],
+  "written": false,
+  "hold_dates_preview": {
+    "600262.SH": "20260902",
+    "300964.SZ": "20260902",
+    "300475.SZ": "20260903",
+    "002641.SZ": "20260903"
+  },
+  "orders": [
+    {
+      "action": "BUY",
+      "code": "300475.SZ",
+      "vol": 200,
+      "price": 172.35,
+      "reason": "g2选股Top1(total=70.5)",
+      "strategy_order_id": "P16_20260903_0001"
+    },
+    {
+      "action": "BUY",
+      "code": "002641.SZ",
+      "vol": 11800,
+      "price": 4.0,
+      "reason": "g2选股Top2(total=69.0)",
+      "strategy_order_id": "P16_20260903_0002"
+    }
+  ]
+}

@@ -29,7 +29,7 @@ import pandas as pd
 PROJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RESULTS = os.path.join(PROJ, "results")
 os.makedirs(RESULTS, exist_ok=True)
-BASE = r"E:/astock"
+BASE = r"D:/astock"
 START, END = "2019-01-01", "2026-06-30"
 
 SURVIVOR_CODE_SET = None  # stock_basic 现存列表（A0 宇宙）

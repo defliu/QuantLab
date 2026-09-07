@@ -15,9 +15,10 @@ print()
 # 1. 查找xtquant源路径
 print("[1/4] 查找xtquant源路径...")
 possible_paths = [
-    Path("E:/国金QMT交易端模拟/bin.x64/Lib/site-packages/xtquant"),
-    Path("E:/国金QMT交易端模拟/Lib/site-packages/xtquant"),
-    Path("D:/miniQMT/userdata_mini/Lib/site-packages/xtquant"),
+    # 2026-08-29 修正：本机无 E 盘，实际存在的三个 xtquant 位置均在 D 盘
+    Path("D:/国金QMT交易端模拟/bin.x64/Lib/site-packages/xtquant"),
+    Path("D:/QMT交易端模拟/bin.x64/Lib/site-packages/xtquant"),
+    Path("D:/国金证券QMT交易端/bin.x64/Lib/site-packages/xtquant"),
 ]
 
 xtquant_src = None
@@ -30,7 +31,7 @@ for p in possible_paths:
 if not xtquant_src:
     print("❌ 未找到xtquant源路径")
     print("\n请手动指定路径:")
-    print("  例如: E:\\国金QMT交易端模拟\\bin.x64\\Lib\\site-packages\\xtquant")
+    print("  例如: D:\\国金QMT交易端模拟\\bin.x64\\Lib\\site-packages\\xtquant")
     sys.exit(1)
 
 # 2. 复制xtquant到系统Python
@@ -63,9 +64,9 @@ except ImportError as e:
 # 4. 创建必要目录
 print("\n[4/4] 创建必要目录...")
 dirs = [
-    Path("E:/QuantLab/logs"),
-    Path("E:/QuantLab/data"),
-    Path("E:/QuantLab/data/cache"),
+    Path("D:/QuantLab/logs"),
+    Path("D:/QuantLab/data"),
+    Path("D:/QuantLab/data/cache"),
 ]
 for d in dirs:
     d.mkdir(parents=True, exist_ok=True)
@@ -75,7 +76,7 @@ print("\n" + "=" * 60)
 print("✅ 配置完成！")
 print("=" * 60)
 print("\n下一步:")
-print("  1. 启动QMT: E:\\国金QMT交易端模拟\\bin.x64\\XtMiniQmt.exe")
+print("  1. 启动QMT: D:\\国金QMT交易端模拟\\bin.x64\\XtMiniQmt.exe")
 print("  2. 登录账号: 70180771")
 print("  3. 测试连接: python test_connection.py")
 print("  4. 启动实盘: start_trading.bat")

@@ -6,8 +6,8 @@
 用法: python run_rebalance_comparison.py"""
 import sys, os, time
 sys.path.insert(0, os.path.dirname(__file__))
-sys.path.insert(0, r"E:\QuantLab")
-sys.path.insert(0, r"E:\QuantLab\projects\Project_01_多因子IC小盘Alpha")
+sys.path.insert(0, r"D:\QuantLab")
+sys.path.insert(0, r"D:\QuantLab\projects\Project_01_多因子IC小盘Alpha")
 
 import yaml
 import pandas as pd
@@ -55,11 +55,11 @@ suspend = daily["suspend_type"].fillna("N")
 panel = panel.loc[~is_st & ~suspend.isin(["S", "R", "R&S"])]
 
 # 行业映射
-basic = pd.read_parquet(r"E:/astock/basic/stock_basic.parquet")
+basic = pd.read_parquet(r"D:/astock/basic/stock_basic.parquet")
 ind_map = dict(zip(basic["ts_code"], basic["industry"].fillna("其他")))
 
 # 财务数据
-fin = pd.read_parquet(r"E:/astock/finance/fina_indicator.parquet")
+fin = pd.read_parquet(r"D:/astock/finance/fina_indicator.parquet")
 fin = fin[["ts_code", "end_date", "ann_date", "bps", "roe", "profit_dedt", "debt_to_assets"]].copy()
 fin["ann_date"] = pd.to_datetime(fin["ann_date"], errors="coerce")
 fin = fin.dropna(subset=["ann_date"])

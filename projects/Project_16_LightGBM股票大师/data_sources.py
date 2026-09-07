@@ -44,7 +44,10 @@ def fetch_minqmt(codes: List[str], timeout: float = 1.5) -> Dict[str, dict]:
             pass
     time.sleep(timeout)
 
-    ticks = xtdata.get_full_tick(codes)
+    try:
+        ticks = xtdata.get_full_tick(codes)
+    except Exception as e:  # 行情服务未启动/断连时降级到腾讯，而非崩溃
+        return {"_error": f"miniQMT 行情服务异常: {e}"}
     results = {}
     for code in codes:
         t = ticks.get(code) or {}

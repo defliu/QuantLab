@@ -5,12 +5,12 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
-DAILY_PATH = "E:/astock/daily/stock_daily.parquet"
-FINANCE_PATH = "E:/astock/finance/fina_indicator.parquet"
+DAILY_PATH = "D:/astock/daily/stock_daily.parquet"
+FINANCE_PATH = "D:/astock/finance/fina_indicator.parquet"
 START_DATE = "2020-01-01"
 END_DATE = "2026-06-30"
 INITIAL_CAPITAL = 1_000_000
-OUTPUT_DIR = "E:/QuantLab/projects/Project_03_PEAD盈余漂移/results"
+OUTPUT_DIR = "D:/QuantLab/projects/Project_03_PEAD盈余漂移/results"
 
 
 def run_pead_backtest(close, ann_map, trade_dates_list, 

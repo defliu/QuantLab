@@ -20,7 +20,7 @@ class CB(XtQuantTraderCallback):
         pass
 
 
-t = XtQuantTrader(r"E:\国金QMT交易端模拟\userdata_mini", int(time.time()))
+t = XtQuantTrader(r"D:\国金QMT交易端模拟\userdata_mini", int(time.time()))
 t.register_callback(CB())
 t.start()
 rc = t.connect()

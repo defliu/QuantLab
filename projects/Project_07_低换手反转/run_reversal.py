@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
-DAILY_PATH = "E:/astock/daily/stock_daily.parquet"
+DAILY_PATH = "D:/astock/daily/stock_daily.parquet"
 START_DATE = "2020-01-01"
 END_DATE = "2026-06-30"
 INITIAL_CAPITAL = 1_000_000
@@ -15,7 +15,7 @@ STOP_LOSS = -0.07
 COMMISSION = 0.00015  # 万1.5（低换手策略对佣金敏感）
 STAMP_TAX = 0.001
 SLIPPAGE = 0.002
-OUTPUT_DIR = "E:/QuantLab/projects/Project_07_低换手反转/results"
+OUTPUT_DIR = "D:/QuantLab/projects/Project_07_低换手反转/results"
 
 
 def main():

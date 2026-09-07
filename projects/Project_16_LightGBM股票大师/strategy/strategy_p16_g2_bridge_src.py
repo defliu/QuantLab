@@ -50,6 +50,7 @@ ACTIVE_SKIP_STATUS = (53, 54, 57)    # active_only 时跳过终态（55部成是
 STOP_LOSS_PCT = 0.07
 TAKE_PROFIT_PCT = 0.15
 TRAILING_PCT = 0.08
+TRAIL_ACTIVATE_PCT = 0.08   # 追盈激活阈值（2026-09-07 修复，T-20260907-002）：峰值≥成本×(1+阈值)才追踪，防"追盈=追跌"
 
 # 反查参数
 LOOKUP_RETRIES = 6
@@ -544,13 +545,62 @@ def _process_cancels(C, cancel_data, date):
 # pending 状态机
 # ============================================================
 def _handle_rejected_retry(C, date, sid, info, now, deal_vol):
-    """status=55 废单：累计已成交到filled_so_far，计retry重报剩余量；retry耗尽则ABANDON。"""
-    global _g_today_abandon_count
+    """status=57 真废单：先确认原单死透才重报剩余量；原单仍活跃则延后复查绝不重报。
+    2026-09-02 P0 修复：55=部成(活跃态，原单仍在成交)曾被误当废单直接重报 → 原单+重报单双成交
+    = 双倍建仓（实锤 600262 3000→6400）。对齐 timeout_retry 纪律：死透(53/54/57或查不到)才重报。
+    注意调用方已限定 status==57；此处二次确认是双保险，防模拟端状态码语义漂移。"""
+    global _g_today_fill_count, _g_today_abandon_count
     code = info["code"]
     action = info["action"]
     vol = info.get("vol", 0)
-    filled_so_far = info.get("filled_so_far", 0) + deal_vol
+    cur_vol = info.get("cur_vol", vol)
     retry = info.get("retry", 0)
+
+    # 死透确认（短轮询4×0.5s）：原单仍活跃/已成交满，绝不重报
+    dead = False
+    saw_order = False
+    filled_now = 0
+    for _ in range(4):
+        time.sleep(0.5)
+        _oid2, m2 = _lookup_order(C, code, cur_vol, action, sid=sid, active_only=False)
+        if m2 is None:
+            continue
+        saw_order = True
+        st2 = int(getattr(m2, "m_nOrderStatus", 0) or 0)
+        dv2 = _extract_deal_volume(m2, fallback_vol=cur_vol)
+        if dv2 >= cur_vol:
+            filled_now = dv2
+            break
+        if st2 in CONFIRM_DEAD_STATUS:
+            dead = True
+            break
+    if not saw_order:
+        dead = True
+    # 原单实际已全成交 → FILLED 收尾，绝不重报
+    if filled_now > 0:
+        total_deal = info.get("filled_so_far", 0) + filled_now
+        print("[P16G2][FILLED] %s %s 原单已全成交 deal=%d" % (sid, code, total_deal))
+        _add_or_update_fill(date, {
+            "strategy_order_id": sid,
+            "code": info.get("bridge_code", code),
+            "action": action,
+            "vol": total_deal,
+            "price": info.get("price", 0),
+            "status": "FILLED",
+            "sysid": info.get("sysid", ""),
+            "reason": info.get("risk_reason", "filled, original still active"),
+            "ts": _now_str(),
+        })
+        _g_pending.pop(sid, None)
+        _g_today_fill_count += 1
+        return
+    if not dead:
+        # 原单未确认死透（仍活跃）→ 延后60s复查，不重报不计数（防双倍持仓）
+        print("[P16G2][REJECTED-UNCONFIRMED] %s %s 原单未死透，延后60s复查" % (sid, code))
+        info["time"] = now - PENDING_TIMEOUT + 60
+        return
+
+    filled_so_far = info.get("filled_so_far", 0) + deal_vol
     info["filled_so_far"] = filled_so_far
     if retry >= MAX_RETRY:
         print("[P16G2][ABANDON] %s %s 废单retry=%d filled=%d" % (sid, code, retry, filled_so_far))
@@ -562,7 +612,7 @@ def _handle_rejected_retry(C, date, sid, info, now, deal_vol):
             "price": info.get("price", 0),
             "status": "ABANDONED",
             "sysid": info.get("sysid", ""),
-            "reason": info.get("risk_reason", "rejected status=55, retry exhausted"),
+            "reason": info.get("risk_reason", "rejected status=57, retry exhausted"),
             "ts": _now_str(),
         })
         _g_pending.pop(sid, None)
@@ -815,9 +865,12 @@ def _check_pending_orders(C, date):
             _g_pending.pop(sid, None)
             _g_today_fill_count += 1
             continue
-        # 1b) 废单 → 计retry重报剩余量
-        if status == 55:
-            print("[P16G2][REJECTED] %s %s status=55废单 deal=%d" % (sid, code, deal_vol))
+        # 1b) 废单(57终态) → 计retry重报剩余量
+        # 2026-09-02 P0 修复：55=部成(活跃态，原单仍在成交)，不是废单！误当废单直接重报剩余量
+        # 且不撤原单 → 原单继续成交 + 重报单也成交 = 双倍建仓（9/2 实锤 600262 3000→6400）。
+        # 55 走 1d/1a 等原单自然成交满；只有 status=57(真废单终态) 才重报。
+        if status == 57:
+            print("[P16G2][REJECTED] %s %s status=57废单 deal=%d" % (sid, code, deal_vol))
             _handle_rejected_retry(C, date, sid, info, now, deal_vol)
             continue
         # 1c) 撤类终态(53,54) → CANCELED 收尾（vol=total_deal，防漏计最后成交）
@@ -938,6 +991,10 @@ def _check_risk_signals(C, date):
         last = float(tick.get("lastPrice", 0) or 0)
         if last <= 0:
             continue
+        can_use = info.get("can_use", info.get("vol", 0))
+        if can_use <= 0:
+            # T+1 卫生（T-20260907-002）：当日买入(T+1锁)不评估卖出信号、不并入峰值（避免买入日高点污染追盈峰值）
+            continue
         high = max(float(tick.get("high", last) or last), last, info.get("peak", cost))
         info["peak"] = high
         action = "HOLD"
@@ -948,13 +1005,13 @@ def _check_risk_signals(C, date):
             action, note = "SELL_STOP", "现价%.2f 跌破止损位%.2f" % (last, stop_line)
         elif last >= tp_line:
             action, note = "SELL_TAKE_PROFIT", "现价%.2f 达止盈位%.2f" % (last, tp_line)
-        elif high > cost and last <= high * (1 - TRAILING_PCT):
-            action, note = "SELL_TRAILING", "从高点%.2f 回撤%.0f%% 触发追盈(线%.2f)" % (
-                high, TRAILING_PCT * 100, high * (1 - TRAILING_PCT))
+        elif info["peak"] >= cost * (1 + TRAIL_ACTIVATE_PCT):
+            # 追盈激活阈值 + 保本底线（T-20260907-002）：峰值≥成本×(1+8%)才追踪；线=max(成本,peak×0.92)
+            trail_line = max(cost, info["peak"] * (1 - TRAILING_PCT))
+            if last <= trail_line:
+                action, note = "SELL_TRAILING", "从高点%.2f 回撤%.0f%% 触发追盈(线%.2f)" % (
+                    info["peak"], TRAILING_PCT * 100, trail_line)
         if action == "HOLD":
-            continue
-        can_use = info.get("can_use", info.get("vol", 0))
-        if can_use <= 0:
             continue
         # 触发 → 记防重复标记 → passorder 卖出 → 走 pending 状态机
         _g_risk_sold.add(code)

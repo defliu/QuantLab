@@ -44,7 +44,7 @@ def main():
             last_q = qkey
 
     # 读 circ_mv，构建 date×code 透视 + ffill（最近已知市值）
-    df = pd.read_parquet("E:/astock/daily/stock_daily.parquet", columns=["circ_mv"])
+    df = pd.read_parquet("D:/astock/daily/stock_daily.parquet", columns=["circ_mv"])
     piv = df["circ_mv"].unstack("ts_code")
     piv = piv.sort_index().ffill()
 

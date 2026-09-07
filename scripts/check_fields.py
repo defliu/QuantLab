@@ -4,7 +4,7 @@ import re
 import pandas as pd
 
 # Check strategy file
-with open('E:/QuantLab/scripts/strategy_mfic_sim.py', 'r', encoding='utf-8') as f:
+with open('D:/QuantLab/scripts/strategy_mfic_sim.py', 'r', encoding='utf-8') as f:
     content = f.read()
 
 fin_refs = re.findall(r'fd\.get\("(\w+)"\)', content)

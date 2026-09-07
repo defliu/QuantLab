@@ -15,10 +15,10 @@ backtest:
   end_date: "2025-12-31"
   initial_cash: 1000000
   benchmark_code: "000300.SH"
-  benchmark_db_path: "F:/backtest_workspace/data/duckdb/benchmark_index.duckdb"
+  benchmark_db_path: "D:/astock/benchmark/benchmark_index.duckdb"
 
 data:
-  path: "E:/astock/daily/stock_daily.parquet"
+  path: "D:/astock/daily/stock_daily.parquet"
   adjustment: "hfq"           # 后复权（与 ATR 低波一致）
 
 universe:
@@ -55,7 +55,7 @@ strategy_params:
   keep_held: 1                 # 1=已持仓 RPS 仍高则保留，0=每月全量换仓
   keep_threshold: 60           # 已持仓保留的 RPS 阈值（宽松，60）
 
-  # 板块参数（v1.1：板块 RPS 过滤，行业归属来自 E:/astock/basic/stock_basic.parquet）
+  # 板块参数（v1.1：板块 RPS 过滤，行业归属来自 D:/astock/basic/stock_basic.parquet）
   sector_rps_enabled: 1        # 1=启用板块 RPS 前 N 过滤，0=禁用
   sector_top_n: 5              # 板块 RPS 前 N
   sector_rps_window: 20        # 板块 RPS 窗口（日）

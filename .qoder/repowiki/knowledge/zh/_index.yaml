@@ -1,9 +1,9 @@
 # 知识卡导出索引文件
 schema_version: 1
 locale: zh-CN
-commit: 344574276b7affdb148c959f47511e145ea2917d
+commit: 72c31f6c7504f04787386d45277a7f185d8c4042
 branch: master
-exported_at: "2026-08-28T08:30:06Z"
+exported_at: "2026-09-06T14:30:00Z"
 modules:
     backtest_engine:
         dir_name: A 股回测引擎（DailyBacktestEngine）
@@ -68,6 +68,15 @@ modules:
         children: []
         depends_on: []
         related_to: []
+    model_assets:
+        dir_name: LightGBM 模型资产库（models_）
+        title: LightGBM 模型资产库（models/）
+        scope:
+            - models/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
     quant_projects:
         dir_name: A股量化策略项目集（projects_）
         title: A股量化策略项目集（projects/）
@@ -85,6 +94,7 @@ modules:
             - quant_projects/project_09_portfolio_strategy
             - quant_projects/project_10_value_smallcap_v2
             - quant_projects/project_11_etf_rotation
+            - quant_projects/project_04_ml_multifactor
             - quant_projects/project_12_rps_main_wave
             - quant_projects/project_13_huang529_main_wave
             - quant_projects/project_14_trae_stock_selection
@@ -94,6 +104,7 @@ modules:
             - quant_projects/project_17_sentiment_timing
             - quant_projects/project_18_buy_sell_signals
             - quant_projects/project_atr_lowvol
+            - quant_projects/project_verification
         depends_on: []
         related_to: []
     quant_projects/project_01_mfic_alpha:
@@ -119,6 +130,15 @@ modules:
         title: PEAD盈余漂移策略回测与敏感性分析
         scope:
             - projects/Project_03_PEAD盈余漂移/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    quant_projects/project_04_ml_multifactor:
+        dir_name: ML多因子策略回测（Project_04，已淘汰）
+        title: ML多因子策略回测（Project_04，已淘汰）
+        scope:
+            - projects/Project_04_ML多因子策略/
         source_files: []
         children: []
         depends_on: []
@@ -267,11 +287,38 @@ modules:
         children: []
         depends_on: []
         related_to: []
+    quant_projects/project_verification:
+        dir_name: 回测框架验证套件（projects_verification_）
+        title: 回测框架验证套件（projects/verification/）
+        scope:
+            - projects/verification/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
     research_audit:
         dir_name: 因子研究与策略审计脚本集
         title: 因子研究与策略审计脚本集
         scope:
             - research_audit/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    research_study:
+        dir_name: 候选策略研究（research_study_）
+        title: 候选策略研究（research_study/）
+        scope:
+            - research_study/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    risk_layer:
+        dir_name: 风控叠加层（risk_ 每日风险守卫）
+        title: 风控叠加层（risk/ 每日风险守卫）
+        scope:
+            - risk/
         source_files: []
         children: []
         depends_on: []
@@ -304,9 +351,22 @@ modules:
             - factors_lib
             - mcp_services
             - memory_store
+            - model_assets
             - quant_projects
             - research_audit
+            - research_study
+            - risk_layer
+            - specs_docs
             - strategy_core
+        depends_on: []
+        related_to: []
+    specs_docs:
+        dir_name: 需求与设计规格（specs_）
+        title: 需求与设计规格（specs/）
+        scope:
+            - specs/
+        source_files: []
+        children: []
         depends_on: []
         related_to: []
     strategy_core:

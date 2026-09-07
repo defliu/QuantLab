@@ -98,7 +98,7 @@ th,td{{border:1px solid #e2e8f0;padding:6px 8px;text-align:center}} th{{backgrou
 <table><tr><th>策略版本</th><th>总收益</th><th>年化</th><th>夏普</th><th>最大回撤</th><th>样本内/外</th><th>评价</th></tr>
 {trs}</table>
 <p style="font-size:12px;color:#888;margin-top:16px;font-size:12px">
-数据源 E:/astock (2009至今全A, 后复权)；周期 2023-01-03~2026-07-31；单边成本0.1%；月频再平衡；回撤-15%清仓下月重入。
+数据源 D:/astock (2009至今全A, 后复权)；周期 2023-01-03~2026-07-31；单边成本0.1%；月频再平衡；回撤-15%清仓下月重入。
 v2 脚本 atr_lowvol/backtest_atr_lowvol_v2.py（NHOLD/SEL 可调）。
 </p>
 </body></html>"""

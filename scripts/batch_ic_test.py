@@ -12,7 +12,7 @@ import time
 import traceback
 
 # Add paths
-sys.path.insert(0, 'E:/QuantLab')
+sys.path.insert(0, 'D:/QuantLab')
 
 import numpy as np
 import pandas as pd
@@ -29,7 +29,7 @@ print()
 print("[1] Loading astock data...")
 t0 = time.time()
 
-df = pd.read_parquet('E:/astock/daily/stock_daily.parquet')
+df = pd.read_parquet('D:/astock/daily/stock_daily.parquet')
 if isinstance(df.index, pd.MultiIndex):
     df = df.reset_index()
 
@@ -199,7 +199,7 @@ print("[5] Saving results...")
 results_df = pd.DataFrame(results)
 results_df = results_df.sort_values('icir', ascending=False)
 
-out_dir = 'E:/QuantLab/projects/Project_01_多因子IC小盘Alpha/reports'
+out_dir = 'D:/QuantLab/projects/Project_01_多因子IC小盘Alpha/reports'
 os.makedirs(out_dir, exist_ok=True)
 
 csv_path = os.path.join(out_dir, 'factor_ic_report.csv')

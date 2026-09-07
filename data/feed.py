@@ -8,10 +8,13 @@ from typing import List, Optional, Dict
 
 
 # 数据源路径配置
-ASTOCK_DAILY = "E:/astock/daily/stock_daily.parquet"
-ASTOCK_FINANCE = "E:/astock/finance/fina_indicator.parquet"
-ASTOCK_BASIC = "E:/astock/basic/stock_basic.parquet"
-DUCKDB_PATH = "F:/金策智算/_internal/databases/duckdb/quantifydata.duckdb"
+ASTOCK_DAILY = "D:/astock/daily/stock_daily.parquet"
+ASTOCK_FINANCE = "D:/astock/finance/fina_indicator.parquet"
+ASTOCK_BASIC = "D:/astock/basic/stock_basic.parquet"
+# 2026-08-29：F 盘不存在，quantifydata.duckdb 已缺失。改为环境变量可配置，
+# 未配置时 duckdb 分支延迟报错（不影响默认的 astock 分支）。
+DUCKDB_PATH = os.environ.get(
+    "DUCKDB_PATH", "F:/金策智算/_internal/databases/duckdb/quantifydata.duckdb")
 
 
 class DataFeed:
@@ -86,12 +89,18 @@ class DataFeed:
             df = df[df["ts_code"].isin(codes)]
 
         # Filter by date range
-        if start_date:
-            start_d = pd.Timestamp(start_date).date()
-            df = df[df["trade_date"].apply(lambda x: x >= start_d if hasattr(x, 'date') else pd.Timestamp(x).date() >= start_d)]
-        if end_date:
-            end_d = pd.Timestamp(end_date).date()
-            df = df[df["trade_date"].apply(lambda x: x <= end_d if hasattr(x, 'date') else pd.Timestamp(x).date() <= end_d)]
+        # 2026-08-29 修正：原写法把 pandas Timestamp 与 datetime.date 直接比较
+        # （Timestamp 也有 .date 属性，hasattr 判断恒为 True），pandas 3.x 起
+        # 抛 TypeError: Cannot compare Timestamp with datetime.date，整个
+        # astock 分支不可用。统一转成 Timestamp 再比较。
+        if start_date or end_date:
+            _td = pd.to_datetime(df["trade_date"])
+            _mask = pd.Series(True, index=df.index)
+            if start_date:
+                _mask = _mask & (_td >= pd.Timestamp(start_date))
+            if end_date:
+                _mask = _mask & (_td <= pd.Timestamp(end_date))
+            df = df[_mask]
 
         # Select fields
         if fields:
@@ -105,7 +114,14 @@ class DataFeed:
 
     def _get_duckdb_daily(self, codes, start_date, end_date, fields):
         """从 DuckDB 获取日线"""
-        from backtest.data_tools.duckdb_reader import DuckDBDailyReader
+        # 2026-08-29 修正：模块实际位于 data/duckdb_reader.py（扁平布局），
+        # 原 backtest.data_tools.duckdb_reader 是不存在的包路径。
+        if not os.path.isfile(DUCKDB_PATH):
+            raise FileNotFoundError(
+                "duckdb 数据源不可用: %s\n"
+                "  - 设置环境变量 DUCKDB_PATH 指向实际 duckdb 文件，"
+                "或改用 DataFeed('astock')。" % DUCKDB_PATH)
+        from data.duckdb_reader import DuckDBDailyReader
         reader = DuckDBDailyReader(DUCKDB_PATH)
         try:
             data = reader.load_window(codes or [], start_date or "2018-01-01", end_date or "2026-12-31")

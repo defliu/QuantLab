@@ -26,7 +26,7 @@ except ImportError as e:
     print(f"❌ xtquant库导入失败: {e}")
     print("\n解决方案:")
     print("  必须使用QMT内置Python运行:")
-    print("    E:\\国金QMT交易端模拟\\bin.x64\\python3\\python.exe test_connection_qmt.py")
+    print("    D:\\国金QMT交易端模拟\\bin.x64\\python3\\python.exe test_connection_qmt.py")
     sys.exit(1)
 
 # 3. 加载配置
@@ -59,7 +59,7 @@ try:
     if result != 0:
         print(f"❌ 连接失败，错误码: {result}")
         print("\n可能原因:")
-        print("  1. QMT未启动 → 请启动: E:\\国金QMT交易端模拟\\bin.x64\\XtMiniQmt.exe")
+        print("  1. QMT未启动 → 请启动: D:\\国金QMT交易端模拟\\bin.x64\\XtMiniQmt.exe")
         print("  2. 账号未登录 → 请在QMT中登录账号 70180771")
         print("  3. 路径错误 → 检查config/trading_config.yaml中的account.path")
         sys.exit(1)
@@ -106,7 +106,7 @@ try:
     print()
     print("  2. 启动实盘")
     print("     方式1: start_trading_qmt.bat")
-    print("     方式2: E:\\国金QMT交易端模拟\\bin.x64\\python3\\python.exe live_trading.py")
+    print("     方式2: D:\\国金QMT交易端模拟\\bin.x64\\python3\\python.exe live_trading.py")
     print("=" * 60)
     
 except Exception as e:

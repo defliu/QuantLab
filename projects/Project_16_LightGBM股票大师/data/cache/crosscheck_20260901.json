@@ -1,0 +1,355 @@
+{
+  "date": "20260901",
+  "stocks": {
+    "002628.SZ": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": -1356000.0,
+            "asof": "2026-09-01 09:35"
+          }
+        },
+        "note": "悟道capital_flow源不可用，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 5.46
+          },
+          "sina_hq": {
+            "last": 5.46
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差0.00%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "建筑装饰",
+            "pct": 0.03,
+            "asof": "2026-09-01 09:37"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可用，仅东财mx申万板块单源"
+      }
+    },
+    "002346.SZ": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": 146600.0,
+            "asof": "2026-09-01 09:35"
+          }
+        },
+        "note": "悟道capital_flow源不可用，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 19.98
+          },
+          "sina_hq": {
+            "last": 20.01
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差0.15%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "电网设备",
+            "pct": -0.36,
+            "asof": "2026-09-01 09:37"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可用，仅东财mx申万板块单源"
+      }
+    },
+    "300806.SZ": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": -14970000.0,
+            "asof": "2026-09-01 09:35"
+          }
+        },
+        "note": "悟道capital_flow源不可用，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 48.91
+          },
+          "sina_hq": {
+            "last": 48.91
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差0.00%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "电子元件",
+            "pct": -2.64,
+            "asof": "2026-09-01 09:37"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可用，仅东财mx申万板块单源"
+      }
+    },
+    "300456.SZ": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": 7208000.0,
+            "asof": "2026-09-01 09:35"
+          }
+        },
+        "note": "悟道capital_flow源不可用，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 40.19
+          },
+          "sina_hq": {
+            "last": 40.19
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差0.00%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "半导体",
+            "pct": -1.24,
+            "asof": "2026-09-01 09:37"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可用，仅东财mx申万板块单源"
+      }
+    },
+    "001309.SZ": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": -6173000.0,
+            "asof": "2026-09-01 09:35"
+          }
+        },
+        "note": "悟道capital_flow源不可用，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 429.51
+          },
+          "sina_hq": {
+            "last": 429.9
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差0.09%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "电子元件",
+            "pct": -2.64,
+            "asof": "2026-09-01 09:37"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可用，仅东财mx申万板块单源"
+      }
+    },
+    "603155.SH": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": 9000.0,
+            "asof": "2026-09-01 09:35"
+          }
+        },
+        "note": "悟道capital_flow源不可用，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 13.91
+          },
+          "sina_hq": {
+            "last": 13.91
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差0.00%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "有机硅",
+            "pct": 0.45,
+            "asof": "2026-09-01 09:37"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可用，仅东财mx申万板块单源"
+      }
+    },
+    "600267.SH": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": 946000.0,
+            "asof": "2026-09-01 09:35"
+          }
+        },
+        "note": "悟道capital_flow源不可用，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 11.97
+          },
+          "sina_hq": {
+            "last": 11.97
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差0.00%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "医药生物",
+            "pct": -0.03,
+            "asof": "2026-09-01 09:37"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可用，仅东财mx申万板块单源"
+      }
+    },
+    "300873.SZ": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": 2377000.0,
+            "asof": "2026-09-01 09:35"
+          }
+        },
+        "note": "悟道capital_flow源不可用，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 15.97
+          },
+          "sina_hq": {
+            "last": 15.97
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差0.00%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "物流",
+            "pct": 0.45,
+            "asof": "2026-09-01 09:37"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可用，仅东财mx申万板块单源"
+      }
+    },
+    "002190.SZ": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": 5844000.0,
+            "asof": "2026-09-01 09:35"
+          }
+        },
+        "note": "悟道capital_flow源不可用，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 26.4
+          },
+          "sina_hq": {
+            "last": 26.4
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差0.00%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "军工",
+            "pct": -0.47,
+            "asof": "2026-09-01 09:37"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可用，仅东财mx申万板块单源"
+      }
+    },
+    "301369.SZ": {
+      "fund_flow": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "main_net_yuan": -776800.0000000001,
+            "asof": "2026-09-01 09:35"
+          }
+        },
+        "note": "悟道capital_flow源不可用，仅东财mx当日单源（无法两源对拍）"
+      },
+      "quote": {
+        "ok": true,
+        "sources": {
+          "tencent": {
+            "last": 136.07
+          },
+          "sina_hq": {
+            "last": 136.07
+          }
+        },
+        "note": "腾讯vs新浪最新价一致(差0.00%)"
+      },
+      "sector": {
+        "ok": false,
+        "sources": {
+          "mx_dongcai": {
+            "sector": "半导体设备",
+            "pct": 0.32,
+            "asof": "2026-09-01 09:37"
+          }
+        },
+        "note": "sina cnVirtualSectorRanking/悟道板块源不可用，仅东财mx申万板块单源"
+      }
+    }
+  }
+}

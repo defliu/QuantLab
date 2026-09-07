@@ -194,7 +194,7 @@ def test_7_survivorship_bias():
     print("\n[D-7] 幸存者偏差排查...")
     
     # 检查数据是否包含退市股票
-    daily = pd.read_parquet("E:/astock/daily/stock_daily.parquet")
+    daily = pd.read_parquet("D:/astock/daily/stock_daily.parquet")
     
     # 统计股票数量变化
     trade_dates = daily.index.get_level_values("trade_date").unique()

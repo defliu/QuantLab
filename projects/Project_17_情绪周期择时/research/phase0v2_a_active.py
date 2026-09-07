@@ -21,8 +21,8 @@ import pandas as pd
 from scipy import stats
 
 ROOT = r"d:\QuantLab\projects\Project_17_情绪周期择时"
-DAILY = r"E:\astock\daily\stock_daily.parquet"
-LIMITPQ = r"E:\astock\lhb\limit_list_d.parquet"
+DAILY = r"D:\astock\daily\stock_daily.parquet"
+LIMITPQ = r"D:\astock\lhb\limit_list_d.parquet"
 SENT = ROOT + r"\results\sentiment_series.csv"
 POOL_V1 = ROOT + r"\results\pool_fwd_ret.csv"
 OUT_CSV = ROOT + r"\results\phase0v2_a_daily_e20.csv"

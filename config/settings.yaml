@@ -4,18 +4,18 @@
 project:
   name: "QuantLab"
   version: "1.0.0"
-  root: "E:\\QuantLab"
+  root: "D:\\QuantLab"
 
 # 数据配置
 data:
   source: "astock"
   astock:
-    daily_path: "E:/astock/daily/stock_daily.parquet"
-    finance_path: "E:/astock/finance"
-    basic_path: "E:/astock/basic"
+    daily_path: "D:/astock/daily/stock_daily.parquet"
+    finance_path: "D:/astock/finance"
+    basic_path: "D:/astock/basic"
   cache:
     enabled: true
-    dir: "E:/QuantLab/data/cache"
+    dir: "D:/QuantLab/data/cache"
     expire_days: 1
 
 # 回测配置
@@ -30,7 +30,7 @@ backtest:
 # 日志配置
 logging:
   level: "INFO"
-  dir: "E:/QuantLab/logs"
+  dir: "D:/QuantLab/logs"
   max_file_size: 10MB
   backup_count: 10
 

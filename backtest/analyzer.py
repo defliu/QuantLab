@@ -202,6 +202,21 @@ def compute_metrics(equity_rows, trades, trading_calendar,
         avg_holding_days = 0.0
     n_open = len(open_buys)
 
+    # ---- 年化双边换手率 ----
+    # 双边口径 = (买入额 + 卖出额) / 2 ÷ 平均权益，再按 252/n_days 年化。
+    # 这是组合层与单标的无关的统一换手代理，足够支撑 OMD/ETF回撤/小市值
+    # 等策略的换手判据（报告要求）。
+    buy_notional = sum(float(t["amount"]) for t in trades if t["side"] == "buy")
+    sell_notional = sum(float(t["amount"]) for t in trades if t["side"] == "sell")
+    avg_equity = (sum(equity_series) / len(equity_series)) if equity_series \
+        else float(initial_cash)
+    two_way_total = (buy_notional + sell_notional) / 2.0
+    if avg_equity > 0:
+        turnover_total = two_way_total / avg_equity
+        turnover_annualized = turnover_total * (252.0 / n_days)
+    else:
+        turnover_annualized = 0.0
+
     perf = {
         "total_return":     round(total_return, 6),
         "annual_return":    round(annual_return, 6),
@@ -216,6 +231,7 @@ def compute_metrics(equity_rows, trades, trading_calendar,
         "n_sell":           n_sell,
         "n_open":           n_open,
         "avg_holding_days": round(avg_holding_days, 6),
+        "turnover_annualized": round(turnover_annualized, 6),
         "excess_return":     None,
         "information_ratio": None,
         "tracking_error":    None,

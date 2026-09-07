@@ -6,11 +6,11 @@ import numpy as np
 from pathlib import Path
 
 # 加载两个策略的净值
-div = pd.read_csv('E:/QuantLab/projects/Project_05_红利低波/results/dividend_equity.csv')
+div = pd.read_csv('D:/QuantLab/projects/Project_05_红利低波/results/dividend_equity.csv')
 div['date'] = pd.to_datetime(div['date'])
 div = div.set_index('date')['value']
 
-sc = pd.read_csv('E:/QuantLab/projects/Project_06_质量小市值/results/smallcap_equity.csv')
+sc = pd.read_csv('D:/QuantLab/projects/Project_06_质量小市值/results/smallcap_equity.csv')
 sc['date'] = pd.to_datetime(sc['date'])
 sc = sc.set_index('date')['value']
 
@@ -66,5 +66,5 @@ print(f"  质量小市值年化: {(sc.iloc[-1]/sc.iloc[0])**(1/years)-1:.1%}")
 print(f"  组合年化: {ann_ret:.1%}")
 
 # 保存结果
-portfolio_df[['value']].to_csv('E:/QuantLab/projects/Project_09_组合策略/results/portfolio_70_30.csv')
-print(f"\n结果已保存: E:/QuantLab/projects/Project_09_组合策略/results/")
+portfolio_df[['value']].to_csv('D:/QuantLab/projects/Project_09_组合策略/results/portfolio_70_30.csv')
+print(f"\n结果已保存: D:/QuantLab/projects/Project_09_组合策略/results/")

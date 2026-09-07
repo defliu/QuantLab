@@ -2,7 +2,7 @@
 """增量行情拉取：miniQMT xtdata → 临时增量库（不碰主数据）。
 
 设计原则：
-  - 主数据 E:/astock（周更权威快照）只读，绝不修改
+  - 主数据 D:/astock（周更权威快照）只读，绝不修改
   - 每日临时拉取的行情单独存入 data_live/incremental_daily.parquet
   - 可重复拉取（重建临时库），可丢弃，不污染主库
 
@@ -115,7 +115,7 @@ def main():
         json.dump(meta, f, ensure_ascii=False, indent=2)
     print("    临时库:", OUT_INCR)
     print("    元信息:", OUT_META)
-    print("    主数据 E:/astock 未做任何修改 ✅")
+    print("    主数据 D:/astock 未做任何修改 ✅")
 
 
 if __name__ == "__main__":

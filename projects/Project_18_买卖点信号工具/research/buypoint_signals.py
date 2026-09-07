@@ -30,8 +30,8 @@ import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
 
-ASTOCK_DAILY = "E:/astock/daily/stock_daily.parquet"
-INDEX_DB = "F:/backtest_workspace/data/duckdb/benchmark_index.duckdb"
+ASTOCK_DAILY = "D:/astock/daily/stock_daily.parquet"
+INDEX_DB = "D:/astock/benchmark/benchmark_index.duckdb"
 INDEX_CODE = "000001.SH"  # 上证指数（超额基准）
 
 NEED_COLS = [

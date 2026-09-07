@@ -1,0 +1,68 @@
+{
+  "date": "20260901",
+  "mode": "LIVE",
+  "market_risk": {
+    "hs300": 4613.25,
+    "hs300_pct": -0.26,
+    "T": 2,
+    "deploy_pct": 0.95,
+    "note": "沪深300 -0.26% > -1.0%，正常仓位 T=2"
+  },
+  "candidates_file": "data/selections/20260831_model_top10.csv",
+  "selection_file": "data/selections/20260901_selection_full.csv",
+  "target_top2": [
+    {"code": "001309.SZ", "name": "德明利", "total": 73.0},
+    {"code": "600267.SH", "name": "海正药业", "total": 65.0}
+  ],
+  "strategy_capital": 98505.35,
+  "target_value_each": 46790.04,
+  "pool_buy_cap": 93580.08,
+  "orders": [
+    {
+      "code": "300456.SZ",
+      "name": "赛微电子",
+      "side": "SELL",
+      "vol": 1200,
+      "price": 39.98,
+      "action": "PK_OUT",
+      "order_id": "1098918215",
+      "status": "FILLED",
+      "time": "2026-09-01 09:52:37"
+    },
+    {
+      "code": "001309.SZ",
+      "name": "德明利",
+      "side": "BUY",
+      "vol": 100,
+      "price": 421.51,
+      "action": "planA_new_top",
+      "order_id": "1098918224",
+      "status": "FILLED",
+      "time": "2026-09-01 09:52:46",
+      "amount": 42151.0
+    },
+    {
+      "code": "600267.SH",
+      "name": "海正药业",
+      "side": "BUY",
+      "vol": 3900,
+      "price": 11.94,
+      "action": "planA_new_top",
+      "order_id": "1098918252",
+      "status": "FILLED",
+      "time": "2026-09-01 09:52:50",
+      "amount": 46566.0
+    }
+  ],
+  "total_buy_amount": 88717.0,
+  "guard_summary": "卖300456.SZ:FILLED | 买001309.SZ:FILLED | 买600267.SH:FILLED",
+  "data_sources": {
+    "basic_quote": "tencent(09:50) + mx_dongcai(09:49)",
+    "F2_main_inflow": "mx_dongcai 当日口径 09:49 (main_net_inflow_date=20260901)",
+    "F3_catalyst": "9:25 缓存 review_20260901.json",
+    "F5_sector": "mx_dongcai 申万行业指数 09:50",
+    "note": "mcp_tdx(503)/悟道 capital_flow/sina 板块源不可达，均降级标注；未编造缺失字段"
+  },
+  "trade_log_appended": true,
+  "account_id": "67014907"
+}

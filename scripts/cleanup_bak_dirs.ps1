@@ -1,4 +1,4 @@
-# 清理 AI 目录迁移遗留的 .bak 目录（IDE 关闭后运行）
+﻿# 清理 AI 目录迁移遗留的 .bak 目录（IDE 关闭后运行）
 # 必须在 WorkBuddy/CodeBuddy IDE 完全退出后执行，否则文件被锁删不掉
 
 $baks = @(

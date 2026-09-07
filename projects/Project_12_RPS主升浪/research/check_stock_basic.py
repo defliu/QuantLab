@@ -2,7 +2,7 @@
 """检查 astock stock_basic.parquet 是否含行业/板块信息，用于板块 RPS 实现。"""
 import pyarrow.parquet as pq
 
-PATH = "E:/astock/basic/stock_basic.parquet"
+PATH = "D:/astock/basic/stock_basic.parquet"
 pf = pq.ParquetFile(PATH)
 schema = pf.schema_arrow
 

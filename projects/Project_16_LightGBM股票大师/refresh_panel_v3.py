@@ -47,7 +47,7 @@ def build_merged():
     incr["trade_date"] = pd.to_datetime(incr["trade_date"])
     incr["ts_code"] = incr["ts_code"].astype(str)
     today = pd.Timestamp(datetime.date.today())
-    incr = incr[incr["trade_date"] < today].copy()  # 剔除当天盘中不完整行
+    incr = incr[incr["trade_date"] <= today].copy()  # 16:30 收盘后当日行情已完整，纳入当日（T-20260903：否则面板停在 T-2、09:15 定 D 用旧候选）
     if len(incr) == 0:
         print("  !! 增量无完整收盘日，仅用主库")
         return None

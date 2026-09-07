@@ -2,8 +2,8 @@
 """Astock finance reader — PIT (Point-in-Time) safe fundamentals query.
 
 Data sources:
-  - E:/astock/finance/fina_indicator.parquet  (quarterly fundamentals)
-  - E:/astock/daily/stock_daily.parquet       (daily PE snapshots)
+  - D:/astock/finance/fina_indicator.parquet  (quarterly fundamentals)
+  - D:/astock/daily/stock_daily.parquet       (daily PE snapshots)
 
 PIT rule:
   A record is "visible" on date T if its announcement date (ann_date) <= T.
@@ -16,8 +16,8 @@ import pandas as pd
 
 log = logging.getLogger(__name__)
 
-DEFAULT_FINANCE_DIR = "E:/astock/finance"
-DEFAULT_DAILY_PATH = "E:/astock/daily/stock_daily.parquet"
+DEFAULT_FINANCE_DIR = "D:/astock/finance"
+DEFAULT_DAILY_PATH = "D:/astock/daily/stock_daily.parquet"
 
 DEFAULT_FIELDS = ("eps", "roe", "gross_margin", "netprofit_margin",
                   "bps", "q_profit_yoy")

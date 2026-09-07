@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """astock 本地数据源增量更新脚本
 
-把 E:\\量化\\行情数据更新池 的增量数据合并到 E:\\astock：
+把 D:\\量化\\行情数据更新池 的增量数据合并到 D:\\astock：
 - daily:   本地(<2026-01-01) + 全量包2026(01-05~07-24) + 增量包(07-27~07-31)
 - minute:  本地(<2026-01-01) + 全量包 + 增量包, 按周期逐code合并
 - basic:   本地 + 增量包(按 ts_code 去重)
@@ -23,13 +23,13 @@ import pandas as pd
 
 sys.stdout.reconfigure(encoding="utf-8")
 
-SRC_ROOT = r"E:\量化\行情数据更新池"
+SRC_ROOT = r"D:\量化\行情数据更新池"
 FULL_2026 = os.path.join(SRC_ROOT, "2026(更新到20260724）")
 INC_0727 = os.path.join(SRC_ROOT, "行情数据（增量数据7.27-7.31）")
 
-DST_DAILY = r"E:\astock\daily\stock_daily.parquet"
-DST_MINUTE = r"E:\astock\minute"
-DST_BASIC = r"E:\astock\basic\stock_basic.parquet"
+DST_DAILY = r"D:\astock\daily\stock_daily.parquet"
+DST_MINUTE = r"D:\astock\minute"
+DST_BASIC = r"D:\astock\basic\stock_basic.parquet"
 
 CUTOFF = pd.Timestamp("2026-01-01")  # 本地保留 < 2026-01-01, 2026 年由更新池全量提供
 DAILY_COLS_EXTRA = ["data_source"]   # 本地独有列, 新数据填 NaN

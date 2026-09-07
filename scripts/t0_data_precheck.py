@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 # 5. circ_mv range on a recent date
-df = pd.read_parquet('E:/astock/daily/stock_daily.parquet',
+df = pd.read_parquet('D:/astock/daily/stock_daily.parquet',
                       columns=['circ_mv','close','pb'])
 df = df.reset_index()
 recent = df[df['trade_date']=='2026-06-12']
@@ -32,7 +32,7 @@ print(f'  pb > 0: {pb_valid.sum()}')
 print(f'  BP = 1/pb median: {bp_median:.4f}')
 
 # 7. dividend.parquet ex_date/ann_date availability
-div_df = pd.read_parquet('E:/astock/finance/dividend.parquet',
+div_df = pd.read_parquet('D:/astock/finance/dividend.parquet',
                           columns=['ts_code','end_date','ann_date','div_proc',
                                    'cash_div','cash_div_tax','ex_date','pay_date'])
 print(f'\n=== dividend.parquet ===')
@@ -48,7 +48,7 @@ for _, row in sample.iterrows():
     print(f'    {row["ts_code"]} end={row["end_date"]} ann={row["ann_date"]} ex={row["ex_date"]} cash_tax={row["cash_div_tax"]}')
 
 # 8. fina_indicator ann_date + bps
-fi_df = pd.read_parquet('E:/astock/finance/fina_indicator.parquet',
+fi_df = pd.read_parquet('D:/astock/finance/fina_indicator.parquet',
                          columns=['ts_code','end_date','ann_date','bps'])
 print(f'\n=== fina_indicator BPS ===')
 print(f'  Total rows: {len(fi_df)}')
@@ -72,7 +72,7 @@ for d in dates_sample:
         print(f'  {d}: {n} stocks, <500 with circ_mv')
 
 # 10. Check base_share field existence in dividend
-div_full = pq.read_schema('E:/astock/finance/dividend.parquet')
+div_full = pq.read_schema('D:/astock/finance/dividend.parquet')
 has_base_share = 'base_share' in [f.name for f in div_full]
 print(f'\n=== base_share in dividend.parquet: {has_base_share} ===')
 

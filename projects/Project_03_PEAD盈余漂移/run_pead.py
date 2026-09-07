@@ -6,8 +6,8 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime
 
-DAILY_PATH = "E:/astock/daily/stock_daily.parquet"
-FINANCE_PATH = "E:/astock/finance/fina_indicator.parquet"
+DAILY_PATH = "D:/astock/daily/stock_daily.parquet"
+FINANCE_PATH = "D:/astock/finance/fina_indicator.parquet"
 START_DATE = "2020-01-01"
 END_DATE = "2026-06-30"
 INITIAL_CAPITAL = 1_000_000
@@ -19,7 +19,7 @@ STOP_LOSS = -0.08
 COMMISSION = 0.00025
 STAMP_TAX = 0.001
 SLIPPAGE = 0.002
-OUTPUT_DIR = "E:/QuantLab/projects/Project_03_PEAD盈余漂移/results"
+OUTPUT_DIR = "D:/QuantLab/projects/Project_03_PEAD盈余漂移/results"
 
 
 def main():

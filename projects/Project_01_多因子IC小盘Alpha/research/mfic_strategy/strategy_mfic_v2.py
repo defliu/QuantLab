@@ -28,7 +28,7 @@ TRADES_FILE = "D:/QMT_POOL/mfic_trades.txt"
 ACCOUNT_ID = '70180771'   # QMT 资金账号
 
 # 本地 astock parquet 路径
-ASTOCK_DAILY = "E:/astock/daily/stock_daily.parquet"
+ASTOCK_DAILY = "D:/astock/daily/stock_daily.parquet"
 
 # ============================================================
 # 工具函数

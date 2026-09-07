@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import run_grid_validation as rgv
 import pandas as pd, numpy as np
 
-div = pd.read_parquet(r"E:/astock/finance/dividend.parquet")
+div = pd.read_parquet(r"D:/astock/finance/dividend.parquet")
 div = div[div["div_proc"].astype(str).str.strip() == "实施"].copy()
 div = div[div["ex_date"].notna()].copy()
 div["ex_date"] = pd.to_datetime(div["ex_date"])

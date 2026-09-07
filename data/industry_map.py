@@ -1,14 +1,14 @@
 # coding: utf-8
 """Industry map loader — code -> 申万 industry, for the industry_cap overlay.
 
-Source: E:/astock/basic/stock_basic.parquet (Tushare 口径, `industry` 字段).
+Source: D:/astock/basic/stock_basic.parquet (Tushare 口径, `industry` 字段).
 Result is cached process-wide so repeated backtests don't re-read the parquet.
 """
 import os
 
 import pandas as pd
 
-ASTOCK_BASIC_PATH = "E:/astock/basic/stock_basic.parquet"
+ASTOCK_BASIC_PATH = "D:/astock/basic/stock_basic.parquet"
 
 _CACHE = {}
 

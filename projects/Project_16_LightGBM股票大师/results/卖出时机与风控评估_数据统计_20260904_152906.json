@@ -1,0 +1,833 @@
+{
+  "generated_at": "2026-09-04 15:29:06",
+  "v13": {
+    "all_trades": [
+      {
+        "code": "002912.SZ",
+        "buy_date": "2026-08-20",
+        "sell_date": "2026-08-21",
+        "hold_cal_days": 1,
+        "vol": 1000,
+        "cost": 18.915,
+        "sell_price": 18.7,
+        "ret": -0.012125,
+        "reason": "SELL_TRIM",
+        "pnl": -229.35
+      },
+      {
+        "code": "001378.SZ",
+        "buy_date": "2026-08-20",
+        "sell_date": "2026-08-24",
+        "hold_cal_days": 4,
+        "vol": 1000,
+        "cost": 19.905,
+        "sell_price": 20.22,
+        "ret": 0.015066,
+        "reason": "PK_OUT",
+        "pnl": 299.89
+      },
+      {
+        "code": "300916.SZ",
+        "buy_date": "2026-08-21",
+        "sell_date": "2026-08-24",
+        "hold_cal_days": 3,
+        "vol": 1200,
+        "cost": 25.7552,
+        "sell_price": 25.54,
+        "ret": -0.009048,
+        "reason": "PK_OUT",
+        "pnl": -279.63
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-24",
+        "sell_date": "2026-08-25",
+        "hold_cal_days": 1,
+        "vol": 500,
+        "cost": 85.7371,
+        "sell_price": 85.0,
+        "ret": -0.009292,
+        "reason": "SELL_STOP",
+        "pnl": -398.32
+      },
+      {
+        "code": "601865.SH",
+        "buy_date": "2026-08-21",
+        "sell_date": "2026-08-25",
+        "hold_cal_days": 4,
+        "vol": 3000,
+        "cost": 10.2422,
+        "sell_price": 10.19,
+        "ret": -0.005798,
+        "reason": "PK_OUT",
+        "pnl": -178.16
+      },
+      {
+        "code": "002237.SZ",
+        "buy_date": "2026-08-21",
+        "sell_date": "2026-08-25",
+        "hold_cal_days": 4,
+        "vol": 2000,
+        "cost": 15.153,
+        "sell_price": 15.0,
+        "ret": -0.010792,
+        "reason": "PK_OUT",
+        "pnl": -327.06
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-24",
+        "sell_date": "2026-08-25",
+        "hold_cal_days": 1,
+        "vol": 500,
+        "cost": 85.7371,
+        "sell_price": 86.0,
+        "ret": 0.002364,
+        "reason": "SELL_STOP",
+        "pnl": 101.33
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-24",
+        "sell_date": "2026-08-25",
+        "hold_cal_days": 1,
+        "vol": 500,
+        "cost": 85.7371,
+        "sell_price": 84.91,
+        "ret": -0.010341,
+        "reason": "SELL_STOP",
+        "pnl": -443.29
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-24",
+        "sell_date": "2026-08-25",
+        "hold_cal_days": 1,
+        "vol": 500,
+        "cost": 85.7371,
+        "sell_price": 85.98,
+        "ret": 0.002131,
+        "reason": "SELL_STOP",
+        "pnl": 91.33
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-24",
+        "sell_date": "2026-08-25",
+        "hold_cal_days": 1,
+        "vol": 500,
+        "cost": 85.7371,
+        "sell_price": 85.13,
+        "ret": -0.007777,
+        "reason": "SELL_STOP",
+        "pnl": -333.37
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-24",
+        "sell_date": "2026-08-25",
+        "hold_cal_days": 1,
+        "vol": 7600,
+        "cost": 85.7371,
+        "sell_price": 85.5,
+        "ret": -0.003464,
+        "reason": "RECON_BACKFILL",
+        "pnl": -2257.15
+      },
+      {
+        "code": "000960.SZ",
+        "buy_date": "2026-08-25",
+        "sell_date": "2026-08-26",
+        "hold_cal_days": 1,
+        "vol": 1300,
+        "cost": 34.7369,
+        "sell_price": 35.87,
+        "ret": 0.031895,
+        "reason": "PK_OUT",
+        "pnl": 1440.33
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-24",
+        "sell_date": "2026-08-27",
+        "hold_cal_days": 3,
+        "vol": 99500,
+        "cost": 85.7371,
+        "sell_price": 90.51,
+        "ret": 0.05493,
+        "reason": "TRIM_OVR",
+        "pnl": 468595.15
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-25",
+        "sell_date": "2026-08-27",
+        "hold_cal_days": 2,
+        "vol": 300,
+        "cost": 86.2172,
+        "sell_price": 90.51,
+        "ret": 0.049055,
+        "reason": "TRIM_OVR",
+        "pnl": 1268.82
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-25",
+        "sell_date": "2026-08-28",
+        "hold_cal_days": 3,
+        "vol": 200,
+        "cost": 86.2172,
+        "sell_price": 90.15,
+        "ret": 0.044802,
+        "reason": "POOL_ADJ",
+        "pnl": 772.54
+      },
+      {
+        "code": "000737.SZ",
+        "buy_date": "2026-08-26",
+        "sell_date": "2026-08-28",
+        "hold_cal_days": 2,
+        "vol": 1100,
+        "cost": 15.4131,
+        "sell_price": 15.31,
+        "ret": -0.00748,
+        "reason": "POOL_ADJ",
+        "pnl": -126.81
+      },
+      {
+        "code": "000737.SZ",
+        "buy_date": "2026-08-26",
+        "sell_date": "2026-08-31",
+        "hold_cal_days": 5,
+        "vol": 1900,
+        "cost": 15.4131,
+        "sell_price": 14.75,
+        "ret": -0.043691,
+        "reason": "PK_OUT",
+        "pnl": -1279.47
+      },
+      {
+        "code": "000737.SZ",
+        "buy_date": "2026-08-27",
+        "sell_date": "2026-08-31",
+        "hold_cal_days": 4,
+        "vol": 1200,
+        "cost": 15.2642,
+        "sell_price": 14.75,
+        "ret": -0.034441,
+        "reason": "PK_OUT",
+        "pnl": -630.85
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-26",
+        "sell_date": "2026-08-31",
+        "hold_cal_days": 5,
+        "vol": 500,
+        "cost": 84.837,
+        "sell_price": 91.2,
+        "ret": 0.074251,
+        "reason": "PK_OUT",
+        "pnl": 3149.6
+      },
+      {
+        "code": "300456.SZ",
+        "buy_date": "2026-08-31",
+        "sell_date": "2026-09-01",
+        "hold_cal_days": 1,
+        "vol": 1200,
+        "cost": 40.4981,
+        "sell_price": 39.98,
+        "ret": -0.013484,
+        "reason": "PK_OUT",
+        "pnl": -655.3
+      },
+      {
+        "code": "600267.SH",
+        "buy_date": "2026-09-01",
+        "sell_date": "2026-09-02",
+        "hold_cal_days": 1,
+        "vol": 3900,
+        "cost": 11.9425,
+        "sell_price": 11.91,
+        "ret": -0.00343,
+        "reason": "PK_OUT",
+        "pnl": -159.76
+      },
+      {
+        "code": "001309.SZ",
+        "buy_date": "2026-09-01",
+        "sell_date": "2026-09-02",
+        "hold_cal_days": 1,
+        "vol": 100,
+        "cost": 421.5943,
+        "sell_price": 418.53,
+        "ret": -0.007963,
+        "reason": "PK_OUT",
+        "pnl": -335.73
+      },
+      {
+        "code": "300413.SZ",
+        "buy_date": "2026-09-02",
+        "sell_date": "2026-09-03",
+        "hold_cal_days": 1,
+        "vol": 100,
+        "cost": 20.7041,
+        "sell_price": 21.4,
+        "ret": 0.030678,
+        "reason": "TRIM_OVR",
+        "pnl": 63.52
+      },
+      {
+        "code": "300413.SZ",
+        "buy_date": "2026-09-02",
+        "sell_date": "2026-09-03",
+        "hold_cal_days": 1,
+        "vol": 2100,
+        "cost": 20.7041,
+        "sell_price": 21.09,
+        "ret": 0.017924,
+        "reason": "SELL_TRAILING",
+        "pnl": 779.3
+      },
+      {
+        "code": "002190.SZ",
+        "buy_date": "2026-09-02",
+        "sell_date": "2026-09-04",
+        "hold_cal_days": 2,
+        "vol": 1700,
+        "cost": 27.4055,
+        "sell_price": 25.98,
+        "ret": -0.052678,
+        "reason": "PK_OUT",
+        "pnl": -2454.23
+      },
+      {
+        "code": "002190.SZ",
+        "buy_date": "2026-09-03",
+        "sell_date": "2026-09-04",
+        "hold_cal_days": 1,
+        "vol": 100,
+        "cost": 26.04,
+        "sell_price": 25.98,
+        "ret": -0.004723,
+        "reason": "PK_OUT",
+        "pnl": -12.3
+      }
+    ],
+    "by_reason": {
+      "PK_OUT": {
+        "n": 13,
+        "avg_ret": -0.004987,
+        "sum_ret": -0.064836,
+        "win_rate": 0.2308,
+        "avg_hold_cal_days": 2.77,
+        "pnl_sum": -1422.67,
+        "best": 0.074251,
+        "worst": -0.052678
+      },
+      "POOL_ADJ": {
+        "n": 2,
+        "avg_ret": 0.018661,
+        "sum_ret": 0.037322,
+        "win_rate": 0.5,
+        "avg_hold_cal_days": 2.5,
+        "pnl_sum": 645.73,
+        "best": 0.044802,
+        "worst": -0.00748
+      },
+      "RECON_BACKFILL": {
+        "n": 1,
+        "avg_ret": -0.003464,
+        "sum_ret": -0.003464,
+        "win_rate": 0.0,
+        "avg_hold_cal_days": 1.0,
+        "pnl_sum": -2257.15,
+        "best": -0.003464,
+        "worst": -0.003464
+      },
+      "SELL_STOP": {
+        "n": 5,
+        "avg_ret": -0.004583,
+        "sum_ret": -0.022915,
+        "win_rate": 0.4,
+        "avg_hold_cal_days": 1.0,
+        "pnl_sum": -982.32,
+        "best": 0.002364,
+        "worst": -0.010341
+      },
+      "SELL_TRAILING": {
+        "n": 1,
+        "avg_ret": 0.017924,
+        "sum_ret": 0.017924,
+        "win_rate": 1.0,
+        "avg_hold_cal_days": 1.0,
+        "pnl_sum": 779.3,
+        "best": 0.017924,
+        "worst": 0.017924
+      },
+      "SELL_TRIM": {
+        "n": 1,
+        "avg_ret": -0.012125,
+        "sum_ret": -0.012125,
+        "win_rate": 0.0,
+        "avg_hold_cal_days": 1.0,
+        "pnl_sum": -229.35,
+        "best": -0.012125,
+        "worst": -0.012125
+      },
+      "TRIM_OVR": {
+        "n": 3,
+        "avg_ret": 0.044888,
+        "sum_ret": 0.134663,
+        "win_rate": 1.0,
+        "avg_hold_cal_days": 2.0,
+        "pnl_sum": 469927.49,
+        "best": 0.05493,
+        "worst": 0.030678
+      }
+    },
+    "by_reason_ex_300684": {
+      "PK_OUT": {
+        "n": 12,
+        "avg_ret": -0.011591,
+        "sum_ret": -0.139087,
+        "win_rate": 0.1667,
+        "avg_hold_cal_days": 2.58,
+        "pnl_sum": -4572.27,
+        "best": 0.031895,
+        "worst": -0.052678
+      },
+      "POOL_ADJ": {
+        "n": 1,
+        "avg_ret": -0.00748,
+        "sum_ret": -0.00748,
+        "win_rate": 0.0,
+        "avg_hold_cal_days": 2.0,
+        "pnl_sum": -126.81,
+        "best": -0.00748,
+        "worst": -0.00748
+      },
+      "SELL_TRAILING": {
+        "n": 1,
+        "avg_ret": 0.017924,
+        "sum_ret": 0.017924,
+        "win_rate": 1.0,
+        "avg_hold_cal_days": 1.0,
+        "pnl_sum": 779.3,
+        "best": 0.017924,
+        "worst": 0.017924
+      },
+      "SELL_TRIM": {
+        "n": 1,
+        "avg_ret": -0.012125,
+        "sum_ret": -0.012125,
+        "win_rate": 0.0,
+        "avg_hold_cal_days": 1.0,
+        "pnl_sum": -229.35,
+        "best": -0.012125,
+        "worst": -0.012125
+      },
+      "TRIM_OVR": {
+        "n": 1,
+        "avg_ret": 0.030678,
+        "sum_ret": 0.030678,
+        "win_rate": 1.0,
+        "avg_hold_cal_days": 1.0,
+        "pnl_sum": 63.52,
+        "best": 0.030678,
+        "worst": 0.030678
+      }
+    },
+    "accident_300684": [
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-24",
+        "sell_date": "2026-08-25",
+        "hold_cal_days": 1,
+        "vol": 500,
+        "cost": 85.7371,
+        "sell_price": 85.0,
+        "ret": -0.009292,
+        "reason": "SELL_STOP",
+        "pnl": -398.32
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-24",
+        "sell_date": "2026-08-25",
+        "hold_cal_days": 1,
+        "vol": 500,
+        "cost": 85.7371,
+        "sell_price": 86.0,
+        "ret": 0.002364,
+        "reason": "SELL_STOP",
+        "pnl": 101.33
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-24",
+        "sell_date": "2026-08-25",
+        "hold_cal_days": 1,
+        "vol": 500,
+        "cost": 85.7371,
+        "sell_price": 84.91,
+        "ret": -0.010341,
+        "reason": "SELL_STOP",
+        "pnl": -443.29
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-24",
+        "sell_date": "2026-08-25",
+        "hold_cal_days": 1,
+        "vol": 500,
+        "cost": 85.7371,
+        "sell_price": 85.98,
+        "ret": 0.002131,
+        "reason": "SELL_STOP",
+        "pnl": 91.33
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-24",
+        "sell_date": "2026-08-25",
+        "hold_cal_days": 1,
+        "vol": 500,
+        "cost": 85.7371,
+        "sell_price": 85.13,
+        "ret": -0.007777,
+        "reason": "SELL_STOP",
+        "pnl": -333.37
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-24",
+        "sell_date": "2026-08-25",
+        "hold_cal_days": 1,
+        "vol": 7600,
+        "cost": 85.7371,
+        "sell_price": 85.5,
+        "ret": -0.003464,
+        "reason": "RECON_BACKFILL",
+        "pnl": -2257.15
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-24",
+        "sell_date": "2026-08-27",
+        "hold_cal_days": 3,
+        "vol": 99500,
+        "cost": 85.7371,
+        "sell_price": 90.51,
+        "ret": 0.05493,
+        "reason": "TRIM_OVR",
+        "pnl": 468595.15
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-25",
+        "sell_date": "2026-08-27",
+        "hold_cal_days": 2,
+        "vol": 300,
+        "cost": 86.2172,
+        "sell_price": 90.51,
+        "ret": 0.049055,
+        "reason": "TRIM_OVR",
+        "pnl": 1268.82
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-25",
+        "sell_date": "2026-08-28",
+        "hold_cal_days": 3,
+        "vol": 200,
+        "cost": 86.2172,
+        "sell_price": 90.15,
+        "ret": 0.044802,
+        "reason": "POOL_ADJ",
+        "pnl": 772.54
+      },
+      {
+        "code": "300684.SZ",
+        "buy_date": "2026-08-26",
+        "sell_date": "2026-08-31",
+        "hold_cal_days": 5,
+        "vol": 500,
+        "cost": 84.837,
+        "sell_price": 91.2,
+        "ret": 0.074251,
+        "reason": "PK_OUT",
+        "pnl": 3149.6
+      }
+    ],
+    "orphan_sells": [
+      {
+        "code": "600000.SH",
+        "date": "2026-08-20",
+        "vol": 100,
+        "reason": "SELL_STOP"
+      },
+      {
+        "code": "600528.SH",
+        "date": "2026-08-21",
+        "vol": 100,
+        "reason": "SELL_STOP"
+      },
+      {
+        "code": "600582.SH",
+        "date": "2026-08-21",
+        "vol": 200,
+        "reason": "SELL_STOP"
+      },
+      {
+        "code": "601311.SH",
+        "date": "2026-08-21",
+        "vol": 100,
+        "reason": "SELL_STOP"
+      },
+      {
+        "code": "601390.SH",
+        "date": "2026-08-21",
+        "vol": 200,
+        "reason": "SELL_STOP"
+      },
+      {
+        "code": "601800.SH",
+        "date": "2026-08-21",
+        "vol": 200,
+        "reason": "SELL_STOP"
+      }
+    ],
+    "open_positions": {
+      "300413.SZ": 2000,
+      "003005.SZ": 2300
+    }
+  },
+  "g2": {
+    "rounds": [
+      {
+        "code": "300964.SZ",
+        "buy_dates": [
+          "2026-09-02"
+        ],
+        "sell_dates": [
+          "2026-09-04"
+        ],
+        "buy_vol_fills": 800,
+        "acct_vol": 1000,
+        "sell_vol": 1000,
+        "avg_cost": 57.0979,
+        "cost_src": "positions",
+        "avg_sell": 59.06,
+        "realized_pnl": 1920.76,
+        "ret": 0.03364,
+        "reason": [
+          "deal confirmed"
+        ]
+      },
+      {
+        "code": "600262.SH",
+        "buy_dates": [
+          "2026-09-02"
+        ],
+        "sell_dates": [
+          "2026-09-04"
+        ],
+        "buy_vol_fills": 3000,
+        "acct_vol": 6400,
+        "sell_vol": 6400,
+        "avg_cost": 15.7838,
+        "cost_src": "positions",
+        "avg_sell": 15.71,
+        "realized_pnl": -543.71,
+        "ret": -0.005382,
+        "reason": [
+          "deal confirmed"
+        ]
+      }
+    ],
+    "fills_all": [
+      {
+        "strategy_order_id": "P16_20260901_0001",
+        "code": "601988.SH",
+        "action": "BUY",
+        "vol": 0,
+        "price": 6.61,
+        "status": "CANCELED",
+        "sysid": "",
+        "reason": "debug 撤单链路测试",
+        "ts": "2026-09-01 09:40:50",
+        "_file_date": "20260901"
+      },
+      {
+        "strategy_order_id": "P16_20260901_0002",
+        "code": "601988.SH",
+        "action": "BUY",
+        "vol": 100,
+        "price": 6.3,
+        "status": "FILLED",
+        "sysid": "2882",
+        "reason": "deal confirmed",
+        "ts": "2026-09-01 10:10:49",
+        "_file_date": "20260901"
+      },
+      {
+        "strategy_order_id": "P16_20260901_0003",
+        "code": "600028.SH",
+        "action": "BUY",
+        "vol": 0,
+        "price": 5.49,
+        "status": "CANCELED",
+        "sysid": "",
+        "reason": "debug 撤单链路测试",
+        "ts": "2026-09-01 10:11:25",
+        "_file_date": "20260901"
+      },
+      {
+        "strategy_order_id": "P16_20260901_0004",
+        "code": "600028.SH",
+        "action": "BUY",
+        "vol": 0,
+        "price": 5.54,
+        "status": "CANCELED",
+        "sysid": "",
+        "reason": "cancel forced (60s no confirm), rely on positions",
+        "ts": "2026-09-01 13:08:45",
+        "_file_date": "20260901"
+      },
+      {
+        "strategy_order_id": "P16_20260901_0005",
+        "code": "600028.SH",
+        "action": "BUY",
+        "vol": 100,
+        "price": 5.54,
+        "status": "FILLED",
+        "sysid": "",
+        "reason": "filled before cancel",
+        "ts": "2026-09-01 13:17:53",
+        "_file_date": "20260901"
+      },
+      {
+        "strategy_order_id": "P16_20260901_0006",
+        "code": "601398.SH",
+        "action": "BUY",
+        "vol": 100,
+        "price": 8.1,
+        "status": "FILLED",
+        "sysid": "",
+        "reason": "filled before cancel",
+        "ts": "2026-09-01 13:26:41",
+        "_file_date": "20260901"
+      },
+      {
+        "strategy_order_id": "P16_20260901_0007",
+        "code": "600028.SH",
+        "action": "BUY",
+        "vol": 0,
+        "price": 5.3,
+        "status": "CANCELED",
+        "sysid": "4312",
+        "reason": "cancel confirmed",
+        "ts": "2026-09-01 14:05:02",
+        "_file_date": "20260901"
+      },
+      {
+        "strategy_order_id": "P16_20260901_0008",
+        "code": "600028.SH",
+        "action": "BUY",
+        "vol": 0,
+        "price": 5.2,
+        "status": "CANCELED",
+        "sysid": "4760",
+        "reason": "cancel confirmed",
+        "ts": "2026-09-01 14:08:23",
+        "_file_date": "20260901"
+      },
+      {
+        "strategy_order_id": "P16_20260901_0009",
+        "code": "600028.SH",
+        "action": "BUY",
+        "vol": 0,
+        "price": 5.2,
+        "status": "CANCELED",
+        "sysid": "5079",
+        "reason": "cancel confirmed",
+        "ts": "2026-09-01 14:28:56",
+        "_file_date": "20260901"
+      },
+      {
+        "strategy_order_id": "P16_20260902_0002",
+        "code": "300964.SZ",
+        "action": "BUY",
+        "vol": 800,
+        "price": 57.03,
+        "status": "FILLED",
+        "sysid": "2490",
+        "reason": "deal confirmed",
+        "ts": "2026-09-02 10:07:11",
+        "_file_date": "20260902"
+      },
+      {
+        "strategy_order_id": "P16_20260902_0001",
+        "code": "600262.SH",
+        "action": "BUY",
+        "vol": 3000,
+        "price": 15.77,
+        "status": "FILLED",
+        "sysid": "2493",
+        "reason": "deal confirmed",
+        "ts": "2026-09-02 10:07:15",
+        "_file_date": "20260902"
+      },
+      {
+        "strategy_order_id": "P16_20260904_0001",
+        "code": "600262.SH",
+        "action": "SELL",
+        "vol": 6400,
+        "price": 15.71,
+        "status": "FILLED",
+        "sysid": "1383",
+        "reason": "deal confirmed",
+        "ts": "2026-09-04 09:43:49",
+        "_file_date": "20260904"
+      },
+      {
+        "strategy_order_id": "P16_20260904_0003",
+        "code": "300475.SZ",
+        "action": "BUY",
+        "vol": 200,
+        "price": 170.02,
+        "status": "FILLED",
+        "sysid": "1385",
+        "reason": "deal confirmed",
+        "ts": "2026-09-04 09:43:49",
+        "_file_date": "20260904"
+      },
+      {
+        "strategy_order_id": "P16_20260904_0004",
+        "code": "001266.SZ",
+        "action": "BUY",
+        "vol": 1300,
+        "price": 34.05,
+        "status": "FILLED",
+        "sysid": "1386",
+        "reason": "deal confirmed",
+        "ts": "2026-09-04 09:43:50",
+        "_file_date": "20260904"
+      },
+      {
+        "strategy_order_id": "P16_20260904_0002",
+        "code": "300964.SZ",
+        "action": "SELL",
+        "vol": 1000,
+        "price": 59.06,
+        "status": "FILLED",
+        "sysid": "1506",
+        "reason": "deal confirmed",
+        "ts": "2026-09-04 09:49:09",
+        "_file_date": "20260904"
+      }
+    ]
+  }
+}

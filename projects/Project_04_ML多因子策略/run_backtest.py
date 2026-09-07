@@ -8,13 +8,13 @@ import numpy as np
 import lightgbm as lgb
 from pathlib import Path
 
-DAILY_PATH = "E:/astock/daily/stock_daily.parquet"
+DAILY_PATH = "D:/astock/daily/stock_daily.parquet"
 INITIAL_CAPITAL = 100000
 MAX_POSITIONS = 30
 HOLDING_DAYS = 5
 TRAIN_WINDOW = 504
 FORWARD_DAYS = 5
-OUTPUT_DIR = "E:/QuantLab/projects/Project_04_ML多因子策略/reports"
+OUTPUT_DIR = "D:/QuantLab/projects/Project_04_ML多因子策略/reports"
 
 
 def main():

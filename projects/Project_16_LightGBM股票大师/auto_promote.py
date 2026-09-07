@@ -20,7 +20,7 @@
   G3 test IC    >= 正式模型 IC × IC_TOLERANCE   相对不退步，吸收面板重建噪声
   G4 ICIR       >= ICIR_FLOOR                  稳定性下限
   G5 分位收益方向正确：Q5 > Q1                  模型排序方向未反转
-  G6 训练报告 mtime > 面板 mtime                确认本次重训确实用了重建后的新面板
+  G6 候选训练面板日 == 当前面板日（optuna_report.json panel_max_date；旧报告回退 mtime）
 
 说明：
   - test 集为 train_optuna.py 固定切分（2024-07-01 ~ 2026-08-14），不随面板日期变化，
@@ -43,6 +43,8 @@ import json
 import os
 import subprocess
 import sys
+
+import pandas as pd
 
 import data_config as DC
 
@@ -180,16 +182,30 @@ def main():
         detail5 = "分位收益缺失或非数值"
     checks.append(("G5 分位收益方向正确 (Q5>Q1)", ok5, detail5))
 
-    # ---------- G6 重训确实用了新面板 ----------
+    # ---------- G6 重训确实用了新面板（T-20260903 修复：面板日期比对，替代弱 mtime 代理） ----------
+    # 候选训练面板日（optuna_report.json 的 panel_max_date）必须 == 当前生产面板最新日，
+    # 防止「旧面板训练的候选」被误上线（训练/推理分布不一致的根因）。
+    rep_panel = str(rep.get("panel_max_date", "") or "")[:10]
+    cur_panel_date = None
     if os.path.exists(PANEL):
+        try:
+            _pdf = pd.read_parquet(PANEL, columns=["trade_date"])
+            cur_panel_date = pd.to_datetime(_pdf["trade_date"]).max().strftime("%Y-%m-%d")
+        except Exception:
+            cur_panel_date = None
+    if rep_panel and cur_panel_date:
+        ok6 = rep_panel == cur_panel_date
+        checks.append(("G6 候选训练面板日==当前面板日（确用新面板）", ok6,
+                       "报告 %s vs 当前面板 %s" % (rep_panel, cur_panel_date)))
+    elif os.path.exists(PANEL):
         ok6 = os.path.getmtime(REPORT) > os.path.getmtime(PANEL)
-        checks.append(("G6 报告晚于面板（确用新面板）", ok6,
+        checks.append(("G6 报告晚于面板（mtime 回退：报告无面板日期）", ok6,
                        "report %s vs panel %s"
                        % (datetime.datetime.fromtimestamp(os.path.getmtime(REPORT)).strftime("%m-%d %H:%M:%S"),
                           datetime.datetime.fromtimestamp(os.path.getmtime(PANEL)).strftime("%m-%d %H:%M:%S"))))
     else:
         ok6 = False
-        checks.append(("G6 报告晚于面板", False, "生产面板不存在: %s" % PANEL))
+        checks.append(("G6 候选用新面板", False, "生产面板不存在: %s" % PANEL))
 
     # ---------- 汇总判定 ----------
     print("门禁结果:")

@@ -10,7 +10,7 @@ ATR 低波动策略 v2 — 分散化低波组合 (回测 + 实验开关)
                            VOLTARGET=1 时改为波动率目标化渐进降仓(组合 trailing 60日波动率相对目标 10% 缩放仓位, 下限20%)
   - 行业约束(可选): INDCAP=1 时单行业权重<=15%, 防低波挤防御行业
   - 单边成本 0.1%; 防未来函数(当日收盘指标选股, 次日开盘成交); 后复权价 adj_open/adj_close
-数据源: E:/astock/daily/stock_daily.parquet ; ROE: E:/astock/finance/fina_indicator.parquet
+数据源: D:/astock/daily/stock_daily.parquet ; ROE: D:/astock/finance/fina_indicator.parquet
 
 实验开关(env):
   REBAL   = M(月频,默认) | Q(季频)
@@ -28,8 +28,8 @@ import numpy as np
 import pandas as pd
 import duckdb
 
-PARQUET   = "E:/astock/daily/stock_daily.parquet"
-FINA     = "E:/astock/finance/fina_indicator.parquet"
+PARQUET   = "D:/astock/daily/stock_daily.parquet"
+FINA     = "D:/astock/finance/fina_indicator.parquet"
 OUT_DIR  = "D:/QMT_STRATEGIES/backtest_results"
 os.makedirs(OUT_DIR, exist_ok=True)
 
@@ -157,7 +157,7 @@ if INDCAP:
     print("[4c] 加载行业映射 (stock_basic.industry) ...")
     con3 = duckdb.connect()
     ind_df = con3.execute(
-        "SELECT ts_code, industry FROM read_parquet('E:/astock/basic/stock_basic.parquet') "
+        "SELECT ts_code, industry FROM read_parquet('D:/astock/basic/stock_basic.parquet') "
         "WHERE industry IS NOT NULL").fetchdf()
     con3.close()
     IND = dict(zip(ind_df["ts_code"].astype(str), ind_df["industry"].astype(str)))

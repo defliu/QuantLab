@@ -7,7 +7,7 @@
   是否改变 TOP80 构成), 决定走"直接增强"还是"升级全量回测复核"。
   升级判据 (讨论室设计): 单期改变 TOP80 构成 >= 3 只 -> 需全量回测复核。
 
-新增排雷规则 (限 E:/astock 可得字段, 无数据源的立案/非标/解禁不做):
+新增排雷规则 (限 D:/astock 可得字段, 无数据源的立案/非标/解禁不做):
   R1 市值红线缓冲区: 主板 total_mv < 5亿x1.5=7.5亿; 创业板/科创板 < 3亿x1.5=4.5亿
      (主板5亿为2024-10-30起现行标准; 北交所无对应标准, 不适用本规则, 单列)
   R2 退市临近: basic.delist_date 已知且调仓日距退市日 <= 30 天
@@ -28,9 +28,9 @@ HERE = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 RES = os.path.join(HERE, "results")
 os.makedirs(RES, exist_ok=True)
 
-DAILY = "E:/astock/daily/stock_daily.parquet"
-FIN = "E:/astock/finance/fina_indicator.parquet"
-BASIC = "E:/astock/basic/stock_basic.parquet"
+DAILY = "D:/astock/daily/stock_daily.parquet"
+FIN = "D:/astock/finance/fina_indicator.parquet"
+BASIC = "D:/astock/basic/stock_basic.parquet"
 
 MV_MAIN = 75000.0     # 万元: 主板 5亿 x 1.5
 MV_GEM_STAR = 45000.0  # 万元: 创业板/科创板 3亿 x 1.5

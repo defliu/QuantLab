@@ -2,7 +2,7 @@
 """阶段4：特征扩展 —— 接入财务质量 + 事件催化（资金/催化类因子）。
 
 在阶段0的20个量价特征基础上，新增两类共15个特征：
-  A) 财务质量/增长（来自 E:/astock/finance/fina_indicator.parquet）
+  A) 财务质量/增长（来自 D:/astock/finance/fina_indicator.parquet）
      fin_roe / fin_gross_margin / fin_netprofit_margin / fin_assets_turn /
      fin_ocfps / fin_cfps / fin_ocf_to_profit / fin_netprofit_yoy / fin_tr_yoy
      对齐：按 公告日(ann_date) <= T 的最近一期（merge_asof backward，防未来函数）
@@ -102,7 +102,7 @@ def main():
         if df[c].dtype == "float64":
             df[c] = df[c].astype("float32")
     df = df.reset_index()
-    df["trade_date"] = pd.to_datetime(df["trade_date"])
+    df["trade_date"] = pd.to_datetime(df["trade_date"]).astype("datetime64[ns]")
     df["ts_code"] = df["ts_code"].astype(str)
     df = df.sort_values(["ts_code", "trade_date"]).reset_index(drop=True)
     print(f"    行情行数: {len(df):,}  股票数: {df['ts_code'].nunique()}")
@@ -171,7 +171,7 @@ def main():
     fin = pd.read_parquet(FIN, columns=["ts_code", "end_date", "ann_date"] + RAW_FIN_COLS)
     fin = fin.rename(columns=dict(zip(RAW_FIN_COLS, FIN_FEATURES)))
     fin = fin.dropna(subset=["ann_date"])
-    fin["ann_date"] = pd.to_datetime(fin["ann_date"], errors="coerce")
+    fin["ann_date"] = pd.to_datetime(fin["ann_date"], errors="coerce").astype("datetime64[ns]")
     fin = fin.dropna(subset=["ann_date"]).copy()
     fin["ts_code"] = fin["ts_code"].astype(str)
     fin = fin.sort_values(["ts_code", "ann_date"])
@@ -212,7 +212,7 @@ def main():
         """按 ts_code 循环 merge_asof 取最近一次事件，返回 {col: ndarray} 与 days_since。"""
         ev = ev_df.copy()
         ev["ts_code"] = ev["ts_code"].astype(str)
-        ev[ev_key] = pd.to_datetime(ev[ev_key], errors="coerce")
+        ev[ev_key] = pd.to_datetime(ev[ev_key], errors="coerce").astype("datetime64[ns]")
         ev = ev.dropna(subset=[ev_key])
         ev = ev.sort_values(["ts_code", ev_key])
         groups = {k: g for k, g in ev.groupby("ts_code")}
@@ -252,7 +252,7 @@ def main():
     # ---------- 4. 事件催化：分红 / 股本变动 ----------
     print("[4/6] 构造分红/股本变动特征 ...")
     dv = pd.read_parquet(DIVIDEND, columns=["ts_code", "ann_date", "cash_div_tax"])
-    dv["ann_date"] = pd.to_datetime(dv["ann_date"], errors="coerce")
+    dv["ann_date"] = pd.to_datetime(dv["ann_date"], errors="coerce").astype("datetime64[ns]")
     dv = dv.dropna(subset=["ann_date"]).copy()
     dv["ts_code"] = dv["ts_code"].astype(str)
     # 近 DIV_WINDOW 天税后现金分红合计

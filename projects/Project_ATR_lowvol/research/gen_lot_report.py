@@ -93,7 +93,7 @@ html = f"""<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
 .key{{background:#f0fff4;border-left:4px solid #38a169;padding:10px 14px;margin:10px 0;font-size:13px}}
 code{{background:#f4f4f4;padding:1px 5px;border-radius:3px}}</style></head><body><div class="wrap">
 <h1>ATR 低波动策略 v2 — 持仓数 × 资金约束 对照看板</h1>
-<p style="color:#666">区间 2023-01-03 ~ 2026-07-31 · 底座 RANKVOL+质量(ROE)+VT+行业cap · 单边0.1% · 后复权 · 数据源 E:/astock</p>
+<p style="color:#666">区间 2023-01-03 ~ 2026-07-31 · 底座 RANKVOL+质量(ROE)+VT+行业cap · 单边0.1% · 后复权 · 数据源 D:/astock</p>
 <div class="card"><div>{legend}</div><div>{nav_svg}</div></div>
 <div class="card">{tbl}</div>
 <div class="key"><b>核心结论</b><br>

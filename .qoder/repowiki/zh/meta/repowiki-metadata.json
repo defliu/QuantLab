@@ -5,10 +5,10 @@
     "progress_status": "completed",
     "wiki_present_status": "COMPLETED",
     "recovery_checkpoint": "wiki_generation_completed",
-    "last_commit_id": "344574276b7affdb148c959f47511e145ea2917d",
-    "last_commit_update": "2026-08-28T08:56:02Z",
+    "last_commit_id": "72c31f6c7504f04787386d45277a7f185d8c4042",
+    "last_commit_update": "2026-08-28T16:23:15Z",
     "gmt_create": "2026-08-28T08:56:02Z",
-    "gmt_modified": "2026-08-28T08:56:02Z",
+    "gmt_modified": "2026-08-28T16:23:15Z",
     "extend_info": "{\"language\":\"zh\",\"active\":true,\"branch\":\"master\"}"
   },
   "wiki_catalogs": [
@@ -2647,6 +2647,66 @@
       "reference_count": 0,
       "gmt_create": "2026-08-28T08:56:02Z",
       "gmt_modified": "2026-08-28T08:56:02Z"
+    },
+    {
+      "id": "9a449954-9624-4f7e-ac09-447d8830c935",
+      "catalog_id": "9a449954-9624-4f7e-ac09-447d8830c935",
+      "title": "主要策略详解",
+      "description": "main-strategies",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "99a7b900-9214-7b3d-6151-7730c2bd6ea5",
+      "reference_count": 0,
+      "gmt_create": "2026-08-28T16:23:15Z",
+      "gmt_modified": "2026-08-28T16:23:15Z"
+    },
+    {
+      "id": "d968395f-3242-453b-89c1-124a53c2c543",
+      "catalog_id": "d968395f-3242-453b-89c1-124a53c2c543",
+      "title": "QMT架构集成",
+      "description": "qmt-architecture",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "99a7b900-9214-7b3d-6151-7730c2bd6ea5",
+      "reference_count": 0,
+      "gmt_create": "2026-08-28T16:23:15Z",
+      "gmt_modified": "2026-08-28T16:23:15Z"
+    },
+    {
+      "id": "c0bbbfba-a582-4eef-999f-10ccad892c1d",
+      "catalog_id": "c0bbbfba-a582-4eef-999f-10ccad892c1d",
+      "title": "引擎核心架构",
+      "description": "engine-core",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "99a7b900-9214-7b3d-6151-7730c2bd6ea5",
+      "reference_count": 0,
+      "gmt_create": "2026-08-28T16:23:15Z",
+      "gmt_modified": "2026-08-28T16:23:15Z"
+    },
+    {
+      "id": "edd01266-ebb7-49ec-9a75-04a36c75b1a8",
+      "catalog_id": "edd01266-ebb7-49ec-9a75-04a36c75b1a8",
+      "title": "验证框架设计",
+      "description": "verification-framework-design",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "99a7b900-9214-7b3d-6151-7730c2bd6ea5",
+      "reference_count": 0,
+      "gmt_create": "2026-08-28T16:23:15Z",
+      "gmt_modified": "2026-08-28T16:23:15Z"
+    },
+    {
+      "id": "b920639e-d395-4550-b913-483d1e6c073b",
+      "catalog_id": "b920639e-d395-4550-b913-483d1e6c073b",
+      "title": "环境搭建与部署配置",
+      "description": "env-setup-config",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "99a7b900-9214-7b3d-6151-7730c2bd6ea5",
+      "reference_count": 0,
+      "gmt_create": "2026-08-28T16:23:15Z",
+      "gmt_modified": "2026-08-28T16:23:15Z"
     }
   ],
   "knowledge_relations": [

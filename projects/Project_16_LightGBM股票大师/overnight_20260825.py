@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """通宵任务 2026-08-25：真实数据复核 + 新因子研究。
 
-背景：已采购并整合真实数据到 E:/astock（moneyflow五档/板块资金流/龙虎榜/竞价/研报/筹码/北向）。
+背景：已采购并整合真实数据到 D:/astock（moneyflow五档/板块资金流/龙虎榜/竞价/研报/筹码/北向）。
 本脚本复核「之前数据不全时做的 F2/F5 真实化实验」，并用新数据做衍生因子 IC 研究。
 
 严守研发-生产隔离：只写候选文件/研究面板，绝不碰 V1.1 正式模型/面板/脚本。
@@ -17,7 +17,7 @@ import pandas as pd
 PROJ = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(PROJ, "data")
 REAL = os.path.join(DATA, "real")
-ASTOCK = "E:/astock"
+ASTOCK = "D:/astock"
 LOG = os.path.join(REAL, "OVERNIGHT_20260825_PROGRESS.log")
 REPORT = os.path.join(REAL, "OVERNIGHT_20260825_RESULT.md")
 PY = sys.executable
@@ -367,7 +367,7 @@ def main():
         "# 通宵研究结论 2026-08-25",
         "",
         f"> 生成时间：{datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}",
-        "> 数据源：E:/astock（2026-08-25 整合采购数据：moneyflow五档/板块资金流/龙虎榜/竞价/研报/筹码/北向）",
+        "> 数据源：D:/astock（2026-08-25 整合采购数据：moneyflow五档/板块资金流/龙虎榜/竞价/研报/筹码/北向）",
         "> 严守隔离：仅产研究面板/候选模型，未触碰 V1.1 生产资产。",
         "",
     ]

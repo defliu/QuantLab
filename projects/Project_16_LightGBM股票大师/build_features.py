@@ -2,7 +2,7 @@
 """阶段0：构建 LightGBM 训练特征面板（无未来函数）。
 
 数据源：
-  - 日线行情：E:/astock/daily/stock_daily.parquet
+  - 日线行情：D:/astock/daily/stock_daily.parquet
       索引 (trade_date, ts_code)，含 close/pct_chg/vol/amount/turnover_rate/
       volume_ratio/pe_ttm/pb/dv_ttm/circ_mv/is_st/up_limit/down_limit 等字段
   - 股票池：D:/QuantLab/data/universe_all_a.csv (code, enabled)

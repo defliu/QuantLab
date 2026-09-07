@@ -28,7 +28,7 @@ from backtest import report
 from data.astock_reader import AstockParquetReader
 from data.universe import load_universe
 
-DAILY_PATH = r"E:/astock/daily/stock_daily.parquet"
+DAILY_PATH = r"D:/astock/daily/stock_daily.parquet"
 REPORT_ROOT = "D:/QuantLab/reports"
 OUT_DIR = "D:/QuantLab/projects/Project_ATR_lowvol/results"
 

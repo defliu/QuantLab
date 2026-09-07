@@ -214,6 +214,7 @@ def main():
         },
         "top20_features": res["top20_features"],
         "model_file": out_model,
+        "panel_max_date": str(df["trade_date"].max().date()),
         "verdict": (
             "PASS: test IC 显著为正，模型已保存，可进入阶段3(双轨选股接入)"
             if res["ic_all"] > 0.02

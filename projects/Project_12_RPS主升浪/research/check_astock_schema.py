@@ -2,7 +2,7 @@
 """检查 astock parquet 的字段名，确保策略代码匹配。"""
 import pyarrow.parquet as pq
 
-PARQUET_PATH = "E:/astock/daily/stock_daily.parquet"
+PARQUET_PATH = "D:/astock/daily/stock_daily.parquet"
 
 # 读取 schema
 pf = pq.ParquetFile(PARQUET_PATH)

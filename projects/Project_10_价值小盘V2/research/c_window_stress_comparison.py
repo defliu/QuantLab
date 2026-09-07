@@ -18,7 +18,7 @@
 """
 import sys, os, time
 
-# E->D 迁移路径修正: run_grid_validation.py 内 sys.path 指向 E:\QuantLab (已迁空),
+# E->D 迁移路径修正: run_grid_validation.py 内 sys.path 指向 D:\QuantLab (已迁空),
 # 先插入 D 盘真实路径, 使 research.multi_factor_ic 可解析
 _P10 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, r"D:\QuantLab\projects\Project_01_多因子IC小盘Alpha")

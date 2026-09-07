@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 
 ROOT = r"d:\QuantLab\projects\Project_17_情绪周期择时"
-DAILY = r"E:\astock\daily\stock_daily.parquet"
+DAILY = r"D:\astock\daily\stock_daily.parquet"
 SENT = ROOT + r"\results\sentiment_series.csv"
 OUT_CSV = ROOT + r"\results\phase0v2_b_overlay_nav.csv"
 

@@ -14,7 +14,7 @@
   - 口径与实盘策略一致：调仓日 = get_rebalance_dates(freq="2M")；
     IC 前向收益 = 下一调仓日 T+1 开盘 → 下下调仓日 T+1 开盘（与 audit14 结算口径一致）。
   - PIT 安全：财务用 ann_date 快照；禁止未来数据。
-  - 自包含：数据从 E:/astock 读，不改任何其他文件。
+  - 自包含：数据从 D:/astock 读，不改任何其他文件。
 
 用法：
   python research_audit/factor_health.py

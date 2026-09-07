@@ -228,7 +228,7 @@ def run_variant(tag, sector_cap=None, market_timing=False, weight_mode="equal",
             for code, base in new_holdings.items():
                 amt = e_row["amount"].get(code)
                 if amt is not None and amt > 0:
-                    # amount 单位: 千元 (E:/astock daily), 转元 = amt*1000
+                    # amount 单位: 千元 (D:/astock daily), 转元 = amt*1000
                     # 容量约束: 单票金额 <= 当日成交额 * amount_adv_pct
                     if per_stock > amount_adv_pct * amt * 1000:
                         risk.register_exit(code)
@@ -307,7 +307,7 @@ if __name__ == "__main__":
     b_cum = (1 + base["ret"]).cumprod() - 1
     p("基准: 累计=%6.1f%%" % (b_cum.iloc[-1] * 100))
 
-    basic = pd.read_parquet(r"E:/astock/basic/stock_basic.parquet")
+    basic = pd.read_parquet(r"D:/astock/basic/stock_basic.parquet")
     ind_map = dict(zip(basic["ts_code"], basic["industry"].fillna("其他")))
 
     # ATR% 宽表 (方向4)

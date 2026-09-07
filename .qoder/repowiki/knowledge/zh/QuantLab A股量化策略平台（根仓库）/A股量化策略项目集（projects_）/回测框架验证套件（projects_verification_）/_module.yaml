@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: quant_projects/project_verification
+title: 回测框架验证套件（projects/verification/）
+scope:
+    - projects/verification/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 00839306-c805-4f70-a8a2-744208bd6687
+kk_ordinal: 14
+kk_cards:
+    overview:
+        id: 06663e32-18ad-4fb2-b4cb-310b50bc9d9f
+        title: 回测框架验证套件（projects/verification/）
+    architecture_design:
+        id: acd9a873-03bd-4092-b397-c15d8a32a3e6
+        title: 回测框架验证套件（projects/verification/）
+    tech_stack:
+        id: 102b38cd-0453-4668-8862-536c5cf080d4
+        title: 回测框架验证套件（projects/verification/）
+    coding_conventions:
+        id: 42340832-b5f3-4570-b887-ff73ac7f251a
+        title: 回测框架验证套件（projects/verification/）
+    unique_setup_and_commands:
+        id: 3dfb7fab-aa2f-40ae-aabb-7ae8e0c9aeb0
+        title: 回测框架验证套件（projects/verification/）

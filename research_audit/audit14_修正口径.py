@@ -2,17 +2,17 @@
 """审计14：修正口径，用净值法重算 V2 各窗口真实表现
 修正点：状态机收益标记日期改为真实结算日 e_date（audit13 误用 x_date 导致序列滞后一期）
 对比：逐期独立 / 状态机(延续+顺延) / 状态机(全换+顺延)，净值法算全期+2026+压力窗口
-输出：E:\QuantLab\research_audit\audit14_结果.txt"""
+输出：D:\QuantLab\research_audit\audit14_结果.txt"""
 import sys, time, os
-sys.path.insert(0, r"E:\QuantLab")
-sys.path.insert(0, r"E:\QuantLab\projects\Project_01_多因子IC小盘Alpha")
+sys.path.insert(0, r"D:\QuantLab")
+sys.path.insert(0, r"D:\QuantLab\projects\Project_01_多因子IC小盘Alpha")
 import pandas as pd
 import numpy as np
 from research.multi_factor_ic.config import DAILY_PATH, START_DATE, END_DATE
 from research.multi_factor_ic.data_loader import get_rebalance_dates
 
-os.makedirs(r"E:\QuantLab\research_audit", exist_ok=True)
-OUT = r"E:\QuantLab\research_audit\audit14_结果.txt"
+os.makedirs(r"D:\QuantLab\research_audit", exist_ok=True)
+OUT = r"D:\QuantLab\research_audit\audit14_结果.txt"
 _log = []
 def log(*args):
     s = " ".join(str(a) for a in args)
@@ -42,10 +42,10 @@ suspend = daily["suspend_type"].fillna("N")
 panel = panel.loc[~is_st & ~suspend.isin(["S", "R", "R&S"])]
 log("panel:", panel.shape)
 
-basic = pd.read_parquet(r"E:/astock/basic/stock_basic.parquet")
+basic = pd.read_parquet(r"D:/astock/basic/stock_basic.parquet")
 ind_map = dict(zip(basic["ts_code"], basic["industry"].fillna("其他")))
 
-fin = pd.read_parquet(r"E:/astock/finance/fina_indicator.parquet")
+fin = pd.read_parquet(r"D:/astock/finance/fina_indicator.parquet")
 fin = fin[["ts_code", "end_date", "ann_date", "bps", "roe", "profit_dedt", "debt_to_assets"]].copy()
 fin["ann_date"] = pd.to_datetime(fin["ann_date"], errors="coerce")
 fin = fin.dropna(subset=["ann_date"])

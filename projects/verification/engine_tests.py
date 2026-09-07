@@ -17,7 +17,7 @@ def test_1_known_result():
     print("\n[B-1] 已知结果验证...")
     
     # 加载数据
-    daily = pd.read_parquet("E:/astock/daily/stock_daily.parquet")
+    daily = pd.read_parquet("D:/astock/daily/stock_daily.parquet")
     
     # 取2023年数据做简单验证
     idx = daily.index

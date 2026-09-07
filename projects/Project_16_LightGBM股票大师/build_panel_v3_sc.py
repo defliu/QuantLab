@@ -16,8 +16,8 @@ DATA = os.path.join(HERE, "data")
 PANEL_ENH = os.path.join(DATA, "feature_panel_v3_enh.parquet")
 PANEL_V32 = os.path.join(DATA, "feature_panel_v3.2.parquet")
 FLOW_REAL = os.path.join(DATA, "real", "fund_flow_real.parquet")
-STOCK_BASIC = r"E:\astock\basic\stock_basic.parquet"
-MAIN_DAILY = r"E:\astock\daily\stock_daily.parquet"
+STOCK_BASIC = r"D:\astock\basic\stock_basic.parquet"
+MAIN_DAILY = r"D:\astock\daily\stock_daily.parquet"
 OUT = os.path.join(DATA, "feature_panel_v3_sc.parquet")
 
 

@@ -23,7 +23,7 @@ RESULTS_DIR = "D:/QuantLab/reports"
 
 
 def set_results_dir(path):
-    """Override the results directory (e.g. F:/backtest_workspace/results)."""
+    """Override the results directory (e.g. D:/QuantLab/reports)."""
     global RESULTS_DIR
     RESULTS_DIR = path
 

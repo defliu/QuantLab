@@ -21,7 +21,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import g2_config as G
-from qmt_bridge_client import read_fills, read_positions, read_asset, read_heart, positions_from_fills
+from qmt_bridge_client import read_fills, read_positions, read_asset, read_heart, positions_from_fills, notify_feishu
 
 TERMINAL_STATUS = ("FILLED", "PARTIAL_FILLED", "CANCELED", "REJECTED", "UNCONFIRMED", "ABANDONED")
 
@@ -31,6 +31,16 @@ def main():
     ap.add_argument("--date", default=None)
     args = ap.parse_args()
     date = args.date or time.strftime("%Y%m%d")
+
+    # 对账前刷新当日 positions_cfg 成本锚（T-20260902-005：rebalance --live 已生成，
+    # 但风控卖出/当日变化后需按最新账户持仓校准；失败不阻断对账）
+    try:
+        import gen_positions_cfg_g2 as GPC
+        _rc = GPC.main_with_date(date)
+        if _rc != 0:
+            print("[WARN] positions_cfg 刷新异常 exit=%d，对账用既有账本" % _rc)
+    except Exception as e:
+        print("[WARN] positions_cfg 刷新失败（不影响对账）: %s" % e)
 
     report = {
         "date": date, "account_id": G.ACCOUNT_ID,
@@ -143,6 +153,13 @@ def main():
         len(fill_list), len(pending), len(report["orphans"]), len(report["issues"])))
     for i in report["issues"]:
         print("  [ISSUE] %s" % i)
+    # 飞书通知（对账结果摘要；有 issue 标 ⚠）
+    try:
+        issue_txt = "\n".join("⚠ " + i for i in report["issues"]) if report["issues"] else "无问题"
+        notify_feishu("【G2对账 %s】fills=%d pending=%d 孤儿=%d 问题=%d\n%s" % (
+            date, len(fill_list), len(pending), len(report["orphans"]), len(report["issues"]), issue_txt))
+    except Exception as e:
+        print("[通知] 对账飞书异常: %s" % e)
     return 0
 
 

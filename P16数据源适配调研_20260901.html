@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>P16 策略数据源适配调研（2026-09-01 实测）</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<style>
+  :root{
+    --ink:#1a1d21; --sub:#5b6470; --line:#e3e7ec; --bg:#f7f8fa;
+    --card:#fff; --accent:#1f4e79; --up:#c0392b; --ok:#1e8449;
+    --warn:#b7791f; --warnbg:#fffaf0; --okbg:#f2f8f4; --badbg:#fdf2f1;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.75;font-size:15px}
+  .wrap{max-width:1180px;margin:0 auto;padding:32px 24px 64px}
+  h1{font-size:27px;margin:0 0 6px;letter-spacing:-.3px}
+  h2{font-size:21px;margin:42px 0 14px;padding-left:11px;border-left:4px solid var(--accent)}
+  h3{font-size:16px;margin:24px 0 10px;color:var(--accent)}
+  .meta{color:var(--sub);font-size:13px;margin-bottom:24px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px 22px;margin:16px 0}
+  .tldr{background:linear-gradient(180deg,#fbfdff,#fff);border:1px solid #cfe0ef;border-left:5px solid var(--accent)}
+  .tldr ol{margin:10px 0 0;padding-left:22px}
+  .tldr li{margin:9px 0}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:12px 0;background:#fff}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:#eef3f8;font-weight:600;color:#2c3e50;white-space:nowrap}
+  tr:nth-child(even) td{background:#fcfdfe}
+  td.c{text-align:center;white-space:nowrap}
+  .tag{display:inline-block;padding:1px 7px;border-radius:4px;font-size:12px;white-space:nowrap}
+  .t-ok{background:#eaf5ec;color:#1e6b3a;border:1px solid #bfe0c8}
+  .t-warn{background:#fdf3e3;color:#8a5a11;border:1px solid #f0dcb8}
+  .t-bad{background:#fdecec;color:#a02c22;border:1px solid #f3c9c5}
+  .t-info{background:#eaf2fb;color:#1f4e79;border:1px solid #c3dbf0}
+  .src{color:var(--sub);font-size:12px;margin:8px 0 0}
+  .warn{background:var(--warnbg);border:1px solid #f0dfb8;border-left:5px solid var(--warn);border-radius:8px;padding:14px 18px;margin:16px 0}
+  .ok{background:var(--okbg);border:1px solid #cfe6d6;border-left:5px solid var(--ok);border-radius:8px;padding:14px 18px;margin:16px 0}
+  .bad{background:var(--badbg);border:1px solid #f3c9c5;border-left:5px solid var(--up);border-radius:8px;padding:14px 18px;margin:16px 0}
+  .chart{width:100%;height:430px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:860px){.grid2{grid-template-columns:1fr}}
+  code{background:#eef1f5;padding:1px 5px;border-radius:3px;font-size:12.5px}
+  .disc{background:#f4f5f7;border:1px solid var(--line);border-radius:8px;padding:14px 18px;
+    font-size:13px;color:#4a5361;margin-top:34px}
+  .kv{font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>P16 策略数据源适配调研</h1>
+<div class="meta">调研时点：2026-09-01 ｜ 对象：Project_16 LightGBM 股票大师（g2 / V2.0，43 特征）｜ 方法：代码实证 + 本地 parquet 实测 + Tushare 官方文档核对</div>
+
+<div style="background:#fff7e6;border:1px solid #f0a020;border-radius:8px;padding:12px 16px;margin:14px 0;font-size:13.5px">
+  <b>⚠️ 2026-09-03 勘误（不影响回测结论，影响实时方案）</b>
+  <ul>
+    <li>本报告原结论"不必采购任何新数据源"针对<b>回测 / 历史数据</b>仍然成立（<code>D:/astock</code> 已买断）。但本报告当时未单列<b>实时 F2 资金流的稳定供给</b>问题——这正是后续审计发现的短板。</li>
+    <li>经 2026-09-03 核实：Tushare <code>moneyflow</code> 接口<b>最低积分门槛 = 2000</b>（非此前口头所述 120）。若账号积分不足，需购 <b>200 元/年档（=2000 积分）</b>方可每日自动刷新 <code>moneyflow</code> 落 parquet，作为 F2 的权威实时源。该档同时覆盖 <code>daily_basic</code>（F6 估值）、<code>fina_indicator</code>（财务 PIT 对账）、<code>top_list</code>（龙虎榜）。</li>
+    <li>实测（2026-09-03，miniQMT 自带 pythonw 3.6.8 连运行客户端）：本机 xtdata 旧版<b>不支持</b> <code>transactioncount1d</code> 原生资金流，<code>get_capital_flow</code> / <code>get_tick_detail</code> 方法缺失；tick 启发式重构主力净流入<b>量级失真 7.7×</b>（超全天成交总额）。故 F2 权威源只能是 Tushare <code>moneyflow</code> parquet，<b>不能由 QMT 内计算</b>。</li>
+  </ul>
+</div>
+
+<div class="card tldr">
+  <h3 style="margin-top:0;color:#1a1d21;font-size:17px">核心结论</h3>
+  <ol>
+    <li><b>最全的数据源是 Tushare 数据体系，而且你已经拥有它。</b>P16 需要的全部数据都在 <code>D:/astock</code> 里，且实测覆盖范围<b>优于</b> Tushare 官方标称（详见发现一）。<b>不需要再采购任何新数据源。</b></li>
+    <li><b>P16 的真实瓶颈不是"数据不全"，而是"周更滞后"。</b>所有数据集实测截止 2026-08-21，距今天 <b>11 天</b>；北向 <code>hk_hold</code> 更只到 2026-08-07（滞后 25 天）。这才是需要投入的方向。</li>
+    <li><b>发现一处会导致采购错误的口径陷阱</b>：g2 的 <code>mf_main_net</code> 依赖 <code>sell_*</code> 字段，只有通用四档 <code>moneyflow</code> 能算；采购清单上写的"五档全量"（东财 <code>moneyflow_dc</code>）没有 sell 字段，<b>按清单买会直接算不出核心因子</b>。详见发现三。</li>
+    <li><b>发现两处文档失准</b>：供应商清单自报 <code>moneyflow_ths</code> 起于 2024-12-24，实测 <b>2019-07-26</b>（低估 5 年 5 个月）；<code>全局控制台.md</code> 与 <code>MCP数据链路说明.md</code> 仍写 <code>E:/astock</code>，实际主库已于 2026-08-28 迁至 <code>D:/astock</code>（本机无 E 盘）。</li>
+  </ol>
+</div>
+
+<h2>一、P16 到底需要哪些数据（从代码实证）</h2>
+<p>不看宣传口径，直接从 <code>build_features_v2.py</code>、<code>build_g2_daily.py</code>、<code>deploy_predict_g2.py</code>、<code>data_sources.py</code> 反推。P16 的数据需求分三层：</p>
+
+<h3>A 层 · 训练 / 回测离线特征（43 特征）</h3>
+<table>
+<thead><tr><th>分组</th><th class="c">数量</th><th>来源数据集</th><th>关键字段</th></tr></thead>
+<tbody>
+<tr><td>基础量价</td><td class="c">20</td><td><code>daily/stock_daily</code></td><td>close、pct_chg、vol、amount、<b>turnover_rate、volume_ratio</b>、<b>pe_ttm、pb、dv_ttm</b>、circ_mv、is_st、<b>adj_factor</b></td></tr>
+<tr><td>财务质量/增长</td><td class="c">10</td><td><code>finance/fina_indicator</code></td><td>roe、gross_margin、netprofit_margin、assets_turn、ocfps、cfps、ocf_to_profit、netprofit_yoy、tr_yoy、dt_netprofit_yoy（<b>按 ann_date 防前视</b>）</td></tr>
+<tr><td>事件催化</td><td class="c">8</td><td><code>finance/forecast · express · dividend · share_change_event</code></td><td>预告类型/幅度、快报同比、近 365 天税后分红、解禁标记</td></tr>
+<tr><td><b>g2 新增因子</b></td><td class="c">10</td><td><code>moneyflow · board/ths_daily · board_fundflow · lhb · research · northbound</code></td><td>mf_main_net、mf_elg_net、mf_main_ratio、ind_pct_ths、ind_net_ths、lhb_net、lhb_count、rc_rating、rc_num、north_chg</td></tr>
+</tbody>
+</table>
+
+<h3>B 层 · 实盘评分卡 F1–F6</h3>
+<table>
+<thead><tr><th>维度</th><th>含义</th><th>数据源</th><th class="c">权重</th></tr></thead>
+<tbody>
+<tr><td>F1 位置</td><td>价格相对位置</td><td>面板本地计算</td><td class="c">0.25</td></tr>
+<tr><td><b>F2 资金</b></td><td>主力净额（元）</td><td>新浪实时（r0_net+r1_net）/ 周更 moneyflow</td><td class="c">0.20</td></tr>
+<tr><td>F3 催化</td><td>新闻公告</td><td>新浪智研 / 悟道 MCP</td><td class="c">—</td></tr>
+<tr><td>F4 技术</td><td>技术指标</td><td>QMT xtdata</td><td class="c">—</td></tr>
+<tr><td><b>F5 板块</b></td><td>行业涨幅 / 板块资金</td><td>ths_daily（881 分类）+ moneyflow_ind_ths</td><td class="c">—</td></tr>
+<tr><td>F6 估值</td><td>实时 PE + 换手</td><td>TDX / QMT</td><td class="c">—</td></tr>
+</tbody>
+</table>
+<p class="src">权重为生产默认值；2026-08-28 寻优研究给出推荐组合 F1=0.17/F2=0.26/F3=0.22/F4=0.07/F5=0.17/F6=0.12（OOS 日超额 +0.22%，研究结论未落盘）。</p>
+
+<h3>C 层 · 盘中实时补数</h3>
+<p>周更数据无法覆盖当日，因此 10 个 g2 新因子中已有 <b>9 个完成当日实时化</b>：F2（新浪）、F5（增量库自算）、lhb×2（东财 datacenter）、rc×2（东财 reportapi）。<code>north_chg</code> 受监管限制无法实时化。</p>
+
+<h2>二、本地数据实测覆盖率</h2>
+<p>以下全部为 2026-09-01 对 <code>D:/astock</code> 的<b>实测结果</b>（非文档声称值）。</p>
+
+<div class="card">
+  <h3 style="margin-top:0">各数据集历史覆盖年限（截至 2026-09-01）</h3>
+  <div id="covChart" class="chart"></div>
+  <p class="src">实测来源：本地 parquet 索引时间边界；共同截止日 2026-08-21（北向为 2026-08-07）。</p>
+</div>
+
+<table>
+<thead><tr><th>P16 用途</th><th>数据集</th><th class="c">实测起始</th><th class="c">实测最新</th><th class="c">行数</th><th class="c">覆盖判断</th></tr></thead>
+<tbody>
+<tr><td>日线量价 + 估值</td><td><code>daily/stock_daily</code></td><td class="c">2009-01-05</td><td class="c">2026-08-21</td><td class="c">1457 万</td><td class="c"><span class="tag t-ok">充足</span></td></tr>
+<tr><td><b>mf_main_net / mf_elg_net / mf_main_ratio</b></td><td><code>moneyflow/moneyflow</code>（通用四档）</td><td class="c"><b>2007-01-04</b></td><td class="c">2026-08-21</td><td class="c">1451 万</td><td class="c"><span class="tag t-ok">充足</span></td></tr>
+<tr><td>备用/交叉验证</td><td><code>moneyflow_ths</code>（同花顺个股）</td><td class="c"><b>2019-07-26</b></td><td class="c">2026-08-21</td><td class="c">206 万</td><td class="c"><span class="tag t-ok">够用</span></td></tr>
+<tr><td>备用（<b>无 sell 字段</b>）</td><td><code>moneyflow_dc</code>（东财五档）</td><td class="c">2023-09-11</td><td class="c">2026-08-21</td><td class="c">411 万</td><td class="c"><span class="tag t-warn">口径不符</span></td></tr>
+<tr><td><b>ind_pct_ths</b>（F5 板块涨幅）</td><td><code>board/ths_daily</code>（881 分类）</td><td class="c">2007-08-01</td><td class="c">2026-08-21</td><td class="c">298 万</td><td class="c"><span class="tag t-ok">充足</span></td></tr>
+<tr><td><b>ind_net_ths</b>（F5 板块资金）</td><td><code>board_fundflow/moneyflow_ind_ths</code></td><td class="c"><b>2024-09-10</b></td><td class="c">2026-08-21</td><td class="c">4.2 万</td><td class="c"><span class="tag t-bad">仅 2 年</span></td></tr>
+<tr><td>板块资金（更长备选）</td><td><code>moneyflow_ind_dc</code>（东财行业）</td><td class="c">2023-09-12</td><td class="c">2026-08-21</td><td class="c">33 万</td><td class="c"><span class="tag t-warn">仅 3 年</span></td></tr>
+<tr><td>概念板块资金</td><td><code>moneyflow_cnt_ths</code></td><td class="c">2024-09-10</td><td class="c">2026-08-21</td><td class="c">18 万</td><td class="c"><span class="tag t-warn">仅 2 年</span></td></tr>
+<tr><td>大盘资金（择时）</td><td><code>moneyflow_mkt_dc</code></td><td class="c">2023-04-17</td><td class="c">2026-08-21</td><td class="c">813</td><td class="c"><span class="tag t-warn">仅 3 年</span></td></tr>
+<tr><td><b>lhb_net / lhb_count</b></td><td><code>lhb/top_list</code></td><td class="c"><b>2005-01-19</b></td><td class="c">2026-08-21</td><td class="c">22.9 万</td><td class="c"><span class="tag t-ok">充足</span></td></tr>
+<tr><td>龙虎榜机构明细</td><td><code>lhb/top_inst</code></td><td class="c">2012-01-04</td><td class="c">2026-08-21</td><td class="c">167 万</td><td class="c"><span class="tag t-ok">充足</span></td></tr>
+<tr><td><b>rc_rating / rc_num</b></td><td><code>research/report_rc_daily</code></td><td class="c">—</td><td class="c">2026-08-21</td><td class="c">93 万</td><td class="c"><span class="tag t-ok">已接入</span></td></tr>
+<tr><td><b>north_chg</b>（北向）</td><td><code>northbound/hk_hold_full</code></td><td class="c">2016-06-29</td><td class="c"><b>2026-08-07</b></td><td class="c">572 万</td><td class="c"><span class="tag t-bad">监管限制</span></td></tr>
+</tbody>
+</table>
+<p class="src">实测方法：读取各 parquet 的 <code>trade_date</code> 索引层级取 min/max，执行于 2026-09-01。<code>report_rc_daily</code> 索引为 (ts_code, report_date, org_name, …)，日期边界未单独解析。</p>
+
+<h2>三、三个关键发现</h2>
+
+<div class="ok">
+<h3 style="margin-top:0">发现一：本地数据比 Tushare 官方标称的更全（商家数据不劣于官方接口）</h3>
+<p style="margin:6px 0">Tushare 官方文档（doc_id=170）标注 <code>moneyflow</code> 接口"<b>数据开始于 2010 年</b>"；而本地 <code>moneyflow.parquet</code> 实测起始为 <b>2007-01-04</b>，多出约 3 年，且字段结构与官方接口完全一致（<code>buy_sm/md/lg/elg_*</code> 与 <code>sell_sm/md/lg/elg_*</code> 共 16 列 + <code>net_mf_vol/amount</code>）。</p>
+<p style="margin:6px 0"><b>结论</b>：这批数据不是"缩水转售"，而是覆盖更完整的历史库。<b>从"最全"这个维度看，Tushare 体系赢，而且你已经拿到了它的完整版。</b></p>
+</div>
+
+<div class="warn">
+<h3 style="margin-top:0">发现二：供应商对自己数据的了解不足，声称值需逐项实测复核</h3>
+<p style="margin:6px 0">对照 <code>数据采购清单_20260824.md</code> 与 <code>TODO_PENDING.md</code> 的自报值，实测结果存在偏差：</p>
+<table style="margin:10px 0">
+<thead><tr><th>数据集</th><th class="c">商家自报起始</th><th class="c">实测起始</th><th>差异</th></tr></thead>
+<tbody>
+<tr><td><code>moneyflow</code></td><td class="c">2007-01-04</td><td class="c">2007-01-04</td><td><span class="tag t-ok">一致</span></td></tr>
+<tr><td><code>moneyflow_ths</code></td><td class="c">2024-12-24</td><td class="c"><b>2019-07-26</b></td><td><span class="tag t-bad">低估 5 年 5 个月</span></td></tr>
+<tr><td><code>moneyflow_dc</code></td><td class="c">2023-09-11</td><td class="c">2023-09-11</td><td><span class="tag t-ok">一致</span></td></tr>
+<tr><td><code>moneyflow_ind_ths</code></td><td class="c">2024-09-10</td><td class="c">2024-09-10</td><td><span class="tag t-ok">一致</span></td></tr>
+<tr><td><code>moneyflow_ind_dc</code></td><td class="c">2023-09-12</td><td class="c">2023-09-12</td><td><span class="tag t-ok">一致</span></td></tr>
+<tr><td><code>moneyflow_mkt_dc</code></td><td class="c">2023-04-17</td><td class="c">2023-04-17</td><td><span class="tag t-ok">一致</span></td></tr>
+</tbody>
+</table>
+<p style="margin:6px 0"><b>影响</b>：<code>TODO_PENDING.md</code> 基于自报值得出的判断"只有 <code>moneyflow</code> 能进长历史回测，ths/dc 口径仅限近端验证"<b>需要修正</b>——<code>moneyflow_ths</code> 实测起于 2019-07，恰好覆盖 <code>build_features_v2.py</code> 默认的面板起点（2019-01-01），<b>可用于全面板期的多口径交叉验证</b>，不只是近端。</p>
+</div>
+
+<div class="bad">
+<h3 style="margin-top:0">发现三：口径陷阱 —— 采购清单写的"五档"与代码实际所需不符</h3>
+<p style="margin:6px 0"><code>build_g2_daily.py:206</code> 的实际计算逻辑：</p>
+<p style="margin:6px 0;padding:10px 14px;background:#fff;border:1px solid #f3c9c5;border-radius:6px"><code>mf["mf_main_net"] = mf["buy_lg_amount"] + mf["buy_elg_amount"] - mf["sell_lg_amount"] - mf["sell_elg_amount"]</code></p>
+<p style="margin:6px 0">该式<b>依赖 <code>sell_lg_amount</code> 与 <code>sell_elg_amount</code>（卖出侧）字段</b>。而：</p>
+<ul style="margin:6px 0 10px">
+  <li><b><code>moneyflow</code>（通用四档）</b>：买卖双侧齐全（<code>buy_*</code> + <code>sell_*</code>）→ <b>可算</b></li>
+  <li><b><code>moneyflow_dc</code>（东财五档）</b>：只有净额口径（<code>net_amount</code>、<code>buy_elg/lg/md/sm_amount</code>，<b>无 sell_* 字段</b>）→ <b>算不出</b></li>
+</ul>
+<p style="margin:6px 0">采购清单第一条写的是"个股资金流（<b>五档全量</b>）：主力/超大单/大单/中单/小单 净流入"——这个描述对应的是 <code>moneyflow_dc</code> 口径。但 <code>moneyflow_dc</code> 起于 2023-09-11，且<b>无法构造 g2 已经在用的 <code>mf_main_net</code></b>。</p>
+<p style="margin:6px 0"><b>结论</b>：P16 的核心因子已经绑定在通用四档 <code>moneyflow</code> 口径上（2007 起、1451 万行）。<b>"升级到五档"不是增强而是换口径，会直接断链</b>，需重新定义因子并全量重训。若要引入五档，应作为<b>新增特征</b>（如 <code>mf_dc_net_amount</code>）与现有 <code>mf_main_net</code> 并存，而非替换。</p>
+</div>
+
+<h2>四、为什么不是 Wind / 聚源 / Choice</h2>
+<table>
+<thead><tr><th>候选</th><th>优势</th><th>对 P16 的实际价值</th><th class="c">结论</th></tr></thead>
+<tbody>
+<tr>
+  <td><b>万得 Wind</b></td>
+  <td>全资产、宏观 EDB、研报、另类数据，合规性最高</td>
+  <td>P16 只做 A 股日频选股，不用宏观/全球/衍生品。Wind 的强项与 P16 需求<b>交集很小</b>；且<b>不保证提供同花顺 881 行业资金流、Tushare 四档 moneyflow 这些特定口径</b></td>
+  <td class="c"><span class="tag t-bad">不需要</span></td>
+</tr>
+<tr>
+  <td><b>恒生聚源</b></td>
+  <td>机构级底层数据库，质量一流</td>
+  <td>纯机构市场，无个人版；采购门槛 14 万–66 万/2 年。对 1000–2000 万容量策略是数量级错配</td>
+  <td class="c"><span class="tag t-bad">不需要</span></td>
+</tr>
+<tr>
+  <td><b>Choice / iFinD</b></td>
+  <td>实时全市场行情，Excel/终端友好</td>
+  <td>可作<b>盘中实时通道</b>的合规替代（当前东财反爬、同花顺 401、腾讯 ff_ 均实测不可用），但<b>不解决历史回测</b></td>
+  <td class="c"><span class="tag t-warn">仅当实时断连频繁时考虑</span></td>
+</tr>
+<tr>
+  <td><b>Tushare（已拥有）</b></td>
+  <td>口径与 P16 代码<b>逐字段对齐</b>，历史覆盖实测更全</td>
+  <td>43 特征全部有源，10 个 g2 因子中 9 个已当日实时化</td>
+  <td class="c"><span class="tag t-ok">已满足</span></td>
+</tr>
+</tbody>
+</table>
+
+<div class="warn">
+<b>迁移成本提示</b>：P16 的 43 特征深度绑定具体口径（同花顺 881 行业分类、Tushare 四档字段名、新浪 r0_net+r1_net 主力口径）。换数据源 = 重新定义因子 + 全量重训（475 万行，约 1 小时）+ 重跑可执行口径回测 + 重新校验评分卡阈值。<b>这是一周级工作量，不是买个账号就能切换。这也意味着：只要现源不断供，最优策略就是不换源。</b>
+</div>
+
+<h2>五、真实缺口与建议</h2>
+<table>
+<thead><tr><th class="c">优先级</th><th>缺口</th><th>实测证据</th><th>建议</th></tr></thead>
+<tbody>
+<tr>
+  <td class="c"><span class="tag t-bad">高</span></td>
+  <td><b>周更滞后 11 天</b></td>
+  <td>全部数据集截止 2026-08-21，今天 2026-09-01</td>
+  <td>继续强化当日实时化管线（现已覆盖 9/10 因子）；把 <code>Updatedata</code> 从人工投放改为 QMT xtdata 每日自动落盘</td>
+</tr>
+<tr>
+  <td class="c"><span class="tag t-bad">高</span></td>
+  <td><b>ind_net_ths 历史仅 2 年</b></td>
+  <td><code>moneyflow_ind_ths</code> 起于 2024-09-10；最长的 <code>moneyflow_ind_dc</code> 也只到 2023-09-12</td>
+  <td>若面板起点早于 2024-09，该因子存在大段缺失。<b>建议核实 g2 实际训练期</b>；若确需长历史板块资金，需向供应商询价是否有更早的板块资金流库，或改用 <code>ths_daily</code> 自算板块资金代理</td>
+</tr>
+<tr>
+  <td class="c"><span class="tag t-warn">中</span></td>
+  <td><b>north_chg 停更</b></td>
+  <td><code>hk_hold</code> 最后更新 2026-08-07；2024-08 起交易所改为季频披露</td>
+  <td>属监管限制，<b>任何数据源都无解</b>。维持"最新可用值前向填充"（消融已验证：保留该特征优于删除）</td>
+</tr>
+<tr>
+  <td class="c"><span class="tag t-warn">中</span></td>
+  <td><b>文档路径失准</b></td>
+  <td><code>data_config.py</code> 为 <code>D:/astock</code>（2026-08-28 迁移，注释注明本机无 E 盘），但 <code>全局控制台.md</code> 与 <code>MCP数据链路说明.md</code> 仍写 <code>E:/astock</code></td>
+  <td>修正两份文档的路径表述，避免后续按错误路径找数据</td>
+</tr>
+<tr>
+  <td class="c"><span class="tag t-info">低</span></td>
+  <td>概念板块资金仅 2 年</td>
+  <td><code>moneyflow_cnt_ths</code> 起于 2024-09-10</td>
+  <td>当前 F5 只用行业维度，概念维度属可选增强，暂不投入</td>
+</tr>
+</tbody>
+</table>
+
+<h2>六、一句话答案</h2>
+<div class="card" style="border-left:5px solid var(--accent)">
+<p style="margin:0;font-size:15.5px">
+全国范围内，能满足 P16 数据要求的最全数据源是 <b>Tushare 数据体系</b>——<b>而你已经通过买断方式完整拥有它的历史库（<code>D:/astock</code>），且实测覆盖范围还优于 Tushare 官方接口标称值。不必再采购 Wind、聚源或任何新数据商。</b>唯一需补充的付费项是<b>实时刷新型授权</b>：若账号积分不足 2000，按 200 元/年档充值后每日自动刷新 <code>moneyflow</code> / <code>daily_basic</code>，可彻底替代当前不稳的新浪 / 悟道实时源（详见上方勘误）。
+</p>
+<p style="margin:12px 0 0">
+接下来该花的精力不在"找更全的源"，而在三件事：<b>①把周更滞后从 11 天压到 T+0（继续扩当日实时化）；②核实并处理 <code>ind_net_ths</code> 仅 2 年历史的缺失窗口；③修正采购清单的五档口径描述，避免误换口径导致核心因子断链。</b>
+</p>
+</div>
+
+<div class="disc">
+<b>数据来源说明</b>：本地覆盖范围为 2026-09-01 对 <code>D:/astock</code> parquet 的实测结果（一手）。Tushare 接口标称起始时间与积分要求取自官方文档（tushare.pro，doc_id=170 及 wctapi/documents/349.md、343.md、260.md，检索 2026-09-01，一手）。代码逻辑取自 <code>build_features_v2.py</code>、<code>build_g2_daily.py:206</code>、<code>data_config.py</code>（本地代码，一手）。P16 历史结论引用自 <code>PROJECT_MEMORY.md</code>、<code>TODO_PENDING.md</code>、<code>VERSIONS.md</code>（项目内记录）。
+<p style="margin:8px 0 0">
+<b>免责声明</b>：以上内容基于公开数据和量化分析，仅供参考，不构成投资建议。市场有风险，投资需谨慎。任何投资决策应结合个人风险承受能力、资金状况和投资目标独立判断，必要时咨询持牌专业机构。过往表现不预示未来收益。
+</p>
+</div>
+
+</div>
+
+<script>
+var rows = [
+  { name: 'top_list 龙虎榜',            years: 21.6, s: '2005-01-19' },
+  { name: 'moneyflow 通用四档',         years: 19.7, s: '2007-01-04' },
+  { name: 'ths_daily 板块行情',         years: 19.1, s: '2007-08-01' },
+  { name: 'stock_daily 主仓日线',       years: 17.7, s: '2009-01-05' },
+  { name: 'top_inst 机构明细',          years: 14.7, s: '2012-01-04' },
+  { name: 'hk_hold 北向持股',           years: 10.2, s: '2016-06-29' },
+  { name: 'moneyflow_ths 同花顺个股',   years: 7.1,  s: '2019-07-26' },
+  { name: 'moneyflow_mkt_dc 大盘',      years: 3.4,  s: '2023-04-17' },
+  { name: 'moneyflow_dc 东财五档',      years: 3.0,  s: '2023-09-11' },
+  { name: 'moneyflow_ind_dc 东财行业',  years: 3.0,  s: '2023-09-12' },
+  { name: 'moneyflow_ind_ths 同花顺行业', years: 2.0, s: '2024-09-10' },
+  { name: 'moneyflow_cnt_ths 同花顺概念', years: 2.0, s: '2024-09-10' }
+];
+
+var yData = [];
+var vData = [];
+for (var i = rows.length - 1; i >= 0; i--) {
+  yData.push(rows[i].name);
+  vData.push(rows[i].years);
+}
+
+echarts.init(document.getElementById('covChart')).setOption({
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: { type: 'shadow' },
+    formatter: function (p) {
+      var idx = rows.length - 1 - p[0].dataIndex;
+      var r = rows[idx];
+      return r.name + '<br/>起始：' + r.s + '<br/>历史覆盖：约 ' + r.years + ' 年<br/>截止：2026-08-21';
+    }
+  },
+  grid: { left: 190, right: 80, top: 16, bottom: 40 },
+  xAxis: { type: 'value', name: '覆盖年限（年）', max: 24 },
+  yAxis: { type: 'category', data: yData, axisLabel: { fontSize: 12 } },
+  series: [{
+    type: 'bar',
+    data: vData,
+    barWidth: '62%',
+    itemStyle: {
+      color: function (p) {
+        if (p.value >= 10) { return '#3f7f63'; }
+        if (p.value >= 5) { return '#4a86b8'; }
+        if (p.value >= 3) { return '#c98a2e'; }
+        return '#c0392b';
+      }
+    },
+    label: {
+      show: true,
+      position: 'right',
+      fontSize: 11,
+      formatter: function (p) {
+        var idx = rows.length - 1 - p.dataIndex;
+        return rows[idx].years + ' 年';
+      }
+    }
+  }]
+});
+</script>
+
+</body>
+</html>

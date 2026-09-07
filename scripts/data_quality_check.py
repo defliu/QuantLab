@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 import pyarrow.parquet as pq
 
-ASTOCK = "E:/astock"
+ASTOCK = "D:/astock"
 REPORT = []
 
 def log(msg):

@@ -4,7 +4,7 @@
 不做任何止损/止盈/条件失效/仓位限制 —— 纯粹看因子的选股信号是否自带正向收益。
 """
 import time, numpy as np, pandas as pd, duckdb
-PARQUET = "E:/astock/daily/stock_daily.parquet"
+PARQUET = "D:/astock/daily/stock_daily.parquet"
 ATR_THRESHOLD=6.0; MIN_TURNOVER=1.0; MAX_TURNOVER=8.0; MIN_BARS=60
 WARMUP_START="2022-01-01"
 

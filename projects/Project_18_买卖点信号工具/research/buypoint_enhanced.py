@@ -50,7 +50,7 @@ SIGNALS = {
     "4_二次启动": signal_second_launch,
 }
 
-STOCK_BASIC = "E:/astock/basic/stock_basic.parquet"
+STOCK_BASIC = "D:/astock/basic/stock_basic.parquet"
 
 # 增强参数
 GATE_MODE = "strict"          # strict=INDEXC>MA20>MA60；ma60=INDEXC>MA60

@@ -1,0 +1,26 @@
+schema_version: 1
+module_path: research_study
+title: 候选策略研究（research_study/）
+scope:
+    - research_study/
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 9e82731e-174d-4c46-a42b-21d97bf11573
+kk_ordinal: 15
+kk_cards:
+    overview:
+        id: 0eebc210-daaf-4d2c-859b-e6291ad2dc88
+        title: 候选策略研究（research_study/）
+    architecture_design:
+        id: 32b4d64c-fc9c-42c0-ae28-62f4f3670dce
+        title: 候选策略研究（research_study/）
+    tech_stack:
+        id: 75810ca3-50e3-43b3-9927-5ab04b365479
+        title: 候选策略研究（research_study/）
+    coding_conventions:
+        id: d1b52900-894f-44e6-beaf-3d8ec54d7af7
+        title: 候选策略研究（research_study/）
+    unique_setup_and_commands:
+        id: 560a1dcf-1752-4cdb-a6c9-c2e8e24eb68f
+        title: 候选策略研究（research_study/）

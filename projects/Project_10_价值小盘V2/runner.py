@@ -3,7 +3,7 @@
 状态机口径回测，含风控模块
 用法: python runner.py"""
 import sys, os, time
-# 2026-08-06 迁移修正: E:\QuantLab -> D:\QuantLab。
+# 2026-08-06 迁移修正: D:\QuantLab -> D:\QuantLab。
 # 注意: D:\QuantLab\strategy 是空占位包, 会抢占 `strategy.*` 解析,
 # 故 Project_10 目录必须最后插入以保持 sys.path[0] 最高优先。
 sys.path.insert(0, r"D:\QuantLab")
@@ -58,7 +58,7 @@ suspend = daily["suspend_type"].fillna("N")
 panel = panel.loc[~is_st & ~suspend.isin(["S", "R", "R&S"])]
 
 # 行业映射
-basic = pd.read_parquet(r"E:/astock/basic/stock_basic.parquet")
+basic = pd.read_parquet(r"D:/astock/basic/stock_basic.parquet")
 ind_map = dict(zip(basic["ts_code"], basic["industry"].fillna("其他")))
 
 # 退市日期映射 (v2.3 退市排雷, 讨论室组件A)
@@ -97,7 +97,7 @@ def _delist_hit(code, d, total_mv):
     return total_mv < thr
 
 # 财务数据
-fin = pd.read_parquet(r"E:/astock/finance/fina_indicator.parquet")
+fin = pd.read_parquet(r"D:/astock/finance/fina_indicator.parquet")
 fin = fin[["ts_code", "end_date", "ann_date", "bps", "roe", "profit_dedt", "debt_to_assets"]].copy()
 fin["ann_date"] = pd.to_datetime(fin["ann_date"], errors="coerce")
 fin = fin.dropna(subset=["ann_date"])

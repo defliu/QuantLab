@@ -1,13 +1,13 @@
 backtest:
   benchmark_code: 000300.SH
-  benchmark_db_path: F:/backtest_workspace/data/duckdb/benchmark_index.duckdb
+  benchmark_db_path: D:/astock/benchmark/benchmark_index.duckdb
   end_date: '2025-12-31'
   initial_cash: 1000000
   name: rps_momentum_v2_nosector
   start_date: '2019-01-01'
 data:
   adjustment: hfq
-  path: E:/astock/daily/stock_daily.parquet
+  path: D:/astock/daily/stock_daily.parquet
 execution:
   commission_rate: 0.00025
   price: next_open
