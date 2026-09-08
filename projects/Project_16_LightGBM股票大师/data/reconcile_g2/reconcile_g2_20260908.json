@@ -1,0 +1,29 @@
+{
+  "date": "20260908",
+  "account_id": "70180771",
+  "generated_at": "2026-09-08 15:47:50",
+  "fills": [],
+  "pending": [],
+  "orphans": [],
+  "ledger": {
+    "001266.SZ": 1300,
+    "300475.SZ": 200
+  },
+  "asset": {
+    "account_id": "70180771",
+    "date": "20260908",
+    "updated_at": "2026-09-08 15:00:05",
+    "total_asset": 9997771.98,
+    "cash_available": 9918874.98,
+    "market_value": 78897.0
+  },
+  "issues": [],
+  "fills_total": 0,
+  "fills_by_status": {},
+  "pending_count": 0,
+  "account_positions": {
+    "001266.SZ": 1300,
+    "300475.SZ": 200
+  },
+  "deltas": {}
+}

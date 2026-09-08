@@ -1,0 +1,19 @@
+{
+ "date": "2026-09-08",
+ "started": "2026-09-08 17:30:01",
+ "files": {
+  "margin": 4443,
+  "holder": 5553,
+  "block": 126,
+  "lockup": 447,
+  "lhb": 3,
+  "zt_pool": 4,
+  "industry": 2,
+  "news": 3,
+  "reports": 46
+ },
+ "ok_count": 9,
+ "fail_count": 0,
+ "finished": "2026-09-08 17:34:51",
+ "duration_s": 289.4
+}

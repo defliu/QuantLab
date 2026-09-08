@@ -1,0 +1,416 @@
+[
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "开源证券",
+  "title": "北交所信息更新：下游多场景需求共振叠加政策赋能，2026H1公司营收、归母净利双增",
+  "emRatingName": "增持",
+  "predictThisYearEps": "2.0900000000",
+  "predictNextYearEps": "2.6000000000",
+  "predictNextTwoYearEps": "3.1700000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "中银证券",
+  "title": "利润阶段性承压，业务外包体量延续增长",
+  "emRatingName": "买入",
+  "predictThisYearEps": "1.4000000000",
+  "predictNextYearEps": "1.6000000000",
+  "predictNextTwoYearEps": "1.8000000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "西南证券",
+  "title": "2026年半年报点评：连接件业绩稳定增长，发力AIDC等新兴领域",
+  "emRatingName": "",
+  "predictThisYearEps": "2.7000000000",
+  "predictNextYearEps": "3.1700000000",
+  "predictNextTwoYearEps": "3.6100000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "西南证券",
+  "title": "2026年半年报点评：业绩高速增长，海外打开成长空间",
+  "emRatingName": "买入",
+  "predictThisYearEps": "2.2500000000",
+  "predictNextYearEps": "2.5700000000",
+  "predictNextTwoYearEps": "2.8300000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "西南证券",
+  "title": "2026年半年报点评：国内外持续发力，业绩弹性释放",
+  "emRatingName": "买入",
+  "predictThisYearEps": "0.8500000000",
+  "predictNextYearEps": "1.0600000000",
+  "predictNextTwoYearEps": "1.3700000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "西南证券",
+  "title": "2026年中报点评：传统业务企稳，经营持续改善",
+  "emRatingName": "买入",
+  "predictThisYearEps": "1.6000000000",
+  "predictNextYearEps": "1.7800000000",
+  "predictNextTwoYearEps": "1.9600000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "西南证券",
+  "title": "2026年中报点评：主业有韧性，AIDC电源加速突破",
+  "emRatingName": "买入",
+  "predictThisYearEps": "1.7300000000",
+  "predictNextYearEps": "2.0000000000",
+  "predictNextTwoYearEps": "2.3300000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "太平洋",
+  "title": "业绩符合预期，算力领域拓展显著",
+  "emRatingName": "买入",
+  "predictThisYearEps": "0.3100000000",
+  "predictNextYearEps": "0.4500000000",
+  "predictNextTwoYearEps": "0.6900000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "太平洋",
+  "title": "苏州银行2026年中报点评：对公驱动扩表，负债成本打开息差空间",
+  "emRatingName": "买入",
+  "predictThisYearEps": "1.2100000000",
+  "predictNextYearEps": "1.3000000000",
+  "predictNextTwoYearEps": "1.4300000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "中邮证券",
+  "title": "业绩快速增长，具身智能订单实现突破",
+  "emRatingName": "增持",
+  "predictThisYearEps": "0.4500000000",
+  "predictNextYearEps": "0.5500000000",
+  "predictNextTwoYearEps": "0.6400000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "中邮证券",
+  "title": "业绩稳健增长，液冷领域有望贡献新增长点",
+  "emRatingName": "增持",
+  "predictThisYearEps": "0.1600000000",
+  "predictNextYearEps": "0.2000000000",
+  "predictNextTwoYearEps": "0.2500000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "东海证券",
+  "title": "公司简评报告：收入端逐渐企稳，创新药快速放量",
+  "emRatingName": "买入",
+  "predictThisYearEps": "1.2900000000",
+  "predictNextYearEps": "1.4700000000",
+  "predictNextTwoYearEps": "1.7600000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "国元证券",
+  "title": "2026年半年报点评：主营能力持续提升，机器人板块引领科技",
+  "emRatingName": "买入",
+  "predictThisYearEps": "1.6700000000",
+  "predictNextYearEps": "1.9600000000",
+  "predictNextTwoYearEps": "2.2300000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "国信证券",
+  "title": "2026中报点评：盈利表现承压，零售新业态继续发力",
+  "emRatingName": "增持",
+  "predictThisYearEps": "1.0400000000",
+  "predictNextYearEps": "1.3900000000",
+  "predictNextTwoYearEps": "1.8200000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "国信证券",
+  "title": "基本盘稳筑盈利根基，新赛道逐步兑现拓宽成长边界",
+  "emRatingName": "增持",
+  "predictThisYearEps": "0.26",
+  "predictNextYearEps": "0.39",
+  "predictNextTwoYearEps": "0.54"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "国信证券",
+  "title": "主业修复迎来业绩拐点，多极共振打开价值空间",
+  "emRatingName": "增持",
+  "predictThisYearEps": "0.5600000000",
+  "predictNextYearEps": "0.7700000000",
+  "predictNextTwoYearEps": "0.8800000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "国信证券",
+  "title": "Q2业绩显著提速，AI算力打开新空间",
+  "emRatingName": "增持",
+  "predictThisYearEps": "0.8500000000",
+  "predictNextYearEps": "1.1800000000",
+  "predictNextTwoYearEps": "1.3400000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "西南证券",
+  "title": "2026年半年报点评：石化央企全产业链布局，2026上半年利润同比增长",
+  "emRatingName": "买入",
+  "predictThisYearEps": "0.3300000000",
+  "predictNextYearEps": "0.4000000000",
+  "predictNextTwoYearEps": "0.4600000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "太平洋",
+  "title": "万辰集团：门店扩张再提速，规模效应持续兑现",
+  "emRatingName": "买入",
+  "predictThisYearEps": "13.1400000000",
+  "predictNextYearEps": "17.5700000000",
+  "predictNextTwoYearEps": "20.4900000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "太平洋",
+  "title": "康辰药业：重点产品保持稳健增长，创新管线形成梯度布局",
+  "emRatingName": "买入",
+  "predictThisYearEps": "1.0800000000",
+  "predictNextYearEps": "1.2200000000",
+  "predictNextTwoYearEps": "1.5800000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "太平洋",
+  "title": "立高食品：收入稳中向好，利润短期承压静待修复",
+  "emRatingName": "买入",
+  "predictThisYearEps": "1.6100000000",
+  "predictNextYearEps": "2.0400000000",
+  "predictNextTwoYearEps": "2.3400000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "太平洋",
+  "title": "业绩符合预期，参股AI芯片公司",
+  "emRatingName": "买入",
+  "predictThisYearEps": "0.9600000000",
+  "predictNextYearEps": "1.1400000000",
+  "predictNextTwoYearEps": "1.3700000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "太平洋",
+  "title": "业绩符合预期，布局新业务",
+  "emRatingName": "买入",
+  "predictThisYearEps": "1.4000000000",
+  "predictNextYearEps": "1.6700000000",
+  "predictNextTwoYearEps": "2.0000000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "太平洋",
+  "title": "26Q2业绩稳健增长，产业链一体化优势显现",
+  "emRatingName": "买入",
+  "predictThisYearEps": "2.9100000000",
+  "predictNextYearEps": "3.0800000000",
+  "predictNextTwoYearEps": "3.2600000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "太平洋",
+  "title": "2026Q2业绩大幅增长，高油价下煤制烯烃优势明显",
+  "emRatingName": "买入",
+  "predictThisYearEps": "2.2800000000",
+  "predictNextYearEps": "2.3300000000",
+  "predictNextTwoYearEps": "2.4500000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "太平洋",
+  "title": "金达威：保健食品筑基，藻油打开成长空间",
+  "emRatingName": "买入",
+  "predictThisYearEps": "0.6600000000",
+  "predictNextYearEps": "0.9400000000",
+  "predictNextTwoYearEps": "1.2300000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "太平洋",
+  "title": "宝立食品：BC两端同步拓进，健康化新品初显成效",
+  "emRatingName": "买入",
+  "predictThisYearEps": "0.7500000000",
+  "predictNextYearEps": "0.8500000000",
+  "predictNextTwoYearEps": "0.9600000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "太平洋",
+  "title": "甘源食品：渠道调整延续，多品类平稳发展",
+  "emRatingName": "买入",
+  "predictThisYearEps": "2.4900000000",
+  "predictNextYearEps": "2.9200000000",
+  "predictNextTwoYearEps": "3.3500000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "国信证券",
+  "title": "新一代旗舰6100顺利流片，深耕低功耗产品结构升级",
+  "emRatingName": "增持",
+  "predictThisYearEps": "2.4400000000",
+  "predictNextYearEps": "3.3600000000",
+  "predictNextTwoYearEps": "4.2900000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "中邮证券",
+  "title": "PCB钻针需求旺盛，资源与深加工双轮驱动",
+  "emRatingName": "买入",
+  "predictThisYearEps": "1.8200000000",
+  "predictNextYearEps": "2.8100000000",
+  "predictNextTwoYearEps": "3.2100000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "中邮证券",
+  "title": "静待美盛复产释放业绩",
+  "emRatingName": "增持",
+  "predictThisYearEps": "1.4800000000",
+  "predictNextYearEps": "2.1600000000",
+  "predictNextTwoYearEps": "2.4100000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "中邮证券",
+  "title": "金钨价格上行，业绩释放稳健",
+  "emRatingName": "买入",
+  "predictThisYearEps": "1.1900000000",
+  "predictNextYearEps": "1.2200000000",
+  "predictNextTwoYearEps": "1.6800000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "中邮证券",
+  "title": "下游需求有所回暖，新签订单增速亮眼",
+  "emRatingName": "增持",
+  "predictThisYearEps": "0.2500000000",
+  "predictNextYearEps": "0.3800000000",
+  "predictNextTwoYearEps": "0.5000000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "中银证券",
+  "title": "26Q2业绩环比减亏，ABC组件销量增长明显",
+  "emRatingName": "增持",
+  "predictThisYearEps": "-0.3000000000",
+  "predictNextYearEps": "0.6000000000",
+  "predictNextTwoYearEps": "0.9000000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "国信证券",
+  "title": "2026中报点评：乳业经营稳健，糖业扭亏为盈，H1扣非归母净利润同比增长约70%",
+  "emRatingName": "增持",
+  "predictThisYearEps": "0.4900000000",
+  "predictNextYearEps": "0.6600000000",
+  "predictNextTwoYearEps": "0.7300000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "国信证券",
+  "title": "2026中报点评：增速承压但结构优化，经营质量持续提升",
+  "emRatingName": "增持",
+  "predictThisYearEps": "0.1800000000",
+  "predictNextYearEps": "0.3000000000",
+  "predictNextTwoYearEps": "0.4000000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "西南证券",
+  "title": "2026年中报点评：26Q2算力服务毛利率环比修复，费用率摊薄兑现经营杠杆",
+  "emRatingName": "买入",
+  "predictThisYearEps": "1.0100000000",
+  "predictNextYearEps": "2.2000000000",
+  "predictNextTwoYearEps": "3.9900000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "西南证券",
+  "title": "2026半年报点评：AI高速光互联驱动业绩高增，薄膜铌酸锂打开成长空间",
+  "emRatingName": "",
+  "predictThisYearEps": "0.9800000000",
+  "predictNextYearEps": "1.2200000000",
+  "predictNextTwoYearEps": "1.4900000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "西南证券",
+  "title": "2026年中报点评：数据中心交换机放量驱动业绩增长，AI算力需求打开成长空间",
+  "emRatingName": "",
+  "predictThisYearEps": "0.9200000000",
+  "predictNextYearEps": "1.5700000000",
+  "predictNextTwoYearEps": "2.3700000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "西南证券",
+  "title": "2026年半年报点评：业绩符合预期，固态电池设备稳健推进",
+  "emRatingName": "",
+  "predictThisYearEps": "3.0000000000",
+  "predictNextYearEps": "3.6300000000",
+  "predictNextTwoYearEps": "4.2200000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "太平洋",
+  "title": "2026H1业绩大幅增长，轻烃一体化平台优势凸显",
+  "emRatingName": "买入",
+  "predictThisYearEps": "3.0900000000",
+  "predictNextYearEps": "3.2900000000",
+  "predictNextTwoYearEps": "3.4200000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "中银证券",
+  "title": "收入利润稳健增长，海内外业务表现皆良好",
+  "emRatingName": "买入",
+  "predictThisYearEps": "1.8000000000",
+  "predictNextYearEps": "2.2000000000",
+  "predictNextTwoYearEps": "2.5000000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "国元证券",
+  "title": "2026年半年度报告点评：主业稳健增长，全球化多元化共拓成长",
+  "emRatingName": "买入",
+  "predictThisYearEps": "0.4000000000",
+  "predictNextYearEps": "0.4800000000",
+  "predictNextTwoYearEps": "0.5600000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "东海证券",
+  "title": "公司简评报告：销量承压，结构升级延续",
+  "emRatingName": "买入",
+  "predictThisYearEps": "3.4100000000",
+  "predictNextYearEps": "3.5400000000",
+  "predictNextTwoYearEps": "3.6600000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "华鑫证券",
+  "title": "公司事件点评报告：业绩稳步增长，国内海外双线发展",
+  "emRatingName": "买入",
+  "predictThisYearEps": "0.3800000000",
+  "predictNextYearEps": "0.4700000000",
+  "predictNextTwoYearEps": "0.5500000000"
+ },
+ {
+  "publishDate": "2026-09-08 00:00:00.000",
+  "orgSName": "信达证券",
+  "title": "功率测试基本盘稳固，外延并购存储测试打开长期空间",
+  "emRatingName": "",
+  "predictThisYearEps": "1.1700000000",
+  "predictNextYearEps": "3.1400000000",
+  "predictNextTwoYearEps": "6.0800000000"
+ }
+]

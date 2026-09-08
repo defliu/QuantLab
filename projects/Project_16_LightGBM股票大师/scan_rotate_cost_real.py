@@ -74,6 +74,9 @@ TRAIL_PCT = float(os.environ.get("BT_TRAIL", "0.08"))  # 固定比例移动止�
 # 否则"高点仅微盈即回撤8%"会在亏损位以"追盈"名义卖出（追盈=追跌）。触发线同时受保本底线保护：
 # line = max(成本, peak×(1-TRAIL_PCT))，激活后永不亏损出局。
 TRAIL_ACTIVATE_PCT = float(os.environ.get("BT_TRAIL_ACTIVATE", "0.08"))
+# 追盈优先开关（2026-09-08 止盈线敏感性评估）：=1 时激活追盈后固定止盈让位（STOP→TRAIL→TP），
+# 强势票不再被 +15% 固定止盈提前掐断（601999 案例）；=0 保持原顺序（STOP→TP→TRAIL，默认行为不变）
+TRAIL_FIRST = os.environ.get("BT_TRAIL_FIRST", "0") == "1"
 EXIT_REASON_CNT = {}  # 出场原因计数，诊断各模式实际靠哪条规则在卖
 _ATR_MAP = {}    # (date, code) -> ATR14 / close（建仓日快照的波动率百分比）
 _HIGH_MAP = {}   # (date, code) -> 当日最高价（移动止盈峰值追踪用）
@@ -302,14 +305,21 @@ def simulate(dates, per_day, N, slip, open_map, exec_ok=True):
                     # 追盈激活阈值 + 保本底线（2026-09-07 修复，T-20260907-002）：
                     # 峰值须 ≥ 成本×(1+TRAIL_ACTIVATE_PCT) 才追踪；触发线 = max(成本, peak×(1-TRAIL_PCT))，
                     # 避免"高点仅微盈即回撤8%"在亏损位以追盈名义卖出（现语义 64% 追盈为亏损单）
+                    trail_act = peak >= o_buy * (1 + TRAIL_ACTIVATE_PCT)
+                    trail_hit = trail_act and o_cur <= max(o_buy, peak * (1 - TRAIL_PCT))
                     if ret <= STOP:
                         sell, reason = True, "STOP"
+                    elif TRAIL_FIRST:
+                        # 追盈优先（T-20260908 评估）：已激活→只跟移动线（TP 让位，未回撤持有）；
+                        # 未激活→固定止盈兜底
+                        if trail_hit:
+                            sell, reason = True, "TRAIL"
+                        elif (not trail_act) and ret >= TP:
+                            sell, reason = True, "TP"
                     elif ret >= TP:
                         sell, reason = True, "TP"
-                    elif peak >= o_buy * (1 + TRAIL_ACTIVATE_PCT):
-                        trail_line = max(o_buy, peak * (1 - TRAIL_PCT))
-                        if o_cur <= trail_line:
-                            sell, reason = True, "TRAIL"
+                    elif trail_hit:
+                        sell, reason = True, "TRAIL"
                 else:                                  # fixed：回测原口径
                     if ret <= STOP or ret >= TP:
                         sell, reason = True, "STOP" if ret <= STOP else "TP"
@@ -395,11 +405,15 @@ def main():
                 print(f"    N={N} 滑点{slip:.1%} [原口径]: 超额{s['daily_excess']:.3%} 胜率{s['win_rate']:.1%} "
                       f"盈亏比{s['profit_loss_ratio']:.2f} 回撤{s['max_drawdown']:.1%} 交易{s['n_trades']}")
             if do_exec:
+                EXIT_REASON_CNT.clear()
                 trades, daily_ret, n_skip = simulate(dates, per_day, N, slip, open_map, exec_ok=True)
                 s = stats(trades, daily_ret, market_daily)
                 rows.append({"N": N, "slip": slip, "口径": "open→open(可执行)", **s})
                 print(f"    N={N} 滑点{slip:.1%} [可执行]: 超额{s['daily_excess']:.3%} 胜率{s['win_rate']:.1%} "
                       f"盈亏比{s['profit_loss_ratio']:.2f} 回撤{s['max_drawdown']:.1%} 交易{s['n_trades']} 跳过{n_skip}")
+                reasons = " ".join("%s=%d" % (k, v) for k, v in sorted(EXIT_REASON_CNT.items()))
+                if reasons:
+                    print(f"      出场原因: {reasons}")
                 if SELL_SKIP_DOWN[0] or SELL_DELIST[0]:
                     print(f"      卖出跌停跳过 {SELL_SKIP_DOWN[0]} 次 / 退市清仓 {SELL_DELIST[0]} 次")
     res = pd.DataFrame(rows)

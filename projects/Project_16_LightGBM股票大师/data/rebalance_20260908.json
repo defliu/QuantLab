@@ -1,0 +1,33 @@
+{
+  "date": "20260908",
+  "executed_live": true,
+  "executed_at": "2026-09-08 10:02:29",
+  "tier": 2,
+  "target": [
+    {
+      "code": "605277.SH",
+      "name": "新亚电子",
+      "total": 79.0,
+      "prob": 0.5358
+    },
+    {
+      "code": "601999.SH",
+      "name": "出版传媒",
+      "total": 76.5,
+      "prob": 0.5658
+    }
+  ],
+  "strategy_capital": 95897.6,
+  "target_value_each": 45551.36,
+  "sell": [],
+  "buy": [],
+  "trim": [],
+  "hold": [
+    "601579.SH",
+    "601999.SH",
+    "003005.SZ",
+    "300413.SZ"
+  ],
+  "locked": [],
+  "guard_note": []
+}
