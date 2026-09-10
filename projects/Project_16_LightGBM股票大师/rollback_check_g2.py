@@ -121,11 +121,16 @@ def main():
     if not worse:
         newptr = copy.deepcopy(ptr)
         newptr.pop("trial", None)
-        newptr["note"] = newptr.get("note", "") + f" | G4 观察期通过 {promoted_at[:10]}（前向 {fwd_mean:+.4f} >= {prev_ret:+.4f}）"
+        newptr["note"] = newptr.get("note", "") + f" | G4 观察期通过 {promoted_at[:10]}（前向 {fwd_mean:+.4f} >= 基线 {prev_ret:+.4f}）"
         with open(POINTER, "w", encoding="utf-8") as f:
             json.dump(newptr, f, ensure_ascii=False, indent=2)
         print("[已更新] 观察期通过，trial 字段已清除")
-    return 0
+        return 0
+
+    # worse 且未 --apply：建议回退（T-20260910-005：退出码 2，供 run_scheduled daily 调度告警；
+    # --apply 已在上方分支处理并 return 0）
+    print(">> 提示: 人工确认后执行 python rollback_check_g2.py --apply 完成回退")
+    return 2
 
 
 if __name__ == "__main__":

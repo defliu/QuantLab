@@ -861,3 +861,19 @@ ebalance_g2.py 买入循环低开校验（gap_guard）：极端低开<=-5%跳过
   2. `refresh_panel_v3.py` 末尾固化每日日历重建（daily 链路必跑，增量已合并）。实测重建后日历末日 08-20 → **09-09**（4297 日）。
 - **验证**：两文件语法 OK、import 链无循环、`is_trade_day.py` 实测触发陈旧重建成功。
 - **结论**：实盘数据链路（增量→合并→面板→特征→选股）每日闭环正常；日历滞后隐患已修复，后续每日自动维护。
+
+
+## 2026-09-10 · 全面排查：发现 3 个 bug 已修 + 遗留清单（T-20260910-005）
+
+- **排查范围**：这两天新改动代码质量（gate 段变量/备份路径）、纸面三臂调度、G4 回滚调度、数据源告警、主库节奏、定时任务产物一致性。
+- **bug 1（严重，已修）：V1.3 策略层门禁永远跳过**——run_scheduled.ps1 gate 段 `$oldFormal` 用重新 Get-Date 的时间戳拼备份文件名，与 retrain 开头实际备份（1.5-2 小时前）必然不同 → Test-Path 恒 False。修复：改为 Get-ChildItem 找最新 `lgb_model_v3_pre_retrain_*.txt`。若未发现，周一 V1.3 策略层门禁将静默失效。
+- **bug 2（严重，已修）：纸面三臂断流**——g2_candidates_night.ps1 跑 deploy_predict_g2 未带 `--ab --ensemble`，v3_enh/融合臂自 09-09 手动跑后无新信号（csv 停在 09-09）。修复：top10 调用补上开关（Top10 全集记录，统计时筛 rank<=2），今晚 20:05 起每日累积。
+- **bug 3（已修）：rollback_check_g2 无调度 + 退出码语义缺失**——G4 观测期回滚纯手动脚本，永不触发；且"建议回退"时 return 0 无法被调度感知。修复：a) worse 未 --apply 时 return 2；b) 挂进 run_scheduled.ps1 daily 尾部只读检查（exit 2 → 日志告警，人工确认后 --apply）。验证：当前无 trial 字段 exit 0 正常。
+- **补数：astock_kit 09-09 缺失**——Quant_AstockKit_Update 计划任务 09-09 19:14 返回 0x800710E0（任务条件拒绝，产物目录缺 20260909；龙虎榜/行业/研报等评分卡数据源）。已手动 `--date 2026-09-09` 补拉。今天 17:30 任务会自动再跑（需观察是否再次 0x800710E0，若是则检查任务条件设置：交流电源/唤醒执行）。
+- **确认无问题项**：$g2LivePointer/$proj 变量定义链 OK；train_g2 promote 确写 trial.prev_model（G2 回滚依赖成立）；g2_candidates_night 语法 OK；run_scheduled PS 语法 OK。
+- **遗留清单（未修，按优先级）**：
+  1. nightly_check.py 体检脚本无调度（数据源探活/熔断盘点/面板/QMT 全链路检查纯手动）——建议挂每日盘后（如 20:30）。
+  2. 主库 stock_daily.parquet 停 08-21——设计如此（数据包手动导入节奏，update_astock.py），增量库兜底每日数据；面板合并已含最新 09-09。注意主库不宜再拖太久（增量库会越滚越大，merge 耗时上升）。
+  3. build_panel 逐行 asof 重构（enh 慢变量特征漂移，T-20260909-002 遗留）。
+  4. G2 实盘 N15-live_trail 切换（待纸面前向 30 笔验证）。
+  5. 数据源熔断告警推送（nightly_check 有盘点无推送；悟道/TDX 当前熔断中）。

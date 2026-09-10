@@ -135,6 +135,17 @@ try {
             } else {
                 Log "[模型-面板同步] 面板与正式模型同版，OK"
             }
+            # ---- G4 观察期回滚检查（T-20260910-005 固化，只读）：每日盘后检查 live 模型观察期 ----
+            # 背景：rollback_check_g2.py 此前无任何调度调用（纯手动），G2 观测期回滚永不触发。
+            # 挂到 daily 只读输出建议（退出码非 0 = 观察期结束且前向劣于基线），人工确认后手动 --apply。
+            Run-Py "rollback_check_g2.py"
+            if ($LASTEXITCODE -eq 2) {
+                Log "!! [G4观察期] 观察期结束且前向劣于基线 —— 建议回退（人工确认后跑: python rollback_check_g2.py --apply）"
+            } elseif ($LASTEXITCODE -eq 0) {
+                Log "[G4观察期] 无待观察 trial 或观察期内表现正常，OK"
+            } else {
+                Log "[G4观察期] 检查跳过（exit=$LASTEXITCODE，无 trial 字段或数据不足）"
+            }
         }
         "monitor" {
             # 2026-09-09 起默认只读（仅预警不自动卖出）：V1.3 内置 tick 风控（QMT 内置运行）已接管自动卖出，
@@ -189,7 +200,10 @@ try {
                         # 面板 v3_sc，已验证 27 特征可推理）对比候选与旧正式模型（同一面板，公平对比）。
                         # 候选（新正式模型）不得差于 promote 前的旧正式模型；FAIL 则回滚旧正式模型。
                         $v13Meta = Join-Path $proj "data\features_v3.json"
-                        $oldFormal = Join-Path $proj ("versions\models\lgb_model_v3_pre_retrain_" + (Get-Date -Format 'yyyyMMdd_HHmmss') + ".txt")
+                        # 旧正式模型 = 本次 retrain 开头备份的 pre_retrain 文件（时间戳在 1.5-2 小时前，
+                        # 不能重新 Get-Date——会生成不同时间戳导致 Test-Path 恒 False、门禁被永远跳过，T-20260910-005 修复）
+                        $oldFormal = Get-ChildItem (Join-Path $proj "versions\models\lgb_model_v3_pre_retrain_*.txt") -ErrorAction SilentlyContinue |
+                            Sort-Object LastWriteTime | Select-Object -Last 1 | ForEach-Object { $_.FullName }
                         if (Test-Path $v13Meta -and (Test-Path $oldFormal)) {
                             Log "[策略层门禁] V1.4 最优配置（fixed/N10/红线58/TOP2+lite）候选 vs 旧正式 复核（约10分钟）..."
                             Run-Py "gate_strategy_layer.py --strategy V1.4 --candidate $candModel --meta $v13Meta --live $oldFormal --live-meta $v13Meta"
