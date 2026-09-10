@@ -1,25 +1,13 @@
 {
-  "time": "2026-09-09 09:45:18",
+  "time": "2026-09-10 14:30:11",
   "signals": [
     {
-      "code": "003005.SZ",
-      "action": "SELL_STOP",
-      "note": "现价16.91 跌破止损位17.77",
-      "last_price": 16.91,
-      "cost": 19.10382,
-      "time": "2026-09-09 09:45:11",
-      "auto_sold": true,
-      "order_id": 1090572916
-    },
-    {
-      "code": "300413.SZ",
-      "action": "SELL_STOP",
-      "note": "现价19.44 跌破止损位20.45",
-      "last_price": 19.44,
-      "cost": 21.994398,
-      "time": "2026-09-09 09:45:14",
-      "auto_sold": true,
-      "order_id": 1090573035
+      "code": "601579.SH",
+      "action": "SELL_TRAILING",
+      "note": "从高点26.98回撤8%，触发移动止盈(线24.82)",
+      "last_price": 24.3,
+      "cost": 23.9650316,
+      "time": "2026-09-10 14:30:11"
     }
   ]
 }

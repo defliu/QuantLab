@@ -64,3 +64,51 @@
 3. 用户确认启用自动卖出/自动换仓（真实委托），并接受风险。
 
 切换后仍需保留：QMT 客户端保持登录在线；重训仍走研发电脑同步。
+
+---
+
+## 四、周更重训门禁自动化链路（2026-09-10 建立，T-20260910-002/003）
+
+> 分工方案：**模型层**管"预测质量不退步"（IC/尾部IC），**策略层**管"实盘收益不退步"（官方引擎回测直接比钱），最终裁判为纸面前向三臂累积。
+> 背景：09-07 周更坏模型曾被误上线（IC 0.079 过关，策略回测仅 +0.039% < 08-25 的 +0.149%）——IC 涨不等于收益涨，故增设策略层门禁。
+
+### 1. 两条周更路径的门禁流水（周一 17:00 `quant_weekly_retrain`，无人值守）
+
+| 路径 | 模型层门禁 | 策略层门禁（新增） | 失败处置 |
+|---|---|---|---|
+| **V1.3 周更**（`train_optuna.py` + `auto_promote.py`） | G0~G6：IC下限/不退步/ICIR/分位单调/新面板 | `gate_strategy_layer.py --strategy V1.4 --candidate <新模型> --live <旧正式> --live-meta data/features_v3.json`（fixed/N10/红线58/TOP2+lite 最优配置，面板 v3_sc，27特征可推理） | 拒绝上线；回滚 pre_retrain 备份旧正式模型 |
+| **G2 周更**（`train_g2.py --promote`） | G1~G4 strict：同窗口IC/尾部IC/Top2可执行模拟/观测期回滚 | `gate_strategy_layer.py --strategy G2 --candidate <新live> --meta <新meta> --rollback`（live_trail/N15/红线60/TOP2 最优配置） | 拒绝上线；`--rollback` 自动回退 live 指针到 `trial.prev_model` |
+
+### 2. 策略层门禁判定规则
+
+- 候选模型与 live 模型在**同一最优配置**下跑官方引擎回测（`scan_rotate_cost_real.py`，滑点0.1%可执行），比较 `daily_excess`。
+- 通过条件：`候选 excess >= live excess - 0.0002`（绝对容差 0.02pp，吸收面板重建噪声）。
+- 退出码：0=PASS 放行；2=FAIL 拒绝（`--rollback` 时自动回滚）；1=运行错误（无法评估，拒绝 promote，需人工核查）。
+
+### 3. 关键资产
+
+| 资产 | 说明 |
+|---|---|
+| `data/strategy_cfg_lib.json` | 候选配置库：三策略各自最优配置 + 面板 + 历史基线（G2=+0.213%/融合=+0.211%/V1.4=+0.157%，均 TOP2 防过拟合口径） |
+| `gate_strategy_layer.py` | 策略层回测门禁 CLI（独立进程，复用官方引擎） |
+| `run_scheduled.ps1` retrain 分支 | 已接入两条路径的策略层门禁调用 |
+
+### 4. 冒烟验证记录（2026-09-10 全部通过）
+
+| 用例 | 候选 | live | 判定 | 结论 |
+|---|---|---|---|---|
+| G2-PASS | 08-25 live | 08-25 live | +0.213% vs +0.213% | 放行（口径与历史最优一致） |
+| G2-FAIL | 09-07 模型 | 08-25 live | +0.03% vs +0.213% | 拒绝（复现坏模型拦截） |
+| V1.4-PASS | 27特征正式 | 同模型 | 一致 | 放行 |
+
+### 5. 门禁升级与回滚说明（无人值守可追溯）
+
+- 模型层门禁升级（G1-G4 strict）与观测期回滚（`rollback_check_g2.py`）见 `VERSIONS.md`「09-09/10 研发沉淀」与 `train_g2.py --gate strict`。
+- 每次门禁 FAIL 的日志与原因：G2 走 `data/schedules/retrain_*.log`（含 gate 判定段）；回滚动作写指针 note 字段（`data/g2_live_model.json` 备份 `.bak_gate_*`）。
+- **注意**：策略层门禁每次回测约 10 分钟，`quant_weekly_retrain` 总时长相应延长；周一任务窗口 17:00 起预留 40+ 分钟。
+
+### 6. 职责边界（勿混淆）
+
+- 重训（模型层）：找到"给定特征→权重"的最优拟合，周训自动做。
+- 策略层优化（过滤/出场/融合/N/红线/TOP）：**重训搜不到**（优化空间与目标函数均不覆盖），只能离线网格寻优 + 前向验证（本轮已完成，结论入 `data/strategy_cfg_lib.json`）。
+- 最终裁判：纸面前向三臂累积 30 笔（G2=N15 / v3_enh=N10 / 融合=N10），见 `paper_forward_ab_stats.py` v3。
