@@ -24,7 +24,28 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import g2_config as G
-from qmt_bridge_client import read_positions, _atomic_write_json, _positions_cfg_path
+from qmt_bridge_client import read_positions, _atomic_write_json, _positions_cfg_path, STATE_DIR, _read_json
+
+
+def _read_latest_positions(date):
+    """优先当日 positions 快照；缺失时回退最近一份（T-20260910：09:00 盘前生成用。
+    桥约 15:00 才导出当日快照，盘前当日文件必不存在 → 若无回退则 SKIP 不写成本锚 →
+    桥内风控全天静默。隔夜持仓不变，昨日快照成本有效；账号戳不符的快照绝不采用）。"""
+    pos = read_positions(date) or {}
+    if pos and pos.get("positions"):
+        return pos
+    try:
+        names = [n for n in os.listdir(STATE_DIR)
+                 if n.startswith("positions_") and n.endswith(".json")]
+        names.sort(reverse=True)
+        for n in names:
+            p = _read_json(os.path.join(STATE_DIR, n))
+            if p and p.get("positions") and str(p.get("account_id", "") or "") == G.ACCOUNT_ID:
+                print("  [FALLBACK] 当日持仓快照缺失，回退 %s（隔夜持仓不变，成本有效）" % n)
+                return p
+    except Exception:
+        pass
+    return {}
 
 
 def _load_hold_codes():
@@ -48,9 +69,9 @@ def main_with_date(date, dry_run=False):
         print("[SKIP] g2_hold_dates.json 无 G2 持仓记录（空仓或未初始化），不写成本锚")
         return 0
 
-    pos = read_positions(date) or {}
+    pos = _read_latest_positions(date)
     if not pos or not pos.get("positions"):
-        print("[SKIP] state/positions_%s.json 无账户持仓（桥未导出或收盘前），不写成本锚" % date)
+        print("[SKIP] state/ 无可用账户持仓快照（桥未导出），不写成本锚")
         return 0
     acct = {p.get("code", ""): p for p in pos.get("positions", [])}
 

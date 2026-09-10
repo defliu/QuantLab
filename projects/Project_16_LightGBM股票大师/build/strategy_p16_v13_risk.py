@@ -19,7 +19,7 @@ import traceback
 # ============================================================
 # 常量
 # ============================================================
-BUILD_TAG = "20260909-142712"
+BUILD_TAG = "20260910-184724"
 
 BRIDGE_DIR = "D:/QMT_POOL/p16_v13_risk"
 CMD_DIR = os.path.join(BRIDGE_DIR, "cmd")
@@ -66,6 +66,7 @@ _g_today_risk_count = 0
 _g_positions = {}
 _g_risk_sold = set()
 _g_last_cfg_load = 0.0   # 孤儿自校准节流（cost=0 持仓重读当日成本表的时间戳，T-20260908）
+_g_cfg_fallback_logged = False   # 成本表回退提示只打一次（T-20260910）
 _g_diag_printed = False
 
 
@@ -173,6 +174,38 @@ def _heart_path(date):
 
 def _positions_cfg_path(date):
     return os.path.join(CMD_DIR, "positions_cfg_v13_%s.json" % date)
+
+
+def _find_latest_cfg():
+    """扫描 cmd 目录找最近一份 positions_cfg_v13_*.json（按文件名日期倒序，T-20260910）。"""
+    try:
+        names = [n for n in os.listdir(CMD_DIR)
+                 if n.startswith("positions_cfg_v13_") and n.endswith(".json")]
+        if not names:
+            return None
+        names.sort(reverse=True)
+        return _read_json(os.path.join(CMD_DIR, names[0]))
+    except Exception:
+        return None
+
+
+def _load_positions_cfg(date):
+    """优先读当日成本表；缺失/账号不符时回退最近一份历史表（T-20260910 兜底）。
+    背景：成本表由外部任务生成，若当日表尚未生成（定时任务缺失/延迟）→ 孤儿校准打空 →
+    cost=0 风控全天静默（peak_v13.json=0.0）。持仓未变时历史成本仍有效，回退可恢复风控。
+    回退提示每个进程只打一次，避免刷屏。"""
+    global _g_cfg_fallback_logged
+    cfg = _read_json(_positions_cfg_path(date))
+    if cfg and str(cfg.get("account_id", "") or "") == ACCOUNT_ID:
+        return cfg
+    fb = _find_latest_cfg()
+    if fb and str(fb.get("account_id", "") or "") == ACCOUNT_ID:
+        if not _g_cfg_fallback_logged:
+            _g_cfg_fallback_logged = True
+            print("[P16V13][CFG-FALLBACK] 当日成本表缺失，回退最近表 date=%s（持仓未变时成本仍有效）"
+                  % str(fb.get("date", "")))
+        return fb
+    return None
 
 
 def _peak_path():
@@ -764,8 +797,8 @@ def _reload_positions_cfg(date):
     if now - _g_last_cfg_load < 30:
         return
     _g_last_cfg_load = now
-    cfg = _read_json(_positions_cfg_path(date))
-    if not cfg or str(cfg.get("account_id", "") or "") != ACCOUNT_ID:
+    cfg = _load_positions_cfg(date)
+    if not cfg:
         return
     for p in cfg.get("positions", []):
         try:
@@ -979,8 +1012,8 @@ def init(C):
         if rs:
             _g_risk_sold = set(str(x) for x in rs)
             print("[P16V13][INIT] 恢复risk_sold %d只" % len(_g_risk_sold))
-    # 读外部成本表（外部每日写 cmd/positions_cfg_v13_<date>.json，FIFO 含费成本）
-    cfg = _read_json(_positions_cfg_path(_g_today))
+    # 读外部成本表（外部每日写 cmd/positions_cfg_v13_<date>.json，FIFO 含费成本；缺失回退最近表）
+    cfg = _load_positions_cfg(_g_today)
     if cfg and str(cfg.get("account_id", "") or "") == ACCOUNT_ID:
         n = 0
         for p in cfg.get("positions", []):
@@ -998,12 +1031,16 @@ def init(C):
         if n:
             print("[P16V13][INIT] 外部成本表 %d 条" % n)
     # 恢复追盈历史最高价（state/peak_v13.json，跨日延续）
+    # 只升不降（T-20260910）：peak 已有成本底（上面成本表 peak=cost），持久化值仅在更高时采纳，
+    # 防 peak_v13.json 被 0.0 污染（风控静默日写入）后把成本底覆盖回 0 → 追盈历史丢失。
     pk = _read_json(_peak_path())
     if pk and str(pk.get("account_id", "") or "") == ACCOUNT_ID:
         for code, peak in pk.get("peaks", {}).items():
             try:
                 if code in _g_positions:
-                    _g_positions[code]["peak"] = float(peak or 0.0)
+                    pv = float(peak or 0.0)
+                    if pv > float(_g_positions[code].get("peak", 0.0) or 0.0):
+                        _g_positions[code]["peak"] = pv
             except Exception:
                 pass
     print("[P16V13][BUILD] BUILD_TAG=%s account=%s dir=%s" % (BUILD_TAG, ACCOUNT_ID, BRIDGE_DIR))
