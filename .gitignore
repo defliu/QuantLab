@@ -10,6 +10,7 @@ __pycache__/
 
 # 数据缓存与日志
 data/cache/
+projects/Project_16_LightGBM股票大师/data/cache/
 *.log
 *.parquet
 
