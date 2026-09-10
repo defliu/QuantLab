@@ -845,3 +845,19 @@ ebalance_g2.py 买入循环低开校验（gap_guard）：极端低开<=-5%跳过
   - G2 FAIL：候选=09-07 模型，excess +0.03% vs +0.213% 判定 FAIL 拒绝上线（复现"周更坏模型被拦"）。
   - V1.4 PASS：候选=当前 27 特征正式模型，excess 一致判定 PASS（v3_sc 面板 27 特征推理正常）。
 - **分工闭环**：模型层 = train_g2 --promote G1-G4 strict + auto_promote G0-G6；策略层 = gate_strategy_layer（候选配置库口径，直接比实盘收益）；最终裁判 = 纸面前向三臂累积。周训"越训越差"从此被两道门禁拦住（模型层防 IC 退化，策略层防收益退化）。
+
+
+## 2026-09-10 · 面板数据同步核查 + 日历滞后修复（T-20260910-004）
+
+- **核查结论：面板数据已同步最新（最近完整收盘日 09-09）**，实测各文件日期覆盖：
+  - `feature_panel_v3.parquet`（V1.x 实盘面板）：**2019-01-10 ~ 2026-09-09**（每日 16:30 daily 链路经 refresh_panel_v3 刷新，09-09 16:45 落盘）
+  - `g2_latest_features.parquet` / `latest_features.parquet`：**2026-09-09**（G2/V1.x 实盘特征，09-09 更新）
+  - `merged_daily_full.parquet`：**~ 2026-09-09**（主库+增量合并，16:40 落盘）；`incremental_daily.parquet`：**2026-08-24 ~ 09-09**（xtdata_update 增量）
+  - 回测面板 `feature_panel_v3_sc` / `feature_panel_v3_enh2_n3_bt`：冻结 **2019 ~ 2026-08-14**（设计如此，回测可复现，非滞后）
+  - 主库 `D:/astock/daily/stock_daily.parquet`：周更滞后停在 **08-21**（设计如此，靠增量补每日）
+- **发现并修复隐患：交易日历 `data/ashare_trade_dates.txt` 停在 08-20**（滞后 14 交易日）。根因：日历由主库周更快照生成，主库停更 + 无主动重建。影响：`is_trade_day`（被 `g2_correction_exec.py` 使用）依赖兜底（工作日非节假日即交易日）判断，命中率下降。
+- **修复（双保险）**：
+  1. `is_trade_day.py` `load_calendar()` 增加陈旧检测：日历末日距今 >7 自然日自动用主库+增量重建（`_gen_calendar`）。
+  2. `refresh_panel_v3.py` 末尾固化每日日历重建（daily 链路必跑，增量已合并）。实测重建后日历末日 08-20 → **09-09**（4297 日）。
+- **验证**：两文件语法 OK、import 链无循环、`is_trade_day.py` 实测触发陈旧重建成功。
+- **结论**：实盘数据链路（增量→合并→面板→特征→选股）每日闭环正常；日历滞后隐患已修复，后续每日自动维护。

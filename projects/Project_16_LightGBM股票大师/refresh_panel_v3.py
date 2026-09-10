@@ -122,6 +122,16 @@ def main():
     print(f"  v3 面板已切片 | 最新日 {pd.to_datetime(df['trade_date']).max().date()} | "
           f"特征 {len(cols)}/{len(feat_all)}")
 
+    # ---- 重建交易日历快照（T-20260910-004）：主库周更滞后曾致日历停在 08-20 ----
+    # 用刚合并的最新日线（主库+增量）重写 ashare_trade_dates.txt，保 is_trade_day 命中准确。
+    # is_trade_day.load_calendar 另有 >7 自然日陈旧自动重建兜底，此处为每日主动维护。
+    try:
+        import is_trade_day as ITD
+        dates = ITD._gen_calendar()
+        print(f"  交易日历已重建 | 末日 {max(dates)[:10]} | {len(dates)} 日")
+    except Exception as e:
+        print(f"  !! 交易日历重建失败（不影响面板）: {e}")
+
 
 if __name__ == "__main__":
     main()

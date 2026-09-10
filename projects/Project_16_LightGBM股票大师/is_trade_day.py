@@ -60,8 +60,24 @@ def _gen_calendar():
 
 def load_calendar():
     if os.path.exists(CAL_FILE):
-        with open(CAL_FILE, encoding="utf-8") as f:
-            return {line.strip() for line in f if line.strip()}
+        # 陈旧检测：文件里最后一个交易日距今 > 7 自然日，则自动用主库+增量重建（T-20260910-004）
+        # 背景：主库周更滞后，日历快照曾停在 08-20；虽 is_trade_day 有兜底（工作日非节假日即交易日），
+        # 但保持日历新鲜可让"主库交易日历"命中更准，避免依赖兜底。
+        try:
+            lines = [l.strip() for l in open(CAL_FILE, encoding="utf-8") if l.strip()]
+            if lines:
+                last = datetime.date.fromisoformat(lines[-1][:10])
+                if (datetime.date.today() - last).days > 7:
+                    print(f"[info] 日历快照陈旧（末日 {last}），用主库+增量自动重建 ...", file=sys.stderr)
+                    return _gen_calendar()
+            return set(lines)
+        except Exception as e:
+            print(f"[warn] 日历读取异常，重建: {e}", file=sys.stderr)
+            try:
+                return _gen_calendar()
+            except Exception as e2:
+                print(f"[warn] 无法生成交易日历: {e2}", file=sys.stderr)
+                return set()
     try:
         return _gen_calendar()
     except Exception as e:  # 主库不可用
