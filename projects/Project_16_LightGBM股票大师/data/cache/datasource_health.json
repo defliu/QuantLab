@@ -1,17 +1,17 @@
 {
   "wudao": {
-    "fail_count": 1,
+    "fail_count": 0,
     "last_fail": 1789004094.6175256,
     "last_fail_ts": "2026-09-10 09:34:54",
-    "last_ok": 1788973461.2170331,
-    "last_ok_ts": "2026-09-10 01:04:21",
+    "last_ok": 1789032167.0908728,
+    "last_ok_ts": "2026-09-10 17:22:47",
     "latency_ms": 1200.0,
     "circuit": true
   },
   "tencent": {
     "fail_count": 0,
-    "last_ok": 1789008304.8171334,
-    "last_ok_ts": "2026-09-10 10:45:04",
+    "last_ok": 1789032167.2874973,
+    "last_ok_ts": "2026-09-10 17:22:47",
     "latency_ms": 274.0
   },
   "mcp_tdx": {

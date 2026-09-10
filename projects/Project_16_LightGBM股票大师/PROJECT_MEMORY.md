@@ -877,3 +877,12 @@ ebalance_g2.py 买入循环低开校验（gap_guard）：极端低开<=-5%跳过
   3. build_panel 逐行 asof 重构（enh 慢变量特征漂移，T-20260909-002 遗留）。
   4. G2 实盘 N15-live_trail 切换（待纸面前向 30 笔验证）。
   5. 数据源熔断告警推送（nightly_check 有盘点无推送；悟道/TDX 当前熔断中）。
+
+
+## 2026-09-10 · 夜间检修自动化落地（T-20260910-006，遗留清单#1 完成）
+
+- **落地**：`nightly_check_task.ps1`（包装：Get-GoodPy 同口径 Python 探测 + -u 无缓冲 + 日志 data/schedules/nightly_check_task.log）+ 计划任务 `Quant_P16_NightlyCheck_0100`（每日 01:00，StartWhenAvailable + 电池条件全放开 + 2h 上限）。
+- **踩坑（PS5.1 经典坑）**：包装脚本首版设 `$ErrorActionPreference = "Stop"`——Native 命令(python) stderr 经重定向会触发 ErrorRecord，Stop 策略**静默终止**脚本（17:17 首跑症状：日志只有开始行、报告未更新、无任何错误输出）。修复：去掉 Stop（与 run_scheduled.ps1 同口径），并加 `-u` 无缓冲防块缓冲丢日志。
+- **验证（17:22 完整跑通）**：23 项检查 FAIL=0 / WARN=1（C1"次日任务Active"设计上交检修指令核对）；exit 码语义正确（FAIL>0 → exit 1 → LastTaskResult 可观察）。附：本次检修顺带确认面板已刷到 09-10（16:30 daily 正常）、悟道熔断恢复 PASS、QMT 进程存活。
+- **语义**：每日 01:00 自动体检 A-G（数据/面板/模型/数据源/QMT/环境/报告）+ --fix 自动修复（面板重刷/增量重下/熔断恢复/QMT_POOL 清理），FAIL 时 LastTaskResult=1；--push-alert 未启用（飞书推送由检修指令按报告执行）。
+- **遗留清单更新**：原 #1（nightly_check 无调度）完成；剩主库节奏/asof 重构/N15 切换/熔断推送 4 项。

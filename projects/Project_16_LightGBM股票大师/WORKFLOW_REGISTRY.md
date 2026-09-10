@@ -112,3 +112,9 @@
 - 重训（模型层）：找到"给定特征→权重"的最优拟合，周训自动做。
 - 策略层优化（过滤/出场/融合/N/红线/TOP）：**重训搜不到**（优化空间与目标函数均不覆盖），只能离线网格寻优 + 前向验证（本轮已完成，结论入 `data/strategy_cfg_lib.json`）。
 - 最终裁判：纸面前向三臂累积 30 笔（G2=N15 / v3_enh=N10 / 融合=N10），见 `paper_forward_ab_stats.py` v3。
+
+### 7. 夜间检修自动化（2026-09-10 落地，T-20260910-006）
+
+- 计划任务 `Quant_P16_NightlyCheck_0100`（每日 01:00，入口 `nightly_check_task.ps1`）：A-G 模块体检 + `--fix` 自动修复（面板重刷/增量重下/熔断恢复/QMT_POOL 清理）+ 脚本冒烟 + 卖出规则防回归检查。
+- FAIL 时 exit 1（LastTaskResult 可观察）；报告落 `data/cache/nightly_check_<date>.md`；日志 `data/schedules/nightly_check_task.log`。
+- 注意：包装脚本**不可设** `$ErrorActionPreference = "Stop"`（PS5.1 下 python stderr 重定向会触发静默终止，T-20260910-006 踩坑记录）。
