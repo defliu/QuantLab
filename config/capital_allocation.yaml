@@ -44,6 +44,12 @@ strategies:
     max_hold: 2
     note: "G2版(大QMT 70180771)换仓top2等权、评分红线60；资金池独立D:/QMT_POOL/g2_bridge/g2_strategy_capital.json(70180771戳)；与V1.3(miniQMT 67014907)完全隔离，G2绝不纳管/卖出他人持仓（T-20260831-001 登记 2026-09-01）"
 
+  - key: p16_ensemble_bridge
+    name: "融合大QMT文件桥(Project_16融合top2)"
+    capital_base: 100000
+    max_hold: 2
+    note: "融合版(v3_enh+G2 rank融合w=0.5)大QMT 70180771虚拟子账户换仓top2等权、红线60、live_trail/N10；资金池独立D:/QMT_POOL/p16_ensemble_bridge/ens_strategy_capital.json(70180771戳)；与G2桥完全隔离，股票重叠自动规避，绝不纳管/卖出他人持仓（2026-09-10 拍板上线）"
+
   # ---- 新增策略在此追加（取消注释并填值）----
   # - key: xxx
   #   name: "新策略名"

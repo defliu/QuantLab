@@ -3,6 +3,7 @@
 
 数据源：
   --source g2   → D:/QMT_POOL/g2_bridge/state/fills_<date>.json（桥 fills，含 status）
+  --source ens  → D:/QMT_POOL/p16_ensemble_bridge/state/fills_<date>.json（融合桥 fills，含 status）
   --source v13  → data/rebalance_<date>.json（V1.3 换仓 orders，含 status）
 
 卡片结构：摘要（成交N/未成交M/总买入额）+ 成交明细表 + 未成交清单 + 数据源/时间戳。
@@ -28,6 +29,7 @@ import qmt_card as QC
 
 PROJECT = os.path.dirname(os.path.abspath(__file__))
 G2_FILLS = r"D:/QMT_POOL/g2_bridge/state/fills_%s.json"
+ENS_FILLS = r"D:/QMT_POOL/p16_ensemble_bridge/state/fills_%s.json"
 
 
 def _fmt(x, nd=2):
@@ -59,6 +61,32 @@ def _load_g2(date):
     path = G2_FILLS % date
     if not os.path.exists(path):
         print("[FAIL] 无 G2 fills: %s" % path)
+        return None
+    with open(path, encoding="utf-8") as f:
+        d = json.load(f)
+    nm = _name_map()
+    trades, pending = [], []
+    for x in d.get("fills", []) or []:
+        code = x.get("code", "")
+        st = (x.get("status") or "").upper()
+        item = {
+            "code": code, "name": nm.get(code, ""),
+            "side": "买" if x.get("action") == "BUY" else ("卖" if x.get("action") == "SELL" else x.get("action")),
+            "vol": x.get("vol"), "price": x.get("price"),
+            "status": st, "ts": x.get("ts", ""), "note": x.get("reason", ""),
+        }
+        if st == "FILLED" and int(x.get("vol") or 0) > 0:
+            item["amount"] = (x.get("vol") or 0) * (x.get("price") or 0)
+            trades.append(item)
+        else:
+            pending.append(item)
+    return {"trades": trades, "pending": pending}
+
+
+def _load_ens(date):
+    path = ENS_FILLS % date
+    if not os.path.exists(path):
+        print("[FAIL] 无融合 fills: %s" % path)
         return None
     with open(path, encoding="utf-8") as f:
         d = json.load(f)
@@ -157,7 +185,7 @@ def _build_card(data, date, source):
     elements.append({
         "tag": "markdown",
         "content": "<font color='grey'>来源：%s ｜ 数据截至 %s\n⚠️ 研究信号，不构成投资建议</font>" % (
-            "G2桥fills" if source == "g2" else "V1.3 rebalance", ts),
+            {"g2": "G2桥fills", "ens": "融合桥fills", "v13": "V1.3 rebalance"}.get(source, source), ts),
     })
 
     return {
@@ -165,7 +193,8 @@ def _build_card(data, date, source):
         "config": {"width_mode": "default", "update_multi": True},
         "header": {
             "title": {"tag": "plain_text", "content": "成交回报 · %s-%s-%s" % (date[:4], date[4:6], date[6:8])},
-            "subtitle": {"tag": "plain_text", "content": "%s · Project_16 %s" % (ts, "G2" if source == "g2" else "V1.3")},
+            "subtitle": {"tag": "plain_text", "content": "%s · Project_16 %s" % (
+                ts, {"g2": "G2", "ens": "融合", "v13": "V1.3"}.get(source, source))},
             "template": "green",
             "icon": {"tag": "standard_icon", "token": "notification_colorful"},
             "text_tag_list": [{"tag": "text_tag", "text": {"tag": "plain_text", "content": "成交"}, "color": "green"}],
@@ -185,11 +214,11 @@ def _clip(s, n=30):
 def main():
     ap = argparse.ArgumentParser(description="成交回报卡片推送")
     ap.add_argument("--date", required=True, help="YYYYMMDD")
-    ap.add_argument("--source", choices=["g2", "v13"], default="g2")
+    ap.add_argument("--source", choices=["g2", "ens", "v13"], default="g2")
     ap.add_argument("--no-send", action="store_true", help="只打印卡片 JSON，不发送")
     args = ap.parse_args()
 
-    data = _load_g2(args.date) if args.source == "g2" else _load_v13(args.date)
+    data = {"g2": _load_g2, "ens": _load_ens, "v13": _load_v13}[args.source](args.date)
     if data is None:
         sys.exit(1)
     card = _build_card(data, args.date, args.source)

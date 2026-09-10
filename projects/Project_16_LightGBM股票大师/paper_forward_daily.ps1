@@ -1,7 +1,9 @@
 ﻿# paper_forward_daily.ps1 - g2 daily pipeline (independent of V1.1 pipeline)
 # Runs Mon-Fri 16:45 by scheduled task 'paper_forward_daily'
 # Steps: 1) build_g2_daily.py  (g2 43-feature snapshot; F5 当日行业涨幅由增量库自算)
-#        2) deploy_predict_g2.py (模型Top100 -> F2 新浪当日主力净额实时覆盖 -> 真实评分卡红线60 -> top10候选池)
+#        2) deploy_predict_g2.py --ensemble --ens-live (模型Top100 -> F2 实时覆盖 -> 红线60 -> top10候选池；
+#            --ensemble --ens-live 顺带产出融合实盘选股 selections/g2_ens/<date>_g2_top10.csv 供次日 rebalance_ens 消费)
+# 2026-09-10: deploy_predict_g2 增加 --ensemble --ens-live（融合 live 管道：v3_enh+G2 rank融合 w=0.5 红线60）。
 #        3) paper_forward.py --backfill (回填 live 候选未来 N=10 交易日 open→open 收益，审计 P1-1)
 #        4) forward_stats.py    (超额统计报告 data/real/forward_stats_<date>.md)
 #        5) paper_forward_exit.py --top 2 --hold 10 (出场规则前向验证：对 rank<=2 实盘口径候选逐笔模拟
@@ -21,7 +23,7 @@ $log = Join-Path $proj "data\real\g2_pipeline_daily.log"
 try {
     Push-Location $proj
     & $py -u build_g2_daily.py *>> $log
-    & $py -u deploy_predict_g2.py *>> $log
+    & $py -u deploy_predict_g2.py --ensemble --ens-live *>> $log
     & $py -u paper_forward.py --backfill --hold 10 *>> $log
     $bfExit = $LASTEXITCODE
     & $py -u forward_stats.py --hold 10 *>> $log

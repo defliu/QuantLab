@@ -32,7 +32,7 @@ SELECT_TOP = 10                      # 候选池大小（对齐回测 TOP10；de
 RESERVE_CASH_PCT = 0.05              # 保留现金 5%（总仓 95%）
 MIN_ORDER_VOL = 100                  # 整手
 REDLINE = 60.0                       # g2 评分红线（deploy_predict_g2 --threshold 60 已过滤）
-HOLD_DAYS = 10                       # 持有期（交易日，对齐回测 N=10：满 N 个交易日到期卖出，止损/止盈优先）
+HOLD_DAYS = 15                       # 持有期（交易日，2026-09-10 拍板升级 N15-live_trail：对齐网格最优 G2-live_trail/N15/红线60/TOP2 +0.213%；桥出场=STOP→TP→TRAIL 与回测 live_trail 一致）
 
 # 持仓建仓日持久化（rebalance_g2 维护：{code: "YYYYMMDD"}）
 HOLD_DATES_FILE = os.path.join(DATA_DIR, "rebalance_g2", "g2_hold_dates.json")

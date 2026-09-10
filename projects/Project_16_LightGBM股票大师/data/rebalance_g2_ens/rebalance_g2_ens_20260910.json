@@ -1,0 +1,94 @@
+{
+  "date": "20260910",
+  "account_id": "70180771",
+  "capital": 100000.0,
+  "pool": [
+    {
+      "code": "600409.SH",
+      "total": 65.0
+    },
+    {
+      "code": "300138.SZ",
+      "total": 64.0
+    },
+    {
+      "code": "002412.SZ",
+      "total": 62.5
+    },
+    {
+      "code": "002824.SZ",
+      "total": 62.5
+    },
+    {
+      "code": "000893.SZ",
+      "total": 62.5
+    },
+    {
+      "code": "603985.SH",
+      "total": 62.5
+    },
+    {
+      "code": "300201.SZ",
+      "total": 62.5
+    },
+    {
+      "code": "002780.SZ",
+      "total": 62.5
+    },
+    {
+      "code": "601636.SH",
+      "total": 61.5
+    },
+    {
+      "code": "601233.SH",
+      "total": 60.0
+    }
+  ],
+  "ledger": {},
+  "note": "融合候选池 10 只（红线 60）",
+  "hold_days": 10,
+  "hold_dates": {},
+  "sells": [],
+  "buys": [
+    {
+      "code": "600409.SH",
+      "vol": 7000,
+      "price": 6.7,
+      "held": 0,
+      "target_vol": 7000,
+      "total": 65.0
+    },
+    {
+      "code": "300138.SZ",
+      "vol": 4000,
+      "price": 11.65,
+      "held": 0,
+      "target_vol": 4000,
+      "total": 64.0
+    }
+  ],
+  "skips": [],
+  "written": false,
+  "hold_dates_preview": {
+    "600409.SH": "20260910",
+    "300138.SZ": "20260910"
+  },
+  "orders": [
+    {
+      "action": "BUY",
+      "code": "600409.SH",
+      "vol": 7000,
+      "price": 6.7,
+      "reason": "融合选股Top1(total=65.0)",
+      "strategy_order_id": "P16_20260910_0001"
+    },
+    {
+      "action": "BUY",
+      "code": "300138.SZ",
+      "vol": 4000,
+      "price": 11.65,
+      "reason": "融合选股Top2(total=64.0)",
+      "strategy_order_id": "P16_20260910_0002"
+    }
+  ]
+}

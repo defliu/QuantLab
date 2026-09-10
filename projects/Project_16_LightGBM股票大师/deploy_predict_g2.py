@@ -38,6 +38,7 @@ AB_MODEL = "D:/QuantLab/models/lgb_model_v3_enh.txt"
 AB_META = os.path.join(DATA, "features_v3_enh.json")
 AB_LOG = os.path.join(REAL, "paper_forward_ab_v3enh.csv")
 ENS_LOG = os.path.join(REAL, "paper_forward_ens.csv")
+ENS_SELECT = os.path.join(DATA, "selections", "g2_ens")   # 融合实盘选股落盘目录（rebalance_ens 消费）
 
 
 def _append_live_dedup(rows):
@@ -67,6 +68,8 @@ def main():
                     help="纸面 A/B：同一快照额外用 v3_enh(33特征) 出候选，写 paper_forward_ab_v3enh.csv（不影响 G2 主流程）")
     ap.add_argument("--ensemble", action="store_true",
                     help="纸面融合臂：rank 融合(v3_enh+G2, w=0.5)，写 paper_forward_ens.csv（可与 --ab 同用）")
+    ap.add_argument("--ens-live", action="store_true",
+                    help="融合实盘选股落盘（需 --ensemble）：写 data/selections/g2_ens/<date>_g2_top10.csv 供 rebalance_ens 消费")
     args = ap.parse_args()
 
     feat_cols = json.load(open(G2_META, encoding="utf-8"))["feature_cols"]
@@ -282,6 +285,18 @@ def main():
                 _en_df.to_csv(_tmp, index=False, encoding="utf-8-sig")
                 os.replace(_tmp, ENS_LOG)
                 print(f"    [ENS] 融合候选 {len(en_picks)} 只（Top{args.top}） -> {ENS_LOG}")
+                # 融合实盘选股落盘（--ens-live，供 rebalance_ens 消费：池=top10 by ens，买入=by total_new）
+                if args.ens_live:
+                    os.makedirs(ENS_SELECT, exist_ok=True)
+                    date_str2 = target.strftime("%Y%m%d")
+                    _ens_out = en_picks[["ts_code", "total_new", "ens", "en_pv", "en_pg"]].copy()
+                    _ens_out["trade_date"] = date_str2
+                    _ens_out = _ens_out.rename(columns={"en_pv": "pv", "en_pg": "pg"})
+                    _ens_out["total_new"] = _ens_out["total_new"].round(1)
+                    _ens_out["ens"] = _ens_out["ens"].round(4)
+                    _live_csv = os.path.join(ENS_SELECT, f"{date_str2}_g2_top{args.top}.csv")
+                    _ens_out.to_csv(_live_csv, index=False, encoding="utf-8-sig")
+                    print(f"    [ENS-LIVE] 融合实盘选股已写 {_live_csv}（{len(_ens_out)} 只，Top{args.top} by ens）")
 
 
 if __name__ == "__main__":
