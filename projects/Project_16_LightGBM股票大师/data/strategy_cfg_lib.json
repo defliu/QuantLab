@@ -1,0 +1,67 @@
+{
+  "_说明": "策略层候选配置库（T-20260910-003 建立）。记录三策略各自最优配置 + 基准模型，供 gate_strategy_layer.py 在周更 promote 前后做策略层回测门禁（新模型在历史最优配置下不得差于 live 模型）。",
+  "_来源": "T-20260909-009 网格寻优（官方引擎 scan_rotate_cost_real，测试期 2024-07~2026-08，滑点0.1%可执行）",
+  "_口径": {
+    "engine": "scan_rotate_cost_real.py",
+    "slip": 0.001,
+    "exec_ok": true,
+    "cost": "佣金万2双边+印花税万5卖出+过户费万0.1",
+    "compare_metric": "daily_excess（日均超额，% 用小数 0.213=0.213%）",
+    "pass_rule": "候选 daily_excess >= live daily_excess - 0.0002（绝对容差 0.02pp，吸收面板重建噪声）"
+  },
+  "strategies": {
+    "G2": {
+      "体系": "G2（g2_strong_real 43特征，V2.0 体系）",
+      "model_kind": "g2_strong_real",
+      "config": {
+        "N": 15,
+        "EXIT": "live_trail",
+        "TOP": 2,
+        "BT_THRESHOLD": "60.0",
+        "BT_PANEL": "data/feature_panel_v3_enh2_n3_bt.parquet",
+        "BT_MODEL": "LIVE",
+        "BT_META": "LIVE",
+        "BT_POSFILTER": ""
+      },
+      "live_source": "data/g2_live_model.json",
+      "历史最优": "live_trail/N15/红线60/TOP2 = +0.213%/日",
+      "时间分段": "前+0.095/后+0.353（均正，稳健）"
+    },
+    "融合": {
+      "体系": "融合（G2×v3_enh rank w=0.5）",
+      "model_kind": "ensemble",
+      "config": {
+        "N": 10,
+        "EXIT": "live_trail",
+        "TOP": 2,
+        "BT_THRESHOLD": "60.0",
+        "BT_PANEL": "data/feature_panel_v3_enh2_n3_bt.parquet",
+        "BT_MODEL": "LIVE",
+        "BT_META": "LIVE",
+        "BT_MODEL2": "D:/QuantLab/models/lgb_model_v3_enh.txt",
+        "BT_META2": "data/features_v3_enh.json",
+        "BT_ENSEMBLE": "0.5"
+      },
+      "live_source": "data/g2_live_model.json",
+      "历史最优": "live_trail/N10/红线60/TOP2 = +0.211%/日",
+      "时间分段": "前+0.186/后+0.130（均正，稳健）"
+    },
+    "V1.4": {
+      "体系": "V1.4（v3_enh 33特征 + lite 位置过滤，V1.x 体系）",
+      "model_kind": "v3_enh",
+      "config": {
+        "N": 10,
+        "EXIT": "fixed",
+        "TOP": 2,
+        "BT_THRESHOLD": "58.0",
+        "BT_PANEL": "data/feature_panel_v3_sc.parquet",
+        "BT_MODEL": "D:/QuantLab/models/lgb_model_v3_enh.txt",
+        "BT_META": "data/features_v3_enh.json",
+        "BT_POSFILTER": "lite"
+      },
+      "live_source": null,
+      "历史最优": "fixed/N10/红线58/TOP2+lite = +0.157%/日",
+      "时间分段": "前+0.225/后+0.156（均正，稳健）"
+    }
+  }
+}

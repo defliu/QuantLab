@@ -183,7 +183,28 @@ try {
                         Run-Py "verify_model_panel_sync.py --warn-only"
                         Log "[模型-面板同步]（门禁拒绝后 warn-only，仅供信息，不阻断）"
                     } else {
-                        Log "[自动上线] 门禁通过，候选已提升为正式模型"
+                        Log "[自动上线] 模型层门禁（G0~G6）通过，候选已提升为正式模型"
+                        # ---- 策略层回测门禁（T-20260910-003）：promote 后复核 V1.4 最优配置 ----
+                        # V1.3 周更候选是 27 特征模型，用配置库 V1.4 最优配置（fixed/N10/红线58/TOP2/lite，
+                        # 面板 v3_sc，已验证 27 特征可推理）对比候选与旧正式模型（同一面板，公平对比）。
+                        # 候选（新正式模型）不得差于 promote 前的旧正式模型；FAIL 则回滚旧正式模型。
+                        $v13Meta = Join-Path $proj "data\features_v3.json"
+                        $oldFormal = Join-Path $proj ("versions\models\lgb_model_v3_pre_retrain_" + (Get-Date -Format 'yyyyMMdd_HHmmss') + ".txt")
+                        if (Test-Path $v13Meta -and (Test-Path $oldFormal)) {
+                            Log "[策略层门禁] V1.4 最优配置（fixed/N10/红线58/TOP2+lite）候选 vs 旧正式 复核（约10分钟）..."
+                            Run-Py "gate_strategy_layer.py --strategy V1.4 --candidate $candModel --meta $v13Meta --live $oldFormal --live-meta $v13Meta"
+                            if ($LASTEXITCODE -eq 2) {
+                                Log "!! [策略层门禁] FAIL —— 新正式模型在 V1.4 最优配置下差于旧模型，回滚旧正式模型（$oldFormal）"
+                                Copy-Item $oldFormal $formalModel -Force
+                                Log "[策略层门禁] 已回滚正式模型 -> $formalModel（旧模型 restore）"
+                            } elseif ($LASTEXITCODE -eq 0) {
+                                Log "[策略层门禁] PASS —— 新正式模型在 V1.4 最优配置下不差于旧模型，保留上线"
+                            } else {
+                                Log "!! [策略层门禁] 运行异常（exit=$LASTEXITCODE）—— 无法评估，需人工核查，新正式模型暂保留"
+                            }
+                        } else {
+                            Log "!! [策略层门禁] 未找到 V1.3 meta 或旧模型备份（$v13Meta / $oldFormal），跳过策略层复核"
+                        }
                         # 仅 promote 成功后做硬校验：绑定必须与面板同版（gap=0），失败说明绑定写入异常
                         Run-Py "verify_model_panel_sync.py"
                         if ($LASTEXITCODE -ne 0) {
@@ -216,7 +237,35 @@ try {
             if ($LASTEXITCODE -ne 0) {
                 Log "!! [G2重训] 门禁未过或训练失败，G2 live 保持不变，需人工核查（data/g2_live_model.json）"
             } else {
-                Log "[G2重训] 门禁通过，G2 live 已更新"
+                Log "[G2重训] 模型层门禁（G1-G3 strict）通过，G2 live 已更新"
+                # ---- 策略层回测门禁（T-20260910-003）：promote 后立即用官方引擎复核 ----
+                # 模型层门禁只保证 IC/尾部IC/Top2 模拟不退步，但 IC 与实盘收益隔着评分卡选股/过滤/出场，
+                # 需在历史最优配置（G2=live_trail/N15/红线60/TOP2）下跑官方引擎回测，
+                # 候选（新 live）不得差于 promote 前 live；FAIL 则自动回滚到 prev_model（train_g2 写入 trial.prev_model）。
+                $g2New = $null
+                if (Test-Path $g2LivePointer) {
+                    try { $g2New = (Get-Content $g2LivePointer -Raw | ConvertFrom-Json).model_path } catch { }
+                }
+                if ($g2New -and (Test-Path $g2New)) {
+                    # 新 live 的 meta：从模型文件名推导 features_v3_g2_strong_real_<date>.json
+                    $g2Stamp = [regex]::Match($g2New, 'g2_strong_real_(\d{8})_').Groups[1].Value
+                    $g2Meta = Join-Path $proj "data\features_v3_g2_strong_real_$g2Stamp.json"
+                    if (Test-Path $g2Meta) {
+                        Log "[策略层门禁] G2 最优配置（live_trail/N15/红线60/TOP2）候选 vs live 复核（约10分钟）..."
+                        Run-Py "gate_strategy_layer.py --strategy G2 --candidate $g2New --meta $g2Meta --rollback"
+                        if ($LASTEXITCODE -eq 0) {
+                            Log "[策略层门禁] PASS —— 新 G2 live 在最优配置下不差于旧 live，保留上线"
+                        } elseif ($LASTEXITCODE -eq 2) {
+                            Log "!! [策略层门禁] FAIL —— 新 G2 live 在最优配置下差于旧 live，已自动回滚到 prev_model；需人工核查重训质量"
+                        } else {
+                            Log "!! [策略层门禁] 运行异常（exit=$LASTEXITCODE）—— 无法评估，需人工核查，G2 live 暂保持 promote 状态"
+                        }
+                    } else {
+                        Log "!! [策略层门禁] 未找到新 live 对应 meta（$g2Meta），跳过策略层复核，需人工核查"
+                    }
+                } else {
+                    Log "!! [策略层门禁] 无法读取 promote 后 G2 live 指针，跳过策略层复核"
+                }
             }
         }
         "factor" {
