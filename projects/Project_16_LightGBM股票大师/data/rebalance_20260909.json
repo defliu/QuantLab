@@ -1,0 +1,31 @@
+{
+  "date": "20260909",
+  "executed_live": true,
+  "executed_at": "2026-09-09 09:59:53",
+  "tier": 2,
+  "target": [
+    {
+      "code": "605277.SH",
+      "name": "新亚电子",
+      "total": 66.5,
+      "prob": 0.5693
+    },
+    {
+      "code": "601058.SH",
+      "name": "赛轮轮胎",
+      "total": 66.0,
+      "prob": 0.5666
+    }
+  ],
+  "strategy_capital": 95897.6,
+  "target_value_each": 45551.36,
+  "sell": [],
+  "buy": [],
+  "trim": [],
+  "hold": [
+    "601579.SH",
+    "300413.SZ"
+  ],
+  "locked": [],
+  "guard_note": []
+}

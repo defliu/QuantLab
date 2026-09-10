@@ -6,7 +6,9 @@
   2) 通过 xtdata 订阅并轮询实时行情
   3) 逐持仓检查：硬止损 / 目标止盈 / 移动止盈（最高价回撤）
   4) 触发 → 控制台预警 + 写入 data/qmt_signal.json
-  5) [可选自动执行] --auto-sell 开启后，触发信号直接调用 miniQMT 卖出接口
+  5) [可选自动执行] --auto-sell 开启后，触发信号经 order_guard 委托守护卖出
+     （下单→轮询60s→未成撤单→更新价格重试→最多5次→涨跌停跳过；仅实际成交才记账，
+      T-20260909 方案A：修掉"裸下单即记成交"导致的挂单滞留+假成交）
 
 安全约定：
   - 默认只预警不自动交易（AUTO_SELL=False / 不传 --auto-sell）
@@ -17,7 +19,7 @@
 用法：
   python qmt_monitor.py                          # 自动读持仓成本，仅预警
   python qmt_monitor.py --positions "001378.SZ:19.90:1000"
-  python qmt_monitor.py --auto-sell              # 触发即自动卖出（真实委托）
+  python qmt_monitor.py --auto-sell              # 触发即自动卖出（真实委托，经 order_guard 守护）
   python qmt_monitor.py --once --auto-sell       # 单次检查+自动执行（适合定时快照）
 """
 import argparse
@@ -193,26 +195,49 @@ def cost_tp(cost):
     return cost * (1 + C.TAKE_PROFIT_PCT)
 
 
-# ---- 自动执行：触发信号后直接卖出 ----
+# ---- 自动执行：触发信号后直接卖出（方案A，T-20260909：接入 order_guard 委托守护）----
 
-def _sell(code, vol, price):
-    """通过 miniQMT 卖出持仓，返回 order_id。"""
-    from xtquant import xttrader, xttype, xtconstant
+def _connect_trader():
+    """建立 miniQMT 交易连接（供 order_guard 委托守护轮询/撤单重试复用）。
+
+    原 _sell 每次裸 order_stock 下单即断连：无成交确认、无超时撤单、无重挂，
+    跌停/流动性差时卖单滞留挂单队列且被误记成交（2026-09-09 300413 实证）。
+    现改为复用一条连接传给 order_guard.order_with_guard（下单→轮询60s→未成撤单→
+    更新价格重试→最多5次→涨跌停跳过），成交确认后才允许记账。
+    返回 (trader, account)；失败返回 (None, None)。
+    """
+    from xtquant import xttrader, xttype
     trader = xttrader.XtQuantTrader(C.USERDATA, int(time.time()))
     trader.start()
-    if trader.connect() != 0:
-        return -1
-    account = xttype.StockAccount(C.ACCOUNT_ID)
-    trader.subscribe(account)
-    time.sleep(3)  # 等待订阅就绪
-    if C.AUTO_SELL_PRICE_TYPE == "FIX":
-        price_type, px = xtconstant.FIX_PRICE, round(price * 0.995, 2)
-    else:
-        price_type, px = xtconstant.LATEST_PRICE, 0.0
-    order_id = trader.order_stock(account, code, xtconstant.STOCK_SELL, vol,
-                                  price_type, px, "traework_monitor", "auto_sell_signal")
-    trader.stop()
-    return order_id
+    try:
+        if trader.connect() != 0:
+            print("    !! QMT 交易通道连接失败（--auto-sell 本次仅预警、不下单）")
+            trader.stop()
+            return None, None
+        account = xttype.StockAccount(C.ACCOUNT_ID)
+        trader.subscribe(account)
+        time.sleep(3)  # 等待订阅就绪
+        return trader, account
+    except Exception as e:
+        print(f"    !! QMT 交易连接异常: {e!r}")
+        try:
+            trader.stop()
+        except Exception:
+            pass
+        return None, None
+
+
+def _sell(trader, account, code, vol, price):
+    """通过 miniQMT 卖出持仓，接入 order_guard 委托守护。
+
+    返回 order_guard 结果 dict：{"ok", "action", "traded_vol", "order_id", "attempts", "note"}。
+    action: FILLED 全部成交 / LIMIT_SKIP 涨跌停跳过 / REJECTED 废单 / CANCELED_TIMEOUT 超时未全成。
+    记账规则由调用方执行：仅 ok=True 且 traded_vol>0（已确认成交）才 sold.add + 写成交记录；
+    LIMIT_SKIP/CANCELED_TIMEOUT 等不确认成交的状态绝不写成交记录（T-20260909 防假成交）。
+    """
+    import order_guard
+    return order_guard.order_with_guard(trader, account, code, "SELL", vol, price,
+                                        remark="auto_sell_signal")
 
 
 # ---- 飞书推送（lark-cli bot 私聊通道，未配置则跳过）----
@@ -319,12 +344,18 @@ def main():
     peak = {c: c_cost for c, c_cost in positions.items()}
     sold = set()  # 已自动卖出的持仓，避免重复
 
+    # 方案A（T-20260909）：--auto-sell 时建立一条交易连接供 order_guard 委托守护复用；
+    # 连接失败则本次仅预警、不下单（防"连不上却裸下单静默挂单"）。
+    trader = account = None
+    if auto_sell:
+        trader, account = _connect_trader()
+
     while True:
         try:
             ticks = get_ticks(watchlist)
         except Exception as e:
             print(f"!! 行情获取失败（miniQMT 未启动或未登录？）: {e}")
-            return
+            break
 
         signals = []
         for code, cost in positions.items():
@@ -346,21 +377,33 @@ def main():
             sig = {"code": code, "action": action, "note": note, "last_price": last,
                    "cost": cost, "time": time.strftime("%Y-%m-%d %H:%M:%S")}
             if auto_sell:
-                vol = vols.get(code, 0)
-                sell_vol = min(vol, sellable.get(code, vol)) if sellable else vol
-                if sell_vol <= 0:
-                    print(f"      [!] {code} 无可卖数量（T+1 锁定），跳过自动卖出")
+                if trader is None or account is None:
+                    print(f"      [!] {code} 交易连接不可用，仅预警不自动卖出")
+                    sig["auto_sold"] = False
                 else:
-                    order_id = _sell(code, sell_vol, last)
-                    if order_id is not None and order_id > 0:
-                        print(f"      [ALERT] 自动卖出 {code} {sell_vol}股 @ 市价 -> order_id={order_id}")
-                        sold.add(code)
-                        sig["auto_sold"] = True
-                        sig["order_id"] = order_id
-                        C.append_trade_rows([[sig["time"], code, "SELL", sell_vol, last, action, order_id]])
+                    vol = vols.get(code, 0)
+                    sell_vol = min(vol, sellable.get(code, vol)) if sellable else vol
+                    if sell_vol <= 0:
+                        print(f"      [!] {code} 无可卖数量（T+1 锁定），跳过自动卖出")
                     else:
-                        print(f"      [FAIL] 自动卖出 {code} 失败（检查 miniQMT 客户端/账号）")
-                        sig["auto_sold"] = False
+                        r = _sell(trader, account, code, sell_vol, last)
+                        if r["traded_vol"] > 0:
+                            # 有实际成交量（FILLED 全部 或 CANCELED_TIMEOUT 部分成交）→ 按真实量记账；
+                            # 部分成交剩余未卖时不 sold.add，后续轮次继续评估剩余
+                            print(f"      [ALERT] 自动卖出 {code} {r['traded_vol']}股 -> {r['note']}")
+                            sig["auto_sold"] = True
+                            sig["order_id"] = r["order_id"]
+                            sig["traded_vol"] = r["traded_vol"]
+                            C.append_trade_rows([[sig["time"], code, "SELL",
+                                                  r["traded_vol"], last, action, r["order_id"]]])
+                            if r["ok"]:
+                                sold.add(code)
+                        else:
+                            # 0 成交（LIMIT_SKIP 涨跌停/REJECTED 废单/CANCELED_TIMEOUT 超时等）
+                            # 绝不写成交记录（T-20260909 防假成交）；涨跌停跳过时后续轮次继续评估
+                            print(f"      [SKIP/FAIL] {code} {r['action']} -> {r['note']}")
+                            sig["auto_sold"] = False
+                            sig["order_note"] = r["note"]
             signals.append(sig)
 
         if signals:
@@ -379,6 +422,13 @@ def main():
         if args.once:
             break
         time.sleep(max(1, args.interval))
+
+    # 方案A（T-20260909）：退出时关闭交易连接（--once / 行情失败 break / 连续盯盘中断均落这里）
+    if trader is not None:
+        try:
+            trader.stop()
+        except Exception as e:
+            print(f"    !! 关闭交易连接异常: {e!r}")
 
 
 if __name__ == "__main__":

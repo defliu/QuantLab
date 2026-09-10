@@ -1,4 +1,4 @@
-# paper_forward_daily.ps1 - g2 daily pipeline (independent of V1.1 pipeline)
+﻿# paper_forward_daily.ps1 - g2 daily pipeline (independent of V1.1 pipeline)
 # Runs Mon-Fri 16:45 by scheduled task 'paper_forward_daily'
 # Steps: 1) build_g2_daily.py  (g2 43-feature snapshot; F5 当日行业涨幅由增量库自算)
 #        2) deploy_predict_g2.py (模型Top100 -> F2 新浪当日主力净额实时覆盖 -> 真实评分卡红线60 -> top10候选池)

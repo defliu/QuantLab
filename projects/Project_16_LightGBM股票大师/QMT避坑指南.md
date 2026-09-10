@@ -55,7 +55,7 @@
 
 ## 四、飞书推送（lark-cli bot 通道）
 
-- **通道**：`lark-cli im +messages-send --user-id ou_76deaecde50e10576f8fdc8ba954a7b0 --text "..." --as bot`（lark-cli 路径 `C:\Users\Administrator\.trae-cn\plugins\trae-remote-official\lark\1.0.4\bin\lark-cli.exe`）。
+- **通道**：`lark-cli im +messages-send --user-id ou_76deaecde50e10576f8fdc8ba954a7b0 --text "..." --as bot`（lark-cli 路径 `C:\Users\Administrator\.trae-cn\plugins\trae-remote-official\lark\1.0.5\bin\lark-cli.exe`）。
 - **必须处理环境变量**：调用前移除 `LARKSUITE_CLI_APP_ID` 和 `LARKSUITE_CLI_USER_ACCESS_TOKEN`，并设 `LARKSUITE_CLI_STRICT_MODE=off`。原因：外部注入的 app 只有 user token、无 bot 凭据，且 strict-mode=user 会挡 bot；移除后 lark-cli 回退 config.json 的 Trae app（cli_aa0fbe282c399cef，有 bot 凭据）。
 - **不要用 user 身份**发 `ou_76de...` → 报 `open_id cross app`。
 - **优先级与容错**：推送永远在所有主步骤之后执行；失败仅记录，绝不影响主流程（脚本层 try-except）。

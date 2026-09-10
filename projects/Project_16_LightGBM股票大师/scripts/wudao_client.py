@@ -21,11 +21,23 @@ CLI:
 import json
 import os
 import sys
+import time
 import urllib.request
 
 URL = "https://stock.quicktiny.cn/api/mcp"
 _KEY = None
 _TIMEOUT = 25
+
+_MARKET_OPEN_RESTRICTED = (9 * 60 + 15, 10 * 60 + 30)
+
+
+def _market_open_restricted():
+    """悟道免费版盘中受限窗口（交易日 09:15-10:30，服务端 FREE_TIER_MARKET_OPEN_RESTRICTED）。"""
+    now = time.localtime()
+    if now.tm_wday >= 5:
+        return False
+    t = now.tm_hour * 60 + now.tm_min
+    return _MARKET_OPEN_RESTRICTED[0] <= t < _MARKET_OPEN_RESTRICTED[1]
 
 
 def _load_key():
@@ -82,6 +94,9 @@ def main():
     if len(sys.argv) < 2:
         print("用法: python wudao_client.py <tool> [<args_json>]")
         return 2
+    if _market_open_restricted():
+        print("[SKIP] 悟道免费版盘中受限（09:15-10:30，FREE_TIER_MARKET_OPEN_RESTRICTED），跳过调用")
+        return 0
     tool = sys.argv[1]
     try:
         if tool == "tools/list":

@@ -19,7 +19,7 @@ import traceback
 # ============================================================
 # 常量
 # ============================================================
-BUILD_TAG = "20260907-194446"
+BUILD_TAG = "20260909-142712"
 
 BRIDGE_DIR = "D:/QMT_POOL/p16_v13_risk"
 CMD_DIR = os.path.join(BRIDGE_DIR, "cmd")
@@ -65,6 +65,7 @@ _g_today_abandon_count = 0
 _g_today_risk_count = 0
 _g_positions = {}
 _g_risk_sold = set()
+_g_last_cfg_load = 0.0   # 孤儿自校准节流（cost=0 持仓重读当日成本表的时间戳，T-20260908）
 _g_diag_printed = False
 
 
@@ -74,7 +75,15 @@ _g_diag_printed = False
 def _atomic_write_json(path, data):
     """临时文件 + rename，避免内置桥读到半个 JSON。
     2026-09-01 教训：外部进程（监控轮询 Get-Content）短暂持有目标文件时 os.replace 会抛
-    PermissionError(WinError 5) → 必须重试（最多 5 次×0.2s），且调用方需 try/except 兜底防崩溃。"""
+    PermissionError(WinError 5) → 必须重试（最多 5 次×0.2s），且调用方需 try/except 兜底防崩溃。
+    2026-09-09 教训：目标父目录(state/)缺失时 open(tmp) 抛 FileNotFoundError，写前先确保目录存在（自愈）。
+    """
+    d = os.path.dirname(path)
+    if d:
+        try:
+            os.makedirs(d, exist_ok=True)
+        except Exception:
+            pass
     tmp = path + ".tmp"
     for attempt in range(5):
         try:
@@ -738,6 +747,45 @@ def _write_peak():
         pass
 
 
+def _reload_positions_cfg(date):
+    """孤儿持仓自校准（T-20260908，防部署时序缺陷）：
+    成本表 positions_cfg_v13_<date>.json 若晚于策略 init 生成，孤儿持仓 cost=0 会被 _check_risk_signals 跳过、
+    风控静默失效（peak=0.0 即症状）。存在孤儿时重读当日成本表填充 cost/peak。
+    节流：距上次读取 <30 秒不重复读文件。"""
+    global _g_last_cfg_load
+    has_orphan = False
+    for info in _g_positions.values():
+        if info.get("cost", 0) <= 0:
+            has_orphan = True
+            break
+    if not has_orphan:
+        return
+    now = time.time()
+    if now - _g_last_cfg_load < 30:
+        return
+    _g_last_cfg_load = now
+    cfg = _read_json(_positions_cfg_path(date))
+    if not cfg or str(cfg.get("account_id", "") or "") != ACCOUNT_ID:
+        return
+    for p in cfg.get("positions", []):
+        try:
+            bcode = str(p.get("code", "") or "")
+            cost = float(p.get("cost", 0) or 0)
+            if not bcode or cost <= 0:
+                continue
+            qcode = _to_qmt_code(bcode) or bcode
+            info = _g_positions.get(qcode)
+            if info is not None and info.get("cost", 0) <= 0:
+                info["cost"] = cost
+                if not info.get("vol"):
+                    info["vol"] = int(p.get("vol", 0) or 0)
+                if not info.get("peak", 0) or info.get("peak", 0) <= 0:
+                    info["peak"] = cost
+                print("[P16V13][CFG-RELOAD] %s 孤儿校准 cost=%.4f vol=%d" % (qcode, cost, info.get("vol", 0)))
+        except Exception:
+            pass
+
+
 def _check_risk_signals(C, date):
     """内置实时风控：账户持仓全量纳管（防孤儿）→ get_full_tick → 三规则判断 → 触发即卖出走pending。
     成本锚=外部成本表(positions_cfg)；峰值=state/peak.json 持久化。"""
@@ -779,6 +827,11 @@ def _check_risk_signals(C, date):
     except Exception as e:
         print("[P16V13][RISK-POS-ERR] %s" % e)
         return
+    # 孤儿自校准（T-20260908）：cost=0 持仓重读当日成本表，防"成本表晚于init生成→风控静默失效"
+    try:
+        _reload_positions_cfg(date)
+    except Exception:
+        print("[P16V13][RISK-CFG-ERR] %s" % traceback.format_exc())
     if not _g_positions:
         return
     # 2) 逐持仓评估（三规则照搬 qmt_monitor.evaluate）

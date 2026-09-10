@@ -3,7 +3,8 @@
 # 项目16 LightGBM股票大师 · 定时任务调度器
 # 用法:
 #   powershell -NoProfile -ExecutionPolicy Bypass -File run_scheduled.ps1 -Mode daily
-#   powershell -NoProfile -ExecutionPolicy Bypass -File run_scheduled.ps1 -Mode monitor
+#   powershell -NoProfile -ExecutionPolicy Bypass -File run_scheduled.ps1 -Mode monitor           # 只读监控（默认，仅预警）
+#   powershell -NoProfile -ExecutionPolicy Bypass -File run_scheduled.ps1 -Mode monitor -AutoSell # 外部自动卖出（与内置风控双跑，谨慎）
 #   powershell -NoProfile -ExecutionPolicy Bypass -File run_scheduled.ps1 -Mode retrain
 #   powershell -NoProfile -ExecutionPolicy Bypass -File run_scheduled.ps1 -Mode factor
 # 日志输出到: <项目>/data/schedules/<mode>_<时间戳>.log
@@ -16,7 +17,8 @@
 param(
     [Parameter(Mandatory = $true)]
     [ValidateSet("daily", "monitor", "retrain", "factor")]
-    [string]$Mode
+    [string]$Mode,
+    [switch]$AutoSell
 )
 $ErrorActionPreference = "Continue"
 # Python 子进程 stdout 统一 UTF-8，防 GBK 控制台对 ✅ 等字符 UnicodeEncodeError（2026-08-28 daily 链路 3 处崩溃根因）
@@ -135,8 +137,16 @@ try {
             }
         }
         "monitor" {
-            Log "[盯盘快照] 开始（--auto-sell: 触发信号自动卖出）"
-            Run-Py "qmt_monitor.py --once --auto-sell"
+            # 2026-09-09 起默认只读（仅预警不自动卖出）：V1.3 内置 tick 风控（QMT 内置运行）已接管自动卖出，
+            # 外部 monitor 若再带 --auto-sell 会与内置风控双跑重复卖出（2026-09-09 300413 双挂单教训）。
+            # 如需恢复外部自动卖出，显式传 -AutoSell 开关。
+            if ($AutoSell) {
+                Log "[盯盘快照] 开始（--auto-sell: 触发信号自动卖出——与内置风控双跑，需谨慎）"
+                Run-Py "qmt_monitor.py --once --auto-sell"
+            } else {
+                Log "[盯盘快照] 开始（只读监控: 仅预警不自动卖出，内置 tick 风控负责卖出）"
+                Run-Py "qmt_monitor.py --once"
+            }
         }
         "retrain" {
             Log "[周更重训] 开始（约1.5-2小时，含 G2 模型重训）"

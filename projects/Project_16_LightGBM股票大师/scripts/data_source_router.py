@@ -38,6 +38,15 @@ _KNOWN_SOURCES = [
 ]
 
 
+def _market_open_restricted():
+    """悟道免费版盘中受限窗口（交易日 09:15-10:30，服务端 FREE_TIER_MARKET_OPEN_RESTRICTED）。"""
+    now = time.localtime()
+    if now.tm_wday >= 5:
+        return False
+    t = now.tm_hour * 60 + now.tm_min
+    return 9 * 60 + 15 <= t < 10 * 60 + 30
+
+
 def _load():
     try:
         with open(HEALTH_FILE, encoding="utf-8") as f:
@@ -62,7 +71,9 @@ def _state(h, source):
 
 
 def check(source):
-    """返回 OK（可用）/ OPEN（熔断跳过）/ PROBE（半开可试一次）。"""
+    """返回 OK（可用）/ OPEN（熔断或盘中受限跳过）/ PROBE（半开可试一次）。"""
+    if source == "wudao" and _market_open_restricted():
+        return "OPEN"
     h = _load()
     st, fail, opened_at = _state(h, source)
     if not opened_at:

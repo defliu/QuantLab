@@ -140,16 +140,21 @@ def main():
     if len(pre) == 0:
         print(f"    !! 预选池({args.pool})内无股票通过红线 {args.threshold} → 空仓")
         return
-    # ---- 位置过滤（G2-V1.0，2026-09-08 落地；验证后 G2 红线60 用 full） ----
-    # R2 高位剔除（核心）+ R1 追高 + R3 低流动；PF_DISABLE=1 一键回滚。
-    _reasons = {}
-    pre = PF.apply_rules(pre, target_date=target, mode=os.environ.get("PF_MODE_G2", "full"),
-                         reason_out=_reasons)
-    if _reasons:
-        print(f"    !! 位置过滤剔除 {len(_reasons)} 只: {_reasons}")
-    if len(pre) == 0:
-        print(f"    !! 红线+位置过滤后无候选 → 空仓（宁缺毋滥）")
-        return
+    # ---- 位置过滤（G2-V1.0，2026-09-08）----
+    # 【重要修正 2026-09-08】G2 模型(g2_strong_real)口径回测验证：full 过滤有害
+    # （红线60/N=10/0.1%滑点：Base +0.149% → full -0.108%），lite 亦未见增益，
+    # 因 g2 模型(N3对齐+真实F2/F5)选出的强势票位置本身健康，过滤剔掉的是盈利交易。
+    # → G2 默认【不过滤】（与官方 Base 口径一致）；仅显式 PF_MODE_G2=lite/full 才启用。
+    # V1.3 链路(v3_enh 模型)的 lite 过滤继续保留（58-lite +0.157% 验证有效）。
+    _g2_mode = os.environ.get("PF_MODE_G2", "").strip()
+    if _g2_mode and not os.environ.get("PF_DISABLE", "0") == "1":
+        _reasons = {}
+        pre = PF.apply_rules(pre, target_date=target, mode=_g2_mode, reason_out=_reasons)
+        if _reasons:
+            print(f"    !! 位置过滤({_g2_mode})剔除 {len(_reasons)} 只: {_reasons}")
+        if len(pre) == 0:
+            print(f"    !! 红线+位置过滤后无候选 → 空仓（宁缺毋滥）")
+            return
     picks = pre.nlargest(args.top, "total_new")
     cols = ["ts_code", "prob", "total_new", "SC_F1", "SC_F2", "SC_F3", "SC_F4", "SC_F5", "SC_F6"]
     out = picks[cols].copy()

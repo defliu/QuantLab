@@ -39,7 +39,7 @@ HOLD_DATES_FILE = os.path.join(DATA_DIR, "rebalance_g2", "g2_hold_dates.json")
 
 # ---- 飞书（沿用同一接收人，仅推送通道） ----
 FEISHU_OPEN_ID = "ou_bd13444d8ea53c28249c669f43f3eeff"
-LARK_CLI = r"C:\Users\Administrator\.trae-cn\plugins\trae-remote-official\lark\1.0.4\bin\lark-cli.exe"
+LARK_CLI = r"C:\Users\Administrator\.trae-cn\plugins\trae-remote-official\lark\1.0.5\bin\lark-cli.exe"
 
 
 def load_g2_capital():
@@ -75,8 +75,10 @@ def save_g2_capital(capital, note=""):
 
 
 # ---- 位置过滤与低开校验参数（G2-V1.0，2026-09-08 落地，可环境变量覆盖） ----
-# 依据 2026-09-08 三步验证：G2 为红线60 口径，位置过滤用 full（R1追高+R2高位+R3低流动）验证有效。
-POSFILTER_MODE = os.environ.get("PF_MODE_G2", "full")   # G2 用 full；PF_DISABLE=1 整体关闭
+# 【重要修正 2026-09-08】G2 模型(g2_strong_real)口径回测验证：位置过滤（full/lite）均无增益甚至有害
+# （红线60/N=10/0.1%：Base +0.149% → full -0.108%），故 G2 默认【不过滤】；仅显式 PF_MODE_G2 才启用。
+# V1.3 链路(v3_enh)的 lite 过滤单独保留（58-lite +0.157% 验证有效，见 qmt_config.POSFILTER_MODE）。
+POSFILTER_MODE = os.environ.get("PF_MODE_G2", "")       # G2 默认不过滤（""=关）；lite/full 需显式设置
 GAP_HARD_PCT = float(os.environ.get("GAP_HARD_PCT", "-5.0"))   # 极端低开阈值，直接跳过
 GAP_OPEN_PCT = float(os.environ.get("GAP_OPEN_PCT", "-3.0"))   # 低开触发阈值
 GAP_VR       = float(os.environ.get("GAP_VR", "2.0"))          # 低开放行量比

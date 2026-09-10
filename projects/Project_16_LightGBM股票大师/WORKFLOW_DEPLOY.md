@@ -224,7 +224,7 @@ python factor_ic_monitor.py
 
 - **通道**：`lark-cli im +messages-send`，**bot 身份**，私聊发送给用户 `ou_76deaecde50e10576f8fdc8ba954a7b0`（刘诚，已测试连通）。不要用 user 身份、不要发到其他 open_id（会 cross-app 报错）。
 - **关键环境变量处理（必须）**：调用 lark-cli 前，在其进程环境里**移除 `LARKSUITE_CLI_APP_ID` 和 `LARKSUITE_CLI_USER_ACCESS_TOKEN`**，并设置 `LARKSUITE_CLI_STRICT_MODE=off`。原因：外部注入的 app 只有 user token 且 strict-mode=user 会挡 bot；移除后 lark-cli 回退到 config.json 里的 Trae app（cli_aa0fbe282c399cef，有 bot 凭据）。
-- **lark-cli 路径**：`C:\Users\Administrator\.trae-cn\plugins\trae-remote-official\lark\1.0.4\bin\lark-cli.exe`
+- **lark-cli 路径**：`C:\Users\Administrator\.trae-cn\plugins\trae-remote-official\lark\1.0.5\bin\lark-cli.exe`
 - **推送内容约定**：9:25 预判每次推摘要（持仓等级+候选强弱，强预警重点标出）；9:45 推买入结果（大盘结论+买入清单/未买原因）；盯盘脚本 `qmt_monitor.notify_feishu()` 触发信号时推送（无信号推送"持仓正常"心跳）。
 - **优先级与容错（必须遵守）**：飞书推送**永远放在任务所有主步骤之后**执行，优先级最低。推送失败/异常时**仅记录**（日志/汇报中说明），**绝不因推送失败中断、重试或阻塞主流程**——交易、报告等主任务完成即为成功。脚本层 `notify_feishu()` 已 try-except 容错，失败只打印不影响主循环。
 - 脚本内实现见 `qmt_monitor.py` 的 `notify_feishu()`（已内置环境变量处理）。

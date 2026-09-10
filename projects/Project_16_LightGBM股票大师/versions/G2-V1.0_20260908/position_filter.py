@@ -39,7 +39,8 @@ def _load_merged():
     if _CACHE["mkt"] is not None:
         return _CACHE["mkt"]
     main = pd.read_parquet(DC.MAIN_DAILY, columns=["close", "pct_chg", "vol", "amount", "adj_factor"])
-    main = main[main.index.get_level_values("trade_date") >= "2026-01-01"].reset_index()
+    # 窗口自 2023-06 起：既覆盖回测期（2024-07 起 pre20 预热），也覆盖实盘（2026）
+    main = main[main.index.get_level_values("trade_date") >= "2023-06-01"].reset_index()
     main["trade_date"] = pd.to_datetime(main["trade_date"])
     main["ts_code"] = main["ts_code"].astype(str)
     last_adj = main.sort_values("trade_date").groupby("ts_code")["adj_factor"].last()
@@ -61,6 +62,8 @@ def _load_merged():
             print("[position_filter] 增量库读取失败，忽略: %r" % (e,))
     df = pd.concat(parts, ignore_index=True)
     df = df.drop_duplicates(["ts_code", "trade_date"], keep="last").sort_values(["ts_code", "trade_date"])
+    # 统一 trade_date 精度为 ns（主库 ns vs 增量库可能 s，避免 merge_asof 键类型冲突）
+    df["trade_date"] = pd.to_datetime(df["trade_date"]).astype("datetime64[ns]")
     _CACHE["mkt"] = df
     return df
 
@@ -103,6 +106,9 @@ def add_position_features(cand, target_date):
             out["_asof"] = _asof_dates(out["trade_date"])
         else:
             out["_asof"] = pd.Timestamp(target_date)
+        # 统一 merge_asof 键精度为 ns（标量 Timestamp 赋值会得到 datetime64[s]，与 feat 的 ns 冲突）
+        out["_asof"] = pd.to_datetime(out["_asof"]).astype("datetime64[ns]")
+        feat["trade_date"] = feat["trade_date"].astype("datetime64[ns]")
         out = out.sort_values("_asof")
         out = pd.merge_asof(out, feat, left_on="_asof", right_on="trade_date",
                             by="ts_code", direction="backward")
@@ -150,6 +156,41 @@ def apply_rules(cand, target_date=None, mode=None, reason_out=None):
         return df
     kept = df[~df["ts_code"].isin(drop)]
     return kept
+
+
+def fetch_ohlc(code):
+    """腾讯行情取 现价/昨收/今开/当日成交量(手)。失败返回 None（T4 低开校验用，供 rebalance 端共用）。"""
+    try:
+        import urllib.request
+        sym = code.split(".")[0]
+        ex = code.split(".")[1].lower()
+        url = "http://qt.gtimg.cn/q=%s%s" % (ex, sym)
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        raw = urllib.request.urlopen(req, timeout=5).read().decode("gbk", errors="ignore")
+        if "~" in raw:
+            f = raw.split("~")
+            if len(f) > 6:
+                return {"price": float(f[3]), "pre_close": float(f[4]),
+                        "open": float(f[5]), "vol_lot": float(f[6])}
+    except Exception:
+        pass
+    return None
+
+
+def recent_avg_vol(code, n=5):
+    """增量库取该股最近 n 个交易日平均成交量（手）；数据不足/失败返回 None（T4 低开校验用）。"""
+    try:
+        incr = os.path.join(DC.LIVE_DIR, "incremental_daily.parquet")
+        if not os.path.exists(incr):
+            return None
+        d = pd.read_parquet(incr, columns=["ts_code", "trade_date", "volume"])
+        d["ts_code"] = d["ts_code"].astype(str)
+        sub = d[d["ts_code"] == code].sort_values("trade_date")
+        if len(sub) < 3:
+            return None
+        return float(sub["volume"].tail(n).mean())
+    except Exception:
+        return None
 
 
 def gap_guard(code, price, pre_close=None, open_price=None, vr=None):

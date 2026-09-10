@@ -1,16 +1,10 @@
 {
-  "model_path": "D:/QuantLab/models\\lgb_model_v3_g2_strong_real_20260907_3281t.txt",
-  "meta_path": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\features_v3_g2_strong_real_20260907.json",
-  "trained_date": "20260907",
-  "trees": 3281,
-  "test_ic": 0.07942,
-  "quantile_fwd_ret": {
-    "1": -0.00159,
-    "2": 0.00247,
-    "3": 0.00354,
-    "4": 0.00435,
-    "5": 0.00785
-  },
-  "promoted_at": "2026-09-07 17:51:22",
-  "note": "g2_strong_real 周更重训 live 指针；由 train_g2.py --promote 写入"
+  "model_path": "D:/QuantLab/models/lgb_model_v3_g2_strong_real_20260825_1964t.txt",
+  "meta_path": "D:/QuantLab/projects/Project_16_LightGBM股票大师/data/features_v3_g2_strong_real_20260825.json",
+  "trained_date": "20260825",
+  "trees": 1964,
+  "test_ic": 0.08157,
+  "promoted_at": "2026-09-09 10:45:59",
+  "note": "回退至 08-25 模型：09-07 周更(3281树)红线60 可执行回测 +0.039%/胜率52.6% 远低于 08-25(1964树) +0.149%/55.9%（T-20260909-001 回退，train_g2 --promote 的 09-07 版判定周更失败）",
+  "test_ic_note": "整体Spearman IC(fwd_ret3)，2026-08-14 截断窗口实测（复查项2，08-25模型）"
 }

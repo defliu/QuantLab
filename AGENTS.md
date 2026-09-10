@@ -71,6 +71,7 @@
 ## QMT 红线
 
 - 所有 QMT 运行产物必须是 GBK 编码，并且首行必须是 `# coding=gbk`。
+- **含中文的 `.ps1` 脚本（定时任务用）必须带 UTF-8 BOM**：Windows PowerShell 5.1 对无 BOM 文件按 ANSI/GBK 解码 → 中文变乱码 → 字符串引号被吞 → 级联「意外的标记」解析错误；**每次编辑含中文的 .ps1 后必须校验 BOM 仍在**（教训 T-20260903-015：编辑工具改写时丢 BOM，导致 run_scheduled.ps1 在 powershell.exe 下解析崩溃，09-14 周训将依赖此规则）。
 - QMT 运行环境按 Python 3.6.8 兼容处理。
 - 禁止在 QMT 运行产物或会被合并进产物的代码中使用 Python 3.6 不支持的语法，包括但不限于：
   - `dict[str, ...]`

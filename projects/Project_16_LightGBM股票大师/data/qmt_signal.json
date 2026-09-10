@@ -1,15 +1,25 @@
 {
-  "time": "2026-09-08 13:30:13",
+  "time": "2026-09-09 09:45:18",
   "signals": [
     {
-      "code": "601999.SH",
-      "action": "SELL_TAKE_PROFIT",
-      "note": "现价7.94 达止盈位7.94",
-      "last_price": 7.94,
-      "cost": 6.9014489999999995,
-      "time": "2026-09-08 13:30:10",
+      "code": "003005.SZ",
+      "action": "SELL_STOP",
+      "note": "现价16.91 跌破止损位17.77",
+      "last_price": 16.91,
+      "cost": 19.10382,
+      "time": "2026-09-09 09:45:11",
       "auto_sold": true,
-      "order_id": 1098929645
+      "order_id": 1090572916
+    },
+    {
+      "code": "300413.SZ",
+      "action": "SELL_STOP",
+      "note": "现价19.44 跌破止损位20.45",
+      "last_price": 19.44,
+      "cost": 21.994398,
+      "time": "2026-09-09 09:45:14",
+      "auto_sold": true,
+      "order_id": 1090573035
     }
   ]
 }

@@ -1,0 +1,115 @@
+{
+  "latest": "2026-09-07",
+  "data": {
+    "000786.SZ": {
+      "main_net_wan": -16.18,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "000949.SZ": {
+      "main_net_wan": -5486.19,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "001266.SZ": {
+      "main_net_wan": 244.97,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "002145.SZ": {
+      "main_net_wan": -229.35,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "002741.SZ": {
+      "main_net_wan": 107.38,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "300145.SZ": {
+      "main_net_wan": -4104.74,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "300475.SZ": {
+      "main_net_wan": 60915.58,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "300662.SZ": {
+      "main_net_wan": -742.47,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "300724.SZ": {
+      "main_net_wan": 1563.8,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "301479.SZ": {
+      "main_net_wan": -579.72,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "301500.SZ": {
+      "main_net_wan": -2023.25,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "601058.SH": {
+      "main_net_wan": 5534.41,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "601233.SH": {
+      "main_net_wan": -8976.48,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "601890.SH": {
+      "main_net_wan": -134.49,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "601999.SH": {
+      "main_net_wan": -1097.22,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "603002.SH": {
+      "main_net_wan": 24235.33,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "603093.SH": {
+      "main_net_wan": -1153.52,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "603155.SH": {
+      "main_net_wan": -1077.79,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "603256.SH": {
+      "main_net_wan": -48362.16,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "603696.SH": {
+      "main_net_wan": 4038.79,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "603986.SH": {
+      "main_net_wan": 129865.84,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    },
+    "605277.SH": {
+      "main_net_wan": 91.48,
+      "asof": "2026-09-07",
+      "source": "tushare_2026-09-07"
+    }
+  }
+}

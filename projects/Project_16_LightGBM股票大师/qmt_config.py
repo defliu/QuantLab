@@ -71,7 +71,7 @@ SIGNAL_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "
 TRADE_LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "qmt_trade_log.csv")  # 成交记录
 
 # ---- 飞书推送（lark-cli 私聊通道）----
-LARK_CLI = r"C:\Users\Administrator\.trae-cn\plugins\trae-remote-official\lark\1.0.4\bin\lark-cli.exe"  # lark-cli 可执行文件
+LARK_CLI = r"C:\Users\Administrator\.trae-cn\plugins\trae-remote-official\lark\1.0.5\bin\lark-cli.exe"  # lark-cli 可执行文件
 # 接收人 open_id（刘诚）。open_id 是「应用维度」的：
 #   bot cli_aade2524ddbd9bd6 下刘诚 = ou_bd13444d8ea53c28249c669f43f3eeff（已验证可私聊，2026-08-29 实测）
 #   （刘诚为「股票投研群」群主：user 视角群主 ou_34f40... == 刘诚，bot 视角群主 ou_bd13444... 即本值）

@@ -1,4 +1,4 @@
-param([string]$BackupRoot = "F:\WinReinstallBackup")
+﻿param([string]$BackupRoot = "F:\WinReinstallBackup")
 $Prof = $env:USERPROFILE
 $Source = Join-Path $BackupRoot ("UserBackup_" + $env:USERNAME)
 if (-not (Test-Path $Source)) { Write-Error ("Cannot find backup source: " + $Source); exit 1 }
