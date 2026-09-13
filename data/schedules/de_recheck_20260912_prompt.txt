@@ -1,0 +1,52 @@
+只读复查任务书（2026-09-12 看板大扫除 + 三策略健康）
+
+【硬约束】本任务是只读审计：
+1. 允许读取的文件/目录：D:\QuantLab\全局控制台.md、D:\QuantLab\projects\Project_16_LightGBM股票大师\ 全部源码与配置、D:\QMT_POOL\ 全部、D:\QMT交易端模拟\userdata\log\ 与 D:\国金QMT交易端模拟\userdata\log\ 的日志、D:\QuantLab\config\ 与 D:\QuantLab\data\。
+2. 唯一允许写入的文件：D:\QuantLab\data\schedules\de_recheck_20260912.md（报告，若存在则覆盖）。
+3. 禁止：修改任何其他文件、禁止 commit、禁止 git 操作、禁止运行任何会写文件的脚本/命令。
+4. 允许运行的只读命令：schtasks /query（查任务状态）、dir/type/Get-Content（读文件）、py_compile 之外的纯读取；D:\QuantLab\scripts\check_capital_allocation.py 确认为只读校验脚本可运行。
+5. 证据优先：每条结论必须附文件路径+具体内容（或行号）；拿不到的证据如实标 MISSING，禁止推测或凭记忆。
+
+【Part A 看板大扫除结论核验】
+先读 D:\QuantLab\全局控制台.md 的「DONE 已完成（2026-09-11/12 大扫除）」与「陈旧待裁决（2026-09-12 大扫除归档）」两个区块，再逐项用原始数据验证：
+
+A1. T-20260910-101 的 09-11 开盘三核对结论：
+  - D:\QMT_POOL\g2_bridge\cmd\positions_cfg_20260911.json：应含 account_id=70180771、仅持仓 300475.SZ cost=170.1475 vol=200、不含 001266
+  - D:\QMT_POOL\p16_v13_risk\cmd\positions_cfg_v13_20260911.json：应含 account_id=67014907、601058.SH cost=14.331 vol=3100、601579.SH cost=23.9662 vol=1900
+  - D:\QMT_POOL\g2_bridge\state\peak.json 与 D:\QMT_POOL\p16_v13_risk\state\peak_v13.json：峰值应非零
+  - D:\QMT交易端模拟\userdata\log\XtClient_FormulaOutput_20260911.log：应见 [P16G2][INIT] 外部成本表 2 条、09:46 [P16G2][RISK] SELL_STOP 001266、[P16ENS] 09:54 两笔买入 FILLED（600409/300138）
+  - D:\国金QMT交易端模拟\userdata\log\XtClient_FormulaOutput_20260911.log：应见 [P16V13][INIT] 外部成本表 2 条
+  - schtasks 查 Quant_P16_CfgPremarket_0900 上次运行时间与上次结果（应为 2026/9/11 12:05:29 / 0，即存在 3 小时延迟）
+
+A2. 抽查完成判定（看板标 ✅ 的任务是否属实）：
+  - T-20260904-004：D:\QuantLab\projects\Project_16_LightGBM股票大师\g2_config.py 应含 TIER_RULES 与 TIER_STOP_PCT/TIER_HALF_PCT
+  - T-20260904-005：同目录 rebalance_g2.py 的 build_plan 预算应含「剩余可用资金 − 保留仓成本」逻辑（avail = capital - kept_invest）
+  - T-20260907-004：09-11 或 09-12 的 QMT 公式日志应出现 BUILD_TAG=20260910-184724（V1.3 内置风控在跑）
+  - T-20260902-001：09-10/09-11 的 g2_bridge positions 快照应无 600262/300964 超买残留
+
+A3. 陈旧裁决合理性：15 条「陈旧待裁决」中是否有某条其实仍影响当前 G2/V13/ENS 三策略而应回提？（逐条给 影响/不影响 判断）
+
+【Part B 三策略运行健康（G2/V13/ENS）】
+  - 三桥心跳：D:\QMT_POOL\g2_bridge\state\heart_20260912.json、D:\QMT_POOL\p16_v13_risk\state\heart_v13_20260912.json、D:\QMT_POOL\p16_ensemble_bridge\state\heart_20260912.json —— 报告各自最新时间戳、build_tag、pending 数
+  - 两 QMT 客户端 20260912 日志：三策略今日是否有输出（心跳/init/风控）
+  - 最新持仓与资产：g2_bridge\state\positions_20260911.json、asset_20260911.json、fills_20260911.json；p16_ensemble_bridge\state 下最新文件（对照 T-20260910-109 融合首日 600409/300138 建仓）
+  - 数据新鲜度：定位 feature_panel_v3_enh.parquet（可能在 D:\QuantLab\data_live 或 data 下），报告文件 mtime 与最新数据日期（预期约 2026-08-14，对应 T-20260912-001）；同时报告基础面板 feature_panel_v3 最新日期
+  - 资金池当前值：g2_bridge\g2_strategy_capital.json、p16_ensemble_bridge\ens_strategy_capital.json、p16_v13_risk 目录下资金池文件
+
+【Part C 三策略相关未完成任务状态核对】
+逐条核对 D:\QuantLab\全局控制台.md TODO 中下列任务描述与代码/文件事实是否一致（不一致必须明确列出）：
+  - T-20260912-001：搜索 D:\QuantLab\projects\Project_16_LightGBM股票大师\ 与 scripts\ 是否有写 feature_panel_v3_enh.parquet 的脚本；refresh_panel_v3.py 是否只重建基础面板（27 特征）不写 enh
+  - T-20260910-103/104：paper_forward*.py、g2_candidates_night.ps1、paper_forward_daily.ps1 是否存在（D:\QuantLab\projects\Project_16_LightGBM股票大师\ 与 data\schedules\）
+  - T-20260910-105：schtasks 中与 refresh_panel_v3 / 增量合并相关的任务是否覆盖每日刷新（列任务名+调度）
+  - T-20260910-107：qmt_monitor 相关计划任务是否仍 Active；V1.3 内置风控 184724 是否已在日志确认（见 A2）
+  - T-20260904-006：rebalance_g2.py 中 hold_dates 缺失时的处理（fail-open 立即卖出？）、是否无卖出冷却期、是否无跌停/停牌过滤——报代码现状
+  - T-20260827-003：D:\QuantLab\data\gpsj_reader.py 的 _COL_MAP 中 ST 列是否仍是直接映射（未反转修复）
+
+【输出要求】
+报告 Markdown 结构：
+1. 结论摘要表（每项 PASS / FAIL / 存疑 + 一句话）
+2. Part A 核验明细（每条附证据）
+3. Part B 三策略健康结论（含心跳/对账/数据新鲜度/资金池，附文件证据）
+4. Part C 任务状态核对清单（一致/不一致逐条）
+5. 需要回提/更正的清单（看板判定与事实不符处、陈旧裁决需回提处）
+报告务必以原始文件内容为准，不要引用任何二手来源。
