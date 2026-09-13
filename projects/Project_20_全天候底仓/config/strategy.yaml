@@ -1,0 +1,30 @@
+# 全天候底仓 V1 - 部署配置（Project_20）
+# 月频再平衡 ETF 组合；回测口径见 research/aw_offline_backtest.py（真实 ETF + H11025 货币腿）
+# 2026-09-13 诚哥拍板：V1 比例 + 首笔 10 万模拟盘
+
+strategy:
+  name: ALL_WEATHER_V1
+  display_name: 全天候底仓V1(股30/债30/货25/金15)
+  capital_base: 100000           # 策略锁定可用资金（10万，虚拟子账户基准）
+  account_id: '70180771'         # 国金QMT模拟端账号
+
+etf_legs:                        # V1 四腿（权重合计 1.0）
+  510300.SH: 0.30                # 沪深300（股票）
+  511010.SH: 0.30                # 十年国债
+  511880.SH: 0.25                # 货币
+  518880.SH: 0.15                # 黄金
+
+rebalance:
+  freq: monthly                  # 月频再平衡（月末信号日，次交易日执行）
+  drift_band: 0.05               # 权重偏离 >5pp 才触发再平衡（减少不必要换仓）
+  cost_rate: 0.0005              # 单边成本假设（回测口径）
+
+execution:
+  order_unit: "份"               # ETF 场内按份下单（100份=1手）
+  min_order_amount: 1000         # 单腿最小下单金额（元）
+  price_limit_pct: 0.02          # 限价单偏离现价上限 2%（防滑点失控）
+
+pool:
+  holdings_file: D:/QMT_POOL/all_weather_holdings.json
+  nav_file: D:/QMT_POOL/all_weather_nav.json
+  trade_log_file: D:/QMT_POOL/all_weather_trade_log.csv

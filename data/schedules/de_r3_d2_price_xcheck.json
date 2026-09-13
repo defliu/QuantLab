@@ -1,0 +1,24 @@
+{
+ "stock_vs_astock": {
+  "n_cmp": 100,
+  "mean_absdiff": 0.0,
+  "max_absdiff": 0.0,
+  "n_exact": 100
+ },
+ "cb_vs_eastmoney": {
+  "n_cmp": 0,
+  "mean_absdiff": -1,
+  "max_absdiff": -1,
+  "n_exact": 0,
+  "fail_codes": [
+   "113643.SH",
+   "123114.SZ",
+   "123151.SZ",
+   "118035.SH",
+   "123076.SZ",
+   "123088.SZ",
+   "123173.SZ",
+   "113616.SH"
+  ]
+ }
+}

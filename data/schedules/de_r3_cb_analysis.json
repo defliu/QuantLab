@@ -1,0 +1,744 @@
+{
+ "lingnan": {
+  "last_nonzero": null,
+  "last_row": "20260911",
+  "rows": 248,
+  "nonzero_rows": 0
+ },
+ "d1_old": {
+  "n": 11,
+  "min_cov": 0.8613,
+  "median_cov": 0.9972,
+  "detail": {
+   "117103.SZ": {
+    "name": "蓝天转S1",
+    "list_date": "20171123",
+    "delist_date": null,
+    "rows": 0,
+    "first": null,
+    "last": null,
+    "expect_days": 1868,
+    "coverage": 0.0
+   },
+   "128044.SZ": {
+    "name": "岭南转债",
+    "list_date": "20180904",
+    "delist_date": null,
+    "rows": 1609,
+    "first": "20190102",
+    "last": "20260911",
+    "expect_days": 1868,
+    "coverage": 0.8613
+   },
+   "110048.SH": {
+    "name": "福能转债",
+    "list_date": "20181228",
+    "delist_date": "20241209",
+    "rows": 1439,
+    "first": "20190102",
+    "last": "20241206",
+    "expect_days": 1440,
+    "coverage": 0.9993
+   },
+   "128049.SZ": {
+    "name": "华源转债",
+    "list_date": "20181220",
+    "delist_date": "20241128",
+    "rows": 1429,
+    "first": "20190102",
+    "last": "20241122",
+    "expect_days": 1433,
+    "coverage": 0.9972
+   },
+   "110047.SH": {
+    "name": "山鹰转债",
+    "list_date": "20181210",
+    "delist_date": "20241121",
+    "rows": 1427,
+    "first": "20190102",
+    "last": "20241120",
+    "expect_days": 1428,
+    "coverage": 0.9993
+   },
+   "128048.SZ": {
+    "name": "张行转债",
+    "list_date": "20181129",
+    "delist_date": "20241113",
+    "rows": 1418,
+    "first": "20190102",
+    "last": "20241107",
+    "expect_days": 1422,
+    "coverage": 0.9972
+   },
+   "113519.SH": {
+    "name": "长久转债",
+    "list_date": "20181130",
+    "delist_date": "20241107",
+    "rows": 1417,
+    "first": "20190102",
+    "last": "20241106",
+    "expect_days": 1418,
+    "coverage": 0.9993
+   },
+   "113516.SH": {
+    "name": "苏农转债",
+    "list_date": "20180820",
+    "delist_date": "20240802",
+    "rows": 1355,
+    "first": "20190102",
+    "last": "20240801",
+    "expect_days": 1356,
+    "coverage": 0.9993
+   },
+   "128042.SZ": {
+    "name": "凯中转债",
+    "list_date": "20180903",
+    "delist_date": "20240731",
+    "rows": 1350,
+    "first": "20190102",
+    "last": "20240725",
+    "expect_days": 1354,
+    "coverage": 0.997
+   },
+   "123013.SZ": {
+    "name": "横河转债",
+    "list_date": "20180820",
+    "delist_date": "20240729",
+    "rows": 1348,
+    "first": "20190102",
+    "last": "20240723",
+    "expect_days": 1352,
+    "coverage": 0.997
+   },
+   "123012.SZ": {
+    "name": "万顺转债",
+    "list_date": "20180829",
+    "delist_date": "20240722",
+    "rows": 1343,
+    "first": "20190102",
+    "last": "20240716",
+    "expect_days": 1347,
+    "coverage": 0.997
+   },
+   "123011.SZ": {
+    "name": "德尔转债",
+    "list_date": "20180814",
+    "delist_date": "20240719",
+    "rows": 1342,
+    "first": "20190102",
+    "last": "20240715",
+    "expect_days": 1346,
+    "coverage": 0.997
+   }
+  }
+ },
+ "d1_market_vs_basic": {
+  "20190408": 0.9686,
+  "20190715": 0.9892,
+  "20191022": 0.9898,
+  "20200408": 0.988,
+  "20200715": 0.9966,
+  "20201022": 0.9969,
+  "20210408": 0.9837,
+  "20210715": 0.9822,
+  "20211022": 0.9724,
+  "20220408": 0.9926,
+  "20220715": 0.986,
+  "20240408": 0.9855,
+  "20240715": 0.9815,
+  "20241022": 0.9835,
+  "20250408": 0.9678,
+  "20250715": 0.973,
+  "20251022": 0.9741,
+  "20260408": 0.9669,
+  "20260715": 0.9632
+ },
+ "d2_stats": {
+  "n_bonds": 20,
+  "n_obs": 400,
+  "mean": 0.5423,
+  "min": 0.0409,
+  "p5": 0.1372,
+  "median": 0.3854,
+  "p95": 1.8046,
+  "max": 2.0636,
+  "per_bond": {
+   "113643.SH": {
+    "name": "风语转债",
+    "n": 20,
+    "mean": 0.4148,
+    "min": 0.2787,
+    "max": 0.5133
+   },
+   "123114.SZ": {
+    "name": "三角转债",
+    "n": 20,
+    "mean": 0.3367,
+    "min": 0.2735,
+    "max": 0.3952
+   },
+   "123151.SZ": {
+    "name": "康医转债",
+    "n": 20,
+    "mean": 1.9155,
+    "min": 1.8046,
+    "max": 2.0636
+   },
+   "118035.SH": {
+    "name": "国力转债",
+    "n": 20,
+    "mean": 0.3643,
+    "min": 0.3111,
+    "max": 0.4108
+   },
+   "123076.SZ": {
+    "name": "强力转债",
+    "n": 20,
+    "mean": 0.2019,
+    "min": 0.1436,
+    "max": 0.2696
+   },
+   "123088.SZ": {
+    "name": "威唐转债",
+    "n": 20,
+    "mean": 0.4321,
+    "min": 0.4044,
+    "max": 0.4861
+   },
+   "123173.SZ": {
+    "name": "恒锋转债",
+    "n": 20,
+    "mean": 0.3269,
+    "min": 0.2889,
+    "max": 0.367
+   },
+   "113616.SH": {
+    "name": "韦尔转债",
+    "n": 20,
+    "mean": 1.0994,
+    "min": 0.8971,
+    "max": 1.2651
+   },
+   "113648.SH": {
+    "name": "巨星转债",
+    "n": 20,
+    "mean": 0.9314,
+    "min": 0.7957,
+    "max": 1.0909
+   },
+   "127082.SZ": {
+    "name": "亚科转债",
+    "n": 20,
+    "mean": 0.3612,
+    "min": 0.3038,
+    "max": 0.3895
+   },
+   "113610.SH": {
+    "name": "灵康转债",
+    "n": 20,
+    "mean": 0.4261,
+    "min": 0.2519,
+    "max": 0.525
+   },
+   "113661.SH": {
+    "name": "福22转债",
+    "n": 20,
+    "mean": 0.3302,
+    "min": 0.2986,
+    "max": 0.3813
+   },
+   "127046.SZ": {
+    "name": "百润转债",
+    "n": 20,
+    "mean": 0.4452,
+    "min": 0.412,
+    "max": 0.4966
+   },
+   "128136.SZ": {
+    "name": "立讯转债",
+    "n": 20,
+    "mean": 0.1495,
+    "min": 0.1136,
+    "max": 0.1934
+   },
+   "123091.SZ": {
+    "name": "长海转债",
+    "n": 20,
+    "mean": 0.1198,
+    "min": 0.0409,
+    "max": 0.1636
+   },
+   "127068.SZ": {
+    "name": "顺博转债",
+    "n": 20,
+    "mean": 0.9703,
+    "min": 0.9179,
+    "max": 1.0279
+   },
+   "113652.SH": {
+    "name": "伟22转债",
+    "n": 20,
+    "mean": 0.6411,
+    "min": 0.6152,
+    "max": 0.6793
+   },
+   "127027.SZ": {
+    "name": "能化转债",
+    "n": 20,
+    "mean": 0.2449,
+    "min": 0.187,
+    "max": 0.2908
+   },
+   "113634.SH": {
+    "name": "珀莱转债",
+    "n": 20,
+    "mean": 0.9519,
+    "min": 0.8652,
+    "max": 1.0865
+   },
+   "123092.SZ": {
+    "name": "天壕转债",
+    "n": 20,
+    "mean": 0.1822,
+    "min": 0.1242,
+    "max": 0.2467
+   }
+  }
+ },
+ "d5_proxy": {
+  "early_delist": 634,
+  "at_maturity": 183,
+  "unknown": 0,
+  "early_by_year": {
+   "2001": 1,
+   "2004": 3,
+   "2005": 1,
+   "2006": 8,
+   "2007": 17,
+   "2008": 3,
+   "2009": 8,
+   "2010": 8,
+   "2011": 2,
+   "2013": 3,
+   "2014": 7,
+   "2015": 27,
+   "2017": 3,
+   "2018": 3,
+   "2019": 24,
+   "2020": 71,
+   "2021": 73,
+   "2022": 60,
+   "2023": 44,
+   "2024": 54,
+   "2025": 123,
+   "2026": 91
+  }
+ },
+ "d5_known_checks": [
+  {
+   "name": "平银转债",
+   "ts_code": "127010.SZ",
+   "list_date": "20190218",
+   "delist_date": "20190927",
+   "maturity_date": "20250121",
+   "expect": "2019-05"
+  },
+  {
+   "name": "中鼎转2",
+   "ts_code": "127011.SZ",
+   "list_date": "20190404",
+   "delist_date": "20220304",
+   "maturity_date": "20250308",
+   "expect": "2020"
+  },
+  {
+   "name": "英科转债",
+   "ts_code": "123029.SZ",
+   "list_date": "20190910",
+   "delist_date": "20250818",
+   "maturity_date": "20250816",
+   "expect": "2021"
+  },
+  {
+   "name": "桃李转债",
+   "ts_code": "113544.SH",
+   "list_date": "20191015",
+   "delist_date": "20200918",
+   "maturity_date": "20250920",
+   "expect": "2020"
+  },
+  {
+   "name": "盘龙转债",
+   "ts_code": "127057.SZ",
+   "list_date": "20220408",
+   "delist_date": "20230411",
+   "maturity_date": "20280303",
+   "expect": "2022"
+  }
+ ],
+ "d3": {
+  "total": 1164,
+  "issue_rating": 1101,
+  "newest_rating": 1100,
+  "diff_count": 151,
+  "diff_examples": [
+   {
+    "ts_code": "125629.SZ",
+    "name": "钢钒转债",
+    "issue": "AA",
+    "newest": "AAA",
+    "delist": "20040414"
+   },
+   {
+    "ts_code": "100016.SH",
+    "name": "民生转债",
+    "issue": "AAA",
+    "newest": "AA",
+    "delist": "20080226"
+   },
+   {
+    "ts_code": "100236.SH",
+    "name": "桂冠转债",
+    "issue": "AAA-",
+    "newest": "AAA",
+    "delist": "20080704"
+   },
+   {
+    "ts_code": "110398.SH",
+    "name": "凯诺转债",
+    "issue": "AA+",
+    "newest": "AA",
+    "delist": "20071026"
+   },
+   {
+    "ts_code": "128031.SZ",
+    "name": "巨轮转债",
+    "issue": "AA",
+    "newest": "AAA",
+    "delist": "20090907"
+   },
+   {
+    "ts_code": "110567.SH",
+    "name": "山鹰转债",
+    "issue": "AA-",
+    "newest": "AA",
+    "delist": "20100205"
+   },
+   {
+    "ts_code": "125709.SZ",
+    "name": "唐钢转债",
+    "issue": "AA+",
+    "newest": "AAA",
+    "delist": "20121214"
+   },
+   {
+    "ts_code": "110033.SH",
+    "name": "国贸转债",
+    "issue": "AA+",
+    "newest": "AAA",
+    "delist": "20211105"
+   },
+   {
+    "ts_code": "128012.SZ",
+    "name": "辉丰转债",
+    "issue": "AA",
+    "newest": "A",
+    "delist": "20210428"
+   },
+   {
+    "ts_code": "128013.SZ",
+    "name": "洪涛转债",
+    "issue": "AA",
+    "newest": "CCC",
+    "delist": "20220729"
+   },
+   {
+    "ts_code": "127004.SZ",
+    "name": "模塑转债",
+    "issue": "AA",
+    "newest": "AA-",
+    "delist": "20230602"
+   },
+   {
+    "ts_code": "128015.SZ",
+    "name": "久其转债",
+    "issue": "AA",
+    "newest": "A",
+    "delist": "20221220"
+   },
+   {
+    "ts_code": "128016.SZ",
+    "name": "雨虹转债",
+    "issue": "AA",
+    "newest": "AA+",
+    "delist": "20200422"
+   },
+   {
+    "ts_code": "113016.SH",
+    "name": "小康转债",
+    "issue": "AA",
+    "newest": "AA-",
+    "delist": "20230626"
+   },
+   {
+    "ts_code": "128022.SZ",
+    "name": "众信转债",
+    "issue": "AA",
+    "newest": "BBB",
+    "delist": "20221229"
+   },
+   {
+    "ts_code": "123006.SZ",
+    "name": "东财转债",
+    "issue": "AA",
+    "newest": "AA+",
+    "delist": "20190521"
+   },
+   {
+    "ts_code": "128036.SZ",
+    "name": "金农转债",
+    "issue": "AA-",
+    "newest": "A-",
+    "delist": "20240311"
+   },
+   {
+    "ts_code": "128039.SZ",
+    "name": "三力转债",
+    "issue": "AA-",
+    "newest": "A+",
+    "delist": "20240611"
+   },
+   {
+    "ts_code": "128040.SZ",
+    "name": "华通转债",
+    "issue": "AA-",
+    "newest": "AA",
+    "delist": "20230309"
+   },
+   {
+    "ts_code": "123010.SZ",
+    "name": "博世转债",
+    "issue": "AA-",
+    "newest": "A",
+    "delist": "20240708"
+   },
+   {
+    "ts_code": "113513.SH",
+    "name": "安井转债",
+    "issue": "AA-",
+    "newest": "AA",
+    "delist": "20190705"
+   },
+   {
+    "ts_code": "128041.SZ",
+    "name": "盛路转债",
+    "issue": "AA",
+    "newest": "A+",
+    "delist": "20240717"
+   },
+   {
+    "ts_code": "128042.SZ",
+    "name": "凯中转债",
+    "issue": "AA",
+    "newest": "AA-",
+    "delist": "20240731"
+   },
+   {
+    "ts_code": "128043.SZ",
+    "name": "东音转债",
+    "issue": "AA-",
+    "newest": "AA",
+    "delist": "20201111"
+   },
+   {
+    "ts_code": "123015.SZ",
+    "name": "蓝盾转退",
+    "issue": "AA",
+    "newest": "CC",
+    "delist": "20230731"
+   }
+  ]
+ },
+ "d4_coverage": {
+  "put_clause": 1152,
+  "call_clause": 1131,
+  "reset_clause": 1140,
+  "guarantee_type": 189,
+  "maturity_call_price": 1090
+ },
+ "d7_alive_not_traded": {
+  "110805.SH": {
+   "last": null,
+   "rows": 0
+  },
+  "110809.SH": {
+   "last": null,
+   "rows": 0
+  },
+  "110811.SH": {
+   "last": null,
+   "rows": 0
+  },
+  "110815.SH": {
+   "last": null,
+   "rows": 0
+  },
+  "110817.SH": {
+   "last": null,
+   "rows": 0
+  },
+  "110818.SH": {
+   "last": null,
+   "rows": 0
+  },
+  "113575.SH": {
+   "last": "20260408",
+   "rows": 546
+  },
+  "113710.SH": {
+   "last": null,
+   "rows": 0
+  },
+  "117103.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "118500.SH": {
+   "last": null,
+   "rows": 0
+  },
+  "118501.SH": {
+   "last": null,
+   "rows": 0
+  },
+  "123095.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "123285.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "124001.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "124002.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "124003.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "124007.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "124008.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "124009.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "124010.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "124011.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "124012.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "124013.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "124014.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "124015.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "124016.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "124019.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "124021.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "124022.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "124025.SZ": {
+   "last": null,
+   "rows": 0
+  },
+  "127067.SZ": {
+   "last": "20260908",
+   "rows": 651
+  },
+  "145904.SH": {
+   "last": null,
+   "rows": 0
+  },
+  "145905.SH": {
+   "last": null,
+   "rows": 0
+  }
+ },
+ "d7_counts": {
+  "total": 1164,
+  "delisted": 817,
+  "alive_cb": 345,
+  "traded_20260911": 315
+ },
+ "d7_real_dead_alive": [
+  "110805.SH",
+  "110809.SH",
+  "110811.SH",
+  "110815.SH",
+  "110817.SH",
+  "110818.SH",
+  "113575.SH",
+  "113710.SH",
+  "117103.SZ",
+  "118500.SH",
+  "118501.SH",
+  "123095.SZ",
+  "123285.SZ",
+  "124001.SZ",
+  "124002.SZ",
+  "124003.SZ",
+  "124007.SZ",
+  "124008.SZ",
+  "124009.SZ",
+  "124010.SZ",
+  "124011.SZ",
+  "124012.SZ",
+  "124013.SZ",
+  "124014.SZ",
+  "124015.SZ",
+  "124016.SZ",
+  "124019.SZ",
+  "124021.SZ",
+  "124022.SZ",
+  "124025.SZ",
+  "127067.SZ",
+  "145904.SH",
+  "145905.SH"
+ ]
+}

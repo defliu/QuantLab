@@ -1,0 +1,30 @@
+你是 QuantLab 项目的量化策略验收员。你上一轮（一审）对 P20 全天候策略 NAV 复投修复给出"不通过（暂缓粘贴部署）"，发现 F1-F8。TRAE 已按你的放行条件修复并重建产物。请做快速二审——只复查差异点，不全面验收。本次为纯代码审查：不要运行任何命令、不要写任何文件，证据用源码行号。
+
+【一审放行条件（你提的）】
+1. `_settle` 行情守卫（F2）；
+2. 成交反查接入 `_settle` + 账户持仓对账（F1+F3）；
+3. `datetime.now()` → `C.get_current_time()`（F5）；
+4. 重建产物 + 更新部署报告（F6/F8）。
+
+【修复声明（TRAE，均已落源码，逐行可查）】
+- F1+F3：`_settle` 重写——行情守卫（prices<4 腿 abort 留 placing 重试）+ 读账户 position（get_trade_detail_data(acct,'stock','position')，字段 m_strInstrumentID/m_nVolume/m_nCurrentPosition 兜底）作为账本唯一真相，反查失败 fallback 目标份额并打 WARN；
+- F5：新增 `_now_hhmm(C)`——优先 `C.get_current_time()`（datetime 对象或 epoch 秒/毫秒时间戳多形态兼容），异常才 fallback datetime.now()；handlebar 已改用；
+- F4：`_estimate_nav` docstring 修正——TRAE 实测首仓现金残留 7.5%（7540 元，基于 2026-09-11 收盘价 510300=4.579/511010=141.146/511880=100.794/518880=8.943 计算：目标份额 6500/200/200/1600 份，持仓市值 92460，现金 7540），实盘年化预期 4.40%−0.3~0.4pp（修正一审的 14.6%）；
+- F6/F8：部署报告已更新（分钟 K 必需 + BUILD_TAG=20260913-183327 + 现金残留预期）。
+
+【复审对象（只读）】
+- 源码：D:\QuantLab\projects\Project_20_全天候底仓\strategy\strategy_all_weather_src.py
+- 部署报告：D:\QuantLab\projects\Project_20_全天候底仓\specs\部署报告_V1_20260913.md
+
+【复审点（逐项 PASS/FAIL + 证据=代码行号）】
+R1. F2 行情守卫：_settle 开头是否有 len(prices)<len(LEGS) abort 且不写账本。
+R2. F1+F3 position 对账：_settle 是否读 position 并按实际持仓写账本；反查失败 fallback 是否安全（不产生错误账本）；字段兜底是否合理。
+R3. F5 QMT 时间：_now_hhmm 是否优先 C.get_current_time()，多形态处理是否正确；handlebar 是否已弃 datetime.now() 直用。
+R4. F4 现金残留：用 TRAE 提供的价格与份额核验 7.5% 计算是否合理（逻辑核验即可，不重跑）。
+R5. 回归：handlebar 主流程（触发→目标→下单→placing）未被破坏；_settle 调用链完整；除 _now_hhmm 内部 fallback 外无 datetime.now() 直用。
+R6. 部署报告：分钟 K / BUILD_TAG=20260913-183327 / 现金残留预期是否已同步。
+
+【输出】
+- 唯一输出文件：D:\QuantLab\data\schedules\de_acceptance_ab_r2_20260913.md；
+- 结构：一、总评（通过/有条件通过/不通过，一句话结论——是否可放行模拟盘验证单）；二、复审点逐项表（R1-R6，PASS/FAIL/证据）；三、残留问题（若有，含严重度与修复建议）。
+- 完成后直接写文件并退出，不要询问下一步、不要等待确认。
