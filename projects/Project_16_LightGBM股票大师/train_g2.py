@@ -74,16 +74,24 @@ def build_panel(limit_rows=0, max_date=None):
     base_feat = meta_v3["feature_cols"]
     log(f"    v3 基础 {len(p):,} 行, 特征 {len(base_feat)}（最新 {p['trade_date'].max().date()}）")
 
-    # ---- 6 个 enh 独有慢变量：feature_panel_v3_enh asof（每股最后可用值）----
-    log("[2/4] 并入 enh 慢变量（asof）...")
-    enh = pd.read_parquet(ENH_PANEL, columns=["trade_date", "ts_code"] +
-                          [c for c in ["dv_year_sum", "ex_days_since", "ex_yoy", "fc_pchange",
-                                       "industry_mom20", "turnover_rank"] if c in pd.read_parquet(ENH_PANEL).columns])
+    # ---- 6 个 enh 独有慢变量：feature_panel_v3_enh 逐行 asof（T-20260910-106 修复）----
+    # 原实现取「每股最后可用值」广播到全部历史行：旧行拿到未来值（look-ahead）+ 特征分布
+    # 与推理端不一致，与 08-25 原版训练（直接读 enh 面板=逐行 as-of）和实盘推理
+    # （build_g2_daily asof）口径冲突，09-07 周更越训越差的根因（T-20260909-002）。
+    # 现改为 merge_asof backward：每行取该股 trade_date<=T 的最近一期 enh 值。
+    log("[2/4] 并入 enh 慢变量（逐行 asof，修复广播漂移 T-20260910-106）...")
+    import pyarrow.parquet as pq
+    enh_avail = pq.ParquetFile(ENH_PANEL).schema_arrow.names
+    enh_cols = [c for c in ["dv_year_sum", "ex_days_since", "ex_yoy", "fc_pchange",
+                            "industry_mom20", "turnover_rank"] if c in enh_avail]
+    enh = pd.read_parquet(ENH_PANEL, columns=["trade_date", "ts_code"] + enh_cols)
     enh["trade_date"] = pd.to_datetime(enh["trade_date"])
     enh_feats = [c for c in enh.columns if c not in ("trade_date", "ts_code")]
-    enh_last = enh.sort_values("trade_date").groupby("ts_code").tail(1).set_index("ts_code")
-    p = p.merge(enh_last[enh_feats], left_on="ts_code", right_index=True, how="left")
-    log(f"    enh 慢变量 {len(enh_feats)} 个（asof {enh['trade_date'].max().date()}）")
+    enh = enh.drop_duplicates(["ts_code", "trade_date"], keep="last").sort_values("trade_date")
+    p = p.sort_values("trade_date")
+    p = pd.merge_asof(p, enh, on="trade_date", by="ts_code", direction="backward")
+    log(f"    enh 慢变量 {len(enh_feats)} 个（逐行 asof，面板到 {enh['trade_date'].max().date()}，"
+        f"行级覆盖率 {p[enh_feats].notna().all(axis=1).mean():.4f}）")
 
     # ---- 10 个 g2 增强因子：龙虎榜/北向/研报/真实F2/同花顺板块 ----
     log("[3/4] 构建 g2 增强因子（lhb/north/rc/mf/ths）...")
@@ -164,7 +172,9 @@ def build_panel(limit_rows=0, max_date=None):
     if max_date:
         p = p[p["trade_date"] <= pd.Timestamp(max_date)]
     if limit_rows:
-        p = p.iloc[: limit_rows]
+        # 跨期随机抽样（冒烟用）：面板按日期排序后 head(N) 只会落在 2019 年初，
+        # 训练窗 mask 全空导致冒烟必挂；随机抽样保证覆盖 train/valid/test 三窗
+        p = p.sample(n=limit_rows, random_state=0).sort_values("trade_date")
     feat = list(dict.fromkeys(base_feat + enh_feats + [c for c in G2_EXTRA if c in p.columns]))
     return p, feat
 

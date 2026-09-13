@@ -111,6 +111,12 @@ try {
                     # 现在每天增量入库后刷新面板到最新交易日，次日 09:15 候选自动用最新数据；约 10 分钟。
                     # 模型保持周更 promote（1 天增量分布差异可接受），verify 已放宽 ≤7 自然日差异不告警。
                     Run-Py "refresh_panel_v3.py"
+                    # ---- 每日刷新 enh 面板（T-20260912-001）：33 特征慢变量（train_g2 / build_g2_daily 消费）----
+                    # 背景：enh 面板此前无 writer，冻结在 8/14，实盘行业动量/换手排名/事件特征停摆一月。
+                    Run-Py "refresh_panel_enh.py"
+                    if ($LASTEXITCODE -ne 0) {
+                        Log "!! [enh面板] refresh_panel_enh 失败，G2 慢变量沿用旧面板（asof 落后），需核查"
+                    }
                     Run-Py "deploy_predict.py --model v3 --top-k 10"
                 } else {
                     Log "未能确定最新交易日，跳过 merge/deploy"
@@ -126,6 +132,14 @@ try {
                 Log "!! [对账] 持仓不一致或成交记录异常，需人工核查（见 data/reconcile_<date>.md）"
             } else {
                 Log "[对账] 持仓一致，无异常"
+            }
+            # ---- 资金池滚动（DE 体检 P1-2，2026-09-11）：初始+已实现+浮盈 → strategy_capital.json ----
+            # 历史：strategy_capital.py 无调度调用 → 资金池恒 95,897.60 超配；对账后更新保证买入预算真实。
+            Run-Py "strategy_capital.py"
+            if ($LASTEXITCODE -ne 0) {
+                Log "!! [资金池] strategy_capital.py 更新失败，需人工核查（data/strategy_capital.json）"
+            } else {
+                Log "[资金池] strategy_capital.json 已按当日已实现+浮盈滚动"
             }
             # ---- 模型-面板同步校验（T-20260828-005 固化）：面板重建后若正式模型未同步 promote 则告警 ----
             # 防"新面板喂旧模型"=训练/推理分布不一致（8/14 冻结面板教训）；retrain 后 promote 前会在此报警。
@@ -174,6 +188,13 @@ try {
                 $skipV13 = $true
             } else {
                 $skipV13 = $false
+            }
+            # ---- 刷新 enh 面板（T-20260912-001）：train_g2 的 6 个慢变量来源，必须在 train_g2 之前 ----
+            # 失败不跳过 G2 重训：旧 enh 面板若为近日刷新（daily 链维护）仅落后数日，可接受；
+            # refresh_panel_enh 自带校验门禁（行数坍缩/口径漂移/负值回归），失败保留旧面板。
+            Run-Py "refresh_panel_enh.py"
+            if ($LASTEXITCODE -ne 0) {
+                Log "!! [周更重训] refresh_panel_enh 失败（exit=$LASTEXITCODE）—— train_g2 将用旧 enh 面板（asof 落后天数见训练日志），需核查"
             }
             # 写入带日期后缀的候选模型（lgb_model_v3_retrain_YYYYMMDD.txt），不覆盖正式模型 lgb_model_v3.txt
             if (-not $skipV13) {

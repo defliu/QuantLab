@@ -917,3 +917,33 @@ ebalance_g2.py 买入循环低开校验（gap_guard）：极端低开<=-5%跳过
 - **调度**：融合换仓 TW 任务 051bc2d9 **09:52**（09-10 由 09:50 后移 2 分钟避 G2 同刻下单）+ 融合日终对账 18c0c8d2 15:45；盘前成本锚 ps1 增第三腿 gen_positions_cfg_ens.py（UTF-8 BOM 已校验）；push_fill_card.py 增 --source ens。
 - **观察期（≥5 交易日）**：09:00 三腿 exit=0 → 09:52 融合换仓首跑 → 盘中心跳/peak → 15:45 对账盯 orphan/差额/同票双账本；G2 桥不受影响（仍 184724 心跳正常）。
 - **未提交 git**：融合七件套 + g2_config 改动 + 3 处 ps1/py 修改 + 资金分配表/看板/VERSIONS/知识库，待用户确认后提交。
+## 2026-09-11 · 「5% 触价换票」两步实证：证伪结题（T-20260911-001）
+
+- **结论**：「单票 3~5 交易日内触价 +5% 就换票」不可行。**「换票/出场规则不产生 alpha」清单 +1（触价止盈版）**，与 PK_OUT/减仓/持有期软化/止盈线上移/追盈优先同族。维持现行出场规则：V1.3 = live_TP15 / G2 = N15-live_trail。
+- **第一步（逐笔，`scan_mfe_tp5.py`，报告 results/MFE触价统计_TP5_20260911.md）**：候选池无触价概率 edge——top10 vs 全市场基准提升仅 +0.1~+0.8pp（红线>=60 最高 +2.8pp），触价率主要由波动驱动（基准 Q1→Q5 11%→39% 单调）；逐笔唯一正收益区=红线子集 touch_stop（>=58 H5 +0.59%/笔）但 **2026 YTD 全转负**（H3 -0.44%/H5 -0.51%）且触价率跑输同年基准。
+- **第二步（组合层，`run_tp5_rotation.py`，报告 results/TP5短持有期轮动回测_20260911.md）**：N=3/5 共 12 组全部 ≤+0.024% 日超额，**N=3 配对 t 4/6 组显著为负**（p=0.002~0.048），与 T-20260904-001「持有期越短越差」单调性第三次互证；touch_TP5_N10 +0.104% 不及基线 live_TP15_N10 +0.132%（配对 t p=0.76 不显著，thr58 下 2024 转负 -0.124%）——胜率 68.5% 的提升被盈亏比 0.85 的截断抵消。逐笔表面收益来自高换手重叠暴露+无资金约束，组合层不可复制。
+- **副产品（仅备查，禁止凭此改实盘）**：fixed_TP5_N10（开盘+5% 固定止盈）thr60 +0.130% 与基线统计打平（p=0.98）且分年更均衡（24/25/26 = +0.07/+0.11/+0.21 vs 基线 -0.08/+0.25/+0.11），但 thr58 弱于基线；将来纸面前向若加臂可作候选。
+- **引擎增量**：`scan_rotate_cost_real.py` 新增 `touch_tp` 出场模式（-7% 开盘止损 + 盘中高点≥成本×(1+TP) 触价卖，跳空按开盘成交，T+1 锁 T+2 起可卖），默认关闭；官方口径零影响由 4/4 基线锚点精确复现验证（fixed/live_TP15_N10 × thr58/60 全 PASS）。
+- **方法论收获**：配对 t 检验已固化进 run_tp5_rotation.py（各组日收益 vs 同红线基线 ttest_rel），后续出场规则扫描复用该模板；首达过程直觉（换票规则零期望）+ 组合层资金约束复核缺一不可。
+- **单源声明**：gpsj 备用源不可用（No module named 'duckdb'），结论仅基于 astock，未经备用源交叉验证。
+
+## 2026-09-12 · train_g2 enh 慢变量 asof 漂移修复 + 学习恢复实证（T-20260910-106）
+
+- **根因坐实**：`train_g2.py` 把 6 个 enh 慢变量按「每股最新值」广播到全部历史行——08-25 原版训练（overnight_opt 直接读 enh 面板=逐行 as-of）与实盘（build_g2_daily asof）都是逐行口径，唯独周更重训脚本偏了 → 09-07 周更越训越差（TOP2 +0.039% vs live +0.149%）被网格寻优发现、回滚至 08-25（T-20260909-001/002）。
+- **修复**：`pd.merge_asof(on="trade_date", by="ts_code", direction="backward")` 逐行取值；附带修复 `--limit` 冒烟隐性 bug（head(N) 全落 2019 年 → 训练窗 mask 全空必挂，改跨期随机抽样 sample(random_state=0)）。
+- **三层验证**：①面板级：2 万行抽样与 enh 面板直查 **0 不一致**；2021 年 100% 行值改变（000001.SZ turnover_rank 唯一值 1→243=漂移面实证）；面板末日 backward 命中 99.62%（余 0.38% 为末日无数据的停牌/退市股=正确语义）；②冒烟链路通（strict 门禁正确 FAIL 5 万行样本且不提升）；③**全量重训 20260912_1905t（不 promote）：同窗 strict 门禁全 PASS——IC 0.1503 vs live 0.1273、尾部IC 0.1730 vs 0.1711、TOP2 +0.0174(n=362) vs +0.0117(n=351)，分位收益单调（Q1 -0.0018→Q5 +0.0072）**。同一数据同一脚本唯一变量=asof 修复 → 学习恢复实证。
+- **生效路径**：live 指针未动（仍 08-25 回滚版）；09-14（周一）17:00 quant_weekly_retrain 经「备份→train_g2 --promote（strict）→gate_strategy_layer 策略层复核（FAIL 自动回滚）」双门禁自然生效。
+- **新发现（T-20260912-004）**：feature_panel_v3_enh.parquet **全库无 writer**（08-25 一次性构建，冻结 2026-08-14），refresh_panel_v3 只刷 27 特征基础面板；训练与实盘共用同一过期面板故口径一致（不构成 train-serving skew），但 6 个慢变量绝对新鲜度滞后近月且随时间恶化，需补刷新链路。
+- **其余 tail(1) 用法核查**：build_g2_daily / merge_live_features / refresh_panel_v3 均为单日推理/增量刷新场景（取「截至今日」值=正确语义），非训练侧漂移；versions/ 下为历史快照不动。
+- 产物：候选模型 `models/lgb_model_v3_g2_strong_real_20260912_1905t.txt`（strict PASS 但未 promote，留作 09-14 对照）+ 日志 `data/real/train_g2_asoffix_20260912.log`。未 commit。
+
+## 2026-09-12 · enh 面板刷新链路落地 + build_features_v2 NaT 溢出根因修复（T-20260912-004）
+
+- **口径考古（原 builder 脚本遗失，git 各提交仅消费端）**：33 特征 = 27 基础 + 6 enh。实证（3+5 抽样日）：4 事件特征（ex_days_since/fc_pchange/dv_year_sum 事件段 + ex_yoy）与 turnover_rank（turnover 全市场 rank pct）与现行 `build_features_v2.py` 链路 **100% 复现**；**industry_mom20 原始口径不可精确恢复**——原 stock_basic 08-23 vintage 随研发电脑遗失（本机 08-28 23:47 更新过）。最佳近似 = stock_basic.industry 当前映射 + 全市场**未复权** close 20 日动量按 (trade_date, industry) 等权均值，corr 0.983~0.9966、组内 diff 恒定（纯聚合层差异）；881 同花顺行业指数口径 corr 仅 0.79 被排除。
+- **根因 bug（build_features_v2.py 两处，已修）**：`NaT.astype('timedelta64[D]').astype('float64')` = **-9.2e18 而非 NaN**（numpy NaT 转 float 的语义坑），`np.isnan` 拦不住 → int32 溢出 -2147483648。污染 ex/fc/sc_days_since 全期 3.73%/0.30%/6.09% 行（merge_asof 无匹配 = 首事件晚于面板日的股票）。**08-23 面板诞生即有**（冻结面板同样污染，live 训练/推理同源一致 → 不构成 skew）；尾部干净（ex 07-20 后 0 行、sc 近 30 日仅 15 行）→ 实盘影响 ≈0。修复：`td[np.isnat(td_raw)] = np.nan` 再 astype；迁移验证：全部变更行与迁移行一一对应（-2^31→9999 / NaN→0），零意外变更。
+- **writer 落地**：`refresh_panel_enh.py`（唯一 writer）——v2 面板切片（27+4 事件）+ turnover_rank（主库区原生值 / 增量库 vol+float_share 反推，增量库仅 OHLCV）+ industry_mom20（近似口径）→ 校验门禁（v2 新鲜度≤7 天、NaN≤2%、days_since 负值回归=0、重叠期末 3 日 5 特征复现≥99%、industry_mom20 corr≥0.90、行数≥90%）→ 备份 → 覆盖 → meta 更新（features_v3_enh.json 含 refreshed_at/口径注记）。**失败保留旧面板 exit 1（fail-loud）**。
+- **设计决策：全量重建而非冻结历史+追加**——4 事件特征/turnover_rank 确定性复现，industry_mom20 vintage 偏差全期均匀且原映射不可恢复；全量重建单 writer、自愈（stock_basic 更新后全期一致重聚合）、与 v2/v3 面板周重建机制同构。
+- **挂链**：`run_scheduled.ps1` daily 16:45（refresh_panel_v3 后、deploy_predict 前，失败仅告警不阻塞 V1.3——V1.3 读 _v3 基础面板不消费 enh）+ retrain 周一 17:00（train_g2 前，失败告警不跳过）。含中文 .ps1 编辑后 BOM 校验完好（EF BB BF）。
+- **生产面板已刷**：feature_panel_v3_enh.parquet → 2026-09-11（4,807,456 行，2019-01-10 起），与 v3 基础面板网格完全一致；备份 .bak_20260912_224322。冒烟：train_g2 --limit 50000 读新面板通过（enh 行级覆盖率 0.9911，strict FAIL=小样本正确行为）。
+- **数据天花板（刷新链的固有约束）**：astock finance forecast/express max ann_date 2026-07-29、dividend/fina_indicator/share_change 2026-08-21；ths_daily 到 08-21；主库日线到 08-21、增量库 08-24 起仅 OHLCV。事件特征靠 asof 语义自然衰减（无新事件=旧值持续，语义正确）；industry_mom20 用主库+增量 close 无天花板。
+- **生效路径**：09-14 周更重训自然吃 09-11 数据（与 asof 修复候选 20260912_1905t 同链双门禁）；live 模型（08-25）serve 消费经 build_g2_daily asof 读 enh 面板 → 修复后慢变量恢复到 09-11。验证脚本 `scripts/_tmp_*.py` ×7 留存（口径复现/变体扫描/迁移验证）。未 commit。

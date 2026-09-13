@@ -52,5 +52,13 @@
     "ex_days_since"
   ],
   "note": "下一轮重训：用本特征集替换 build_features_v2.FEATURE 定义后，重跑 build_features_v2 → train_optuna，对比 IC/ICIR。当前 v2 模型仍可用，未被覆盖。",
-  "n_rows": 4750508
+  "n_rows": 4807456,
+  "date_range": [
+    "2019-01-10",
+    "2026-09-11"
+  ],
+  "refreshed_at": "2026-09-12 22:43:30",
+  "refresh_writer": "refresh_panel_enh.py（T-20260912-001）",
+  "industry_mom20_note": "stock_basic.industry 当前 vintage + 全市场未复权 20 日动量等权均值；原始 08-23 映射快照遗失，相关 0.983~0.9966，见 T-20260912-001",
+  "turnover_rank_note": "主库区原生 turnover_rate；增量区 vol/float_share 反推（F6 已验证口径）"
 }

@@ -195,7 +195,11 @@ def main():
         for col in FIN_FEATURES:
             fin_vals[col][idx] = m[col].astype("float32").values
         # 用 numpy 计算天数差（避免 Series 按 index 对齐导致长度翻倍）
-        td = (sub["trade_date"].values - m["ann_date"].values).astype("timedelta64[D]").astype("float64")
+        # T-20260912-001 修复：NaT.astype(float64) 是 -9.2e18 而非 NaN，np.isnan 拦不住，
+        # int32 转换溢出成 -2147483648（该股首份财报公告晚于面板日的行）。显式 NaT→NaN。
+        td_raw = (sub["trade_date"].values - m["ann_date"].values).astype("timedelta64[D]")
+        td = td_raw.astype("float64")
+        td[np.isnat(td_raw)] = np.nan
         fin_days[idx] = np.where(np.isnan(td), 9999, td).astype("int32")
     for col in FIN_FEATURES:
         feats[col] = fin_vals[col]
@@ -228,7 +232,10 @@ def main():
                 sub[["trade_date"]], g[[ev_key] + ev_cols],
                 left_on="trade_date", right_on=ev_key, direction="backward",
             )
-            td = (sub["trade_date"].values - m[ev_key].values).astype("timedelta64[D]").astype("float64")
+            # T-20260912-001 修复：NaT.astype(float64) 是 -9.2e18 而非 NaN → int32 溢出 -2147483648
+            td_raw = (sub["trade_date"].values - m[ev_key].values).astype("timedelta64[D]")
+            td = td_raw.astype("float64")
+            td[np.isnat(td_raw)] = np.nan
             days[idx] = np.where(np.isnan(td), 9999, td).astype("int32")
             for c in ev_cols:
                 out[c][idx] = m[c].astype("float32").values
