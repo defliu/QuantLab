@@ -1,0 +1,63 @@
+{
+  "date": "20260911",
+  "account_id": "70180771",
+  "generated_at": "2026-09-11 15:51:50",
+  "fills": [
+    {
+      "strategy_order_id": "P16_20260911_0001",
+      "code": "600409.SH",
+      "action": "BUY",
+      "vol": 7400,
+      "price": 6.37,
+      "status": "FILLED",
+      "reason": "deal confirmed"
+    },
+    {
+      "strategy_order_id": "P16_20260911_0002",
+      "code": "300138.SZ",
+      "action": "BUY",
+      "vol": 4100,
+      "price": 11.44,
+      "status": "FILLED",
+      "reason": "deal confirmed"
+    }
+  ],
+  "pending": [],
+  "orphans": [
+    {
+      "code": "300475.SZ",
+      "vol": 200,
+      "hint": "账户比融合账本多 200 股（孤儿/重复建仓，融合不主动处理，仅预警）"
+    }
+  ],
+  "ledger": {
+    "300138.SZ": 4100,
+    "600409.SH": 7400
+  },
+  "asset": {
+    "account_id": "70180771",
+    "date": "20260911",
+    "updated_at": "2026-09-11 15:00:02",
+    "total_asset": 9991318.06,
+    "cash_available": 9865967.06,
+    "market_value": 126240.0
+  },
+  "issues": [
+    "持仓差额: 300475.SZ 账户比账本多 200 股",
+    "发现 1 只持仓超额（孤儿/重复），融合不主动处理，仅预警"
+  ],
+  "fills_total": 2,
+  "fills_by_status": {
+    "FILLED": 2
+  },
+  "pending_count": 0,
+  "account_positions": {
+    "600409.SH": 7400,
+    "001266.SZ": 0,
+    "300138.SZ": 4100,
+    "300475.SZ": 200
+  },
+  "deltas": {
+    "300475.SZ": 200
+  }
+}

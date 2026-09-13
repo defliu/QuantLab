@@ -2,11 +2,11 @@
   "last_main_date": "2026-08-21",
   "incremental_range": [
     "20260822",
-    "20260910"
+    "20260911"
   ],
   "source": "miniQMT xtdata",
-  "updated_at": "2026-09-10 16:35:28",
-  "n_rows": 81564,
+  "updated_at": "2026-09-11 16:33:38",
+  "n_rows": 87390,
   "n_stocks": 5826,
   "fields": [
     "open",
