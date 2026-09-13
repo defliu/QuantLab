@@ -1009,3 +1009,19 @@ ightly_check.py check_e 加 E6：读快照，conflict 任务仍 Active → FAIL�
 - **P2-13**：_do_rollback 指针写入非原子。修复：tmp+os.replace。
 - **剩余 P2 记录待办**（DE 报告③节）：V1.3 臂 N10 vs 实盘 N5 口径；互斥读文件 fail-open 告警；漂移 argmax 无容差；gate 回滚后漂移复查用被拒候选；ENS 预算基数未扣保留持仓（预存分歧）；回滚 CSV 回填 --hold 10 vs N15。
 - **DE 设计建议（采纳记录）**：统一前向评估数据底座（共享 schema）；动作失败与触发同级 fail-loud；调度退出码矩阵文档化；gate/rollback 改指针后重读；BOM 校验自动化。
+
+## 2026-09-13 晚 · P2 技术债批量清理（T-20260913-001 收尾，DE 审查③节）
+
+逐项处理 DE 审查报告的 P2 项（P2-1/6/13 已在上轮修复）：
+- **P2-2 已修**：gate FAIL 回滚后漂移复查重读 live 指针（），live ≠ 候选则跳过（复查被拒候选无意义）。
+- **P2-3 已修**：check_enh_freshness exit 1（数据缺失 fail-safe 放行）与 exit 0（新鲜）在 ps1 日志区分，不再误导「视为新鲜」。
+- **P2-4 已修**：is_frozen 文件存在但损坏 → 打印告警（保留 fail-open 但可见，防静默解冻）。
+- **P2-5 已修**：①rebalance_g2 ENS 互斥读文件缺失/失败 → 告警（双买风险回归可见）；②rebalance_ens _update_hold_dates 补陈旧条目清理（对齐 G2 版，防 ENS 陈旧条目让 G2 过度排除）。
+- **P2-7 已修**：config_drift_recheck 漂移判定加 DRIFT_MARGIN=0.0005（历史最优与扫描最优 excess 差>边际才判漂移，防微差噪声误记）。
+- **P2-8 已注**：降级闸 ARMS 口径注记（V1.3 臂 N10=候选口径 vs 实盘 N5 到期制，有意为之与 ab_stats 同源）。
+- **P2-9 已注**：rollback_check_g2 docstring 注记（paper_forward_live ret 为 N10 回填 vs G2 live N15，已知近似，待统一前向底座按臂分 hold）。
+- **P2-10 已注**：tw_schedule_snapshot owner_boundary 澄清「TW 触发 QuantLab 脚本 ≠ 双写，仅直接写同一产物才冲突」。
+- **P2-11 已修**：feature_health_weekly --check 严格只读（json/md 均不落盘）。
+- **P2-12 已列待办**（非本批引入，涉口径一致，不碰实盘）：ENS 预算基数未扣保留持仓投入（G2 P1-4 修复未同步）、ENS 无大盘门控、ENS hold_dates 缺失 fail-open 即卖（G2 fail-safe 跳过）——列入下批对齐清单。
+- **P2-14 接受**：资金池 realized 不含费 vs positions_cfg 成本含费，G2/ENS 同口径继承近似，两桥一致可接受。
+- **P2-15 已注**：设计文档澄清标记文件每日幂等重写（非仅新触发才写）。

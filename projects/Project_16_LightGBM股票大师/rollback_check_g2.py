@@ -1,17 +1,21 @@
 # coding: utf-8
-"""G4 观察期回滚检查（2026-09-09 门禁升级配套；2026-09-13 深度劣化自动回退 T-20260913-001 M3）。
+"""G4 观察期回滚检查（2026-09-09 门禁升级配套；2026-09-13 深度劣化自动回退 T-20260913-001 M3；09-13 晚 P0-1/P1-2/P2-1 修复）。
 
 用法：
   python rollback_check_g2.py            # 检查并输出建议（只读）
   python rollback_check_g2.py --apply    # 观察期结束且前向劣于基线时，回退到 prev_model（需人工确认）
-  python rollback_check_g2.py --auto     # 深度劣化（劣于基线 > AUTO_THRESHOLD）自动回退 + 飞书；轻度劣化仍人工
+  python rollback_check_g2.py --auto     # 深度劣化（劣于基线 > AUTO_THRESHOLD）连续 AUTO_STREAK_DAYS 日自动回退 + 飞书；轻度仍人工
 
 逻辑：
   读 data/g2_live_model.json 的 trial 字段（promote 时写入）：
     观察期（ends_after_days=10 个交易日）结束后，统计观察期内该模型在 paper_forward_live.csv
-    中选出的候选前向收益（fwd_ret 均值），与 trial.prev_top2_ret 对比：
-      前向均值 < prev_top2_ret  -> 建议回退（轻度）或自动回退（深度劣化且 --auto）
+    中选出的候选前向收益（ret 列均值，真实 CSV schema：date/code/.../ret/hold/rank），与 trial.prev_top2_ret 对比：
+      前向均值 < prev_top2_ret  -> 建议回退（轻度）或自动回退（深度劣化且 --auto 且连续3日）
       前向均值 >= prev_top2_ret -> 通过观察期，移除 trial 字段
+
+口径注记（P2-9）：paper_forward_live.csv 的 ret 由 paper_forward_daily.ps1 以 --hold 10 回填（N10 口径），
+而 G2 live 实盘持有期 N15——评估窗口与实盘持有期不一致，属已知近似（prev_top2_ret 同为 N10 口径，
+对比同源公平；待统一前向数据底座时按臂分 hold 解决）。
 """
 import argparse
 import copy

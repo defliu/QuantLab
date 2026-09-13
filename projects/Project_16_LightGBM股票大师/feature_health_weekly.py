@@ -120,11 +120,13 @@ def main():
         "alerts": alerts,
         "watches": watches,
     }
-    os.makedirs(os.path.dirname(OUT_JSON), exist_ok=True)
-    with open(OUT_JSON, "w", encoding="utf-8") as f:
-        json.dump(report, f, ensure_ascii=False, indent=2)
+    # P2-11 修复：--check 只读评估不落盘（dry-run 语义严格化）；非 check 才写 json/md
+    if not args.check:
+        os.makedirs(os.path.dirname(OUT_JSON), exist_ok=True)
+        with open(OUT_JSON, "w", encoding="utf-8") as f:
+            json.dump(report, f, ensure_ascii=False, indent=2)
 
-    print("[3/3] 生成周报 ...")
+    print("[3/3] 生成周报 ..." if not args.check else "[3/3] dry-run：不落盘")
     lines = [
         "# 特征级 IC/覆盖率周报",
         "",
@@ -155,11 +157,15 @@ def main():
         "",
         "> 仅监控告警，特征去留需人工裁决；告警特征在下一轮重训前建议核查数据源/口径。",
     ]
-    with open(OUT_MD, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines))
+    if not args.check:
+        with open(OUT_MD, "w", encoding="utf-8") as f:
+            f.write("\n".join(lines))
 
-    print("    JSON:", OUT_JSON)
-    print("    MD  :", OUT_MD)
+    if not args.check:
+        print("    JSON:", OUT_JSON)
+        print("    MD  :", OUT_MD)
+    else:
+        print("    [CHECK] 仅评估：json/md 不落盘，未推送")
     print("    ALERT:", len(alerts), "| WATCH:", len(watches))
     if alerts and not args.check:
         _notify("【特征健康周报】%d 个特征 ALERT（近4周IC趋零且缺失率>5%%）：%s\nWATCH %d 个：%s" % (

@@ -210,6 +210,9 @@ try {
             if ($LASTEXITCODE -eq 2) {
                 Log "!! [enh新鲜度] enh 面板落后 >7 天 —— 阻断 G2 重训（train_g2 跳过），先核查 refresh_panel_enh/daily 链"
                 $skipG2 = $true
+            } elseif ($LASTEXITCODE -eq 1) {
+                # P2-3 修复：exit 1 = 数据缺失 fail-safe 放行（不是"新鲜"），须告警区分
+                Log "!! [enh新鲜度] 无法判定（merged_daily_full 缺失，fail-safe 放行）——继续 G2 重训，但需核查数据链"
             } else {
                 Log "[enh新鲜度] enh 面板新鲜，继续 G2 重训"
             }
@@ -325,8 +328,15 @@ try {
             }
             # ---- 配置漂移复查（2026-09-13 立，T-20260913-001 P1）：G2 promote 成功后复查最优配置是否漂移 ----
             # 只登记不改实盘；3 个关键邻域点（N10/15/20 × live_trail）约 30 分钟。
-            # 用 $g2New（本轮 promote 后指针）判断本轮是否成功 promote；PowerShell 变量脚本级作用域，内层已赋值。
-            if ($g2New -and (Test-Path $g2New)) {
+            # P2-2 修复：gate 段可能已把 live 回滚（FAIL → prev_model），此时 $g2New 指向的是被拒候选，
+            #            复查被拒候选无意义。故此处重读 live 指针，与 $g2New 比对，已回滚则跳过并说明。
+            $g2CurFinal = $null
+            if (Test-Path $g2LivePointer) {
+                try { $g2CurFinal = (Get-Content $g2LivePointer -Raw | ConvertFrom-Json).model_path } catch { }
+            }
+            if (-not $g2New -or -not $g2CurFinal -or $g2New -ne $g2CurFinal) {
+                Log "!! [配置漂移复查] G2 promote 被 gate 回滚或指针异常（live=$g2CurFinal），跳过本轮漂移复查（复查被拒候选无意义）"
+            } elseif ($g2New -and (Test-Path $g2New)) {
                 $g2Meta = $null
                 try { $g2Meta = (Get-Content $g2LivePointer -Raw | ConvertFrom-Json).meta_path } catch { }
                 if ($g2Meta -and (Test-Path $g2Meta)) {

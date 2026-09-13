@@ -36,6 +36,9 @@ MERGED = os.path.join(DC.LIVE_DIR, "merged_daily_full.parquet")
 MARK_FILE = os.path.join(REAL, "paper_forward_downgrade.json")
 
 # 臂 -> (csv 相对文件名, 持有期, 对应 rebalance 策略 key)；路径运行时 join REAL（测试可覆盖 D.REAL）
+# 口径注记（P2-8 确认）：G2 臂 N15=live N15 一致；ENS 臂 N10=live N10 一致；
+# V1.3 臂 N10=纸面候选口径（ab_v3enh 按 N10 回填），与实盘 rebalance_daily HOLD_DAYS=5（到期制）不一致——
+# 评估窗口比实盘长，属"候选口径"有意为之（与 paper_forward_ab_stats 三臂同源），降级判定按候选口径统一。
 ARMS = {
     "G2": ("paper_forward_live.csv", 15),
     "V1.3": ("paper_forward_ab_v3enh.csv", 10),
@@ -99,19 +102,28 @@ def load_bench(hold):
 
 
 def load_mark():
+    """读取标记文件；不存在 → 默认空标记；存在但损坏 → 告警 + 返回默认（N1 修复：不再静默）。"""
+    if not os.path.exists(MARK_FILE):
+        return {"_说明": "纸面前向自动降级闸标记（2026-09-13 立）"}
     try:
         with open(MARK_FILE, encoding="utf-8") as f:
             return json.load(f)
-    except Exception:
+    except Exception as e:
+        print("[降级闸] !! 冻结标记文件损坏/解析失败（%s），读取默认标记——请核查 %s（%s）" % (type(e).__name__, MARK_FILE, e))
         return {"_说明": "纸面前向自动降级闸标记（2026-09-13 立）"}
 
 
 def is_frozen(key):
-    """rebalance 消费方调用：策略 key（G2/V1.3/ENS）是否被降级闸冻结（只卖不买）。"""
+    """rebalance 消费方调用：策略 key（G2/V1.3/ENS）是否被降级闸冻结（只卖不买）。
+    P2-4 修复：文件存在但损坏/解析失败 → 打印告警（保留拍板的 fail-open 行为但须可见，防静默解冻）。"""
+    if not os.path.exists(MARK_FILE):
+        return False
     try:
-        mark = load_mark()
+        with open(MARK_FILE, encoding="utf-8") as f:
+            mark = json.load(f)
         return bool(mark.get(key, {}).get("frozen", False))
-    except Exception:
+    except Exception as e:
+        print("[降级闸] !! 冻结标记文件损坏/解析失败（%s），fail-open 视为未冻结——请核查 %s（%s）" % (type(e).__name__, MARK_FILE, e))
         return False
 
 
@@ -218,6 +230,21 @@ def _eval_all(check_only=False):
             any_trigger = True
             print("  [已冻结] %s 持续为负，保持冻结（不自动解除）" % key)
     if not check_only:
+        # N1 修复：标记文件损坏被 load_mark 归默认后，覆写会静默清掉冻结态——先备份损坏原件再写
+        try:
+            if os.path.exists(MARK_FILE):
+                with open(MARK_FILE, encoding="utf-8") as f:
+                    json.load(f)
+        except Exception as e:
+            import shutil as _sh
+            bak = "%s.bak_corrupt_%s" % (MARK_FILE, pd.Timestamp.now().strftime("%Y%m%d_%H%M%S"))
+            try:
+                _sh.copy2(MARK_FILE, bak)
+                print("!! [降级闸] 标记文件损坏，已备份到 %s 后重建（损坏前冻结态需人工核对，勿盲信重建后 frozen 状态）" % bak)
+                alerts.append("【降级闸】标记文件损坏已备份重建：%s —— 请人工核对原冻结态是否丢失" % os.path.basename(bak))
+            except Exception as e2:
+                print("!! [降级闸] 标记文件损坏且备份失败（%s）——未覆写，请人工处理" % e2)
+                return changed, any_trigger, alerts
         save_mark(mark)
     return changed, any_trigger, alerts
 

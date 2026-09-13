@@ -431,8 +431,11 @@ def build_plan(date, capital):
             if os.path.exists(G.ENS_HOLD_DATES_FILE):
                 with open(G.ENS_HOLD_DATES_FILE, encoding="utf-8") as f:
                     ens_held = set(str(k) for k in (json.load(f).get("hold_dates", {}) or {}).keys())
-        except Exception:
-            pass
+            else:
+                print("  !! [重叠规避] ENS 账本文件缺失（%s）——无法互斥，双买风险回归，需核查" % G.ENS_HOLD_DATES_FILE)
+        except Exception as e:
+            # P2-5 修复：读取失败必须告警（fail-open 只在不排除时容忍，但不可静默）
+            print("  !! [重叠规避] ENS 账本读取失败（%s）——无法互斥，双买风险回归，需核查" % e)
         cand = [p for p in pool if p["code"] not in kept and p["code"] not in ens_held]
         if ens_held:
             print("  [重叠规避] 跳过 ENS 账本持仓 %d 只: %s" % (len(ens_held), ",".join(sorted(ens_held))))

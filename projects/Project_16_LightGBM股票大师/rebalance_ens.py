@@ -98,6 +98,7 @@ def _update_hold_dates(plan, date):
     - 新买入（BUY 指令，且此前未持有/已清仓）→ 建仓日=date（运行日）
     - 被卖出（SELL 指令）→ 移除（清仓）
     - 既未买也未卖、仍在持仓 → 保留原建仓日（不重复记账）
+    - 账本中已不存在的 code（桥内风控卖出/手工纠正卖出不进 plan.sells）→ 清理陈旧条目（P2-5b，对齐 G2 版）
     返回更新后的 hold_dates dict（仅 live 时落盘）。"""
     hd = load_hold_dates()
     # 卖出清仓移除
@@ -108,7 +109,13 @@ def _update_hold_dates(plan, date):
         code = b.get("code", "")
         if code and code not in hd:
             hd[code] = date
-    # 保留活跃持仓中既有建仓日（load_g2_ledger 的持仓未动者自然保留）
+    # 清理陈旧条目：当前账本（plan.ledger）已不存在的 code（桥内 STOP/TP/TRAIL 出场、correction 卖出）
+    # P2-5b 修复：防 ENS 陈旧条目让 G2 持续过度排除该候选（G2 反向互斥读此文件）
+    active = set((plan.get("ledger") or {}).keys())
+    for code in list(hd.keys()):
+        if code not in active:
+            hd.pop(code, None)
+    # 保留活跃持仓中既有建仓日（load_ens_ledger 的持仓未动者自然保留）
     return hd
 
 
@@ -364,8 +371,11 @@ def build_plan(date, capital):
             if os.path.exists(G.G2_HOLD_DATES_FILE):
                 with open(G.G2_HOLD_DATES_FILE, encoding="utf-8") as f:
                     g2_held = set(str(k) for k in (json.load(f).get("hold_dates", {}) or {}).keys())
-        except Exception:
-            pass
+            else:
+                # N2 修复（对齐 rebalance_g2.py ENS 读取告警）：G2 账本缺失 → 无法互斥，双买风险回归须可见
+                print("  !! [重叠规避] G2 账本文件缺失（%s）——无法互斥，双买风险回归，需核查" % G.G2_HOLD_DATES_FILE)
+        except Exception as e:
+            print("  !! [重叠规避] G2 账本读取失败（%s）——无法互斥，双买风险回归，需核查" % e)
         # 候选池：排除已保留持仓 + G2 账本重叠票，按 total_new 降序
         cand = [p for p in pool if p["code"] not in kept and p["code"] not in g2_held]
         cand.sort(key=lambda p: p["total"], reverse=True)

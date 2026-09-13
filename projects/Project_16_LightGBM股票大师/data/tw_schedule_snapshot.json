@@ -17,7 +17,7 @@
     {"id": "f43df15a", "name": "模拟账号盘后监控", "cron": "5 15 * * MON-FRI", "status": "Paused", "role": "模拟盘监控（非 P16 主链）", "owner": "TW"}
   ],
   "owner_boundary": {
-    "note": "D:/QMT_POOL 下所有文件生成的调度唯一 owner = QuantLab schtasks；TW 侧仅做协调/下指令，不得直接写 QMT_POOL 产物（T-20260910-008 硬规则）",
+    "note": "D:/QMT_POOL 下所有文件**生成**的调度唯一 owner = QuantLab schtasks；TW 侧任务多为「协调/下指令」（调用 QuantLab 脚本、核对告警），不算产物写入者（P2-10 澄清：TW 触发 QuantLab 脚本 ≠ 双写，只有 TW 任务直接写同一产物文件才构成冲突，如已删的 eda9b0c3）。判定规则：conflict_with 字段标记「会直接写同一产物」的任务，仅此类 Active 才 FAIL（T-20260910-008 硬规则）。",
     "schtasks_exclusive": ["positions_cfg_*（Quant_P16_CfgPremarket_0900）", "heartbeat_alarm（Quant_P16_Heartbeat_Alarm）", "nightly_check（Quant_P16_NightlyCheck_0100）"]
   }
 }

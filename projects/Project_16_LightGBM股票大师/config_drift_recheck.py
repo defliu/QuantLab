@@ -120,14 +120,23 @@ def main():
         log("!! 无有效结果")
         return 1
     best = max(ok, key=lambda r: r["excess"])
-    drift = (best["N"] != hist["N"] or best["EXIT"] != hist["EXIT"])
+    # P2-7 修复：漂移判定加最小边际（DRIFT_MARGIN）——历史最优与扫描最优 excess 差不足边际时不判漂移，
+    # 防微差噪声（如 0.0002/日）被 argmax 误记为「漂移」。仅当非历史最优的邻域点显著更优才判漂移。
+    DRIFT_MARGIN = 0.0005  # 0.05pp/日 最小显著边际
+    config_changed = (best["N"] != hist["N"] or best["EXIT"] != hist["EXIT"])
+    hist_result = next((r for r in results if r["N"] == hist["N"] and r["EXIT"] == hist["EXIT"]), None)
+    hist_now = hist_result["excess"] if hist_result else None
+    drift = config_changed and hist_now is not None and (best["excess"] - hist_now) > DRIFT_MARGIN
     log("-" * 60)
     log("扫描最优: %sN/%s excess=%+.4f（n=%d）" % (best["N"], best["EXIT"], best["excess"], best["n"]))
     log("历史最优: %sN/%s" % (hist["N"], hist["EXIT"]))
+    if hist_now is not None:
+        log("历史最优当前 excess=%+.4f（扫描最优与其差 %+.4f，边际 %+.4f）" % (
+            hist_now, best["excess"] - hist_now, DRIFT_MARGIN))
     if drift:
-        log(">> 结论: **配置漂移** —— 新模型下最优配置偏移，仅登记候选，实盘不改（须纸面前向30笔+人工拍板）")
+        log(">> 结论: **配置漂移** —— 邻域非历史最优配置显著更优（>%.4f/日），仅登记候选，实盘不改（须纸面前向30笔+人工拍板）" % DRIFT_MARGIN)
     else:
-        log(">> 结论: 配置未漂移 —— 历史最优配置在新模型下仍最优/相近")
+        log(">> 结论: 配置未漂移 —— 历史最优配置在新模型下仍最优/相近（或无显著更优邻域点）")
 
     if args.dry_run:
         log("[dry-run] 未写报告")
