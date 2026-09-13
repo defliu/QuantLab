@@ -114,7 +114,7 @@
 - 国金QMT账号 `70180771`（新模拟账号）下多策略共存，每个策略锁定独立「虚拟子账户」本金（`capital_base`），只能动自己 ledger 的票和自己的额度，**绝不抢占他人资金、绝不纳管/卖出他人持仓**。另一账号 `67014907`（旧号，miniQMT 跑 Project_16 研发策略，2026-08-25 用户确认仍在用）不在本分配表内，独立管理。
 - **账户总额约束（硬）**：`Σ 各策略 capital_base ≤ 账户实际总资产`。唯一事实源 `D:/QuantLab/config/capital_allocation.yaml`（已从 QMT_STRATEGIES 迁移并删副本）；改后必须跑 `D:/QuantLab/scripts/check_capital_allocation.py`（退出码 0 才许部署）。
 - 账户 `total_capital` 必须在国金QMT客户端查「总资产」填入；未填只警告不报错，但生产环境必填。
-- 当前已锁：**仅 `atr_lowvol_equalweight`（ATR低波等权不杠杆）10 万**。`dual_band_6plus2`（主升浪6+2）已于 2026-08-05 淘汰，不再占用额度。新增/调额先改分配表再校验。
+- 当前已锁（2026-09-11 全量复查，唯一事实源 `config/capital_allocation.yaml`）：**atr_lowvol_equalweight（ATR低波等权不杠杆）10 万 / value_smallcap_v2（价值小盘V2）10 万 / huang529_breakout（黄氏529主升浪）10 万 / g2_bridge（G2大QMT文件桥，P16）10 万 / p16_ensemble_bridge（融合大QMT文件桥，P16）10 万，Σ=50 万 ≤ 账户总资产 1000 万**。`dual_band_6plus2`（主升浪6+2）已于 2026-08-05 淘汰，不再占用额度。新增/调额先改分配表再跑校验（退出码 0 才许部署）。
 - 共享账户无法物理阻止别策略花掉你的额度，真隔离需开子账户/多模拟账号；当前靠约定保证不超额。
 - **人读总表（与校验器同源，已同步至 QuantLab 枢纽）**：`D:/QMT_STRATEGIES/资金分配总表与约束.md`（镜像副本：`D:/QuantLab/资金分配总表与约束.md`）。
 
@@ -124,6 +124,7 @@
 - 不得为了提高买入频率、评分命中率或回测收益，绕过风控底线。
 - 个股止损 8%、组合最大回撤 15%、最长持有 60 天、单日最大换手 30%。
 - 涉及清仓、减仓、禁入期、状态持久化、跌停暂缓的逻辑改动，需要补充或更新测试。
+- **P16 止损口径例外（2026-09-11 注明）**：Project_16 系（V1.3/G2/融合）回测与实盘统一采用个股止损 **-7%**（`qmt_config.STOP_LOSS_PCT=-0.07`，桥内与回测同口径），比全局底线 8% **更严**，不违反红线；AGENTS 全局「8%」为其他策略/项目的通用底线。G2/融合桥出场顺序 STOP→TP(+15%)→TRAIL(8%激活+保本底线)。
 
 ## 配置系统（三级级联）
 
@@ -223,7 +224,7 @@
 
 ## DE（deveco）委派规范
 
-- **DE = DevEco Code CLI**（本机 `D:\Program Files\npm-global\deveco.cmd`），模型 `deveco/glm-5`，华为 oauth 免费额度（历史 12M tokens 费用 $0）。与 opencode 同架构，工具完整（bash/read/write/edit/task/glob）。
+- **DE = DevEco Code CLI**（本机 `C:\Users\Administrator\AppData\Roaming\npm\deveco.cmd`，v0.1.12 实测可用 2026-09-11；**旧路径 `D:\Program Files\npm-global\` 已不存在，勿再引用**），模型 `deveco/glm-5`，华为 oauth 免费额度（历史 12M tokens 费用 $0）。与 opencode 同架构，工具完整（bash/read/write/edit/task/glob）。
 - **用途**: 耗 TOKEN 的重活交给 DE（通读大文件做总结、写分析报告、独立跑脚本、批量重写），opencode 只做审核与落盘。
 - **调用**: `deveco run "<任务>" --dangerously-skip-permissions --dir D:\QuantLab --format json`；长会话用 `deveco serve` + `--attach`（⚠️ 本机无 E 盘，`--dir` 必须用 D:\QuantLab）。
 - **委派必须写明**: ①允许读取的文件清单 ②输出文件路径 ③禁止修改任何其他文件/禁止 commit/禁止修改类命令。

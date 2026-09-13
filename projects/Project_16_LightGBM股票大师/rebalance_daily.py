@@ -265,8 +265,13 @@ def main():
         return
     target = load_selection(sel_path, args.top)
     if not target:
-        print(f"!! 当日清单过红线(>{REDLINE:.0f})的票为 0，本日不换仓（宁缺毋滥）")
-        return
+        if args.top == 0:
+            # T-20260904-003 修复：T=0（沪深300≤-1.5% 大盘破位）→ 清仓信号，
+            # 全部策略持仓卖出 + 0 条买入（原逻辑 target 空直接 return → 破位日不清仓）。
+            print("!! T=0 大盘破位：清仓信号，全部策略持仓卖出（T-20260904-003 修复）")
+        else:
+            print(f"!! 当日清单过红线(>{REDLINE:.0f})的票为 0，本日不换仓（宁缺毋滥）")
+            return
 
     # 策略持仓定义：只认成交记录里 BUY 过的代码（账户历史持仓不归本脚本管，由清仓任务负责）
     strategy_codes = set()
@@ -291,24 +296,26 @@ def main():
         positions, volumes, sellable = {}, {}, {}
 
     target_codes = {t["code"] for t in target}
+    force_liquidate = args.top == 0   # T-20260904-003：T=0 清仓信号，全部卖出
     sell_plan = []  # 到期/调出卖出（含 reason 字段）
     hold_plan = []
     locked = []
     today_d = _parse_date(args.date)
     last_buy = _build_last_buy_dates()
     for code, cost in positions.items():
-        if code in target_codes:
+        if not force_liquidate and code in target_codes:
             hold_plan.append(code)          # 仍在 top2 → 继续持有（到期也续期，避免同日卖买抖动）
             continue
         # 到期制：掉出 top2 但持仓未满 hold_days 交易日 → 保留，不再日频翻转（修复 PK_OUT train-serving skew, T-20260904-001）
         ent = last_buy.get(code)
         held = _trading_days_between(ent, today_d) if ent else 999
-        if held < args.hold_days:
+        if not force_liquidate and held < args.hold_days:
             hold_plan.append(code)
             continue
         v = sellable.get(code, 0)
         if v > 0:
-            sell_plan.append({"code": code, "cost": cost, "vol": v, "reason": "MATURE"})
+            sell_plan.append({"code": code, "cost": cost, "vol": v,
+                              "reason": "T0_LIQUIDATE" if force_liquidate else "MATURE"})
         else:
             locked.append(code)  # T+1 锁定，今天不能卖
     # 等权目标数 = 实际目标数（含已持有的 target）
@@ -396,15 +403,15 @@ def main():
 
     if not args.live:
         print("DRY-RUN：未产生委托。确认后加 --live 执行真实换仓。")
-        # 落盘计划
+        # 落盘计划（dry-run 写旁路 .dryrun.json，防覆盖当日 live 执行记录/幂等标记，DE 兜底 P2）
         plan = {"date": args.date, "target": target,
                 "strategy_capital": round(capital, 2), "target_value_each": round(target_value, 2),
                 "sell": sell_plan, "buy": [o for o in exec_buys if o.get("vol")],
                 "trim": trim_orders, "hold": hold_plan, "locked": locked}
-        out = os.path.join(os.path.dirname(C.TRADE_LOG), f"rebalance_{args.date}.json")
+        out = os.path.join(os.path.dirname(C.TRADE_LOG), f"rebalance_{args.date}.dryrun.json")
         with open(out, "w", encoding="utf-8") as f:
             json.dump(plan, f, ensure_ascii=False, indent=2, default=str)
-        print("    计划已保存:", out)
+        print("    计划已保存（DRY-RUN 旁路）:", out)
         return
 
     # ---- LIVE 执行：先卖后买（等权对齐，资金池为基准，委托守护重试）----

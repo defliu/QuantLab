@@ -97,6 +97,7 @@ def _update_hold_dates(plan, date):
     - 新买入（BUY 指令，且此前未持有/已清仓）→ 建仓日=date（运行日）
     - 被卖出（SELL 指令）→ 移除（清仓）
     - 既未买也未卖、仍在持仓 → 保留原建仓日（不重复记账）
+    - 账本中已不存在的 code（桥内风控卖出/手工纠正卖出不进 plan.sells）→ 清理陈旧条目（DE 体检 P1-3）
     返回更新后的 hold_dates dict（仅 live 时落盘）。"""
     hd = load_hold_dates()
     # 卖出清仓移除
@@ -107,6 +108,11 @@ def _update_hold_dates(plan, date):
         code = b.get("code", "")
         if code and code not in hd:
             hd[code] = date
+    # 清理陈旧条目：当前账本（plan.ledger）已不存在的 code（桥内 STOP/TP/TRAIL 出场、correction 卖出）
+    active = set((plan.get("ledger") or {}).keys())
+    for code in list(hd.keys()):
+        if code not in active:
+            hd.pop(code, None)
     # 保留活跃持仓中既有建仓日（load_g2_ledger 的持仓未动者自然保留）
     return hd
 
@@ -157,6 +163,46 @@ def _recent_avg_vol(code, n=5):
         return float(sub["volume"].tail(n).mean())
     except Exception:
         return None
+
+
+def load_hs300_pct():
+    """取沪深300 当日涨跌幅（%）。腾讯行情实时取 现价/昨收 计算；失败返回 None。
+
+    环境变量 G2_HS300_PCT 可显式注入（测试/演练用）。"""
+    try:
+        inj = os.environ.get("G2_HS300_PCT", "").strip()
+        if inj:
+            return float(inj)
+    except Exception:
+        pass
+    try:
+        import urllib.request
+        url = "http://qt.gtimg.cn/q=%s" % G.HS300_QT_SYMBOL
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        raw = urllib.request.urlopen(req, timeout=5).read().decode("gbk", errors="ignore")
+        if "~" in raw:
+            f = raw.split("~")
+            if len(f) > 4:
+                price = float(f[3])
+                pre = float(f[4])
+                if pre > 0:
+                    return round((price / pre - 1.0) * 100.0, 4)
+    except Exception:
+        pass
+    return None
+
+
+def _calc_tier(hs300_pct):
+    """沪深300 当日涨跌幅(%) → T 档（T-20260904-004）：
+    T=0 停买 / T=1 半仓 / T=2 满仓；None（数据缺失）→ None（调用方 fail-safe 半仓）。
+    边界对齐 V1.3：停买 ≤ -1.5%；半仓 **<** -1.0%（恰 -1.0% 判满仓，DE 体检 P2-6 统一）。"""
+    if hs300_pct is None:
+        return None
+    if hs300_pct <= G.TIER_STOP_PCT:
+        return 0
+    if hs300_pct < G.TIER_HALF_PCT:
+        return 1
+    return 2
 
 
 def _notify_feishu(text):
@@ -319,12 +365,17 @@ def build_plan(date, capital):
     # ---- 卖出：持仓满 HOLD_DAYS 到期 → SELL（止损/止盈由桥内风控处理） ----
     for code, ld in ledger.items():
         since = hold_dates.get(code)
-        if since:
-            held_days, cal_ok = _count_trade_days(since, date)
-            if held_days < G.HOLD_DAYS:
-                plan["skips"].append({"code": code, "vol": ld["vol"], "reason": "持有未满%d日(%s起,已%d日,日历%s)" % (
-                    G.HOLD_DAYS, since, held_days, "OK" if cal_ok else "缺失")})
-                continue
+        if not since:
+            # T-20260904-006①：建仓日缺失 fail-open 立即卖出 → 改 fail-safe 跳过+告警（防误清仓）
+            plan["skips"].append({"code": code, "vol": ld["vol"],
+                                  "reason": "建仓日缺失，fail-safe 跳过卖出（防误清仓）"})
+            print("    !! %s hold_date 缺失，跳过卖出（fail-safe，需人工核查账本）" % code)
+            continue
+        held_days, cal_ok = _count_trade_days(since, date)
+        if held_days < G.HOLD_DAYS:
+            plan["skips"].append({"code": code, "vol": ld["vol"], "reason": "持有未满%d日(%s起,已%d日,日历%s)" % (
+                G.HOLD_DAYS, since, held_days, "OK" if cal_ok else "缺失")})
+            continue
         sellable = load_sellable(date, code)
         vol = ld["vol"]
         if sellable is not None:
@@ -344,11 +395,38 @@ def build_plan(date, capital):
     # 保留持仓 = 未到期未卖出的持仓；空位数 = TOP_N - 保留持仓数
     kept = {c for c in ledger if c not in sold_codes}
     n_slots = G.TOP_N - len(kept)
-    if n_slots > 0 and pool:
+    # ---- 大盘门控（T-20260904-004，2026-09-11 补上）：T=0 停买 / T=1 半仓 / T=2 满仓 ----
+    hs300_pct = load_hs300_pct()
+    tier = _calc_tier(hs300_pct)
+    if tier is None:
+        tier = 1  # 数据缺失 fail-safe 半仓（刹车数据缺失时降速不裸奔）
+        print("    !! [门控] 沪深300 涨跌幅获取失败，fail-safe 按 T=1 半仓执行")
+    deploy_pct = G.HALF_DEPLOY_PCT if tier == 1 else (0.0 if tier == 0 else G.DEPLOY_PCT)
+    plan["hs300_pct"] = hs300_pct
+    plan["tier"] = tier
+    plan["deploy_pct"] = deploy_pct
+    if tier == 0:
+        print("    [门控] 沪深300 %.2f%% <= 停买线 %.1f%% → T=0 停买（只卖不买，空位不补）" % (hs300_pct, G.TIER_STOP_PCT))
+    elif tier == 1:
+        print("    [门控] 沪深300 %.2f%% <= 半仓线 %.1f%% → T=1 半仓（买入预算=资金池×%.0f%%）" % (hs300_pct, G.TIER_HALF_PCT, G.HALF_DEPLOY_PCT * 100))
+    else:
+        print("    [门控] 沪深300 %.2f%% → T=2 满仓（买入预算=资金池×%.0f%%）" % (hs300_pct, G.DEPLOY_PCT * 100))
+    if n_slots > 0 and pool and deploy_pct > 0:
         # 候选池：排除已保留持仓，按 total_new 降序
         cand = [p for p in pool if p["code"] not in kept]
         cand.sort(key=lambda p: p["total"], reverse=True)
-        budget_each = capital * (1 - G.RESERVE_CASH_PCT) / float(n_slots)
+        # T-20260903-019 口径修复：对齐回测 scan_rotate_cost_real.budget = cash×deploy_pct/n（n=空位数），
+        # 基数必须是"剩余可用资金"（资金池 − 保留持仓投入成本），不是资金池总额——
+        # 否则部分补仓场景（1保留+1空位）新仓拿全额预算导致总敞口超资金池（DE 体检 P1-4）。
+        kept_invest = 0.0
+        for c in kept:
+            ld = ledger.get(c, {})
+            if ld.get("vol", 0) > 0:
+                kept_invest += float(ld.get("cost", 0) or 0) * int(ld.get("vol", 0))
+        avail = max(capital - kept_invest, 0.0)
+        budget_each = avail * deploy_pct / float(n_slots)
+        plan["kept_invest"] = round(kept_invest, 2)
+        plan["avail_cash"] = round(avail, 2)
         for i in range(n_slots):
             if not cand:
                 break
@@ -401,6 +479,7 @@ def main():
     print("资金池: %.0f 元（%s）" % (capital, G.G2_CAPITAL_FILE))
 
     orders, plan = build_plan(date, capital)
+    plan["written"] = bool(args.live)   # dry-run 写旁路文件，防覆盖当日 live 执行记录（DE 体检 P2-9）
     print(plan["note"])
     # N=10 持有期跳过项（掉出 top2 但未满持有期）
     for sk in plan.get("skips", []):
@@ -452,12 +531,13 @@ def main():
 def _save_plan(plan, date):
     out_dir = os.path.join(G.DATA_DIR, "rebalance_g2")
     os.makedirs(out_dir, exist_ok=True)
-    jp = os.path.join(out_dir, "rebalance_g2_%s.json" % date)
+    suffix = "" if plan.get("written") else ".dryrun"
+    jp = os.path.join(out_dir, "rebalance_g2_%s%s.json" % (date, suffix))
     with open(jp, "w", encoding="utf-8") as f:
         json.dump(plan, f, ensure_ascii=False, indent=2)
-    mp = os.path.join(out_dir, "rebalance_g2_%s.md" % date)
+    mp = os.path.join(out_dir, "rebalance_g2_%s%s.md" % (date, suffix))
     with open(mp, "w", encoding="utf-8") as f:
-        f.write("# G2 换仓计划 %s\n\n" % date)
+        f.write("# G2 换仓计划 %s%s\n\n" % (date, "（DRY-RUN 旁路）" if suffix else ""))
         f.write("- 账号 %s | 资金池 %.0f 元 | %s\n\n" % (plan["account_id"], plan["capital"], plan["note"]))
         f.write("## 卖出\n")
         for s in plan.get("sells", []):

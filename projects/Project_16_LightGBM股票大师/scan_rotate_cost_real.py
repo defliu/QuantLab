@@ -81,6 +81,7 @@ SELL_DELIST = [0]     # 退市强制清仓次数
 # live_trail : 实盘真跑口径 = -7% 硬止损 + 峰值回撤 8% 移动止盈 + +15% 止盈（回测从未验证过，关键对照）
 # atr        : 自适应 = 成本 - k1×ATR%(建仓日) 硬止损 + 峰值 - k2×ATR% 移动止盈，无百分比止盈
 # time       : N 日期满 + 时间止损（持有过半仍不盈利则换股，释放资金占用）
+# touch_tp   : 触价止盈 = -7% 开盘硬止损 + 盘中高点 ≥ 成本×(1+TP) 即卖（T-20260911-001「5%触价换票」研究用，默认不启用）
 EXIT_MODE = os.environ.get("BT_EXIT", "fixed")
 ATR_K1 = float(os.environ.get("BT_ATR_K1", "2.0"))     # 初始硬止损 ATR 倍数
 ATR_K2 = float(os.environ.get("BT_ATR_K2", "2.5"))     # 移动止盈 ATR 倍数
@@ -343,6 +344,16 @@ def simulate(dates, per_day, N, slip, open_map, exec_ok=True):
                         sell, reason = True, "TP"
                     elif trail_hit:
                         sell, reason = True, "TRAIL"
+                elif EXIT_MODE == "touch_tp":          # 触价止盈：「到5个点就换票」研究口径（T-20260911-001）
+                    # T+2 起（T+1 锁由上方 (i-buy_i)<2 分支保证）盘中高点 ≥ 成本×(1+TP) 即卖；
+                    # 跳空高开（开盘≥触价线）按开盘成交，否则按触价线成交。
+                    # 开盘先判 -7% 硬止损（与 fixed 同口径）；触价卖出额 = invest×max(开盘, 触价线)/成本。
+                    if ret <= STOP:
+                        sell, reason = True, "STOP"
+                    elif hi and np.isfinite(hi) and hi >= o_buy * (1 + TP):
+                        _fill = max(o_cur, o_buy * (1 + TP))
+                        h["value"] = h["invest"] * _fill / o_buy
+                        sell, reason = True, "TOUCH_TP"
                 else:                                  # fixed：回测原口径
                     if ret <= STOP or ret >= TP:
                         sell, reason = True, "STOP" if ret <= STOP else "TP"

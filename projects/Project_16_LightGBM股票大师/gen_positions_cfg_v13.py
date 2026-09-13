@@ -43,8 +43,68 @@ def _sell_fee(amt, code):
     return max(COMM_MIN, amt * COMM_RATE) + amt * STAMP_RATE + (amt * TRANS_RATE if _is_sh(code) else 0.0)
 
 
+def _adj_series(code):
+    """构造 {YYYY-MM-DD: adj} 累计复权序列：主库尾部 adj + 增量库 preClose 跳变续接 + 腾讯今日跳变。
+    返回 (series, latest_adj)。任一环节缺失则序列截止于已覆盖部分。"""
+    import pandas as pd
+    series = {}
+    last_adj = None
+    last_close = None
+    main = r"D:/astock/daily/stock_daily.parquet"
+    if os.path.exists(main):
+        try:
+            d = pd.read_parquet(main, columns=["adj_factor", "close"])
+            d = d[d.index.get_level_values("ts_code") == code]
+            if len(d):
+                dates = [str(x)[:10] for x in d.index.get_level_values("trade_date")]
+                adjs = d["adj_factor"].tolist()
+                closes = d["close"].tolist()
+                for dt, a, c in zip(dates, adjs, closes):
+                    series[dt] = float(a)
+                last_adj = float(adjs[-1])
+                last_close = float(closes[-1])
+        except Exception:
+            pass
+    incr = os.path.join(PROJ, "data_live", "incremental_daily.parquet")
+    if os.path.exists(incr) and last_adj:
+        try:
+            d2 = pd.read_parquet(incr, columns=["trade_date", "ts_code", "close", "preClose"])
+            d2["ts_code"] = d2["ts_code"].astype(str)
+            sub = d2[d2["ts_code"] == code].sort_values("trade_date")
+            for _, row in sub.iterrows():
+                dt = str(row["trade_date"])[:10]
+                close = float(row["close"])
+                pre = float(row["preClose"])
+                if last_close is not None and pre > 0 and abs(pre / last_close - 1.0) > 0.005:
+                    last_adj = last_adj * (pre / last_close)
+                series[dt] = last_adj
+                last_close = close
+        except Exception:
+            pass
+    if last_close:
+        try:
+            import urllib.request
+            sym = code.split(".")[0]
+            ex = code.split(".")[1].lower()
+            url = "http://qt.gtimg.cn/q=%s%s" % (ex, sym)
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            raw = urllib.request.urlopen(req, timeout=5).read().decode("gbk", errors="ignore")
+            f = raw.split("~")
+            if len(f) > 4:
+                pre_close = float(f[4])
+                if pre_close > 0 and abs(pre_close / last_close - 1.0) > 0.005:
+                    last_adj = last_adj * (pre_close / last_close)
+        except Exception:
+            pass
+    return series, last_adj
+
+
 def fifo_positions():
     """从 qmt_trade_log.csv 用 FIFO 推导持仓净额 + 含费成本（口径对齐 qmt_monitor.fifo_positions_from_log）。
+
+    除权调整（2026-09-11 加）：成本 = 原始含费成本 × (今日累计 adj / 买入日 adj)——
+    对齐前复权口径，累计除权（含今日 XD）稳定生效、不会次日回弹。
+    否则除息日（如 601058 09-11 XD）成本锚不调、止损线虚高被除权跌价机械消耗。
     返回 {code: (vol, cost_per_share)}。"""
     if not os.path.exists(TRADE_LOG):
         print("!! 无成交记录 %s" % TRADE_LOG)
@@ -69,21 +129,33 @@ def fifo_positions():
             continue
         if side == "BUY":
             amt = price * vol
-            qq[code].append((vol, (amt + _buy_fee(amt, code)) / vol))
+            buy_date = (r.get("time", "") or "")[:10]
+            qq[code].append((vol, (amt + _buy_fee(amt, code)) / vol, buy_date))
         elif side == "SELL":
             sv = vol
             while sv > 0 and qq[code]:
-                v, cp = qq[code][0]
+                v, cp, bd = qq[code][0]
                 take = min(v, sv)
                 sv -= take
-                qq[code][0] = (v - take, cp)
+                qq[code][0] = (v - take, cp, bd)
                 if qq[code][0][0] <= 0:
                     qq[code].popleft()
+    adj_cache = {}
     out = {}
     for code, dq in qq.items():
-        tv = sum(v for v, _ in dq)
+        tv = sum(v for v, _, _ in dq)
         if tv > 0:
-            tc = sum(v * c for v, c in dq)
+            if code not in adj_cache:
+                adj_cache[code] = _adj_series(code)
+            series, latest = adj_cache[code]
+            tc = 0.0
+            for v, cp, bd in dq:
+                factor = 1.0
+                if latest:
+                    base = series.get(bd, 0) or 0
+                    if base > 0 and abs(latest / base - 1.0) > 1e-6:
+                        factor = latest / base
+                tc += v * cp * factor
             out[code] = (tv, tc / tv)
     return out
 

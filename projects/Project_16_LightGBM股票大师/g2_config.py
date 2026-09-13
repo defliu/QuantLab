@@ -83,6 +83,18 @@ GAP_HARD_PCT = float(os.environ.get("GAP_HARD_PCT", "-5.0"))   # 极端低开阈
 GAP_OPEN_PCT = float(os.environ.get("GAP_OPEN_PCT", "-3.0"))   # 低开触发阈值
 GAP_VR       = float(os.environ.get("GAP_VR", "2.0"))          # 低开放行量比
 
+# ---- 大盘门控（TIER_RULES，2026-09-11 补上，对齐 V1.3 口径 T-20260904-004）----
+# 沪深300 当日涨跌幅（%）→ T 档：
+#   T=0：<= TIER_STOP_PCT (-1.5)  → 停买（只卖不买，空位不补）
+#   T=1：<= TIER_HALF_PCT (-1.0)  → 半仓（买入预算 = 资金池 × HALF_DEPLOY_PCT）
+#   T=2：其余                     → 满仓（买入预算 = 资金池 × DEPLOY_PCT）
+# 数据缺失（取不到沪深300）→ fail-safe 按 T=1 半仓 + 醒目告警（刹车数据缺失时降速不裸奔）。
+TIER_STOP_PCT = float(os.environ.get("G2_TIER_STOP", "-1.5"))   # 停买线
+TIER_HALF_PCT = float(os.environ.get("G2_TIER_HALF", "-1.0"))   # 半仓线
+DEPLOY_PCT     = 0.95                                            # 满仓部署比例（保留 5% 现金）
+HALF_DEPLOY_PCT = 0.50                                           # 半仓部署比例
+HS300_QT_SYMBOL = "sh000300"                                     # 腾讯行情沪深300 代码
+
 
 def today_str():
     return time.strftime("%Y%m%d")
