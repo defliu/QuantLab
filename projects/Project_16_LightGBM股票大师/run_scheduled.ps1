@@ -182,6 +182,13 @@ try {
             if ($LASTEXITCODE -eq 2) {
                 Log "!! [特征健康] 有 ALERT 特征（近4周IC趋零+缺失率>5%），已飞书告警——训练继续，特征去留待人工裁决"
             }
+            # -0.5) G2 特征健康补盲周报（2026-09-13 立，P0-2）：G2 43 特征（27 v3 + 6 enh + 10 g2 增强）监控，
+            #       重点抓 enh 慢变量与 G2_EXTRA 外部表断源（北向/研报/行业源停更 → 特征退化 NaN）。
+            #       与 v3 周报同点位（面板刷新前，用上周期数据评估）；只告警不阻断训练（去留人工裁决）。
+            Run-Py "feature_health_weekly.py --panel g2"
+            if ($LASTEXITCODE -eq 2) {
+                Log "!! [特征健康G2] 有 ALERT 特征（近4周IC趋零+缺失率>5%），已飞书告警——G2 特征去留/断源需人工核查"
+            }
             # 0) 重训前备份当前正式模型，防止覆盖（SERVER_DEPLOY.md 六、安全与备份 第2条要求）
             $formalModel = "D:/QuantLab/models/lgb_model_v3.txt"
             if (Test-Path $formalModel) {

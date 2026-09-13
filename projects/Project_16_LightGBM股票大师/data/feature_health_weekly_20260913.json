@@ -1,6 +1,7 @@
 {
-  "generated_at": "2026-09-13 19:12:45",
+  "generated_at": "2026-09-13 23:25:34",
   "panel": "feature_panel_v3.parquet",
+  "mode": "v3",
   "n_features": 27,
   "rules": {
     "ALERT": "近4周|IC|<0.01 且 缺失率>5%",
@@ -10,137 +11,164 @@
     "vol_ratio_5_20": {
       "ic_abs_mean_4w": 0.04009,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "amount_ma5": {
       "ic_abs_mean_4w": 0.08728,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "volume_ratio": {
       "ic_abs_mean_4w": 0.03397,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "above_ma60": {
       "ic_abs_mean_4w": 0.02798,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "rsi6": {
       "ic_abs_mean_4w": 0.08568,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "above_ma20": {
       "ic_abs_mean_4w": 0.0778,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "turn_ma5": {
       "ic_abs_mean_4w": 0.11864,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "vol20": {
       "ic_abs_mean_4w": 0.12127,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "mom_20": {
       "ic_abs_mean_4w": 0.07147,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "rel_mom_20": {
       "ic_abs_mean_4w": 0.07147,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "mom_10": {
       "ic_abs_mean_4w": 0.06178,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "mom_5": {
       "ic_abs_mean_4w": 0.068,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "dist_250_low": {
       "ic_abs_mean_4w": 0.09715,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "mom_60": {
       "ic_abs_mean_4w": 0.03241,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "macd_hist": {
       "ic_abs_mean_4w": 0.06456,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "pb": {
       "ic_abs_mean_4w": 0.09942,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "dv_ttm": {
       "ic_abs_mean_4w": 0.08792,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "sc_is_unlock": {
       "ic_abs_mean_4w": 0.02109,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "pe_ttm": {
       "ic_abs_mean_4w": 0.08952,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "fin_ocf_to_profit": {
       "ic_abs_mean_4w": 0.01863,
       "missing_rate_4w": 0.13338,
-      "verdict": "WATCH"
+      "verdict": "WATCH",
+      "stale_source": false
     },
     "sc_days_since": {
       "ic_abs_mean_4w": 0.03242,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "fin_dt_netprofit_yoy": {
       "ic_abs_mean_4w": 0.03447,
       "missing_rate_4w": 0.00225,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "fc_days_since": {
       "ic_abs_mean_4w": 0.03462,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "pos_250": {
       "ic_abs_mean_4w": 0.06204,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "fin_netprofit_yoy": {
       "ic_abs_mean_4w": 0.03511,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "log_mv": {
       "ic_abs_mean_4w": 0.07947,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     },
     "fc_force": {
       "ic_abs_mean_4w": 0.02591,
       "missing_rate_4w": 0.0,
-      "verdict": "OK"
+      "verdict": "OK",
+      "stale_source": false
     }
   },
   "alerts": [],

@@ -1025,3 +1025,12 @@ ightly_check.py check_e 加 E6：读快照，conflict 任务仍 Active → FAIL�
 - **P2-12 已列待办**（非本批引入，涉口径一致，不碰实盘）：ENS 预算基数未扣保留持仓投入（G2 P1-4 修复未同步）、ENS 无大盘门控、ENS hold_dates 缺失 fail-open 即卖（G2 fail-safe 跳过）——列入下批对齐清单。
 - **P2-14 接受**：资金池 realized 不含费 vs positions_cfg 成本含费，G2/ENS 同口径继承近似，两桥一致可接受。
 - **P2-15 已注**：设计文档澄清标记文件每日幂等重写（非仅新触发才写）。
+
+## 2026-09-13 深夜 · DE 执行 P0 全系+P1-1 + TRAE 交叉验证 + 挂调度（T-20260913-001 续，诚哥"让DE执行，我看汇报"）
+
+- **P0-2 G2 特征健康补盲**（feature_health_weekly.py --panel g2，43 特征）：首跑 ALERT0/WATCH5。**重大生产发现：G2_EXTRA 6 源断更**——北向 08-07（35天）/龙虎榜+同花顺行业 08-21（21天）/研报 08-28（14天），moneyflow 新鲜。G2 live 已在"北向/研报/行业特征缺失"下运行（与 AGENTS 主源买断 08-21 一致，但北向更早）。**教训：主数据源买断范围要定期核对增量库实际覆盖表，G2 增强特征依赖的外部表是增量维护盲区**。已挂 retrain 前置与 v3 同点位。
+- **P0-3 v3_enh 核实**（de_v3enh_chain_verify_20260913.md）：模型冻结 08-23 无重训链路（run_scheduled 只训 V1.3/G2；train_optuna --model-tag _enh 有能力无调用方）；ENS 仅半自动。**方案 A 补链 vs B 显式拍板冻结，DE 建议 B**（监控已兜底 33 特征+降级闸），升 A 触发条件写死（季评连续两季最末）。附带发现 features_v3_enh.json dropped/feature_cols 4 交集（低危一行修复）。
+- **P0-4 ENS 对齐设计**（ens_alignment_design_20260913.md）：三项差异均含改法/风险/dry-run。预算未扣 kept_invest（rebalance_ens.py:384 vs G2:446-452）敞口超池约 40% 唯一实际偏差；无大盘门控（对照 G2:409-424）；hold_dates fail-open 即卖（对照 G2:367-373 事故教训）。建议批次1=差异一+三，涉及实盘须拍板后实施。
+- **P1-1 三臂纸面季评**（paper_quarterly_review.py）：复用降级闸同口径，双季最末才提议退役/降配、只提议不动资金、臂间重合率防同源误读。首跑 G2 n=8 超额-0.02423 与降级闸一致；样本不足如实标注。已挂 paper_forward_daily.ps1 16:45 管道尾（QUARTERLY-ALERT 不阻断主链）。
+- **TRAE 交叉验证**（诚哥要求）：全部属实——①白名单合规（DE 未碰 rebalance/ps1/模型）；②G2_EXTRA 断源数据源独立复核（Get-Item+read 确认北向 08-07/lhb+ths 08-21/研报 08-28）；③v3_enh 冻结 08-23 复核属实；④季评 n=8 数字与降级闸一致；⑤PS1 语法+BOM 复验通过。
+- **遗留待拍板**：①v3_enh 方案 A/B ②P0-4 差异一+三实施（改 rebalance_ens，dry-run+拍板）③features_v3_enh.json dropped 交集一行修复 ④P1-2/3/4（前向底座/M2/回滚真实trial）。09-14 周一看板待观察清单不变。

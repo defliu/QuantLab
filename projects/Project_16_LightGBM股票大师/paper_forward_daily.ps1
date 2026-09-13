@@ -33,6 +33,10 @@ try {
     $pfExit = $LASTEXITCODE
     & $py -u paper_forward_downgrade.py *>> $log
     $dgExit = $LASTEXITCODE
+    # 三臂纸面季评（2026-09-13 立，P1-1）：每日随管道跑（样本不足自动标"样本不足"不排名），
+    # 连续两季最末才提议退役/降配；只提议不动资金分配。失败记 ALERT 不阻断主链（季评是观察件）。
+    & $py -u paper_quarterly_review.py *>> $log
+    $qrExit = $LASTEXITCODE
     Pop-Location
     if ($bfExit -eq 2) {
         Add-Content -Path $log -Value "[$stamp] BACKFILL-ALERT 行情数据源停更，无新样本产出 (backfill exit=2)"
@@ -49,6 +53,9 @@ try {
     if ($dgExit -ne 0) {
         Add-Content -Path $log -Value "[$stamp] DOWNGRADE-ALERT paper_forward_downgrade 异常退出 (exit=$dgExit)"
         exit 2
+    }
+    if ($qrExit -ne 0) {
+        Add-Content -Path $log -Value "[$stamp] QUARTERLY-ALERT paper_quarterly_review 异常退出 (exit=$qrExit) ——季评失败不阻断主链，人工核查"
     }
     Add-Content -Path $log -Value "[$stamp] OK"
     exit 0
