@@ -1,0 +1,27 @@
+{
+  "date": "20260913",
+  "account_id": "70180771",
+  "generated_at": "2026-09-13 18:32:35",
+  "fills": [],
+  "pending": [],
+  "orphans": [],
+  "ledger": {
+    "300138.SZ": 4100,
+    "600409.SH": 7400
+  },
+  "asset": {},
+  "issues": [
+    "持仓差额: 600409.SH 账本比账户多 7400 股（卖出未回写/丢失，需排查）",
+    "持仓差额: 300138.SZ 账本比账户多 4100 股（卖出未回写/丢失，需排查）"
+  ],
+  "fills_total": 0,
+  "fills_by_status": {},
+  "pending_count": 0,
+  "account_positions": {},
+  "deltas": {
+    "600409.SH": -7400,
+    "300138.SZ": -4100
+  },
+  "capital_prev": 100000.0,
+  "capital_rolled": 98469.21
+}

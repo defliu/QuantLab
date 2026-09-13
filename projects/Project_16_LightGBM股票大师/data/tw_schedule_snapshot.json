@@ -1,0 +1,23 @@
+{
+  "_说明": "TW(TraeWork) 侧定时任务清单快照 —— 供 QuantLab nightly_check E6「双调度器一致性巡检」核对（T-20260910-008 教训固化，2026-09-13 建）。任何一方新建定时任务前必须互查对方已注册任务清单；D:/QMT_POOL 下所有文件生成调度唯一 owner = QuantLab schtasks。本快照由 agent 会话手动更新（TRAE Schedule list 导出）。",
+  "generated_at": "2026-09-13 19:30:00",
+  "tasks": [
+    {"id": "18c0c8d2", "name": "融合日终对账(项目16大QMT)", "cron": "50 15 * * MON-FRI", "status": "Active", "role": "融合对账协调（下指令+核对）", "owner": "TW"},
+    {"id": "051bc2d9", "name": "融合换仓(项目16大QMT)", "cron": "52 9 * * MON-FRI", "status": "Active", "role": "融合换仓执行协调", "owner": "TW"},
+    {"id": "eda9b0c3", "name": "成本锚生成(项目16V1.3)", "cron": "0 9 * * MON-FRI", "status": "Paused", "role": "【已拍板应彻底删除】曾与 Quant_P16_CfgPremarket_0900 双写 positions_cfg_v13（T-20260910-008）；删除确认待 TW 执行", "owner": "TW", "conflict_with": "Quant_P16_CfgPremarket_0900"},
+    {"id": "c63cff58", "name": "Tushare刷新(项目16)", "cron": "30 19 * * MON-FRI", "status": "Paused", "role": "Tushare moneyflow 刷新（schtasks Quant_Tushare_Moneyflow_Refresh 为实际 owner）", "owner": "TW"},
+    {"id": "e05e526a", "name": "夜间检修(项目16)", "cron": "0 1 * * MON-FRI", "status": "Active", "role": "夜间检修协调（schtasks Quant_P16_NightlyCheck_0100 为实际执行者）", "owner": "TW"},
+    {"id": "4cf3db92", "name": "G2日终对账(项目16大QMT)", "cron": "45 15 * * MON-FRI", "status": "Active", "role": "G2 对账协调", "owner": "TW"},
+    {"id": "30344e79", "name": "G2换仓(项目16大QMT)", "cron": "50 9 * * MON-FRI", "status": "Active", "role": "G2 换仓执行协调", "owner": "TW"},
+    {"id": "3c7fdd1e", "name": "候选预生成(项目16)", "cron": "15 9 * * MON-FRI", "status": "Active", "role": "盘前候选预生成协调", "owner": "TW"},
+    {"id": "9a41d7f7", "name": "盘后持仓复盘(项目16)", "cron": "40 15 * * MON-FRI", "status": "Active", "role": "盘后复盘协调（报告由 DE 生成）", "owner": "TW"},
+    {"id": "095bbe1b", "name": "午休持仓报告(项目16)", "cron": "35 11 * * MON-FRI", "status": "Active", "role": "午休报告协调", "owner": "TW"},
+    {"id": "15868a74", "name": "开盘实时复核(项目16)", "cron": "45 9 * * MON-FRI", "status": "Active", "role": "开盘复核+换仓执行（真实下单）", "owner": "TW"},
+    {"id": "b0254f11", "name": "集合竞价增强预判(项目16)", "cron": "25 9 * * MON-FRI", "status": "Active", "role": "盘前竞价预判协调", "owner": "TW"},
+    {"id": "f43df15a", "name": "模拟账号盘后监控", "cron": "5 15 * * MON-FRI", "status": "Paused", "role": "模拟盘监控（非 P16 主链）", "owner": "TW"}
+  ],
+  "owner_boundary": {
+    "note": "D:/QMT_POOL 下所有文件生成的调度唯一 owner = QuantLab schtasks；TW 侧仅做协调/下指令，不得直接写 QMT_POOL 产物（T-20260910-008 硬规则）",
+    "schtasks_exclusive": ["positions_cfg_*（Quant_P16_CfgPremarket_0900）", "heartbeat_alarm（Quant_P16_Heartbeat_Alarm）", "nightly_check（Quant_P16_NightlyCheck_0100）"]
+  }
+}

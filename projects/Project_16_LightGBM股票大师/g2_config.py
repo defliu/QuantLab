@@ -37,6 +37,9 @@ HOLD_DAYS = 15                       # 持有期（交易日，2026-09-10 拍板
 # 持仓建仓日持久化（rebalance_g2 维护：{code: "YYYYMMDD"}）
 HOLD_DATES_FILE = os.path.join(DATA_DIR, "rebalance_g2", "g2_hold_dates.json")
 
+# 融合桥 ENS 账本（G2 反向互斥用：G2 换仓跳过 ENS 已持有的票，防同账户双桥争同一持仓，2026-09-13 补对称化）
+ENS_HOLD_DATES_FILE = os.path.join(DATA_DIR, "rebalance_g2_ens", "g2_ens_hold_dates.json")
+
 # ---- 飞书（沿用同一接收人，仅推送通道） ----
 FEISHU_OPEN_ID = "ou_bd13444d8ea53c28249c669f43f3eeff"
 LARK_CLI = r"C:\Users\Administrator\.trae-cn\plugins\trae-remote-official\lark\1.0.5\bin\lark-cli.exe"

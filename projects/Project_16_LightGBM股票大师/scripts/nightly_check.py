@@ -422,6 +422,38 @@ def check_e():
         ok = bool(last and latest_y8 and last >= latest_y8)
         log("E", "E5 对账 %s" % name, "PASS" if ok else "WARN",
             "最近: %s%s" % (last or "无", "" if ok else "（滞后于最近交易日 %s）" % latest_y8))
+    # E6 双调度器一致性巡检（2026-09-13 立，T-20260913-001 E3；T-20260910-008 教训固化）
+    # 读 data/tw_schedule_snapshot.json（TW 侧任务清单快照，agent 会话手动更新）：
+    #   ① 标记 conflict_with 的任务若仍 Active → FAIL（双写风险，如 eda9b0c3 成本锚应已删除）
+    #   ② 快照缺失/损坏 → WARN（人工核对 TW 侧清单）
+    snap = os.path.join(DATA, "tw_schedule_snapshot.json")
+    if not os.path.exists(snap):
+        log("E", "E6 TW调度快照", "WARN", "快照文件缺失（data/tw_schedule_snapshot.json），无法核对双写风险")
+    else:
+        try:
+            d = json.load(open(snap, encoding="utf-8"))
+            # P2-6：快照新鲜度校验——手动维护的快照过期会基于过期清单假 PASS
+            snap_age_ok = True
+            try:
+                import datetime as _dt
+                gen = _dt.datetime.strptime(d.get("generated_at", ""), "%Y-%m-%d %H:%M:%S")
+                snap_age_ok = (_dt.datetime.now() - gen).days <= 7
+            except Exception:
+                snap_age_ok = False
+            risks = [t for t in d.get("tasks", []) if t.get("conflict_with") and t.get("status") == "Active"]
+            if risks:
+                log("E", "E6 TW调度冲突", "FAIL",
+                    "冲突任务仍 Active: %s（%s 应删除/暂停，双写 %s 风险）" % (
+                        ", ".join(t["id"] for t in risks),
+                        ", ".join(t["name"] for t in risks),
+                        ", ".join(t["conflict_with"] for t in risks)))
+            elif not snap_age_ok:
+                log("E", "E6 TW调度快照", "WARN",
+                    "快照已过期（generated_at=%s，>7 天未更新），请用 Schedule list 刷新后再判定" % d.get("generated_at"))
+            else:
+                log("E", "E6 TW调度一致性", "PASS", "快照 %d 项新鲜，无 Active 冲突任务（owner 边界见快照）" % len(d.get("tasks", [])))
+        except Exception as e:
+            log("E", "E6 TW调度快照", "WARN", "快照解析失败: %s" % e)
 
 
 # ---------------- F 环境与资源 ----------------

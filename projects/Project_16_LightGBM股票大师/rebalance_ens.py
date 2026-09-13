@@ -345,6 +345,17 @@ def build_plan(date, capital):
     # 保留持仓 = 未到期未卖出的持仓；空位数 = TOP_N - 保留持仓数
     kept = {c for c in ledger if c not in sold_codes}
     n_slots = G.TOP_N - len(kept)
+    # ---- 纸面自动降级闸（2026-09-13 立，T-20260913-001 P1-8）：冻结时只卖不买 ----
+    frozen = False
+    try:
+        import paper_forward_downgrade as _pf
+        frozen = _pf.is_frozen("ENS")
+    except Exception:
+        pass
+    if frozen:
+        n_slots = 0
+        plan["downgrade_frozen"] = True
+        print("    !! [降级闸] ENS 纸面前向样本外为负，冻结加仓（只卖不买）——已持仓到期卖出照常，桥内风控照常")
     if n_slots > 0 and pool:
         # 重叠规避（2026-09-10 拍板）：跳过 G2 账本（g2_hold_dates.json）已持有的票，
         # 防同账户(70180771) 双桥（G2/融合）争同一持仓导致账本归属歧义

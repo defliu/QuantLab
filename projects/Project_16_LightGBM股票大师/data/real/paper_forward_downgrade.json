@@ -1,0 +1,24 @@
+{
+  "_说明": "纸面前向自动降级闸标记（2026-09-13 立）",
+  "G2": {
+    "frozen": false,
+    "since": "",
+    "n": 8,
+    "mean_excess": -0.024234620216052487,
+    "note": ""
+  },
+  "V1.3": {
+    "frozen": false,
+    "since": "",
+    "n": 0,
+    "mean_excess": null,
+    "note": ""
+  },
+  "ENS": {
+    "frozen": false,
+    "since": "",
+    "n": 0,
+    "mean_excess": null,
+    "note": ""
+  }
+}

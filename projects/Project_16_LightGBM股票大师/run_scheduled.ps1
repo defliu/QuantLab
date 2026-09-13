@@ -149,14 +149,14 @@ try {
             } else {
                 Log "[模型-面板同步] 面板与正式模型同版，OK"
             }
-            # ---- G4 观察期回滚检查（T-20260910-005 固化，只读）：每日盘后检查 live 模型观察期 ----
+            # ---- G4 观察期回滚检查（T-20260910-005 固化，只读→2026-09-13 M3 深度劣化自动回退）：每日盘后检查 live 模型观察期 ----
             # 背景：rollback_check_g2.py 此前无任何调度调用（纯手动），G2 观测期回滚永不触发。
-            # 挂到 daily 只读输出建议（退出码非 0 = 观察期结束且前向劣于基线），人工确认后手动 --apply。
-            Run-Py "rollback_check_g2.py"
+            # 2026-09-13 起 --auto：深度劣化（劣于基线 >0.05pp）自动回退 + 飞书；轻度劣化仍 exit 2 人工确认。
+            Run-Py "rollback_check_g2.py --auto"
             if ($LASTEXITCODE -eq 2) {
-                Log "!! [G4观察期] 观察期结束且前向劣于基线 —— 建议回退（人工确认后跑: python rollback_check_g2.py --apply）"
+                Log "!! [G4观察期] 观察期结束且前向轻度劣于基线 —— 建议人工回退（python rollback_check_g2.py --apply；深度劣化已自动处理）"
             } elseif ($LASTEXITCODE -eq 0) {
-                Log "[G4观察期] 无待观察 trial 或观察期内表现正常，OK"
+                Log "[G4观察期] 无待观察 trial / 观察期通过 / 深度劣化已自动回退，OK"
             } else {
                 Log "[G4观察期] 检查跳过（exit=$LASTEXITCODE，无 trial 字段或数据不足）"
             }
@@ -175,6 +175,13 @@ try {
         }
         "retrain" {
             Log "[周更重训] 开始（约1.5-2小时，含 G2 模型重训）"
+            # -1) 特征健康周报前置（2026-09-13 立，T-20260913-001 F1）：逐特征近4周 IC/缺失率监控，
+            #      ALERT 特征（IC趋零+缺失率>5%）飞书告警；仅告警不阻断训练（去留人工裁决）。
+            #      先于面板刷新跑：用上周期数据评估（refresh 后跑等于看新面板，失去"训练前核查"意义）
+            Run-Py "feature_health_weekly.py"
+            if ($LASTEXITCODE -eq 2) {
+                Log "!! [特征健康] 有 ALERT 特征（近4周IC趋零+缺失率>5%），已飞书告警——训练继续，特征去留待人工裁决"
+            }
             # 0) 重训前备份当前正式模型，防止覆盖（SERVER_DEPLOY.md 六、安全与备份 第2条要求）
             $formalModel = "D:/QuantLab/models/lgb_model_v3.txt"
             if (Test-Path $formalModel) {
@@ -195,6 +202,16 @@ try {
             Run-Py "refresh_panel_enh.py"
             if ($LASTEXITCODE -ne 0) {
                 Log "!! [周更重训] refresh_panel_enh 失败（exit=$LASTEXITCODE）—— train_g2 将用旧 enh 面板（asof 落后天数见训练日志），需核查"
+            }
+            # ---- enh 面板新鲜度硬门禁（2026-09-13 立，T-20260913-001 F2）：绝对日历锚，>7 天阻断 G2 重训 ----
+            # 背景：refresh_panel_enh 有相对门禁（vs merged），但若 daily 刷新链断流 N 天无人发现，
+            #       train_g2 会用陈旧 enh 慢变量训练（asof 落后），越训越差。此门禁用"最近交易日"兜底。
+            Run-Py "check_enh_freshness.py"
+            if ($LASTEXITCODE -eq 2) {
+                Log "!! [enh新鲜度] enh 面板落后 >7 天 —— 阻断 G2 重训（train_g2 跳过），先核查 refresh_panel_enh/daily 链"
+                $skipG2 = $true
+            } else {
+                Log "[enh新鲜度] enh 面板新鲜，继续 G2 重训"
             }
             # 写入带日期后缀的候选模型（lgb_model_v3_retrain_YYYYMMDD.txt），不覆盖正式模型 lgb_model_v3.txt
             if (-not $skipV13) {
@@ -268,10 +285,11 @@ try {
             } else {
                 Log "G2 live 指针缺失，跳过备份（train_g2 失败时回退 08-25 初始 live）"
             }
-            Run-Py "train_g2.py --promote"
-            if ($LASTEXITCODE -ne 0) {
-                Log "!! [G2重训] 门禁未过或训练失败，G2 live 保持不变，需人工核查（data/g2_live_model.json）"
-            } else {
+            if (-not $skipG2) {
+                Run-Py "train_g2.py --promote"
+                if ($LASTEXITCODE -ne 0) {
+                    Log "!! [G2重训] 门禁未过或训练失败，G2 live 保持不变，需人工核查（data/g2_live_model.json）"
+                } else {
                 Log "[G2重训] 模型层门禁（G1-G3 strict）通过，G2 live 已更新"
                 # ---- 策略层回测门禁（T-20260910-003）：promote 后立即用官方引擎复核 ----
                 # 模型层门禁只保证 IC/尾部IC/Top2 模拟不退步，但 IC 与实盘收益隔着评分卡选股/过滤/出场，
@@ -301,6 +319,27 @@ try {
                 } else {
                     Log "!! [策略层门禁] 无法读取 promote 后 G2 live 指针，跳过策略层复核"
                 }
+                }
+            } else {
+                Log "!! [G2重训] enh 面板陈旧被阻断（check_enh_freshness exit=2），本周围更未重训 G2——核查 refresh_panel_enh/daily 链后人工补跑"
+            }
+            # ---- 配置漂移复查（2026-09-13 立，T-20260913-001 P1）：G2 promote 成功后复查最优配置是否漂移 ----
+            # 只登记不改实盘；3 个关键邻域点（N10/15/20 × live_trail）约 30 分钟。
+            # 用 $g2New（本轮 promote 后指针）判断本轮是否成功 promote；PowerShell 变量脚本级作用域，内层已赋值。
+            if ($g2New -and (Test-Path $g2New)) {
+                $g2Meta = $null
+                try { $g2Meta = (Get-Content $g2LivePointer -Raw | ConvertFrom-Json).meta_path } catch { }
+                if ($g2Meta -and (Test-Path $g2Meta)) {
+                    Log "[配置漂移复查] G2 promote 成功，邻域小网格（N10/15/20 × live_trail，约30分钟）..."
+                    Run-Py "config_drift_recheck.py --strategy G2 --model $g2New --meta $g2Meta"
+                    if ($LASTEXITCODE -ne 0) {
+                        Log "!! [配置漂移复查] 运行异常（exit=$LASTEXITCODE）——仅登记功能受影响，实盘配置未动"
+                    }
+                } else {
+                    Log "!! [配置漂移复查] 新 live meta 读取失败，跳过"
+                }
+            } else {
+                Log "[配置漂移复查] 本轮未 promote G2，跳过（仅 promote 后复查，省算力）"
             }
         }
         "factor" {

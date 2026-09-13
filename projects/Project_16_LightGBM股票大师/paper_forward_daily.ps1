@@ -15,6 +15,8 @@
 #             却仍 exit 0，无人察觉）；②backfill 停更时 exit 2，此处显式捕获并 exit 2 让计划任务
 #             LastTaskResult 非 0（fail-loud）；③新增 forward_stats.py 输出超额统计到日志。
 # 2026-09-07: 新增步骤5 paper_forward_exit.py 出场规则前向验证（ATR2.0 挂观察，exit_ablation 的延续）。
+# 2026-09-13: 新增步骤6 paper_forward_downgrade.py 纸面自动降级闸（T-20260913-001 P1-8）：
+#             任一策略纸面臂样本外持续为负 → 自动写冻结标记 + 飞书告警，次日 rebalance 只卖不买。
 $ErrorActionPreference = "Stop"
 $proj = $PSScriptRoot
 $py = "C:\Users\Administrator\AppData\Roaming\TRAE SOLO CN\ModularData\ai-agent\vm\tools\python\python.exe"
@@ -29,6 +31,8 @@ try {
     & $py -u forward_stats.py --hold 10 *>> $log
     & $py -u paper_forward_exit.py --top 2 --hold 10 *>> $log
     $pfExit = $LASTEXITCODE
+    & $py -u paper_forward_downgrade.py *>> $log
+    $dgExit = $LASTEXITCODE
     Pop-Location
     if ($bfExit -eq 2) {
         Add-Content -Path $log -Value "[$stamp] BACKFILL-ALERT 行情数据源停更，无新样本产出 (backfill exit=2)"
@@ -40,6 +44,10 @@ try {
     }
     if ($pfExit -ne 0) {
         Add-Content -Path $log -Value "[$stamp] EXIT-RULE-ALERT paper_forward_exit 异常退出 (exit=$pfExit)"
+        exit 2
+    }
+    if ($dgExit -ne 0) {
+        Add-Content -Path $log -Value "[$stamp] DOWNGRADE-ALERT paper_forward_downgrade 异常退出 (exit=$dgExit)"
         exit 2
     }
     Add-Content -Path $log -Value "[$stamp] OK"

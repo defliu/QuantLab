@@ -50,6 +50,13 @@ strategies:
     max_hold: 2
     note: "融合版(v3_enh+G2 rank融合w=0.5)大QMT 70180771虚拟子账户换仓top2等权、红线60、live_trail/N10；资金池独立D:/QMT_POOL/p16_ensemble_bridge/ens_strategy_capital.json(70180771戳)；与G2桥完全隔离，股票重叠自动规避，绝不纳管/卖出他人持仓（2026-09-10 拍板上线）"
 
+  - key: all_weather
+    name: "全天候底仓V1(股30/债30/货25/金15)"
+    capital_base: 100000
+    max_hold: 5
+    config_file: "projects/Project_20_全天候底仓/config/strategy.yaml"
+    note: "月频再平衡ETF组合：510300 30% / 511010 30% / 511880 25% / 518880 15%；首笔10万模拟盘（2026-09-13 诚哥拍板 V1+10万）；虚拟子账户，绝不抢占他人资金/持仓"
+
   # ---- 新增策略在此追加（取消注释并填值）----
   # - key: xxx
   #   name: "新策略名"

@@ -1,0 +1,25 @@
+{
+  "date": "20260911",
+  "executed_live": true,
+  "executed_at": "2026-09-11 10:01:40",
+  "tier": 1,
+  "target": [
+    {
+      "code": "601890.SH",
+      "name": "亚星锚链",
+      "total": 86.5,
+      "prob": 0.6638
+    }
+  ],
+  "strategy_capital": 95897.6,
+  "target_value_each": 47948.8,
+  "sell": [],
+  "buy": [],
+  "trim": [],
+  "hold": [
+    "601058.SH",
+    "601579.SH"
+  ],
+  "locked": [],
+  "guard_note": []
+}

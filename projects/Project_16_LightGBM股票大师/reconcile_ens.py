@@ -21,9 +21,107 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import g2_ens_config as G
-from qmt_bridge_client_ens import read_fills, read_positions, read_asset, read_heart, positions_from_fills, notify_feishu
+from qmt_bridge_client_ens import read_fills, read_positions, read_asset, read_heart, positions_from_fills, notify_feishu, fetch_price
 
 TERMINAL_STATUS = ("FILLED", "PARTIAL_FILLED", "CANCELED", "REJECTED", "UNCONFIRMED", "ABANDONED")
+
+
+def _all_fills():
+    """遍历 state 目录所有 fills_<date>.json，按日期序返回全部成交（跨日累计已实现盈亏用）。"""
+    out = []
+    try:
+        files = [f for f in os.listdir(G.STATE_DIR) if f.startswith("fills_") and f.endswith(".json")]
+        files.sort()
+        for fn in files:
+            d = read_fills(fn[len("fills_"):-5])
+            if d and d.get("fills"):
+                out.extend(d["fills"])
+    except Exception:
+        pass
+    return out
+
+
+def _realized_pnl_from_fills():
+    """跨全部历史 fills FIFO 配对算累计已实现盈亏（不含费用，与 positions_from_fills 同口径）。"""
+    from collections import deque
+    buys = {}
+    realized = 0.0
+    for f in _all_fills():
+        status = str(f.get("status", ""))
+        if status not in ("FILLED", "PARTIAL_FILLED"):
+            continue
+        code = str(f.get("code", "") or "")
+        action = str(f.get("action", "") or "").upper()
+        if not code or action not in ("BUY", "SELL"):
+            continue
+        try:
+            vol = int(float(f.get("vol", 0) or 0))
+            price = float(f.get("price", 0) or 0)
+        except (TypeError, ValueError):
+            continue
+        if vol <= 0 or price <= 0:
+            continue
+        if action == "BUY":
+            buys.setdefault(code, deque()).append((vol, price))
+        else:
+            sv = vol
+            while sv > 0 and buys.get(code):
+                v, cp = buys[code][0]
+                take = min(v, sv)
+                sv -= take
+                realized += (price - cp) * take
+                buys[code][0] = (v - take, cp)
+                if buys[code][0][0] <= 0:
+                    buys[code].popleft()
+    return realized
+
+
+def _float_pnl_now():
+    """当前融合持仓浮盈 = Σ(现价-成本)×vol。持仓用最新 positions_cfg（成本含费，account 戳校验）。"""
+    try:
+        files = [f for f in os.listdir(G.CMD_DIR) if f.startswith("positions_cfg_") and f.endswith(".json")]
+        files.sort(reverse=True)
+    except Exception:
+        files = []
+    pos = []
+    for fn in files:
+        try:
+            with open(os.path.join(G.CMD_DIR, fn), encoding="utf-8") as f:
+                d = json.load(f)
+            if str(d.get("account_id", "")) == G.ACCOUNT_ID:
+                pos = d.get("positions", []) or []
+                break
+        except Exception:
+            continue
+    pnl = 0.0
+    for p in pos:
+        code = p.get("code", "")
+        vol = int(p.get("vol", 0) or 0)
+        cost = float(p.get("cost", 0) or 0)
+        if not code or vol <= 0 or cost <= 0:
+            continue
+        price = fetch_price(code)
+        if price and price > 0:
+            pnl += (price - cost) * vol
+    return pnl
+
+
+def _roll_ens_capital(date):
+    """资金池滚动（对齐 G2 reconcile_g2._roll_g2_capital）：capital = 初始 + 累计已实现盈亏 + 当前持仓浮盈。
+    对账时更新，保证买入预算反映真实策略权益（历史：ens_strategy_capital.json 无滚动 → 恒 10 万失真）。"""
+    try:
+        realized = _realized_pnl_from_fills()
+        float_pnl = _float_pnl_now()
+        capital = G.START_CAPITAL + realized + float_pnl
+        if capital <= 0:
+            print("[资金池] 计算异常(<=0)，跳过更新")
+            return None
+        G.save_ens_capital(round(capital, 2), note="reconcile 滚动 realized=%.0f float=%.0f" % (realized, float_pnl))
+        print("[资金池] 滚动更新: 初始%.0f + 已实现%.0f + 浮盈%.0f = %.2f" % (G.START_CAPITAL, realized, float_pnl, capital))
+        return capital
+    except Exception as e:
+        print("[资金池] 滚动异常（不影响对账）: %s" % e)
+        return None
 
 
 def main():
@@ -114,6 +212,11 @@ def main():
     # ④ 资产
     report["asset"] = read_asset(date) or {}
 
+    # ⑤ 资金池滚动（对齐 G2 reconcile_g2._roll_g2_capital，2026-09-13 补齐）：
+    #    历史 ens_strategy_capital.json 无滚动恒 10 万，买入预算失真（de_recheck B-5 观察项）。
+    report["capital_prev"] = G.load_ens_capital()
+    report["capital_rolled"] = _roll_ens_capital(date)
+
     # 输出
     out_dir = os.path.join(G.DATA_DIR, "reconcile_g2_ens")
     os.makedirs(out_dir, exist_ok=True)
@@ -148,6 +251,9 @@ def main():
                 f.write("- ⚠ %s\n" % i)
         else:
             f.write("- 无\n")
+        f.write("\n## 资金池\n")
+        f.write("- 滚动前: %.2f\n" % (report.get("capital_prev") or 0.0))
+        f.write("- 滚动后: %s\n" % ("%.2f" % report["capital_rolled"] if report.get("capital_rolled") else "未更新（异常）"))
     print("对账完成: %s" % jp)
     print("fills=%d pending=%d 孤儿=%d 问题=%d" % (
         len(fill_list), len(pending), len(report["orphans"]), len(report["issues"])))
@@ -155,9 +261,10 @@ def main():
         print("  [ISSUE] %s" % i)
     # 飞书通知（对账结果摘要；有 issue 标 ⚠）
     try:
+        cap_txt = "资金池 %.2f" % report["capital_rolled"] if report.get("capital_rolled") else "资金池未更新"
         issue_txt = "\n".join("⚠ " + i for i in report["issues"]) if report["issues"] else "无问题"
-        notify_feishu("【融合对账 %s】fills=%d pending=%d 孤儿=%d 问题=%d\n%s" % (
-            date, len(fill_list), len(pending), len(report["orphans"]), len(report["issues"]), issue_txt))
+        notify_feishu("【融合对账 %s】fills=%d pending=%d 孤儿=%d 问题=%d | %s\n%s" % (
+            date, len(fill_list), len(pending), len(report["orphans"]), len(report["issues"]), cap_txt, issue_txt))
     except Exception as e:
         print("[通知] 对账飞书异常: %s" % e)
     return 0

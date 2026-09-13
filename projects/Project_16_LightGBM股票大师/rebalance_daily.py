@@ -384,6 +384,17 @@ def main():
     _new_buys.sort(key=lambda b: -(b.get("total") or 0))
     exec_buys = _topups + _new_buys[:slots]
 
+    # ---- 纸面自动降级闸（2026-09-13 立，T-20260913-001 P1-8）：冻结时只卖不买 ----
+    frozen = False
+    try:
+        import paper_forward_downgrade as _pf
+        frozen = _pf.is_frozen("V1.3")
+    except Exception:
+        pass
+    if frozen:
+        exec_buys = []
+        print("    !! [降级闸] V1.3 纸面前向样本外为负，冻结加仓（只卖不买）——到期/调出卖出照常，QMT 内置风控照常")
+
     print("=" * 64)
     print(f"[方案A 换仓计划·等权对齐] {args.date} | 清单: {os.path.basename(sel_path)}")
     print(f"  持仓来源: {src} | 当前持仓 {len(positions)} 只 | 目标 top{n_target}: {[t['code'] for t in target]}")

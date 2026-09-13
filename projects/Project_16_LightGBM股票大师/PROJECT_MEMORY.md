@@ -947,3 +947,65 @@ ebalance_g2.py 买入循环低开校验（gap_guard）：极端低开<=-5%跳过
 - **生产面板已刷**：feature_panel_v3_enh.parquet → 2026-09-11（4,807,456 行，2019-01-10 起），与 v3 基础面板网格完全一致；备份 .bak_20260912_224322。冒烟：train_g2 --limit 50000 读新面板通过（enh 行级覆盖率 0.9911，strict FAIL=小样本正确行为）。
 - **数据天花板（刷新链的固有约束）**：astock finance forecast/express max ann_date 2026-07-29、dividend/fina_indicator/share_change 2026-08-21；ths_daily 到 08-21；主库日线到 08-21、增量库 08-24 起仅 OHLCV。事件特征靠 asof 语义自然衰减（无新事件=旧值持续，语义正确）；industry_mom20 用主库+增量 close 无天花板。
 - **生效路径**：09-14 周更重训自然吃 09-11 数据（与 asof 修复候选 20260912_1905t 同链双门禁）；live 模型（08-25）serve 消费经 build_g2_daily asof 读 enh 面板 → 修复后慢变量恢复到 09-11。验证脚本 `scripts/_tmp_*.py` ×7 留存（口径复现/变体扫描/迁移验证）。未 commit。
+
+## 2026-09-13 · ENS 资金池滚动补齐（T-20260913-001 P0，对齐 G2 reconcile_g2._roll_g2_capital）
+
+- **根因**：econcile_ens.py 无资金池滚动逻辑，ns_strategy_capital.json 停在 09-10 初始 10 万（de_recheck B-5 观察项）——已实盘建仓 600409/300138 后买入预算失真（浮亏时仍按 10 万配仓），随盈亏累积偏差扩大。
+- **修复（reconcile_ens.py）**：补三个函数——_all_fills()（遍历 state 目录所有 fills_<date>.json 跨日累计）、_realized_pnl_from_fills()（FIFO 配对已实现盈亏，与 positions_from_fills 同口径）、_float_pnl_now()（最新 positions_cfg 成本含费 + fetch_price 现价）；_roll_ens_capital(date) = START_CAPITAL + realized + float_pnl，account_id 戳原子写 save_ens_capital（<=0 跳过）。main() 挂 ⑤ 资金池段：capital_prev 先读再滚，md 报告新增"资金池"节，飞书通知带资金池。
+- **验证**：①单测 5/5 PASS（沙箱临时目录：FIFO 650/浮盈 50/滚动 100700/幂等二次滚动一致/空仓回退 10 万）；②端到端 econcile_ens.py --date 20260913：资金池 **100000→98469.21**（已实现 0 + 浮盈 -1531），positions_cfg FALLBACK 回退 0911 持仓（周日无当日快照属正常），md/飞书均带资金池。
+- **生效路径**：TW 对账任务 18c0c8d2（15:45 日终对账）直接调 reconcile_ens.py → 自动生效，无需改调度。
+- **⚠️ 测试坑**：ead_fills/read_positions 用的是 qmt_bridge_client_ens 模块级 STATE_DIR/CMD_DIR 常量（不是 g2_ens_config.G 的），沙箱测试必须同时 patch CL.STATE_DIR/CL.CMD_DIR 才不污染真实 QMT_POOL。
+- **⚠️ 周日跑对账会误报"账本比账户多 N 股"**（ead_positions(date) 无当日快照返回空 → 账户侧=0）：交易日 15:45 有当日 positions 快照不会误报，非修复引入。
+- **相关**：三策略自我迭代讨论纪要与 DE 稿见 data/三策略自我迭代_讨论纪要_20260913.md、data/de_self_iteration_discuss_20260913.md（DE 稿"心跳告警未注册"结论已过时——09-12 已补注册，待 09-14 盘中真实触发核对）。
+
+## 2026-09-13 · 纸面自动降级闸落地（T-20260913-001 P1-8）
+
+- **动机**：体系"防模型退化"强（双门禁+回滚）、"防策略整体失效"弱——样本外纸面前向持续为负时无自动刹车。设计文档 data/纸面自动降级闸_设计_20260913.md。
+- **新脚本 paper_forward_downgrade.py**：三臂（G2 live=N15 / V1.3 ab_v3enh=N10 / ENS ens=N10）取 rank<=2 已到期样本（到期=信号日+hold+1 交易日<=最新，merged_daily_full 日历）；超额=个股 open→open 复权收益（load_open）− 同窗口全市场等权基准（load_bench，与 forward_stats.market_ret 同源）；**触发=n>=30 且 超额均值<0 且 <-0.0002**（幅度阈值防微负抖动；t 值仅报告不作硬门槛——A股日频 30 笔样本 t 天然难显著）。
+- **CLI**：默认=评估+新触发自动写标记+飞书；--check=只读不写（dry-run）；--unfreeze <G2|V1.3|ENS>=人工解除；--force-freeze <策略> --reason=人工强制。标记文件 data/real/paper_forward_downgrade.json（frozen/since/n/mean_excess/note）。
+- **rebalance 接入（只卖不买）**：rebalance_g2.py（G2）/rebalance_ens.py（ENS）在 build_plan 买入段入口 
+_slots=0 + plan["downgrade_frozen"]；rebalance_daily.py（V1.3）在 exec_buys 计算后清空。**卖出/减仓/锁定/桥内 QMT 风控全保留**。消费方用 paper_forward_downgrade.is_frozen(key)（try/except 包裹，import 失败降级为不冻结）。
+- **挂调度**：paper_forward_daily.ps1 16:45 管道尾步骤6（fail-loud：exit 非 0 → DOWNGRADE-ALERT 日志 + 管道 exit 2）。
+- **验证**：单测 8/8 PASS（check 不写标记/48 笔显著负触发/写标记+alerts/is_frozen/unfreeze/微负 -8e-6 不触发/force-freeze）；真实数据三臂均不触发（G2 n=8 未达 30，超额 -0.02423）；端到端 G2 冻结 dry-run 实证「冻结加仓 0 买入、持仓保留照常」。
+- **踩坑**：①load_bench/load_open 必须过滤 open<=0 行（停牌/异常，否则 bench=inf 污染超额）；②ARMS 存相对文件名、运行时 join REAL（否则测试覆盖 D.REAL 无效）；③--check 语义=完全不写标记（曾 bug：check 也 save_mark 导致 dry-run 污染真实标记）。
+- **后续**：09-14 16:45 管道首跑自然生效；解除必须人工 --unfreeze（不自动恢复，防呆）。
+
+## 2026-09-13 · 自我迭代机制批量落地（T-20260913-001 全部执行，诚哥"所有任务都完成"）
+
+### 1. C2 G2 反向互斥对称化
+- g2_config.py 加 ENS_HOLD_DATES_FILE（指向 rebalance_g2_ens/g2_ens_hold_dates.json）；ebalance_g2.py 买入段候选池排除 ENS 账本持仓（对齐 rebalance_ens 的 G2 单向规避）。实测 dry-run「跳过 ENS 持仓 2 只: 300138.SZ,600409.SH」，G2 候选 Top1 与 ENS 无冲突正常买入。
+
+### 2. F1 特征级 IC/覆盖率周报
+- 新脚本 eature_health_weekly.py：V1.3 面板（feature_panel_v3.parquet 27 特征）近 4 周逐日横截面 Spearman IC + 缺失率；ALERT=近4周|IC|<0.01 且缺失率>5%，WATCH=二者之一；--check 只读；挂 retrain 前置（面板刷新前跑=用上周期数据评估）。**首跑发现真信号：fin_ocf_to_profit 缺失率 13.34% WATCH**（经营现金流/净利润比缺失率偏高，待人工裁决）。**踩坑：面板 index 是 [None] 扁平表（列含 trade_date/ts_code/fwd_ret），不是 MultiIndex**。
+
+### 3. F2 enh 面板新鲜度硬门禁
+- 新脚本 check_enh_freshness.py：enh 面板末日 vs 最近交易日（merged_daily_full，trade_date 在 index），>7 天 exit 2。挂 run_scheduled retrain：$skipG2 阻断 train_g2（补 if 守卫 + else 日志）。实测 enh 面板落后 0 天 PASS。
+
+### 4. M3 观察期回滚条件自动化
+- ollback_check_g2.py 加 --auto：深度劣化（前向 < 基线 − AUTO_THRESHOLD=0.0005）自动回退 prev_model + 飞书；轻度劣化仍 exit 2 人工；_do_rollback 抽取复用（--apply 也走它）。单测 9/9 PASS（深度自动回退+meta推断/轻度人工/通过观察期）。**踩坑：trading_days_since 默认参数绑定了 import 时旧路径，改函数内读全局 LIVE_CSV**。挂 daily 尾部 ollback_check_g2.py --auto。
+
+### 5. E6 双调度器一致性巡检
+- 新文件 data/tw_schedule_snapshot.json（TW 侧 13 任务快照，agent 会话手动更新，标记 conflict_with 任务）；
+ightly_check.py check_e 加 E6：读快照，conflict 任务仍 Active → FAIL。全检 27 项 PASS（含 E6）。**TW 侧 eda9b0c3（成本锚生成V1.3）仍 Paused 未删——T-20260910-008 拍板"彻底删除"待 TW 执行，E6 已监控**。
+
+### 6. P1 配置漂移复查
+- 新脚本 config_drift_recheck.py：promote 后对历史最优 N 的 3 个邻域点（N±5 × 保持 EXIT，每点约8-10分钟）用官方引擎重扫，与 strategy_cfg_lib 对比，**只登记不改实盘**（data/config_drift_<策略>_<date>.md/.json）。挂 retrain 末尾：仅当 $g2New（本轮 promote 成功）才跑。后台验证中。
+
+### 7. P3 纸面优先制度固化
+- repowiki 网格寻优与防过拟合方法论.md 新增第七节：任何配置改动先纸面≥30笔；降级闸/漂移复查只登记；回滚自动化保守边界；KPI=样本外纸面前向超额（回测年化不作 KPI）。
+
+### 09-14 周一待观察（自然生效）
+周更双门禁（asof 修复候选 20260912_1905t）+ 心跳告警盘中真实触发 + 降级闸 16:45 管道首跑 + enh 硬门禁/特征周报/配置漂移复查首跑 + G2 互斥首日无冲突。
+
+## 2026-09-13 · DE 独立审查自我迭代批次 + P0/P1/P2 修复（T-20260913-001 收尾）
+
+- **DE 审查**（报告 data/de_audit_self_iteration_20260913.md）：9 项机制 7 PASS + 1 FAIL（⑥自动回滚列名死链）+ 横切 BOM 丢失。TRAE 逐项独立复核全部确认属实后修复复验。
+- **P0-1（真 bug）**：ollback_check_g2.py 读 	rade_date/wd_ret 列，真实 paper_forward_live.csv schema 是 date/et——trial 存在时必 exit 1，自动回退/轻度告警永不可达。**教训：MOCK 单测用 mock schema 自证自测=假阴性（AGENTS「MOCK 测不到真实 schema」的又一实例）**。修复：列名对齐 + 单测改用真实 schema（11/11 PASS）。
+- **P0-2（违反硬规则）**：run_scheduled.ps1/paper_forward_daily.ps1 被编辑工具改写丢 UTF-8 BOM（首字节 35,32 无 EF BB BF），PS5.1 中文乱码；09-14 周训前置。已补 BOM（EF BB BF 复验 OK）。**教训：每次编辑含中文 .ps1 后必须复验 BOM（AGENTS T-20260903-015 硬规则再次命中，PROJECT_MEMORY 09-12 声称「BOM 完好」已失效——写入者是不同会话）**。
+- **P1-1**：paper_forward_downgrade.py docstring 承诺「推送失败 exit 2」但 main 恒 return 0 → 调度 DOWNGRADE-ALERT 分支不可达。修复：推送失败 return 2（mock 验证）。
+- **P1-2**：ollback_check_g2.py --auto 回退失败静默 return 0 → 假阳性「已自动回退 OK」。修复：失败 return 2 + 飞书告警。
+- **P2-1（规格偏离）**：讨论纪要 M3 要求「连续 3 日」深度劣化才自动回退，实现为单次。修复：ollback_streak.json 计数，连续 3 交易日才触发；方法论第七节同步（对齐）。
+- **P2-6**：E6 快照新鲜度未校验（手动快照过期→假 PASS）。修复：generated_at >7 天 WARN。
+- **P2-13**：_do_rollback 指针写入非原子。修复：tmp+os.replace。
+- **剩余 P2 记录待办**（DE 报告③节）：V1.3 臂 N10 vs 实盘 N5 口径；互斥读文件 fail-open 告警；漂移 argmax 无容差；gate 回滚后漂移复查用被拒候选；ENS 预算基数未扣保留持仓（预存分歧）；回滚 CSV 回填 --hold 10 vs N15。
+- **DE 设计建议（采纳记录）**：统一前向评估数据底座（共享 schema）；动作失败与触发同级 fail-loud；调度退出码矩阵文档化；gate/rollback 改指针后重读；BOM 校验自动化。

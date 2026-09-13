@@ -395,6 +395,17 @@ def build_plan(date, capital):
     # 保留持仓 = 未到期未卖出的持仓；空位数 = TOP_N - 保留持仓数
     kept = {c for c in ledger if c not in sold_codes}
     n_slots = G.TOP_N - len(kept)
+    # ---- 纸面自动降级闸（2026-09-13 立，T-20260913-001 P1-8）：冻结时只卖不买 ----
+    frozen = False
+    try:
+        import paper_forward_downgrade as _pf
+        frozen = _pf.is_frozen("G2")
+    except Exception:
+        pass
+    if frozen:
+        n_slots = 0
+        plan["downgrade_frozen"] = True
+        print("    !! [降级闸] G2 纸面前向样本外为负，冻结加仓（只卖不买）——已持仓到期卖出照常，桥内风控照常")
     # ---- 大盘门控（T-20260904-004，2026-09-11 补上）：T=0 停买 / T=1 半仓 / T=2 满仓 ----
     hs300_pct = load_hs300_pct()
     tier = _calc_tier(hs300_pct)
@@ -412,8 +423,19 @@ def build_plan(date, capital):
     else:
         print("    [门控] 沪深300 %.2f%% → T=2 满仓（买入预算=资金池×%.0f%%）" % (hs300_pct, G.DEPLOY_PCT * 100))
     if n_slots > 0 and pool and deploy_pct > 0:
-        # 候选池：排除已保留持仓，按 total_new 降序
-        cand = [p for p in pool if p["code"] not in kept]
+        # 候选池：排除已保留持仓 + ENS 账本重叠票（反向互斥对称化，2026-09-13，T-20260913-001 C2）
+        # 背景：融合换仓已单向跳过 G2 账本（g2_hold_dates.json）；G2 侧此前无反向互斥，
+        #       G2 候选若撞 ENS 持仓会双买（T-20260910-109 已知残余风险）。同账户双桥，杜绝争同一持仓。
+        ens_held = set()
+        try:
+            if os.path.exists(G.ENS_HOLD_DATES_FILE):
+                with open(G.ENS_HOLD_DATES_FILE, encoding="utf-8") as f:
+                    ens_held = set(str(k) for k in (json.load(f).get("hold_dates", {}) or {}).keys())
+        except Exception:
+            pass
+        cand = [p for p in pool if p["code"] not in kept and p["code"] not in ens_held]
+        if ens_held:
+            print("  [重叠规避] 跳过 ENS 账本持仓 %d 只: %s" % (len(ens_held), ",".join(sorted(ens_held))))
         cand.sort(key=lambda p: p["total"], reverse=True)
         # T-20260903-019 口径修复：对齐回测 scan_rotate_cost_real.budget = cash×deploy_pct/n（n=空位数），
         # 基数必须是"剩余可用资金"（资金池 − 保留持仓投入成本），不是资金池总额——
