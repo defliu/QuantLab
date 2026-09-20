@@ -94,22 +94,30 @@ def main():
 
     print("[4/5] 真实评分卡（F2实时主力净额 / F5当日板块涨幅 / F6实时PE换手） ...")
     # est：主库按 (trade_date, ts_code) 提供 T 日 pe_ttm/turnover_rate（T 日口径，F6 用）
-    daily = pd.read_parquet(DC.MAIN_DAILY, columns=["pe_ttm", "turnover_rate"]).reset_index()
+    # 2026-09-14 主库被重建为扁平结构（trade_date/ts_code 变为数据列 + 多余 'index' 列）：
+    # 旧写法 .reset_index() 会得到 'index' 列 → KeyError: trade_date（当晚候选断链根因）。
+    # 修复：探测 trade_date 是否在数据列，兼容新旧两种布局。
+    try:
+        daily = pd.read_parquet(DC.MAIN_DAILY, columns=["trade_date", "ts_code", "pe_ttm", "turnover_rate"])
+        if "trade_date" not in daily.columns:
+            raise KeyError("trade_date 不在数据列，回退旧布局")
+    except Exception:
+        daily = pd.read_parquet(DC.MAIN_DAILY, columns=["pe_ttm", "turnover_rate"]).reset_index()
     daily["trade_date"] = pd.to_datetime(daily["trade_date"])
     daily["ts_code"] = daily["ts_code"].astype(str)
     daily = daily.set_index(["trade_date", "ts_code"])
     idx = pd.MultiIndex.from_arrays([pre["trade_date"], pre["ts_code"]])
     est = daily.reindex(idx)
-    # 真实列（如快照缺列则回退中性）
-    for c in ["main_net", "industry_pct", "volume_ratio"]:
-        if c not in pre.columns:
-            pre[c] = np.nan
     # F2 评分卡口径：main_net 需为「元」（score_f2 阈值 5e7/1e7/1e8 均为元）
     # 快照 mf_main_net 是 moneyflow 五档「万元」，转元后作为评分卡主值；industry_pct 取 F5 当日自算值
     if "main_net" not in pre.columns and "mf_main_net" in pre.columns:
         pre["main_net"] = pre["mf_main_net"] * 1e4
     if "industry_pct" not in pre.columns and "ind_pct_ths" in pre.columns:
         pre["industry_pct"] = pre["ind_pct_ths"]
+    # 真实列（如快照缺列则回退中性）
+    for c in ["main_net", "industry_pct", "volume_ratio"]:
+        if c not in pre.columns:
+            pre[c] = np.nan
     # ---- F2 主数据源自适应（2026-09-03 升级 Tushare moneyflow 为主源）----
     # Tushare 每日 19:30 刷新后快照新鲜（滞后<=2天）-> F2 用 Tushare 主源（零 skew 训练同口径）
     # 否则回退原逻辑：新浪当日实时覆盖（避免 Tushare 滞后时 F2 反而变旧）
@@ -146,6 +154,10 @@ def main():
     pre["total_new"] = sc["total_new_real"].values
     for f in ("F1", "F2", "F3", "F4", "F5", "F6"):
         pre[f"SC_{f}"] = sc[f].values
+    # ---- FAIL-LOUD 自检（T-20260919-002 防线D，2026-09-20）：评分卡坍缩立即中止落盘 ----
+    # 防 2026-08-17~09-18 F2/F5 死代码事故复发：SC_F2/SC_F5 恒值或 main_net 全 NaN → 中止（宁可空仓不选错）
+    if pre["SC_F2"].nunique() <= 1 or pre["SC_F5"].nunique() <= 1 or pre["main_net"].notna().sum() == 0:
+        raise SystemExit("!! FAIL-LOUD：SC_F2/SC_F5 恒值或 main_net 全 NaN（F2/F5 主源失效）——已中止落盘，勿用此候选")
 
     print("[5/5] 红线 + 位置过滤 + Top%d ..." % args.top)
     pre = pre[pre["total_new"] >= args.threshold].copy()
@@ -215,15 +227,20 @@ def main():
             day["ab_prob"] = ab_bst.predict(day[ab_meta].astype("float32").values)
             ab_pre = day.nlargest(args.pool, "ab_prob").copy()
             ab_est = daily.reindex(pd.MultiIndex.from_arrays([ab_pre["trade_date"], ab_pre["ts_code"]]))
-            for c in ["main_net", "industry_pct", "volume_ratio"]:
-                if c not in ab_pre.columns:
-                    ab_pre[c] = np.nan
             if "main_net" not in ab_pre.columns and "mf_main_net" in ab_pre.columns:
                 ab_pre["main_net"] = ab_pre["mf_main_net"] * 1e4
             if "industry_pct" not in ab_pre.columns and "ind_pct_ths" in ab_pre.columns:
                 ab_pre["industry_pct"] = ab_pre["ind_pct_ths"]
+            for c in ["main_net", "industry_pct", "volume_ratio"]:
+                if c not in ab_pre.columns:
+                    ab_pre[c] = np.nan
             ab_sc = SR.compute_real_scorecard(ab_pre, ab_est)
             ab_pre["total_new"] = ab_sc["total_new_real"].values
+            for f in ("F1", "F2", "F3", "F4", "F5", "F6"):
+                ab_pre[f"SC_{f}"] = ab_sc[f].values
+            # ---- FAIL-LOUD 自检（T-20260919-002 防线D）：AB 臂评分卡坍缩立即中止 ----
+            if ab_pre["SC_F2"].nunique() <= 1 or ab_pre["SC_F5"].nunique() <= 1 or ab_pre["main_net"].notna().sum() == 0:
+                raise SystemExit("!! FAIL-LOUD（AB）：SC_F2/SC_F5 恒值或 main_net 全 NaN——已中止 AB 落盘")
             ab_pre = ab_pre[ab_pre["total_new"] >= args.threshold].copy()
             if len(ab_pre) == 0:
                 print(f"    [AB] v3_enh 无候选通过红线 {args.threshold:.0f} → 空仓")
@@ -258,15 +275,20 @@ def main():
             en_pre = day[(day["en_pg"] >= args.threshold / 100) | (day["en_pv"] >= args.threshold / 100)].copy()
             en_pool = en_pre.sort_values("ens", ascending=False).head(args.pool).copy()
             en_est = daily.reindex(pd.MultiIndex.from_arrays([en_pool["trade_date"], en_pool["ts_code"]]))
-            for c in ["main_net", "industry_pct", "volume_ratio"]:
-                if c not in en_pool.columns:
-                    en_pool[c] = np.nan
             if "main_net" not in en_pool.columns and "mf_main_net" in en_pool.columns:
                 en_pool["main_net"] = en_pool["mf_main_net"] * 1e4
             if "industry_pct" not in en_pool.columns and "ind_pct_ths" in en_pool.columns:
                 en_pool["industry_pct"] = en_pool["ind_pct_ths"]
+            for c in ["main_net", "industry_pct", "volume_ratio"]:
+                if c not in en_pool.columns:
+                    en_pool[c] = np.nan
             en_sc = SR.compute_real_scorecard(en_pool, en_est)
             en_pool["total_new"] = en_sc["total_new_real"].values
+            for f in ("F1", "F2", "F3", "F4", "F5", "F6"):
+                en_pool[f"SC_{f}"] = en_sc[f].values
+            # ---- FAIL-LOUD 自检（T-20260919-002 防线D）：融合臂评分卡坍缩立即中止 ----
+            if en_pool["SC_F2"].nunique() <= 1 or en_pool["SC_F5"].nunique() <= 1 or en_pool["main_net"].notna().sum() == 0:
+                raise SystemExit("!! FAIL-LOUD（ENS）：SC_F2/SC_F5 恒值或 main_net 全 NaN——已中止 ENS 落盘")
             en_pool = en_pool[en_pool["total_new"] >= args.threshold].copy()
             if len(en_pool) == 0:
                 print(f"    [ENS] 融合无候选通过红线 {args.threshold:.0f} → 空仓")

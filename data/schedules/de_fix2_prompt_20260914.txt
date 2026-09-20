@@ -1,0 +1,19 @@
+你是 Project_16 修复工程师（DE，2026-09-14 第二轮）。工作目录：D:\QuantLab。本任务修复 P1-P3 共 6 项，可改代码，严格遵守权限边界。
+允许读取（只读分析）：D:\QuantLab\projects\Project_16_LightGBM股票大师\ 下 order_guard.py、rebalance_daily.py、deploy_predict_g2.py、g2_candidates_night.ps1、de_guard_runner.ps1、de_rebalance_guard_daily.ps1、qmt_bridge_client.py、reconcile_g2.py、g2_config.py、qmt_config.py、data\qmt_trade_log.csv、data\schedules\ 下 de_fix_plan_20260914.md、de_*_20260914.log、D:\QMT_POOL\g2_bridge\cmd\*20260914*.json、g2_bridge\state\*20260914*.json。
+允许修改（仅这 5 处，禁止其他任何文件）：
+1) D:\QuantLab\projects\Project_16_LightGBM股票大师\order_guard.py —— P1 核心修复：
+   a) 追价：order_with_guard 主循环 L143 `px = price if price and price > 0 else _fetch_price(code)` 改为"首轮用传入价，第 2 轮起追价"：`px = _fetch_price(code) if attempts > 1 else (price if price and price > 0 else _fetch_price(code))`（若 _fetch_price 失败则回退 price）。
+   b) 窗口对齐：总窗口从 60s×5=5min 提升，使单笔总等待对齐 AGENTS 红线 15 分钟语义；考虑 rebalance_daily 换仓多笔串行时长，建议 WAIT_SECONDS=60、MAX_RETRY=10（总 10 分钟，折中）并在文件头注释说明权衡；若你判断 15 更合理请说明理由。禁止改动 _order/wait_order_fill/check_limit_skip 逻辑。
+2) D:\QuantLab\projects\Project_16_LightGBM股票大师\g2_candidates_night.ps1 —— P2：检查部署命令是否含 --ens-live（融合候选夜间生成）；若 deploy_predict_g2.py 已支持该参数但脚本未传，则补传；若脚本对融合候选已通过 --ensemble 覆盖则说明无需改。
+3) D:\QuantLab\projects\Project_16_LightGBM股票大师\de_guard_runner.ps1 —— P3：修复飞书推送未配置问题：notify_feishu 从 g2_config.LARK_CLI/FEISHU_OPEN_ID 取配置，若为空导致 not_configured；请对齐 reconcile_g2.py 的成功推送方式（读其实现，若它用 push_alert_card.py/lark_cli 其他路径则复用），使 de_guard_runner 的推送真正成功；不改主检测逻辑。
+4) D:\QuantLab\projects\Project_16_LightGBM股票大师\rebalance_daily.py —— P3：修正 action 标签笔误（新买入的 action 标签应标"新晋"而非"补仓"，找到 action 判定处修正），仅动标签字符串。
+5) D:\QuantLab\projects\Project_16_LightGBM股票大师\g2_config.py 或 qmt_bridge_client.py —— P3：仅当 LARK_CLI/FEISHU_OPEN_ID 配置缺失且确认应在 g2_config 补充时，补配置（从项目内已有 .env/其他配置复制，禁止编造 token）；若项目内无可用配置则只记录不补。
+禁止：修改任何 QMT 桥内策略源码（build/ 产物）、qmt_config.py 的账号/密码、reconcile_g2.py 核心逻辑、除上述 5 处外的文件；禁止 commit；禁止运行 --live / rebalance_daily.py / reconcile_*.py / deploy_predict_g2.py（只读分析）。
+任务步骤：
+1) P1-1（order_guard 追价+窗口）：读 order_guard.py 全文，实施追价与窗口修改，保留原有涨跌停跳过/部分成交/废单重试语义；报告修改行号与设计权衡。
+2) P1-2（TRAE 任务失效根因）：基于本地证据分析今日（09-14）TRAE 09:25 候选预生成与 15:45 G2 对账为何无产物：查看候选/对账产物时间戳、de_* 日志、是否存在模型服务过载证据；给出降级条款建议（TRAE 对账任务 prompt 已含模型降级条款，评估候选任务是否需要同样条款）；只分析不改 TRAE 任务。
+3) P2-1（14:34 G2 补买链路定性）：分析 g2_bridge/cmd 与 state 下 20260914 文件（orders_20260914*.json/fills_20260914.json/positions_cfg_20260914.json 的时间戳与内容），判断 14:34 买入 603332 是哪个入口触发（rebalance_g2 --live 人工补跑？09:50 换仓延迟？其他脚本？），给出定性结论。
+4) P2-2（融合夜间候选）：见允许修改 2)。
+5) P3 两项（飞书 webhook、action 标签）：见允许修改 3)/4)/5)。
+6) 输出修复报告到 D:\QuantLab\data\schedules\de_fix2_plan_20260914.md：六项逐项结论（根因证据/修改内容/行号/验证建议/未决事项）。
+硬约束：只改允许的 5 处；遇不确定只记录不擅自行动；任何修改前先读全文。

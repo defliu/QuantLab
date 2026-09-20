@@ -1,0 +1,53 @@
+batch_id: pilot_20260916
+created: 2026-09-16
+author: TRAE+DE
+direction: "试点批：方向A(北向/龙虎榜/研报另类数据 20) + 方向B(财务科目组合/时间维度 20)"
+universe: "smallcap_30e"  # circ_mv 0~30亿 + pe/pb>0 + 非ST + 非停牌
+note: "S0 预登记（先登记后运行）。direction_hint=+ 表示值大=预期看多；IC 按 hint 翻转后判定。"
+candidates:
+  # ================= 方向 A-1：北向持仓（hk_hold_full, 2016-06 起日频） =================
+  - {id: HK_RATIO_LEVEL,       name: 北向持股比例水平,       direction: A-北向, source: northbound/hk_hold_full, fn: hk_ratio_level,     logic: "外资持股比例高=外资长期看好", direction_hint: 1}
+  - {id: HK_RATIO_CHG_5D,      name: 北向持股比例5日变动,    direction: A-北向, source: northbound/hk_hold_full, fn: hk_ratio_chg_5d,    logic: "短期外资增持=资金边际流入", direction_hint: 1}
+  - {id: HK_RATIO_CHG_20D,     name: 北向持股比例20日变动,   direction: A-北向, source: northbound/hk_hold_full, fn: hk_ratio_chg_20d,   logic: "月度外资增持=中期看多信号", direction_hint: 1}
+  - {id: HK_RATIO_CHG_60D,     name: 北向持股比例60日变动,   direction: A-北向, source: northbound/hk_hold_full, fn: hk_ratio_chg_60d,   logic: "季度外资增持=长期配置变化", direction_hint: 1}
+  - {id: HK_RATIO_20D_AVG,     name: 北向持股比例20日均值,   direction: A-北向, source: northbound/hk_hold_full, fn: hk_ratio_20d_avg,   logic: "持股比例平滑水平=稳定配置", direction_hint: 1}
+  - {id: HK_VOL_CHG_20D,       name: 北向持股数20日变动率,   direction: A-北向, source: northbound/hk_hold_full, fn: hk_vol_chg_20d,     logic: "持股数增长=外资加仓", direction_hint: 1}
+  - {id: HK_RATIO_ACCEL,       name: 北向增持加速(20D-5D),   direction: A-北向, source: northbound/hk_hold_full, fn: hk_ratio_accel,     logic: "近20日增持快于近5日=加速流入", direction_hint: 1}
+  # ================= 方向 A-2：龙虎榜（top_list, 2005 起事件型） =================
+  - {id: LHB_NET_20D,          name: 龙虎榜20日净买入额,     direction: A-龙虎榜, source: lhb/top_list, fn: lhb_net_20d,       logic: "席位净买入=大资金看多", direction_hint: 1}
+  - {id: LHB_NET_60D,          name: 龙虎榜60日净买入额,     direction: A-龙虎榜, source: lhb/top_list, fn: lhb_net_60d,       logic: "中期大资金持续流入", direction_hint: 1}
+  - {id: LHB_TIMES_20D,        name: 龙虎榜20日上榜次数,     direction: A-龙虎榜, source: lhb/top_list, fn: lhb_times_20d,     logic: "上榜频繁=资金高度关注", direction_hint: 1}
+  - {id: LHB_NETRATE_20D,      name: 龙虎榜20日净买入率均值, direction: A-龙虎榜, source: lhb/top_list, fn: lhb_netrate_20d,   logic: "净买入占比高=多头主导", direction_hint: 1}
+  - {id: LHB_RECENT_DAYS,      name: 距最近上榜天数(负),     direction: A-龙虎榜, source: lhb/top_list, fn: lhb_recent_days,   logic: "上榜越新=热度未退", direction_hint: 1}
+  - {id: LHB_NET_MV_20D,       name: 龙虎榜20日净买入/市值,  direction: A-龙虎榜, source: lhb/top_list, fn: lhb_net_mv_20d,    logic: "净买入相对市值规模=剔大盘天然大额", direction_hint: 1}
+  # ================= 方向 A-3：研报（report_rc_daily, 2006 起事件型） =================
+  - {id: RES_COUNT_60D,        name: 研报60日覆盖数,         direction: A-研报, source: research/report_rc_daily, fn: res_count_60d,     logic: "覆盖多=机构关注提升", direction_hint: 1}
+  - {id: RES_COUNT_120D,       name: 研报120日覆盖数,        direction: A-研报, source: research/report_rc_daily, fn: res_count_120d,    logic: "半年覆盖密度=长期关注", direction_hint: 1}
+  - {id: RES_COUNT_CHG_60D,    name: 研报覆盖数环比变动,     direction: A-研报, source: research/report_rc_daily, fn: res_count_chg_60d, logic: "覆盖增加=关注度上升", direction_hint: 1}
+  - {id: RES_RATING_60D,       name: 研报60日评级均值(负),   direction: A-研报, source: research/report_rc_daily, fn: res_rating_60d,    logic: "评级均值看多=机构乐观", direction_hint: 1}
+  - {id: RES_RATING_CHG,       name: 研报评级变动(负),       direction: A-研报, source: research/report_rc_daily, fn: res_rating_chg,    logic: "评级上调=盈利预期改善", direction_hint: 1}
+  - {id: RES_NEW_COVER_60D,    name: 研报新覆盖哑变量,       direction: A-研报, source: research/report_rc_daily, fn: res_new_cover_60d, logic: "新获覆盖=边际关注起点", direction_hint: 1}
+  - {id: RES_RATING_LEVEL,     name: 研报30日评级水平(负),   direction: A-研报, source: research/report_rc_daily, fn: res_rating_level,  logic: "当前评级水平=机构态度", direction_hint: 1}
+  # ================= 方向 B-1：财务质量/水平（fina_indicator PIT） =================
+  - {id: FIN_ACC_QUALITY,      name: 扣非净利占比,           direction: B-质量, source: finance/fina_indicator, fn: fin_acc_quality,     logic: "扣非占比高=盈利真实(无一次性)", direction_hint: 1}
+  - {id: FIN_OCF_TO_PROFIT,    name: 经营现金流/净利润,      direction: B-质量, source: finance/fina_indicator, fn: fin_ocf_to_profit,  logic: "现金流覆盖利润=利润含金量", direction_hint: 1}
+  - {id: FIN_OCF_TO_SALES,     name: 经营现金流/营收,        direction: B-质量, source: finance/fina_indicator, fn: fin_ocf_to_sales,   logic: "现金回款能力强", direction_hint: 1}
+  - {id: FIN_DEBT_TO_ASSET,    name: 资产负债率(负),         direction: B-质量, source: finance/fina_indicator, fn: fin_debt_to_asset,  logic: "杠杆低=财务稳健(负向取反)", direction_hint: 1}
+  - {id: FIN_CURRENT_RATIO,    name: 流动比率,               direction: B-质量, source: finance/fina_indicator, fn: fin_current_ratio,  logic: "短期偿债能力强", direction_hint: 1}
+  - {id: FIN_QUICK_RATIO,      name: 速动比率,               direction: B-质量, source: finance/fina_indicator, fn: fin_quick_ratio,    logic: "剔存货后偿债能力", direction_hint: 1}
+  # ================= 方向 B-2：财务增长（同比/环比） =================
+  - {id: FIN_NETPROFIT_YOY,    name: 净利润同比,             direction: B-增长, source: finance/fina_indicator, fn: fin_netprofit_yoy,  logic: "盈利高增长", direction_hint: 1}
+  - {id: FIN_DT_NP_YOY,        name: 扣非净利润同比,         direction: B-增长, source: finance/fina_indicator, fn: fin_dt_netprofit_yoy, logic: "主营盈利高增长", direction_hint: 1}
+  - {id: FIN_REV_YOY,          name: 营收同比,               direction: B-增长, source: finance/fina_indicator, fn: fin_rev_yoy,        logic: "收入扩张", direction_hint: 1}
+  - {id: FIN_OCF_YOY,          name: 经营现金流同比,         direction: B-增长, source: finance/fina_indicator, fn: fin_ocf_yoy,        logic: "现金流改善", direction_hint: 1}
+  - {id: FIN_ROE_YOY,          name: ROE同比,                direction: B-增长, source: finance/fina_indicator, fn: fin_roe_yoy,        logic: "盈利能力提升", direction_hint: 1}
+  - {id: FIN_ASSETS_YOY,       name: 总资产同比,             direction: B-增长, source: finance/fina_indicator, fn: fin_assets_yoy,     logic: "资产扩张=成长性", direction_hint: 1}
+  - {id: FIN_Q_GR_QOQ,         name: 单季营收环比,           direction: B-增长, source: finance/fina_indicator, fn: fin_q_gr_qoq,       logic: "近期营收加速", direction_hint: 1}
+  # ================= 方向 B-3：单季质量 =================
+  - {id: FIN_Q_ROE,            name: 单季ROE,                direction: B-单季, source: finance/fina_indicator, fn: fin_q_roe,          logic: "当期盈利能力", direction_hint: 1}
+  - {id: FIN_Q_GS_MARGIN,      name: 单季毛利率,             direction: B-单季, source: finance/fina_indicator, fn: fin_q_gs_margin,    logic: "当期产品定价力", direction_hint: 1}
+  - {id: FIN_Q_NP_MARGIN,      name: 单季净利率,             direction: B-单季, source: finance/fina_indicator, fn: fin_q_np_margin,    logic: "当期净利率", direction_hint: 1}
+  - {id: FIN_Q_SALES_QOQ,      name: 单季营收环比,           direction: B-单季, source: finance/fina_indicator, fn: fin_q_sales_qoq,    logic: "单季收入加速", direction_hint: 1}
+  - {id: FIN_Q_NP_QOQ,         name: 单季净利环比,           direction: B-单季, source: finance/fina_indicator, fn: fin_q_np_qoq,       logic: "单季利润加速", direction_hint: 1}
+  - {id: FIN_Q_DTPROFIT_RATIO, name: 单季扣非占比,           direction: B-单季, source: finance/fina_indicator, fn: fin_q_dtprofit_ratio, logic: "当期盈利真实性", direction_hint: 1}
+  - {id: FIN_Q_OCF_TO_SALES,   name: 单季现金流/营收,        direction: B-单季, source: finance/fina_indicator, fn: fin_q_ocf_to_sales, logic: "当期现金回款", direction_hint: 1}

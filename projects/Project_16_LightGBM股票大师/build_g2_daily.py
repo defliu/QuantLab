@@ -202,7 +202,9 @@ def main():
             latest[c] = latest["ts_code"].map(asof_latest(tl_g, [c]).get(c, 0.0) if len(tl_g) else {}).fillna(0.0)
         print("    龙虎榜无当日源，回退 D:/astock 周更（可能滞后数天）")
     # 北向持股变动
-    # 北向持股变动（上游 2024-08 起个股持股改季频披露，无当日值，保持 D:/astock 周更/季频快照）
+    # 北向持股变动：2024-08 后一度季频披露；2026-09-14 实测 Tushare hk_hold 已恢复日频
+    # （09-07~09-11 每日 959~1011 只），且 D:/astock/northbound/hk_hold_full.parquet 已由
+    # scripts/refresh_online_incremental.py 在线增量补到 T-1。此处仍按 D:/astock 最新可用（≤目标日）。
     try:
         hk = pd.read_parquet(os.path.join(ASTOCK, "northbound", "hk_hold_full.parquet"))
         hk["trade_date"] = pd.to_datetime(hk["trade_date"])

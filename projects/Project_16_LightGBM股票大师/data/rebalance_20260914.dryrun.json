@@ -1,0 +1,36 @@
+{
+  "date": "20260914",
+  "target": [
+    {
+      "code": "601890.SH",
+      "name": "亚星锚链",
+      "total": 69.5,
+      "prob": 0.6252
+    },
+    {
+      "code": "000949.SZ",
+      "name": "新乡化纤",
+      "total": 65.0,
+      "prob": 0.5829
+    }
+  ],
+  "strategy_capital": 88001.78,
+  "target_value_each": 41800.85,
+  "sell": [],
+  "buy": [
+    {
+      "code": "601890.SH",
+      "vol": 4200,
+      "held_vol": 0,
+      "held_value": 0.0,
+      "price": 9.870000000000001,
+      "total": 69.5,
+      "action": "补仓"
+    }
+  ],
+  "trim": [],
+  "hold": [
+    "601058.SH"
+  ],
+  "locked": []
+}

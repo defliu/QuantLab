@@ -111,7 +111,10 @@ def _update_hold_dates(plan, date):
             hd[code] = date
     # 清理陈旧条目：当前账本（plan.ledger）已不存在的 code（桥内 STOP/TP/TRAIL 出场、correction 卖出）
     # P2-5b 修复：防 ENS 陈旧条目让 G2 持续过度排除该候选（G2 反向互斥读此文件）
+    # 2026-09-14 对齐 G2（T-20260914-004）：本次新买入 code（buys 里、成交后才进账本）必须保留，
+    # 否则建仓日被误删 → 持有期计数失效
     active = set((plan.get("ledger") or {}).keys())
+    active |= {b.get("code", "") for b in plan.get("buys", []) if b.get("code")}
     for code in list(hd.keys()):
         if code not in active:
             hd.pop(code, None)

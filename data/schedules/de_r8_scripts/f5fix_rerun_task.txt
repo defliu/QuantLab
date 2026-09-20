@@ -1,0 +1,41 @@
+DE 任务书：F5/F2 死代码修正口径重放 + 实盘持仓收益对比（T-20260919-002 关联，2026-09-20）
+
+## 背景（诚实给全）
+deploy_predict_g2.py L112-119 死代码（已实证，探针 probe_f2_main_source.py）：
+- L112-114 先给 main_net/industry_pct/volume_ratio 填 NaN（列必然存在）
+- L117/L119 的 if "X" not in columns 条件永假 → mf_main_net*1e4 与 ind_pct_ths 回退从未执行
+- 后果：F2 恒走新浪兜底（Tushare moneyflow 主源从上线起从未生效）；F5 恒中性 5.0（板块涨幅因子从未参与）
+- 实盘 top10 CSV 的 SC_F5 全部 = 5.0（20260817~20260918，39 个文件）
+
+## 目标
+回答诚哥：若死代码不阻塞（F2=Tushare 主源、F5=真实板块涨幅），从上线(2026-08-17)至今，修正后选出的股票收益 vs 实际持仓(实盘落盘 top2)收益，对比谁更好。
+
+## 数据源（只读）
+- 实盘选股 CSV：D:/QuantLab/projects/Project_16_LightGBM股票大师/data/selections/g2/*_g2_top10.csv（含 SC_F1-F6、total_new、prob）；实际持仓 = 同目录 *_g2_top2.csv 的 rank1-2（若缺则取 top10.csv 前 2 行）
+- F2 主源：D:/astock/moneyflow/moneyflow.parquet（Tushare moneyflow，2007-01-04~2026-09-18；net_mf_amount 单位需确认【疑似万元】，score_f2 阈值是元 → 若万元需 ×1e4；训练特征 mf_main_net 为万元口径，参考面板 feature_panel_v3_enh2_n3_bt.parquet 的 mf_main_net）
+- F5 主源：板块当日涨幅重建——优先复刻 build_g2_daily.py L244-265 的增量库自算法（同花顺 881 板块成交额加权；成分表 D:/astock/board/source/parquet行业概念板块全量更新到20260814/parquet/行业概念板块/行业板块成分汇总_同花顺.parquet 静态到 8/14，可作 8/17+ 近似）；回退 board/ths_daily.parquet（881 板块日涨幅周更）
+- 行情：D:/astock/daily/stock_daily.parquet（2009-01-05~2026-09-11；前复权=原始价×adj_factor/最新adj_factor，PIT 安全）
+- 评分卡权重（scorecard_real.py）：total_new = (0.25*F1+0.20*F2+0.20*F3+0.15*F4+0.10*F5)*10 + 0.10*F6*10
+- score_f5：>3→10, >1.5→8, >0→5, >-1→4, else 2
+- score_f2（review_full.py）：净额 NaN→5.0；>5e7 且量比>2.5→10；>1e7 且量比>1.5→8；>0→6；净流出但量比≥2→5；≤-1e8→1；else 2。修正复算时量比取 CSV 无 → 按 NaN 处理（即量比条件不满足，仅净额分档），严格按函数实现
+- F1/F3/F4/F6：直接用实盘 CSV 的 SC_F1/SC_F3/SC_F4/SC_F6（不重算）
+
+## 方法（近似口径，必须如实标注局限）
+1. 数据覆盖核查先行：daily/moneyflow/ths_daily/增量库 INCR/成分表各覆盖到哪一天？报告缺口。
+2. 对每个实盘交易日 T（2026-08-17 起，要求买入日 T ≤ 2026-09-11，因 daily 行情到 9/11）：
+   a. 实际持仓 = CSV rank1-2（code 列表）
+   b. 修正：top10 每只补 F2（Tushare 主源，单位对齐）×0.20 + F5（重建板块涨幅）×0.10 → 重算 total_new → 重排 → 修正后 top2
+   c. 前向收益：T 日收盘买入，T+1 起逐日应用 live_trail 出场（STOP −7%：自买入价回落 7%；TP +15%；TRAIL 8% 激活+回撤 8% 保本；MATURE 15 交易日到期），前复权价；一字涨停/停牌/无量不买（实盘执行约束）；行情缺失日停止推进并标注"截断"
+   d. 记录：T、实际top2、修正top2、各自买入日→出场日/收益/出场原因
+3. 汇总：两口径累计/平均/中位/胜率/出场分布；分歧日 top5；结论（修正后是否更好）
+4. 输出（全部落在 D:/QuantLab/data/schedules/de_r8_scripts/f5fix_rerun/）：
+   - rerun_summary.json（关键数字，供独立复核）
+   - rerun_daily.csv（逐日明细）
+   - rerun_report.md（报告，含数据缺口诚实标注）
+
+## 硬约束
+- 只读清单之外只允许写 D:/QuantLab/data/schedules/de_r8_scripts/f5fix_rerun/ 子目录
+- 禁止修改任何其他文件；禁止 git commit；禁止改源码
+- 不触发行情/交易连接（纯离线 parquet）
+- 用 miniqmt venv python：C:/Users/Administrator/.workbuddy/binaries/python/envs/miniqmt/Scripts/python.exe
+- 口径局限必须在报告显著位置列出：①top10 名单内重排近似（被原红线挡掉的票无法还原）②F5 成分表 8/14 静态近似 ③9/11 后买入无行情 ④F2 单位对齐假设

@@ -1,0 +1,30 @@
+你是 QuantLab 项目的量化策略验收员。这是终版验收：你对 P20 全天候策略 NAV 修复的一审给出"不通过（暂缓粘贴部署）"，发现 F1-F8；TRAE 已按放行条件全量整改并重建产物。请做终版验收。
+
+【一审问题清单（你提的）】
+F1（P1）_settle 账本=目标盲目写回+_lookup_orders 死代码 → 已修：_settle 读账户 position 唯一真相+fallback；
+F2（P1）_settle 无行情守卫 → 已修：len(prices)<len(LEGS) abort 留 placing；
+F3（P2）511880 份额结转不入账 → 已修：position 反查天然含；
+F4（P2）现金残留 docstring（你称14.6%）→ 已修：实测 7.5%/7540 元（基于 etf_daily 最新 close 510300=4.579/511010=141.146/511880=100.794/518880=8.943，目标份额 6500/200/200/1600 份，市值 92460）；
+F5（P2）datetime.now() → 已修：_now_hhmm 优先 C.get_current_time()；
+F6（P2）部署须挂分钟 K → 部署报告已写明；
+F7（P3）死代码 → 已清理：_lookup_orders 函数、LOOKUP_RETRIES/LOOKUP_INTERVAL 常量、C.aw["pending"]、C.aw["nav"]（期间曾误删 C.aw["positions"]=_load_holdings(C) 已补回）；
+F8（P3）部署报告 BUILD_TAG → 已同步 202340。
+
+【终版复审对象（只读）】
+- 源码：D:\QuantLab\projects\Project_20_全天候底仓\strategy\strategy_all_weather_src.py
+- 产物：D:\QuantLab\projects\Project_20_全天候底仓\build\strategy_all_weather_v1.py（BUILD_TAG=20260913-202340，9618B）
+- 部署报告：D:\QuantLab\projects\Project_20_全天候底仓\specs\部署报告_V1_20260913.md
+
+【复审点（逐项 PASS/FAIL）】
+R1. F7 死代码清零：源码中无 _lookup_orders、LOOKUP_RETRIES、LOOKUP_INTERVAL、C.aw["pending"]、C.aw["nav"]。
+R2. init 持仓加载保留：C.aw["positions"]=_load_holdings(C) 存在且正确。
+R3. F1-F6 复查：position 反查(get_trade_detail_data acct stock position + m_nVolume/m_nCurrentPosition 兜底) 存在；_settle 行情守卫存在；_now_hhmm 优先 C.get_current_time() 且 handlebar 已用、函数体无 datetime.now 直用；_estimate_nav docstring 含 7.5%/7540。
+R4. 产物四道校验：GBK 可解码、# coding=gbk、BUILD_TAG=20260913-202340 已替换、无 TAG_PLACEHOLDER、无 MOCK、Py3.6 AST 可解析；关键逻辑（position 对账/守卫/_now_hhmm/_estimate_nav）均已进产物。
+R5. 部署报告同步：含 202340、分钟 K、7.5% 现金残留预期。
+R6. 回归：handlebar 主流程（触发→目标→下单→placing）与 _settle 调用链完整，无残留 datetime.now 直用。
+
+【输出要求（关键，务必遵守）】
+- 不要写任何文件（前两次委派均因落盘失败丢失结论）；
+- 只读审查；可运行只读 python 脚本验证，中间产物只允许写 C:\Users\Administrator\AppData\Local\Temp\deveco\ 目录；
+- 禁止修改 D:\QuantLab 任何文件、禁止 git commit；
+- 审查过程在对话中说明即可；**最后一条回复必须以 `ACCEPTANCE: ` 开头**，格式：`ACCEPTANCE: PASS|FAIL|CONDITIONAL <一句话结论> <依据>`。例如：`ACCEPTANCE: PASS F1-F8 整改全部落实，可放行模拟盘验证单（依据：源码 R1-R6 逐项核验）`。

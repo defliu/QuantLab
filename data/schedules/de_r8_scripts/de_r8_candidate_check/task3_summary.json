@@ -1,0 +1,54 @@
+{
+  "window": "2024-07-01~2026-08-14",
+  "n_days": 516,
+  "K": 2,
+  "N": 15,
+  "redline": 60.0,
+  "avg_passed_pool": 34.065891472868216,
+  "avg_hist_top10_passed": 3.364341085271318,
+  "cand_diff_days": 453,
+  "would_buy2_diff_days": 378,
+  "variant_A_DE_prob_top10": {
+    "n_trades": 76,
+    "abs_daily": 0.0010939161903991404,
+    "annual": 0.26844005694033,
+    "total_return": 0.6272621148009074,
+    "mdd": -0.31500240366789123,
+    "sharpe": 0.9987922017897651,
+    "bench_daily": 0.001046025644188225,
+    "excess_daily": 4.789054621091534e-05,
+    "win_rate": 0.5789473684210527,
+    "avg_trade_ret": 0.01695587463798924
+  },
+  "variant_B_live_total_top10": {
+    "n_trades": 81,
+    "abs_daily": 0.0014928773141132754,
+    "annual": 0.3942975373861397,
+    "total_return": 0.975081359288833,
+    "mdd": -0.31411384887977867,
+    "sharpe": 1.268170645214693,
+    "bench_daily": 0.001046025644188225,
+    "excess_daily": 0.0004468516699250504,
+    "win_rate": 0.5555555555555556,
+    "avg_trade_ret": 0.021906724425286205
+  },
+  "buy_pairs": {
+    "both": 15,
+    "only_A": 61,
+    "only_B": 66,
+    "n_A": 76,
+    "n_B": 81
+  },
+  "reasons_A": {
+    "MATURE": 46,
+    "STOP": 17,
+    "TP": 7,
+    "TRAIL": 4
+  },
+  "reasons_B": {
+    "STOP": 18,
+    "MATURE": 46,
+    "TP": 10,
+    "TRAIL": 5
+  }
+}

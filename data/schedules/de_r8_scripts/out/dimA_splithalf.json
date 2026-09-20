@@ -1,0 +1,1016 @@
+{
+  "window": [
+    "2024-07-01",
+    "2026-08-14"
+  ],
+  "strats": {
+    "V14": {
+      "hold": 5,
+      "halves": {
+        "H1_2024-07-01~2025-07-22": [
+          {
+            "n_trades": 47,
+            "n_days": 258,
+            "win_rate": 0.46808510638297873,
+            "profit_loss_ratio": 1.2835848567683925,
+            "total_return": -0.026028443536523116,
+            "annual_return": -0.025430894592030295,
+            "max_drawdown": -0.3481410594522246,
+            "sharpe": 0.21306458615368348,
+            "turnover_ann": 43.936740987959496,
+            "avg_hold_days": 5.48936170212766,
+            "reasons": {
+              "MATURE": 34,
+              "TP": 4,
+              "STOP": 8
+            },
+            "n_underweight_days": 0,
+            "K": 1
+          },
+          {
+            "n_trades": 95,
+            "n_days": 258,
+            "win_rate": 0.43157894736842106,
+            "profit_loss_ratio": 1.39335360573659,
+            "total_return": -0.07809926309688653,
+            "annual_return": -0.07635419803435983,
+            "max_drawdown": -0.34580420940483514,
+            "sharpe": -0.012270052828508992,
+            "turnover_ann": 45.39432010439408,
+            "avg_hold_days": 5.431578947368421,
+            "reasons": {
+              "MATURE": 71,
+              "TP": 6,
+              "STOP": 15,
+              "SKIP_DOWN": 1,
+              "TRAIL": 1
+            },
+            "n_underweight_days": 0,
+            "K": 2
+          },
+          {
+            "n_trades": 141,
+            "n_days": 258,
+            "win_rate": 0.46808510638297873,
+            "profit_loss_ratio": 1.3389799333974801,
+            "total_return": 0.07584964871388444,
+            "annual_return": 0.07402199026959777,
+            "max_drawdown": -0.2544365565322265,
+            "sharpe": 0.376946104539388,
+            "turnover_ann": 45.26174909612949,
+            "avg_hold_days": 5.4822695035460995,
+            "reasons": {
+              "MATURE": 110,
+              "TP": 8,
+              "STOP": 20,
+              "SKIP_DOWN": 3,
+              "TRAIL": 1
+            },
+            "n_underweight_days": 1,
+            "K": 3
+          },
+          {
+            "n_trades": 185,
+            "n_days": 258,
+            "win_rate": 0.5243243243243243,
+            "profit_loss_ratio": 1.241251967686394,
+            "total_return": 0.34755019458245684,
+            "annual_return": 0.3382346722839975,
+            "max_drawdown": -0.15932819980305768,
+            "sharpe": 1.039589527394597,
+            "turnover_ann": 44.524837588758324,
+            "avg_hold_days": 5.572972972972973,
+            "reasons": {
+              "MATURE": 150,
+              "TP": 9,
+              "STOP": 21,
+              "SKIP_DOWN": 3,
+              "TRAIL": 2
+            },
+            "n_underweight_days": 1,
+            "K": 4
+          },
+          {
+            "n_trades": 233,
+            "n_days": 258,
+            "win_rate": 0.5107296137339056,
+            "profit_loss_ratio": 1.2617674360393578,
+            "total_return": 0.2829996317286789,
+            "annual_return": 0.2755856815102926,
+            "max_drawdown": -0.15562848879959967,
+            "sharpe": 0.901016112968163,
+            "turnover_ann": 45.07428142552488,
+            "avg_hold_days": 5.527896995708154,
+            "reasons": {
+              "MATURE": 186,
+              "TP": 12,
+              "SKIP_DOWN": 6,
+              "TRAIL": 4,
+              "STOP": 28
+            },
+            "n_underweight_days": 1,
+            "K": 5
+          },
+          {
+            "n_trades": 281,
+            "n_days": 258,
+            "win_rate": 0.5088967971530249,
+            "profit_loss_ratio": 1.389814765070946,
+            "total_return": 0.4729515096689825,
+            "annual_return": 0.4597453166968424,
+            "max_drawdown": -0.16304256804149486,
+            "sharpe": 1.3176398343646945,
+            "turnover_ann": 45.38511857716396,
+            "avg_hold_days": 5.498220640569395,
+            "reasons": {
+              "MATURE": 220,
+              "TP": 17,
+              "SKIP_DOWN": 9,
+              "TRAIL": 5,
+              "STOP": 36
+            },
+            "n_underweight_days": 1,
+            "K": 6
+          }
+        ],
+        "H2_2025-07-23~2026-08-14": [
+          {
+            "n_trades": 44,
+            "n_days": 258,
+            "win_rate": 0.6136363636363636,
+            "profit_loss_ratio": 1.5087554079863965,
+            "total_return": 0.9581148366294983,
+            "annual_return": 0.9277522743147772,
+            "max_drawdown": -0.20445890885582696,
+            "sharpe": 1.8911384493124486,
+            "turnover_ann": 40.98689081445968,
+            "avg_hold_days": 5.863636363636363,
+            "reasons": {
+              "MATURE": 40,
+              "TP": 2,
+              "STOP": 1
+            },
+            "n_underweight_days": 0,
+            "K": 1
+          },
+          {
+            "n_trades": 92,
+            "n_days": 258,
+            "win_rate": 0.5652173913043478,
+            "profit_loss_ratio": 0.9410933067834311,
+            "total_return": 0.2245417830678691,
+            "annual_return": 0.21878671187848364,
+            "max_drawdown": -0.2568855392718009,
+            "sharpe": 0.7868284017160632,
+            "turnover_ann": 43.7458057305838,
+            "avg_hold_days": 5.608695652173913,
+            "reasons": {
+              "MATURE": 75,
+              "TRAIL": 5,
+              "SKIP_DOWN": 5,
+              "STOP": 8,
+              "TP": 2
+            },
+            "n_underweight_days": 0,
+            "K": 2
+          },
+          {
+            "n_trades": 136,
+            "n_days": 258,
+            "win_rate": 0.5,
+            "profit_loss_ratio": 1.2516840411352763,
+            "total_return": 0.2238726510382496,
+            "annual_return": 0.21813620856085936,
+            "max_drawdown": -0.21811582535973284,
+            "sharpe": 0.8638523566696998,
+            "turnover_ann": 43.52815417318645,
+            "avg_hold_days": 5.6838235294117645,
+            "reasons": {
+              "MATURE": 115,
+              "TRAIL": 5,
+              "TP": 4,
+              "SKIP_DOWN": 5,
+              "STOP": 10
+            },
+            "n_underweight_days": 1,
+            "K": 3
+          },
+          {
+            "n_trades": 181,
+            "n_days": 258,
+            "win_rate": 0.5359116022099447,
+            "profit_loss_ratio": 1.276361071555727,
+            "total_return": 0.38891845334340847,
+            "annual_return": 0.37834737704096666,
+            "max_drawdown": -0.1677638027142575,
+            "sharpe": 1.371457175710053,
+            "turnover_ann": 43.67358689127413,
+            "avg_hold_days": 5.69060773480663,
+            "reasons": {
+              "MATURE": 154,
+              "TRAIL": 5,
+              "TP": 6,
+              "SKIP_DOWN": 5,
+              "STOP": 14
+            },
+            "n_underweight_days": 1,
+            "K": 4
+          },
+          {
+            "n_trades": 230,
+            "n_days": 258,
+            "win_rate": 0.508695652173913,
+            "profit_loss_ratio": 1.2343164727977545,
+            "total_return": 0.29178614621117704,
+            "annual_return": 0.28411758753055816,
+            "max_drawdown": -0.14848024979561492,
+            "sharpe": 1.0895127612129203,
+            "turnover_ann": 44.507951196495526,
+            "avg_hold_days": 5.6,
+            "reasons": {
+              "MATURE": 189,
+              "STOP": 23,
+              "TRAIL": 7,
+              "TP": 8,
+              "SKIP_DOWN": 6
+            },
+            "n_underweight_days": 1,
+            "K": 5
+          },
+          {
+            "n_trades": 277,
+            "n_days": 258,
+            "win_rate": 0.5054151624548736,
+            "profit_loss_ratio": 1.115577478231435,
+            "total_return": 0.12474317206242214,
+            "annual_return": 0.12167251394360723,
+            "max_drawdown": -0.19401250034863382,
+            "sharpe": 0.5819020924474898,
+            "turnover_ann": 44.73602457930291,
+            "avg_hold_days": 5.584837545126354,
+            "reasons": {
+              "MATURE": 226,
+              "STOP": 30,
+              "TRAIL": 8,
+              "SKIP_DOWN": 8,
+              "TP": 8
+            },
+            "n_underweight_days": 1,
+            "K": 6
+          }
+        ]
+      }
+    },
+    "G2": {
+      "hold": 15,
+      "halves": {
+        "H1_2024-07-01~2025-07-22": [
+          {
+            "n_trades": 19,
+            "n_days": 258,
+            "win_rate": 0.6842105263157895,
+            "profit_loss_ratio": 1.0902166603299732,
+            "total_return": 0.5084517135418878,
+            "annual_return": 0.4940994964615928,
+            "max_drawdown": -0.17113802747911488,
+            "sharpe": 1.395666573804745,
+            "turnover_ann": 17.535116784307537,
+            "avg_hold_days": 13.578947368421053,
+            "reasons": {
+              "MATURE": 11,
+              "TP": 2,
+              "STOP": 4,
+              "TRAIL": 1
+            },
+            "n_underweight_days": 0,
+            "K": 1
+          },
+          {
+            "n_trades": 38,
+            "n_days": 258,
+            "win_rate": 0.6052631578947368,
+            "profit_loss_ratio": 1.5209662267657138,
+            "total_return": 0.5687768858484645,
+            "annual_return": 0.5524343635796598,
+            "max_drawdown": -0.12299446086426769,
+            "sharpe": 1.6648889037256793,
+            "turnover_ann": 18.120876332260302,
+            "avg_hold_days": 13.578947368421053,
+            "reasons": {
+              "MATURE": 23,
+              "STOP": 7,
+              "TP": 5,
+              "TRAIL": 1
+            },
+            "n_underweight_days": 0,
+            "K": 2
+          },
+          {
+            "n_trades": 60,
+            "n_days": 258,
+            "win_rate": 0.55,
+            "profit_loss_ratio": 1.5102256489663535,
+            "total_return": 0.38601634185701483,
+            "annual_return": 0.3755342624576259,
+            "max_drawdown": -0.11678821559121999,
+            "sharpe": 1.3999316078655968,
+            "turnover_ann": 19.105301226000808,
+            "avg_hold_days": 12.9,
+            "reasons": {
+              "STOP": 13,
+              "MATURE": 33,
+              "TRAIL": 4,
+              "TP": 7
+            },
+            "n_underweight_days": 0,
+            "K": 3
+          },
+          {
+            "n_trades": 80,
+            "n_days": 258,
+            "win_rate": 0.55,
+            "profit_loss_ratio": 1.6117198193212006,
+            "total_return": 0.5337088081232915,
+            "annual_return": 0.5185297654091983,
+            "max_drawdown": -0.14762898008200398,
+            "sharpe": 1.7745512837058373,
+            "turnover_ann": 19.375139232851346,
+            "avg_hold_days": 12.9,
+            "reasons": {
+              "STOP": 16,
+              "MATURE": 43,
+              "TRAIL": 7,
+              "TP": 10
+            },
+            "n_underweight_days": 0,
+            "K": 4
+          },
+          {
+            "n_trades": 98,
+            "n_days": 258,
+            "win_rate": 0.5306122448979592,
+            "profit_loss_ratio": 1.8989666492589663,
+            "total_return": 0.6006309676298027,
+            "annual_return": 0.5832163146089859,
+            "max_drawdown": -0.136863735891382,
+            "sharpe": 1.8371583556628683,
+            "turnover_ann": 18.94187746376101,
+            "avg_hold_days": 13.16326530612245,
+            "reasons": {
+              "STOP": 18,
+              "MATURE": 57,
+              "TRAIL": 8,
+              "TP": 10
+            },
+            "n_underweight_days": 0,
+            "K": 5
+          },
+          {
+            "n_trades": 117,
+            "n_days": 258,
+            "win_rate": 0.5299145299145299,
+            "profit_loss_ratio": 1.8088197432069533,
+            "total_return": 0.530946865491825,
+            "annual_return": 0.5158586971575361,
+            "max_drawdown": -0.1330945916403028,
+            "sharpe": 1.694116264700276,
+            "turnover_ann": 18.841214587100936,
+            "avg_hold_days": 13.23076923076923,
+            "reasons": {
+              "STOP": 22,
+              "MATURE": 69,
+              "TRAIL": 9,
+              "TP": 11
+            },
+            "n_underweight_days": 0,
+            "K": 6
+          }
+        ],
+        "H2_2025-07-23~2026-08-14": [
+          {
+            "n_trades": 18,
+            "n_days": 258,
+            "win_rate": 0.5555555555555556,
+            "profit_loss_ratio": 0.7941857059554225,
+            "total_return": -0.04374332895290456,
+            "annual_return": -0.04274810617125657,
+            "max_drawdown": -0.3227341562345495,
+            "sharpe": -0.015133593243219704,
+            "turnover_ann": 16.446366019856075,
+            "avg_hold_days": 14.333333333333334,
+            "reasons": {
+              "MATURE": 12,
+              "STOP": 4,
+              "TRAIL": 1
+            },
+            "n_underweight_days": 0,
+            "K": 1
+          },
+          {
+            "n_trades": 39,
+            "n_days": 258,
+            "win_rate": 0.4358974358974359,
+            "profit_loss_ratio": 1.0867521378137015,
+            "total_return": -0.13186960955463134,
+            "annual_return": -0.12900990440225957,
+            "max_drawdown": -0.3576474301663698,
+            "sharpe": -0.4651289814567203,
+            "turnover_ann": 18.14585459886774,
+            "avg_hold_days": 13.205128205128204,
+            "reasons": {
+              "MATURE": 23,
+              "STOP": 11,
+              "TRAIL": 2,
+              "TP": 1
+            },
+            "n_underweight_days": 1,
+            "K": 2
+          },
+          {
+            "n_trades": 58,
+            "n_days": 258,
+            "win_rate": 0.4482758620689655,
+            "profit_loss_ratio": 1.2643095062137668,
+            "total_return": -0.023358566172053563,
+            "annual_return": -0.022821590570675676,
+            "max_drawdown": -0.26839629930605124,
+            "sharpe": 0.0008621087689614505,
+            "turnover_ann": 18.239244705371853,
+            "avg_hold_days": 13.327586206896552,
+            "reasons": {
+              "MATURE": 34,
+              "TRAIL": 4,
+              "STOP": 14,
+              "TP": 3
+            },
+            "n_underweight_days": 1,
+            "K": 3
+          },
+          {
+            "n_trades": 81,
+            "n_days": 258,
+            "win_rate": 0.4567901234567901,
+            "profit_loss_ratio": 1.5610514423030388,
+            "total_return": 0.13556763525114457,
+            "annual_return": 0.13221520477554538,
+            "max_drawdown": -0.2362673700097403,
+            "sharpe": 0.6864552866795074,
+            "turnover_ann": 19.338594813348006,
+            "avg_hold_days": 12.716049382716049,
+            "reasons": {
+              "TP": 8,
+              "MATURE": 42,
+              "STOP": 20,
+              "TRAIL": 7
+            },
+            "n_underweight_days": 1,
+            "K": 4
+          },
+          {
+            "n_trades": 103,
+            "n_days": 258,
+            "win_rate": 0.46601941747572817,
+            "profit_loss_ratio": 1.3162602102842067,
+            "total_return": 0.0376023571523012,
+            "annual_return": 0.03671202708420207,
+            "max_drawdown": -0.2766603744381453,
+            "sharpe": 0.2795836149128212,
+            "turnover_ann": 19.57815124250133,
+            "avg_hold_days": 12.514563106796116,
+            "reasons": {
+              "TP": 6,
+              "MATURE": 53,
+              "STOP": 28,
+              "TRAIL": 11
+            },
+            "n_underweight_days": 1,
+            "K": 5
+          },
+          {
+            "n_trades": 123,
+            "n_days": 258,
+            "win_rate": 0.4715447154471545,
+            "profit_loss_ratio": 1.2541963123822941,
+            "total_return": 0.01883470518259278,
+            "annual_return": 0.018392685396920738,
+            "max_drawdown": -0.27785250949021356,
+            "sharpe": 0.1905539729063552,
+            "turnover_ann": 19.489616699531005,
+            "avg_hold_days": 12.56910569105691,
+            "reasons": {
+              "TP": 7,
+              "MATURE": 64,
+              "STOP": 33,
+              "TRAIL": 13
+            },
+            "n_underweight_days": 2,
+            "K": 6
+          }
+        ]
+      }
+    },
+    "ENS": {
+      "hold": 10,
+      "halves": {
+        "H1_2024-07-01~2025-07-22": [
+          {
+            "n_trades": 25,
+            "n_days": 258,
+            "win_rate": 0.52,
+            "profit_loss_ratio": 0.7794632248616872,
+            "total_return": -0.15410768008310127,
+            "annual_return": -0.15080890984214745,
+            "max_drawdown": -0.29384236705731737,
+            "sharpe": -0.17403958693580515,
+            "turnover_ann": 23.115874647428665,
+            "avg_hold_days": 10.28,
+            "reasons": {
+              "MATURE": 21,
+              "STOP": 3,
+              "TP": 1
+            },
+            "n_underweight_days": 1,
+            "K": 1
+          },
+          {
+            "n_trades": 51,
+            "n_days": 258,
+            "win_rate": 0.5098039215686274,
+            "profit_loss_ratio": 1.4888068292535075,
+            "total_return": 0.37779835026392083,
+            "annual_return": 0.36756754177321116,
+            "max_drawdown": -0.21569078378869322,
+            "sharpe": 1.0446599285563447,
+            "turnover_ann": 24.344171821240504,
+            "avg_hold_days": 10.098039215686274,
+            "reasons": {
+              "MATURE": 41,
+              "STOP": 5,
+              "TP": 4
+            },
+            "n_underweight_days": 1,
+            "K": 2
+          },
+          {
+            "n_trades": 78,
+            "n_days": 258,
+            "win_rate": 0.5256410256410257,
+            "profit_loss_ratio": 1.435201372756746,
+            "total_return": 0.404610228419227,
+            "annual_return": 0.3935555837505518,
+            "max_drawdown": -0.1813011229170911,
+            "sharpe": 1.3021463582677544,
+            "turnover_ann": 24.900232124765683,
+            "avg_hold_days": 9.91025641025641,
+            "reasons": {
+              "MATURE": 61,
+              "STOP": 8,
+              "TRAIL": 1,
+              "TP": 6
+            },
+            "n_underweight_days": 1,
+            "K": 3
+          },
+          {
+            "n_trades": 106,
+            "n_days": 258,
+            "win_rate": 0.5283018867924528,
+            "profit_loss_ratio": 1.428452410668087,
+            "total_return": 0.40284087364913757,
+            "annual_return": 0.39184095307507505,
+            "max_drawdown": -0.1827042697971012,
+            "sharpe": 1.4114433705766092,
+            "turnover_ann": 25.44307052095505,
+            "avg_hold_days": 9.726415094339623,
+            "reasons": {
+              "STOP": 13,
+              "MATURE": 78,
+              "TRAIL": 3,
+              "TP": 9
+            },
+            "n_underweight_days": 1,
+            "K": 4
+          },
+          {
+            "n_trades": 132,
+            "n_days": 258,
+            "win_rate": 0.5378787878787878,
+            "profit_loss_ratio": 1.458203069680863,
+            "total_return": 0.4507068376121861,
+            "annual_return": 0.4382089648993295,
+            "max_drawdown": -0.15765342863005494,
+            "sharpe": 1.549453243523283,
+            "turnover_ann": 25.3589851696497,
+            "avg_hold_days": 9.757575757575758,
+            "reasons": {
+              "STOP": 17,
+              "MATURE": 97,
+              "TRAIL": 4,
+              "TP": 11
+            },
+            "n_underweight_days": 1,
+            "K": 5
+          },
+          {
+            "n_trades": 159,
+            "n_days": 258,
+            "win_rate": 0.5471698113207547,
+            "profit_loss_ratio": 1.5486815539092498,
+            "total_return": 0.5671508439383566,
+            "annual_return": 0.5508626627895477,
+            "max_drawdown": -0.18010482046097054,
+            "sharpe": 1.829181784472505,
+            "turnover_ann": 25.48378691899387,
+            "avg_hold_days": 9.723270440251572,
+            "reasons": {
+              "STOP": 19,
+              "MATURE": 117,
+              "TRAIL": 5,
+              "TP": 14
+            },
+            "n_underweight_days": 1,
+            "K": 6
+          }
+        ],
+        "H2_2025-07-23~2026-08-14": [
+          {
+            "n_trades": 25,
+            "n_days": 258,
+            "win_rate": 0.48,
+            "profit_loss_ratio": 0.8989261051265126,
+            "total_return": -0.15386502892409648,
+            "annual_return": -0.15057097825407306,
+            "max_drawdown": -0.3412898009370152,
+            "sharpe": -0.44494653916197896,
+            "turnover_ann": 23.10380349716484,
+            "avg_hold_days": 10.32,
+            "reasons": {
+              "MATURE": 18,
+              "STOP": 5,
+              "TP": 1
+            },
+            "n_underweight_days": 0,
+            "K": 1
+          },
+          {
+            "n_trades": 51,
+            "n_days": 258,
+            "win_rate": 0.47058823529411764,
+            "profit_loss_ratio": 1.1174275727725056,
+            "total_return": -0.060134108476084025,
+            "annual_return": -0.05877757975674691,
+            "max_drawdown": -0.2914667156123504,
+            "sharpe": -0.15675569402637338,
+            "turnover_ann": 24.172454235720288,
+            "avg_hold_days": 10.098039215686274,
+            "reasons": {
+              "MATURE": 38,
+              "STOP": 8,
+              "TP": 3,
+              "TRAIL": 1
+            },
+            "n_underweight_days": 1,
+            "K": 2
+          },
+          {
+            "n_trades": 77,
+            "n_days": 258,
+            "win_rate": 0.4675324675324675,
+            "profit_loss_ratio": 1.2709696306716005,
+            "total_return": 0.013372449394977615,
+            "annual_return": 0.013059440427408475,
+            "max_drawdown": -0.2271903328730831,
+            "sharpe": 0.1653574808883384,
+            "turnover_ann": 24.579046308773005,
+            "avg_hold_days": 10.03896103896104,
+            "reasons": {
+              "MATURE": 57,
+              "TP": 4,
+              "STOP": 12,
+              "TRAIL": 2
+            },
+            "n_underweight_days": 1,
+            "K": 3
+          },
+          {
+            "n_trades": 105,
+            "n_days": 258,
+            "win_rate": 0.5142857142857142,
+            "profit_loss_ratio": 1.4422755757669656,
+            "total_return": 0.29796126286152624,
+            "annual_return": 0.2901129586400586,
+            "max_drawdown": -0.15127042918307299,
+            "sharpe": 1.3077028431059643,
+            "turnover_ann": 25.20311363157001,
+            "avg_hold_days": 9.81904761904762,
+            "reasons": {
+              "TP": 7,
+              "MATURE": 72,
+              "STOP": 19,
+              "TRAIL": 4
+            },
+            "n_underweight_days": 1,
+            "K": 4
+          },
+          {
+            "n_trades": 132,
+            "n_days": 258,
+            "win_rate": 0.5227272727272727,
+            "profit_loss_ratio": 1.4983820055243757,
+            "total_return": 0.39546561789510615,
+            "annual_return": 0.38469326295427764,
+            "max_drawdown": -0.1711815325466668,
+            "sharpe": 1.7085267219330567,
+            "turnover_ann": 25.378177498266567,
+            "avg_hold_days": 9.765151515151516,
+            "reasons": {
+              "TP": 9,
+              "MATURE": 90,
+              "TRAIL": 5,
+              "STOP": 24
+            },
+            "n_underweight_days": 1,
+            "K": 5
+          },
+          {
+            "n_trades": 158,
+            "n_days": 258,
+            "win_rate": 0.5379746835443038,
+            "profit_loss_ratio": 1.4015802372777815,
+            "total_return": 0.3876394843357176,
+            "annual_return": 0.377107646091974,
+            "max_drawdown": -0.14943279885861815,
+            "sharpe": 1.6993492366573482,
+            "turnover_ann": 25.37196244045805,
+            "avg_hold_days": 9.791139240506329,
+            "reasons": {
+              "TP": 10,
+              "MATURE": 109,
+              "TRAIL": 6,
+              "STOP": 28
+            },
+            "n_underweight_days": 1,
+            "K": 6
+          }
+        ]
+      }
+    },
+    "ENS_FUSION": {
+      "hold": 10,
+      "halves": {
+        "H1_2024-07-01~2025-07-22": [
+          {
+            "n_trades": 27,
+            "n_days": 258,
+            "win_rate": 0.48148148148148145,
+            "profit_loss_ratio": 1.6938204880094345,
+            "total_return": 0.3461621986635022,
+            "annual_return": 0.3368883111876608,
+            "max_drawdown": -0.2734347230438563,
+            "sharpe": 0.8828224618403135,
+            "turnover_ann": 24.874659036459178,
+            "avg_hold_days": 8.814814814814815,
+            "reasons": {
+              "MATURE": 16,
+              "STOP": 3,
+              "TRAIL": 4,
+              "TP": 3
+            },
+            "n_underweight_days": 20,
+            "K": 1
+          },
+          {
+            "n_trades": 54,
+            "n_days": 258,
+            "win_rate": 0.5370370370370371,
+            "profit_loss_ratio": 1.5832175692183894,
+            "total_return": 0.6437513444458456,
+            "annual_return": 0.6248627267582989,
+            "max_drawdown": -0.19321387984290883,
+            "sharpe": 1.4396226550898845,
+            "turnover_ann": 25.253188325823864,
+            "avg_hold_days": 9.12962962962963,
+            "reasons": {
+              "MATURE": 35,
+              "STOP": 6,
+              "TRAIL": 5,
+              "TP": 6
+            },
+            "n_underweight_days": 21,
+            "K": 2
+          },
+          {
+            "n_trades": 79,
+            "n_days": 258,
+            "win_rate": 0.5443037974683544,
+            "profit_loss_ratio": 1.757908835304647,
+            "total_return": 0.7471044508297036,
+            "annual_return": 0.7245808032217362,
+            "max_drawdown": -0.184335502967521,
+            "sharpe": 1.688534013635127,
+            "turnover_ann": 24.812383279798212,
+            "avg_hold_days": 9.291139240506329,
+            "reasons": {
+              "TRAIL": 7,
+              "MATURE": 53,
+              "STOP": 8,
+              "TP": 8,
+              "SKIP_DOWN": 1
+            },
+            "n_underweight_days": 36,
+            "K": 3
+          },
+          {
+            "n_trades": 101,
+            "n_days": 258,
+            "win_rate": 0.5643564356435643,
+            "profit_loss_ratio": 1.6835874382555058,
+            "total_return": 0.7331570536751408,
+            "annual_return": 0.7111321404812228,
+            "max_drawdown": -0.18079494577746869,
+            "sharpe": 1.7418728185673213,
+            "turnover_ann": 23.73589745934365,
+            "avg_hold_days": 9.445544554455445,
+            "reasons": {
+              "TRAIL": 7,
+              "STOP": 11,
+              "MATURE": 70,
+              "TP": 9,
+              "SKIP_DOWN": 1
+            },
+            "n_underweight_days": 52,
+            "K": 4
+          },
+          {
+            "n_trades": 127,
+            "n_days": 258,
+            "win_rate": 0.5590551181102362,
+            "profit_loss_ratio": 1.764440682498328,
+            "total_return": 0.8306009010175757,
+            "annual_return": 0.8050400491227201,
+            "max_drawdown": -0.18415363893984427,
+            "sharpe": 1.9836575721955643,
+            "turnover_ann": 23.891508221567562,
+            "avg_hold_days": 9.338582677165354,
+            "reasons": {
+              "TRAIL": 9,
+              "STOP": 14,
+              "MATURE": 86,
+              "TP": 13,
+              "SKIP_DOWN": 1
+            },
+            "n_underweight_days": 57,
+            "K": 5
+          },
+          {
+            "n_trades": 148,
+            "n_days": 258,
+            "win_rate": 0.5675675675675675,
+            "profit_loss_ratio": 1.6373988167948952,
+            "total_return": 0.6748350090795969,
+            "annual_return": 0.6548680776048665,
+            "max_drawdown": -0.1869659707561493,
+            "sharpe": 1.8121784433306678,
+            "turnover_ann": 23.248273614448898,
+            "avg_hold_days": 9.39864864864865,
+            "reasons": {
+              "TRAIL": 10,
+              "STOP": 17,
+              "MATURE": 101,
+              "TP": 14,
+              "SKIP_DOWN": 1
+            },
+            "n_underweight_days": 74,
+            "K": 6
+          }
+        ],
+        "H2_2025-07-23~2026-08-14": [
+          {
+            "n_trades": 25,
+            "n_days": 258,
+            "win_rate": 0.44,
+            "profit_loss_ratio": 0.9867862340936514,
+            "total_return": -0.20644454432941828,
+            "annual_return": -0.2021657174350543,
+            "max_drawdown": -0.4405739665244499,
+            "sharpe": -0.6416495573261076,
+            "turnover_ann": 22.791509640663584,
+            "avg_hold_days": 9.52,
+            "reasons": {
+              "MATURE": 17,
+              "TP": 2,
+              "STOP": 5
+            },
+            "n_underweight_days": 20,
+            "K": 1
+          },
+          {
+            "n_trades": 49,
+            "n_days": 258,
+            "win_rate": 0.5102040816326531,
+            "profit_loss_ratio": 0.7612051277847187,
+            "total_return": -0.17884680028585442,
+            "annual_return": -0.17507526746625857,
+            "max_drawdown": -0.3497183733502086,
+            "sharpe": -0.6561118971693679,
+            "turnover_ann": 23.033750575179337,
+            "avg_hold_days": 9.387755102040817,
+            "reasons": {
+              "MATURE": 34,
+              "STOP": 11,
+              "SKIP_DOWN": 1,
+              "TRAIL": 1,
+              "TP": 2
+            },
+            "n_underweight_days": 45,
+            "K": 2
+          },
+          {
+            "n_trades": 75,
+            "n_days": 258,
+            "win_rate": 0.52,
+            "profit_loss_ratio": 1.0374115505977735,
+            "total_return": 0.05525159126108958,
+            "annual_return": 0.0539326348159046,
+            "max_drawdown": -0.3154537644347746,
+            "sharpe": 0.3323723517956907,
+            "turnover_ann": 24.068883662765366,
+            "avg_hold_days": 9.04,
+            "reasons": {
+              "MATURE": 47,
+              "STOP": 19,
+              "TRAIL": 2,
+              "SKIP_DOWN": 1,
+              "TP": 5
+            },
+            "n_underweight_days": 59,
+            "K": 3
+          },
+          {
+            "n_trades": 99,
+            "n_days": 258,
+            "win_rate": 0.5858585858585859,
+            "profit_loss_ratio": 1.0008733854354344,
+            "total_return": 0.2905716748285805,
+            "annual_return": 0.28293838869606414,
+            "max_drawdown": -0.25025965307889675,
+            "sharpe": 1.178602087399636,
+            "turnover_ann": 24.018762358088797,
+            "avg_hold_days": 9.090909090909092,
+            "reasons": {
+              "TP": 7,
+              "MATURE": 63,
+              "STOP": 22,
+              "TRAIL": 4,
+              "SKIP_DOWN": 1
+            },
+            "n_underweight_days": 70,
+            "K": 4
+          },
+          {
+            "n_trades": 121,
+            "n_days": 258,
+            "win_rate": 0.6033057851239669,
+            "profit_loss_ratio": 1.0786260248860913,
+            "total_return": 0.45546873876037774,
+            "annual_return": 0.4428198785160333,
+            "max_drawdown": -0.16714911895859363,
+            "sharpe": 1.795556483983592,
+            "turnover_ann": 23.603144187271322,
+            "avg_hold_days": 9.24793388429752,
+            "reasons": {
+              "TP": 9,
+              "MATURE": 80,
+              "STOP": 24,
+              "TRAIL": 4,
+              "SKIP_DOWN": 1
+            },
+            "n_underweight_days": 80,
+            "K": 5
+          },
+          {
+            "n_trades": 145,
+            "n_days": 258,
+            "win_rate": 0.6,
+            "profit_loss_ratio": 1.0849924304550627,
+            "total_return": 0.44702466385452433,
+            "annual_return": 0.43464330205515966,
+            "max_drawdown": -0.17060392402023006,
+            "sharpe": 1.8056168839453293,
+            "turnover_ann": 23.673508316887602,
+            "avg_hold_days": 9.082758620689654,
+            "reasons": {
+              "TP": 12,
+              "MATURE": 95,
+              "STOP": 29,
+              "TRAIL": 4,
+              "SKIP_DOWN": 1
+            },
+            "n_underweight_days": 91,
+            "K": 6
+          }
+        ]
+      }
+    }
+  }
+}

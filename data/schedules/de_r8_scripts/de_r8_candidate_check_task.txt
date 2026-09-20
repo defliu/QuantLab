@@ -1,0 +1,53 @@
+# DE 核查任务书：deploy_predict_g2.py 候选构造逻辑 + 三引擎差异量化（2026-09-19）
+
+## 背景
+
+诚哥对 R8 差异归因报告（`de_r8_scripts/DE_R8差异归因_20260919.md`）结论存疑，要求 TRAE 重点复核实盘 `deploy_predict_g2.py` 的候选构造逻辑。TRAE 已复核并发现一处**报告与实盘代码的细节出入**（下述「待验证事实」）。按双审核纪律，DE 须**独立核查**该结论——不预设正确，逐行读代码 + 实跑数据自行判断。
+
+## 待验证的 TRAE 主张（逐条独立裁决，勿直接采信）
+
+1. **实盘 deploy_predict_g2.py 候选构造链路**：
+   - `L93` 预选池 = 全市场按 `prob` 取 top100（`args.pool` 默认 100）
+   - `L158` 红线 = 在 **top100 池内** 筛 `total_new >= threshold`（默认 60）
+   - `L162-176` 位置过滤**默认关闭**（`PF_MODE_G2` 环境变量默认空）
+   - `L177` 最终候选 = 在 top100∩红线内**按 `total_new` 取 top10**（`args.top` 默认 10）
+   - 买入侧 `rebalance_g2.py`：读 top10 CSV 按 `total` 降序、排除持仓/融合重叠后取 `TOP_N=2`
+2. **差异点（核心主张）**：DE 引擎 `de_r8_common.py` 红线后**先按 `prob` 取 top10**（`L161-162`），实盘红线后**直接按 `total_new` 取 top10**（`deploy_predict_g2.py L177`）——两者排序键不同，「DE 引擎=实盘信号链」表述不精确，实盘比 DE 引擎更激进买深挖票（prob 排名 11~100）。
+3. **历史引擎对照**：`scan_rotate_cost_real.py` 候选 = 全市场 `prob` top10（未筛红线）→ 买入时（`L377`）才筛红线 → 按 `total_new` 排序买入。日均候选仅 ~3.4 只。
+4. **09-18 实证（TRAE 已跑，DE 复跑验证）**：用实盘快照 `data_live/g2_latest_features.parquet` + live 模型 1522t 推理，09-18 全市场 5839 只；top100 池内过红线 21 只。三套规则买入 Top2（prob 全市场排名）：
+   - 实盘规则（红线后 total_new top10 → 买 total 前2）：prob 排名 60 / 75
+   - DE 规则（红线后 prob top10 → 买 total 前2）：prob 排名 39 / 27
+   - 历史规则（全市场 prob top10 → 买入时红线）：仅 1 只过线（920770.BJ，rank 10）
+   - 实盘落盘 CSV `data/selections/g2/20260918_g2_top2.csv` = 600712.SH（rank12）+ 688581.SH（rank75）
+
+## 核查任务
+
+### 任务 1：逐行阅读三引擎候选构造，输出对照表
+- `deploy_predict_g2.py` 全链路（L60-210：参数、快照、推理、预选池、评分卡、红线、位置过滤、picks、CSV 输出）
+- `de_r8_common.py` `build_pools`（L115-183）与 `simulate` 买入段（L300-320）
+- `scan_rotate_cost_real.py` `build_per_day`（L210-230）与买入段（L370-400）
+- 输出：三引擎候选构造逐项对照表（预选池宽/排序键/红线位置/红线后 top 键/位置过滤/买入排序/候选输出），并逐项标注一致 or 差异
+
+### 任务 2：独立复算 09-18 三路候选（用真实快照）
+- 输入：`data_live/g2_latest_features.parquet`（09-18 单日 5839 只）、`models/lgb_model_v3_g2_strong_real_20260915_1522t.txt`、meta `data/features_v3_g2_strong_real_20260915.json`、评分卡 `scorecard_real.compute_real_scorecard`（est 取主库 `D:/astock/daily/stock_daily.parquet` 09-18 的 pe_ttm/turnover_rate，参考 deploy_predict_g2 L96-110 写法）
+- 按上述三套规则各出候选 top10（或实际可买数）与买入 Top2，列 prob 全市场排名
+- 与 TRAE 主张 4 的数值逐项核对（total_new 允许因 F2 实时源差异有 ± 偏差，**排序结构与 prob 排名带必须一致**）
+
+### 任务 3：量化「红线后 prob top10 vs total_new top10」在 516 天主窗口的差异
+- 用 `de_r8_common.py` 引擎（G2 口径：enh2_n3_bt 面板 + 1522t 模型 + 真实评分卡 + 红线60 + TOP2 + live_trail，主窗 2024-07-01~2026-08-14），实现两种变体：
+  - 变体 A（DE 现口径）：红线后按 prob 取 top10 → 按 total 排序买 top2
+  - 变体 B（实盘口径）：红线后按 total_new 取 top10 → 按 total 排序买 top2
+- 输出：两变体候选集不同的天数 / 买入 Top2 不同的天数 / 绝对日收益、年化、超额 vs 等权基准；另附 3 个典型分歧日买入对比
+- 裁决：变体 A vs B 的收益与选股差异是否显著；「实盘稀释更重」主张是否成立
+
+### 任务 4：输出核查报告
+- 路径：`de_r8_scripts/de_r8_candidate_check.md`
+- 结构：①三引擎对照表 ②09-18 复算结果 ③516 天量化差异 ④对 TRAE 四条主张的裁决（成立/不成立/需修正，附证据行号）⑤对归因报告表述的修改建议（逐句给改法）
+
+## 硬约束
+- 只读允许清单内的文件；**禁止**修改任何源文件/报告（本任务只读 + 只写任务4指定输出）；禁止 commit；禁止触发行情/交易连接（纯离线 parquet + LightGBM 推理）
+- Python 用 miniqmt venv：`C:/Users/Administrator/.workbuddy/binaries/python/envs/miniqmt/Scripts/python.exe`（pandas 3.0.5 + lightgbm 3.3.5）
+- 允许读取：`projects/Project_16_LightGBM股票大师/{deploy_predict_g2.py, rebalance_g2.py, scan_rotate_cost_real.py, scorecard_real.py, data_config.py, qmt_config.py, position_filter.py, data/features_v3_g2_strong_real_20260915.json, data/g2_live_model.json, data/feature_panel_v3_enh2_n3_bt.parquet, data_live/g2_latest_features.parquet, data/selections/g2/*.csv}`、`models/lgb_model_v3_g2_strong_real_20260915_1522t.txt`、`models/lgb_model_v3_g2_strong_real_20260825_1964t.txt`、`data/schedules/de_r8_scripts/{de_r8_common.py, DE_R8差异归因_20260919.md, out/*}`、`data/schedules/probe_g2_rules_compare.py`、`D:/astock/daily/stock_daily.parquet`
+- 输出只写：`data/schedules/de_r8_scripts/de_r8_candidate_check.md` 及同目录 `de_r8_candidate_check/` 子目录下的中间产物
+- 若 516 天窗口（任务3）因面板/时间限制无法完成，如实报告卡点与最小可行替代方案，不强行编造
+- 全部结论必须给出证据文件/行号，禁止无据断言

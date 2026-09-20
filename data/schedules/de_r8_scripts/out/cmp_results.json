@@ -1,0 +1,833 @@
+{
+  "bench_daily": 0.001046025644188225,
+  "bench_annual": 0.30142613881137037,
+  "H0_official": {
+    "n_trades": 78,
+    "mean_daily": 0.0031740315944122563,
+    "excess": 0.002128005950224031,
+    "annual": 1.1012392463956489
+  },
+  "D_pools": {
+    "avg_passed": 33.781007751937985,
+    "n_days": 516
+  },
+  "D0_official": {
+    "n_trades": 82,
+    "mean_daily": 0.0009377306726475605,
+    "excess": -0.00010829497154066453,
+    "annual": 0.21858295706549957,
+    "reasons": {
+      "STOP": 18,
+      "MATURE": 47,
+      "TP": 9,
+      "TRAIL": 6
+    }
+  },
+  "suspend_monthly": {
+    "2024-06": {
+      "nan_frac": 1.0,
+      "blank_frac": 0.0,
+      "susp_frac": 0.0
+    },
+    "2024-07": {
+      "nan_frac": 0.9999790639491672,
+      "blank_frac": 0.0,
+      "susp_frac": 2.093605083273142e-05
+    },
+    "2024-08": {
+      "nan_frac": 1.0,
+      "blank_frac": 0.0,
+      "susp_frac": 0.0
+    },
+    "2024-09": {
+      "nan_frac": 0.9999493452878454,
+      "blank_frac": 0.0,
+      "susp_frac": 5.0654712154598184e-05
+    },
+    "2024-10": {
+      "nan_frac": 0.9999198717948717,
+      "blank_frac": 0.0,
+      "susp_frac": 8.012820512820513e-05
+    },
+    "2024-11": {
+      "nan_frac": 0.9999885714285714,
+      "blank_frac": 0.0,
+      "susp_frac": 1.1428571428571429e-05
+    },
+    "2024-12": {
+      "nan_frac": 1.0,
+      "blank_frac": 0.0,
+      "susp_frac": 0.0
+    },
+    "2025-01": {
+      "nan_frac": 0.9999867047796317,
+      "blank_frac": 0.0,
+      "susp_frac": 1.3295220368277604e-05
+    },
+    "2025-02": {
+      "nan_frac": 0.9999867174943882,
+      "blank_frac": 0.0,
+      "susp_frac": 1.328250561185862e-05
+    },
+    "2025-03": {
+      "nan_frac": 0.9999658590433704,
+      "blank_frac": 0.0,
+      "susp_frac": 3.4140956629604764e-05
+    },
+    "2025-04": {
+      "nan_frac": 0.9999886280931587,
+      "blank_frac": 0.0,
+      "susp_frac": 1.1371906841339156e-05
+    },
+    "2025-05": {
+      "nan_frac": 1.0,
+      "blank_frac": 0.0,
+      "susp_frac": 0.0
+    },
+    "2025-06": {
+      "nan_frac": 0.9999761538553255,
+      "blank_frac": 0.0,
+      "susp_frac": 2.3846144674559742e-05
+    },
+    "2025-07": {
+      "nan_frac": 1.0,
+      "blank_frac": 0.0,
+      "susp_frac": 0.0
+    },
+    "2025-08": {
+      "nan_frac": 0.9999886681700227,
+      "blank_frac": 0.0,
+      "susp_frac": 1.1331829977223022e-05
+    },
+    "2025-09": {
+      "nan_frac": 1.0,
+      "blank_frac": 0.0,
+      "susp_frac": 0.0
+    },
+    "2025-10": {
+      "nan_frac": 1.0,
+      "blank_frac": 0.0,
+      "susp_frac": 0.0
+    },
+    "2025-11": {
+      "nan_frac": 0.9999880983551926,
+      "blank_frac": 0.0,
+      "susp_frac": 1.190164480731237e-05
+    },
+    "2025-12": {
+      "nan_frac": 1.0,
+      "blank_frac": 0.0,
+      "susp_frac": 0.0
+    },
+    "2026-01": {
+      "nan_frac": 0.999976176579195,
+      "blank_frac": 0.0,
+      "susp_frac": 2.382342080499339e-05
+    },
+    "2026-02": {
+      "nan_frac": 1.0,
+      "blank_frac": 0.0,
+      "susp_frac": 0.0
+    },
+    "2026-03": {
+      "nan_frac": 1.0,
+      "blank_frac": 0.0,
+      "susp_frac": 0.0
+    },
+    "2026-04": {
+      "nan_frac": 0.9999659319320001,
+      "blank_frac": 0.0,
+      "susp_frac": 3.406806799986373e-05
+    },
+    "2026-05": {
+      "nan_frac": 1.0,
+      "blank_frac": 0.0,
+      "susp_frac": 0.0
+    },
+    "2026-06": {
+      "nan_frac": 1.0,
+      "blank_frac": 0.0,
+      "susp_frac": 0.0
+    },
+    "2026-07": {
+      "nan_frac": 0.7392002819120269,
+      "blank_frac": 0.26079971808797314,
+      "susp_frac": 0.0
+    },
+    "2026-08": {
+      "nan_frac": 2.2699156726327616e-05,
+      "blank_frac": 0.9999773008432736,
+      "susp_frac": 0.0
+    },
+    "2026-09": {
+      "nan_frac": 0.11121121386364238,
+      "blank_frac": 0.8887887861363576,
+      "susp_frac": 0.0
+    }
+  },
+  "hist_exec_ok_monthly": {
+    "2024-07": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2024-08": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2024-09": {
+      "orig": 0.9842105263157894,
+      "fixed": 0.9842105263157894
+    },
+    "2024-10": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2024-11": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2024-12": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2025-01": {
+      "orig": 0.9944444444444444,
+      "fixed": 0.9944444444444444
+    },
+    "2025-02": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2025-03": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2025-04": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2025-05": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2025-06": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2025-07": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2025-08": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2025-09": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2025-10": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2025-11": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2025-12": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2026-01": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2026-02": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2026-03": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2026-04": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2026-05": {
+      "orig": 0.9944444444444444,
+      "fixed": 0.9944444444444444
+    },
+    "2026-06": {
+      "orig": 1.0,
+      "fixed": 1.0
+    },
+    "2026-07": {
+      "orig": 0.7727272727272727,
+      "fixed": 1.0
+    },
+    "2026-08": {
+      "orig": 0.0,
+      "fixed": 1.0
+    }
+  },
+  "H0_slip0": {
+    "n_trades": 78,
+    "mean_daily": 0.0033241218766964682,
+    "excess": 0.002278096232508243,
+    "annual": 1.1814359568834938
+  },
+  "H1_suspendfix": {
+    "n_trades": 81,
+    "mean_daily": 0.0033626534201566366,
+    "excess": 0.002316627775968412,
+    "annual": 1.2010855470626272
+  },
+  "H2_de_cands": {
+    "n_trades": 82,
+    "mean_daily": 0.0007851666205196752,
+    "excess": -0.00026085902366854987,
+    "annual": 0.17248529168488425
+  },
+  "H2_slip0": {
+    "n_trades": 82,
+    "mean_daily": 0.0009377306726475605,
+    "excess": -0.00010829497154066453,
+    "annual": 0.21858295706549957
+  },
+  "D1_hist_cands": {
+    "n_trades": 81,
+    "mean_daily": 0.0035165701155688207,
+    "excess": 0.002470544471380596,
+    "annual": 1.287237098947732,
+    "reasons": {
+      "STOP": 11,
+      "MATURE": 45,
+      "TRAIL": 7,
+      "TP": 16
+    }
+  },
+  "cand": {
+    "n_days": 516,
+    "n_top10_all_pass": 6,
+    "n_set_diff": 508,
+    "n_first_buy_diff": 114,
+    "set_diff_by_month": {
+      "2024-07": 22,
+      "2024-08": 22,
+      "2024-09": 17,
+      "2024-10": 17,
+      "2024-11": 21,
+      "2024-12": 22,
+      "2025-01": 17,
+      "2025-02": 17,
+      "2025-03": 21,
+      "2025-04": 21,
+      "2025-05": 19,
+      "2025-06": 20,
+      "2025-07": 23,
+      "2025-08": 21,
+      "2025-09": 22,
+      "2025-10": 17,
+      "2025-11": 20,
+      "2025-12": 23,
+      "2026-01": 19,
+      "2026-02": 14,
+      "2026-03": 22,
+      "2026-04": 21,
+      "2026-05": 18,
+      "2026-06": 20,
+      "2026-07": 22,
+      "2026-08": 10
+    },
+    "avg_hist_passed": 3.383720930232558,
+    "avg_de_row": 9.501937984496124
+  },
+  "de_buy_source": {
+    "from_top10": 30,
+    "from_deep": 52,
+    "top10_mean_ret": 0.030531252093380666,
+    "deep_mean_ret": 0.0038181375008226603,
+    "top10_win": 0.6333333333333333,
+    "deep_win": 0.4423076923076923
+  },
+  "hist_trades_quality": {
+    "mean_ret": 0.04580854711071522,
+    "win": 0.5512820512820513,
+    "reasons": {
+      "MATURE": 45,
+      "TP": 15,
+      "STOP": 11,
+      "TRAIL": 7
+    }
+  },
+  "de_trades_quality": {
+    "mean_ret": 0.013591228205417052,
+    "win": 0.5121951219512195,
+    "reasons": {
+      "MATURE": 47,
+      "STOP": 18,
+      "TP": 9,
+      "TRAIL": 6,
+      "OPEN_END": 2
+    }
+  },
+  "trace": {
+    "n_hold_diff_days": 512,
+    "first_div_i": 0,
+    "first_div_date": "2024-07-01"
+  },
+  "top_ret_diff_days": [
+    {
+      "date": "2025-03-12",
+      "i": 168,
+      "ret_h": 0.1383119463438991,
+      "ret_d": 0.013515022039418678,
+      "hold_h": [
+        "301559.SZ",
+        "603587.SH"
+      ],
+      "hold_d": [
+        "301276.SZ",
+        "603025.SH"
+      ],
+      "buys_h": [
+        "603587.SH"
+      ],
+      "buys_d": [],
+      "sells_h": [
+        [
+          "300907.SZ",
+          "TP"
+        ]
+      ],
+      "sells_d": []
+    },
+    {
+      "date": "2026-05-08",
+      "i": 447,
+      "ret_h": 0.11385771541534195,
+      "ret_d": -0.010204962208984147,
+      "hold_h": [
+        "003013.SZ",
+        "605266.SH"
+      ],
+      "hold_d": [
+        "600649.SH",
+        "605266.SH"
+      ],
+      "buys_h": [
+        "003013.SZ"
+      ],
+      "buys_d": [],
+      "sells_h": [
+        [
+          "300488.SZ",
+          "TP"
+        ]
+      ],
+      "sells_d": []
+    },
+    {
+      "date": "2026-02-02",
+      "i": 388,
+      "ret_h": 0.10665944779733394,
+      "ret_d": 0.0024620930226637583,
+      "hold_h": [
+        "603060.SH",
+        "603223.SH"
+      ],
+      "hold_d": [
+        "002327.SZ",
+        "600985.SH"
+      ],
+      "buys_h": [
+        "603223.SH"
+      ],
+      "buys_d": [
+        "600985.SH"
+      ],
+      "sells_h": [
+        [
+          "301362.SZ",
+          "MATURE"
+        ]
+      ],
+      "sells_d": [
+        [
+          "002818.SZ",
+          "MATURE"
+        ]
+      ]
+    },
+    {
+      "date": "2025-09-08",
+      "i": 291,
+      "ret_h": 0.09960673289830346,
+      "ret_d": -0.0003871107907289506,
+      "hold_h": [
+        "002911.SZ",
+        "601311.SH"
+      ],
+      "hold_d": [
+        "002818.SZ",
+        "003002.SZ"
+      ],
+      "buys_h": [
+        "002911.SZ"
+      ],
+      "buys_d": [],
+      "sells_h": [
+        [
+          "605117.SH",
+          "TP"
+        ]
+      ],
+      "sells_d": []
+    },
+    {
+      "date": "2026-04-24",
+      "i": 440,
+      "ret_h": 0.09768197356775365,
+      "ret_d": -0.0008409076957880401,
+      "hold_h": [
+        "300488.SZ",
+        "605266.SH"
+      ],
+      "hold_d": [
+        "600649.SH",
+        "605266.SH"
+      ],
+      "buys_h": [
+        "300488.SZ"
+      ],
+      "buys_d": [],
+      "sells_h": [
+        [
+          "603060.SH",
+          "TP"
+        ]
+      ],
+      "sells_d": []
+    },
+    {
+      "date": "2025-01-10",
+      "i": 131,
+      "ret_h": 0.08474468088264775,
+      "ret_d": 0.006866263623008351,
+      "hold_h": [
+        "301309.SZ"
+      ],
+      "hold_d": [
+        "300481.SZ",
+        "301309.SZ"
+      ],
+      "buys_h": [],
+      "buys_d": [],
+      "sells_h": [
+        [
+          "605058.SH",
+          "TP"
+        ]
+      ],
+      "sells_d": []
+    },
+    {
+      "date": "2026-08-07",
+      "i": 510,
+      "ret_h": 0.0,
+      "ret_d": 0.077735061222866,
+      "hold_h": [],
+      "hold_d": [
+        "001309.SZ",
+        "300475.SZ"
+      ],
+      "buys_h": [],
+      "buys_d": [
+        "001309.SZ"
+      ],
+      "sells_h": [],
+      "sells_d": [
+        [
+          "001378.SZ",
+          "TP"
+        ]
+      ]
+    },
+    {
+      "date": "2024-09-30",
+      "i": 63,
+      "ret_h": 0.07136178220623113,
+      "ret_d": 0.0,
+      "hold_h": [
+        "301222.SZ",
+        "600116.SH"
+      ],
+      "hold_d": [
+        "001316.SZ",
+        "603130.SH"
+      ],
+      "buys_h": [],
+      "buys_d": [],
+      "sells_h": [],
+      "sells_d": []
+    },
+    {
+      "date": "2026-07-08",
+      "i": 489,
+      "ret_h": 0.06025919455860196,
+      "ret_d": -0.010142931746090267,
+      "hold_h": [
+        "001230.SZ",
+        "603889.SH"
+      ],
+      "hold_d": [
+        "000570.SZ",
+        "603225.SH"
+      ],
+      "buys_h": [],
+      "buys_d": [],
+      "sells_h": [],
+      "sells_d": []
+    },
+    {
+      "date": "2024-12-02",
+      "i": 103,
+      "ret_h": 0.06658615366450338,
+      "ret_d": 0.0060636471039094975,
+      "hold_h": [
+        "000915.SZ",
+        "605555.SH"
+      ],
+      "hold_d": [
+        "000915.SZ",
+        "600128.SH"
+      ],
+      "buys_h": [],
+      "buys_d": [],
+      "sells_h": [],
+      "sells_d": []
+    }
+  ],
+  "first_div_day_table": {
+    "date": "2024-07-01",
+    "hist_bought": [
+      "002390.SZ",
+      "300119.SZ"
+    ],
+    "de_bought": [
+      "600998.SH",
+      "002727.SZ"
+    ],
+    "rows": [
+      {
+        "code": "000713.SZ",
+        "in_hist_top10": true,
+        "in_de_row": false,
+        "prob": 0.7351478371530622,
+        "prob_rank": 4,
+        "total": 58.5,
+        "hist_exec": true,
+        "de_exec": null
+      },
+      {
+        "code": "002080.SZ",
+        "in_hist_top10": true,
+        "in_de_row": false,
+        "prob": 0.7217389513082336,
+        "prob_rank": 7,
+        "total": 53.49999999999999,
+        "hist_exec": true,
+        "de_exec": null
+      },
+      {
+        "code": "002390.SZ",
+        "in_hist_top10": true,
+        "in_de_row": true,
+        "prob": 0.7382368447490774,
+        "prob_rank": 3,
+        "total": 62.5,
+        "hist_exec": true,
+        "de_exec": true
+      },
+      {
+        "code": "002727.SZ",
+        "in_hist_top10": false,
+        "in_de_row": true,
+        "prob": 0.6956677253248448,
+        "prob_rank": null,
+        "total": 64.5,
+        "hist_exec": null,
+        "de_exec": true
+      },
+      {
+        "code": "300119.SZ",
+        "in_hist_top10": true,
+        "in_de_row": true,
+        "prob": 0.7309903532775567,
+        "prob_rank": 5,
+        "total": 62.0,
+        "hist_exec": true,
+        "de_exec": true
+      },
+      {
+        "code": "300146.SZ",
+        "in_hist_top10": false,
+        "in_de_row": true,
+        "prob": 0.6830611558783606,
+        "prob_rank": null,
+        "total": 61.5,
+        "hist_exec": null,
+        "de_exec": true
+      },
+      {
+        "code": "300160.SZ",
+        "in_hist_top10": false,
+        "in_de_row": true,
+        "prob": 0.6856157563194437,
+        "prob_rank": null,
+        "total": 61.0,
+        "hist_exec": null,
+        "de_exec": true
+      },
+      {
+        "code": "300999.SZ",
+        "in_hist_top10": true,
+        "in_de_row": false,
+        "prob": 0.7076903717088812,
+        "prob_rank": 10,
+        "total": 48.5,
+        "hist_exec": true,
+        "de_exec": null
+      },
+      {
+        "code": "301358.SZ",
+        "in_hist_top10": true,
+        "in_de_row": true,
+        "prob": 0.7649820182764305,
+        "prob_rank": 1,
+        "total": 60.50000000000001,
+        "hist_exec": true,
+        "de_exec": true
+      },
+      {
+        "code": "301408.SZ",
+        "in_hist_top10": true,
+        "in_de_row": false,
+        "prob": 0.721909792580766,
+        "prob_rank": 6,
+        "total": 54.5,
+        "hist_exec": true,
+        "de_exec": null
+      },
+      {
+        "code": "600060.SH",
+        "in_hist_top10": false,
+        "in_de_row": true,
+        "prob": 0.7029604765600274,
+        "prob_rank": null,
+        "total": 61.0,
+        "hist_exec": null,
+        "de_exec": true
+      },
+      {
+        "code": "600467.SH",
+        "in_hist_top10": true,
+        "in_de_row": false,
+        "prob": 0.7174179587591044,
+        "prob_rank": 8,
+        "total": 51.5,
+        "hist_exec": true,
+        "de_exec": null
+      },
+      {
+        "code": "600682.SH",
+        "in_hist_top10": true,
+        "in_de_row": false,
+        "prob": 0.708548867188532,
+        "prob_rank": 9,
+        "total": 59.5,
+        "hist_exec": true,
+        "de_exec": null
+      },
+      {
+        "code": "600740.SH",
+        "in_hist_top10": true,
+        "in_de_row": false,
+        "prob": 0.7395624176081684,
+        "prob_rank": 2,
+        "total": 59.0,
+        "hist_exec": true,
+        "de_exec": null
+      },
+      {
+        "code": "600997.SH",
+        "in_hist_top10": false,
+        "in_de_row": true,
+        "prob": 0.6792141259862134,
+        "prob_rank": null,
+        "total": 61.0,
+        "hist_exec": null,
+        "de_exec": true
+      },
+      {
+        "code": "600998.SH",
+        "in_hist_top10": false,
+        "in_de_row": true,
+        "prob": 0.698189981667953,
+        "prob_rank": null,
+        "total": 65.0,
+        "hist_exec": null,
+        "de_exec": true
+      },
+      {
+        "code": "603518.SH",
+        "in_hist_top10": false,
+        "in_de_row": true,
+        "prob": 0.6867111137642874,
+        "prob_rank": null,
+        "total": 62.0,
+        "hist_exec": null,
+        "de_exec": true
+      }
+    ]
+  },
+  "meta_keys": [
+    "feature_cols"
+  ],
+  "panel_ts_code_dtype": "str",
+  "scorecard_check": {
+    "2024-07-01": {
+      "n_day": 2646,
+      "n_pool": 100,
+      "maxdiff_F1": 0.0,
+      "maxdiff_F2": 0.0,
+      "maxdiff_F3": 0.0,
+      "maxdiff_F4": 0.0,
+      "maxdiff_F5": 0.0,
+      "maxdiff_F6": 0.0,
+      "maxdiff_total_new_real": 0.0
+    },
+    "2025-07-23": {
+      "n_day": 2854,
+      "n_pool": 100,
+      "maxdiff_F1": 0.0,
+      "maxdiff_F2": 0.0,
+      "maxdiff_F3": 0.0,
+      "maxdiff_F4": 0.0,
+      "maxdiff_F5": 0.0,
+      "maxdiff_F6": 0.0,
+      "maxdiff_total_new_real": 0.0
+    }
+  },
+  "summary": {
+    "H0_hist_baseline_excess": 0.002128005950224031,
+    "D0_de_baseline_excess": -0.00010829497154066453,
+    "gap_pp_per_day": 0.22363009217646954,
+    "contrib_suspend": 0.01886218257443808,
+    "contrib_candidates_H_side": -0.25774867996369616,
+    "contrib_candidates_D_side": 0.257883944292126,
+    "residual_accounting": 0.0,
+    "contrib_slip": 0.015009028228421192
+  }
+}

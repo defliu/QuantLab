@@ -1,0 +1,615 @@
+{
+ "rows": [
+  {
+   "date": "2019-01-02",
+   "pool": "prod_allcap",
+   "eligible": 124,
+   "n_valid_ratio": 124,
+   "excluded": 25,
+   "overlap": 0,
+   "sel_pct_max": 0.3629032258064516,
+   "sel_pct_med": 0.24596774193548387
+  },
+  {
+   "date": "2019-01-02",
+   "pool": "ablation_smallcap",
+   "eligible": 56,
+   "n_valid_ratio": 56,
+   "excluded": 11,
+   "overlap": 0,
+   "sel_pct_max": 0.39285714285714285,
+   "sel_pct_med": 0.26785714285714285
+  },
+  {
+   "date": "2019-04-01",
+   "pool": "prod_allcap",
+   "eligible": 386,
+   "n_valid_ratio": 386,
+   "excluded": 77,
+   "overlap": 0,
+   "sel_pct_max": 0.48704663212435234,
+   "sel_pct_med": 0.14248704663212436
+  },
+  {
+   "date": "2019-04-01",
+   "pool": "ablation_smallcap",
+   "eligible": 64,
+   "n_valid_ratio": 64,
+   "excluded": 13,
+   "overlap": 0,
+   "sel_pct_max": 0.640625,
+   "sel_pct_med": 0.328125
+  },
+  {
+   "date": "2019-07-01",
+   "pool": "prod_allcap",
+   "eligible": 828,
+   "n_valid_ratio": 828,
+   "excluded": 166,
+   "overlap": 0,
+   "sel_pct_max": 0.391304347826087,
+   "sel_pct_med": 0.14855072463768115
+  },
+  {
+   "date": "2019-07-01",
+   "pool": "ablation_smallcap",
+   "eligible": 300,
+   "n_valid_ratio": 300,
+   "excluded": 60,
+   "overlap": 0,
+   "sel_pct_max": 0.44666666666666666,
+   "sel_pct_med": 0.14666666666666667
+  },
+  {
+   "date": "2019-10-08",
+   "pool": "prod_allcap",
+   "eligible": 774,
+   "n_valid_ratio": 774,
+   "excluded": 155,
+   "overlap": 0,
+   "sel_pct_max": 0.3087855297157623,
+   "sel_pct_med": 0.05813953488372093
+  },
+  {
+   "date": "2019-10-08",
+   "pool": "ablation_smallcap",
+   "eligible": 366,
+   "n_valid_ratio": 366,
+   "excluded": 73,
+   "overlap": 0,
+   "sel_pct_max": 0.2540983606557377,
+   "sel_pct_med": 0.07377049180327869
+  },
+  {
+   "date": "2020-01-02",
+   "pool": "prod_allcap",
+   "eligible": 1303,
+   "n_valid_ratio": 1303,
+   "excluded": 261,
+   "overlap": 0,
+   "sel_pct_max": 0.15349194167306215,
+   "sel_pct_med": 0.07636224098234842
+  },
+  {
+   "date": "2020-01-02",
+   "pool": "ablation_smallcap",
+   "eligible": 432,
+   "n_valid_ratio": 432,
+   "excluded": 87,
+   "overlap": 0,
+   "sel_pct_max": 0.36574074074074076,
+   "sel_pct_med": 0.06018518518518518
+  },
+  {
+   "date": "2020-04-01",
+   "pool": "prod_allcap",
+   "eligible": 267,
+   "n_valid_ratio": 267,
+   "excluded": 54,
+   "overlap": 0,
+   "sel_pct_max": 0.6816479400749064,
+   "sel_pct_med": 0.3258426966292135
+  },
+  {
+   "date": "2020-04-01",
+   "pool": "ablation_smallcap",
+   "eligible": 93,
+   "n_valid_ratio": 93,
+   "excluded": 19,
+   "overlap": 1,
+   "sel_pct_max": 0.8172043010752689,
+   "sel_pct_med": 0.3225806451612903
+  },
+  {
+   "date": "2020-07-01",
+   "pool": "prod_allcap",
+   "eligible": 959,
+   "n_valid_ratio": 959,
+   "excluded": 192,
+   "overlap": 0,
+   "sel_pct_max": 0.15641293013555788,
+   "sel_pct_med": 0.04483837330552659
+  },
+  {
+   "date": "2020-07-01",
+   "pool": "ablation_smallcap",
+   "eligible": 215,
+   "n_valid_ratio": 215,
+   "excluded": 43,
+   "overlap": 0,
+   "sel_pct_max": 0.5953488372093023,
+   "sel_pct_med": 0.23255813953488372
+  },
+  {
+   "date": "2020-10-09",
+   "pool": "prod_allcap",
+   "eligible": 998,
+   "n_valid_ratio": 998,
+   "excluded": 200,
+   "overlap": 0,
+   "sel_pct_max": 0.7695390781563126,
+   "sel_pct_med": 0.27705410821643284
+  },
+  {
+   "date": "2020-10-09",
+   "pool": "ablation_smallcap",
+   "eligible": 248,
+   "n_valid_ratio": 248,
+   "excluded": 50,
+   "overlap": 0,
+   "sel_pct_max": 0.6290322580645161,
+   "sel_pct_med": 0.12298387096774194
+  },
+  {
+   "date": "2021-01-04",
+   "pool": "prod_allcap",
+   "eligible": 1271,
+   "n_valid_ratio": 1271,
+   "excluded": 254,
+   "overlap": 0,
+   "sel_pct_max": 0.4146341463414634,
+   "sel_pct_med": 0.06058221872541306
+  },
+  {
+   "date": "2021-01-04",
+   "pool": "ablation_smallcap",
+   "eligible": 311,
+   "n_valid_ratio": 311,
+   "excluded": 62,
+   "overlap": 0,
+   "sel_pct_max": 0.26366559485530544,
+   "sel_pct_med": 0.1414790996784566
+  },
+  {
+   "date": "2021-04-01",
+   "pool": "prod_allcap",
+   "eligible": 652,
+   "n_valid_ratio": 652,
+   "excluded": 131,
+   "overlap": 0,
+   "sel_pct_max": 0.7561349693251533,
+   "sel_pct_med": 0.2308282208588957
+  },
+  {
+   "date": "2021-04-01",
+   "pool": "ablation_smallcap",
+   "eligible": 167,
+   "n_valid_ratio": 167,
+   "excluded": 34,
+   "overlap": 0,
+   "sel_pct_max": 0.1377245508982036,
+   "sel_pct_med": 0.04790419161676647
+  },
+  {
+   "date": "2021-07-01",
+   "pool": "prod_allcap",
+   "eligible": 786,
+   "n_valid_ratio": 786,
+   "excluded": 157,
+   "overlap": 0,
+   "sel_pct_max": 0.4821882951653944,
+   "sel_pct_med": 0.05597964376590331
+  },
+  {
+   "date": "2021-07-01",
+   "pool": "ablation_smallcap",
+   "eligible": 183,
+   "n_valid_ratio": 183,
+   "excluded": 37,
+   "overlap": 0,
+   "sel_pct_max": 0.273224043715847,
+   "sel_pct_med": 0.03551912568306011
+  },
+  {
+   "date": "2021-10-08",
+   "pool": "prod_allcap",
+   "eligible": 372,
+   "n_valid_ratio": 372,
+   "excluded": 75,
+   "overlap": 0,
+   "sel_pct_max": 0.27956989247311825,
+   "sel_pct_med": 0.08736559139784947
+  },
+  {
+   "date": "2021-10-08",
+   "pool": "ablation_smallcap",
+   "eligible": 77,
+   "n_valid_ratio": 77,
+   "excluded": 16,
+   "overlap": 0,
+   "sel_pct_max": 0.33766233766233766,
+   "sel_pct_med": 0.2532467532467532
+  },
+  {
+   "date": "2022-01-04",
+   "pool": "prod_allcap",
+   "eligible": 1122,
+   "n_valid_ratio": 1122,
+   "excluded": 225,
+   "overlap": 0,
+   "sel_pct_max": 0.26737967914438504,
+   "sel_pct_med": 0.08065953654188948
+  },
+  {
+   "date": "2022-01-04",
+   "pool": "ablation_smallcap",
+   "eligible": 231,
+   "n_valid_ratio": 231,
+   "excluded": 46,
+   "overlap": 0,
+   "sel_pct_max": 0.2943722943722944,
+   "sel_pct_med": 0.14502164502164502
+  },
+  {
+   "date": "2022-04-01",
+   "pool": "prod_allcap",
+   "eligible": 916,
+   "n_valid_ratio": 916,
+   "excluded": 183,
+   "overlap": 0,
+   "sel_pct_max": 0.43013100436681223,
+   "sel_pct_med": 0.05403930131004367
+  },
+  {
+   "date": "2022-04-01",
+   "pool": "ablation_smallcap",
+   "eligible": 289,
+   "n_valid_ratio": 289,
+   "excluded": 58,
+   "overlap": 0,
+   "sel_pct_max": 0.3875432525951557,
+   "sel_pct_med": 0.14878892733564014
+  },
+  {
+   "date": "2022-07-01",
+   "pool": "prod_allcap",
+   "eligible": 797,
+   "n_valid_ratio": 797,
+   "excluded": 160,
+   "overlap": 0,
+   "sel_pct_max": 0.3086574654956085,
+   "sel_pct_med": 0.060225846925972396
+  },
+  {
+   "date": "2022-07-01",
+   "pool": "ablation_smallcap",
+   "eligible": 210,
+   "n_valid_ratio": 210,
+   "excluded": 42,
+   "overlap": 1,
+   "sel_pct_max": 0.8380952380952381,
+   "sel_pct_med": 0.03571428571428571
+  },
+  {
+   "date": "2022-10-10",
+   "pool": "prod_allcap",
+   "eligible": 507,
+   "n_valid_ratio": 507,
+   "excluded": 102,
+   "overlap": 0,
+   "sel_pct_max": 0.20907297830374755,
+   "sel_pct_med": 0.1380670611439842
+  },
+  {
+   "date": "2022-10-10",
+   "pool": "ablation_smallcap",
+   "eligible": 202,
+   "n_valid_ratio": 202,
+   "excluded": 41,
+   "overlap": 0,
+   "sel_pct_max": 0.6584158415841584,
+   "sel_pct_med": 0.07920792079207921
+  },
+  {
+   "date": "2023-01-03",
+   "pool": "prod_allcap",
+   "eligible": 592,
+   "n_valid_ratio": 592,
+   "excluded": 119,
+   "overlap": 0,
+   "sel_pct_max": 0.4594594594594595,
+   "sel_pct_med": 0.1528716216216216
+  },
+  {
+   "date": "2023-01-03",
+   "pool": "ablation_smallcap",
+   "eligible": 176,
+   "n_valid_ratio": 176,
+   "excluded": 35,
+   "overlap": 0,
+   "sel_pct_max": 0.36363636363636365,
+   "sel_pct_med": 0.18181818181818182
+  },
+  {
+   "date": "2023-04-03",
+   "pool": "prod_allcap",
+   "eligible": 1196,
+   "n_valid_ratio": 1196,
+   "excluded": 239,
+   "overlap": 0,
+   "sel_pct_max": 0.3762541806020067,
+   "sel_pct_med": 0.1354515050167224
+  },
+  {
+   "date": "2023-04-03",
+   "pool": "ablation_smallcap",
+   "eligible": 371,
+   "n_valid_ratio": 371,
+   "excluded": 74,
+   "overlap": 0,
+   "sel_pct_max": 0.3584905660377358,
+   "sel_pct_med": 0.1940700808625337
+  },
+  {
+   "date": "2023-07-03",
+   "pool": "prod_allcap",
+   "eligible": 1076,
+   "n_valid_ratio": 1076,
+   "excluded": 215,
+   "overlap": 0,
+   "sel_pct_max": 0.28345724907063197,
+   "sel_pct_med": 0.0762081784386617
+  },
+  {
+   "date": "2023-07-03",
+   "pool": "ablation_smallcap",
+   "eligible": 383,
+   "n_valid_ratio": 383,
+   "excluded": 77,
+   "overlap": 0,
+   "sel_pct_max": 0.45691906005221933,
+   "sel_pct_med": 0.23237597911227154
+  },
+  {
+   "date": "2023-10-09",
+   "pool": "prod_allcap",
+   "eligible": 1209,
+   "n_valid_ratio": 1209,
+   "excluded": 242,
+   "overlap": 0,
+   "sel_pct_max": 0.2696443341604632,
+   "sel_pct_med": 0.0686517783291977
+  },
+  {
+   "date": "2023-10-09",
+   "pool": "ablation_smallcap",
+   "eligible": 552,
+   "n_valid_ratio": 552,
+   "excluded": 111,
+   "overlap": 0,
+   "sel_pct_max": 0.3007246376811594,
+   "sel_pct_med": 0.09963768115942029
+  },
+  {
+   "date": "2024-01-02",
+   "pool": "prod_allcap",
+   "eligible": 1333,
+   "n_valid_ratio": 1333,
+   "excluded": 267,
+   "overlap": 0,
+   "sel_pct_max": 0.36609152288072017,
+   "sel_pct_med": 0.18829707426856715
+  },
+  {
+   "date": "2024-01-02",
+   "pool": "ablation_smallcap",
+   "eligible": 547,
+   "n_valid_ratio": 547,
+   "excluded": 110,
+   "overlap": 0,
+   "sel_pct_max": 0.39853747714808047,
+   "sel_pct_med": 0.19287020109689215
+  },
+  {
+   "date": "2024-04-01",
+   "pool": "prod_allcap",
+   "eligible": 413,
+   "n_valid_ratio": 413,
+   "excluded": 83,
+   "overlap": 0,
+   "sel_pct_max": 0.24939467312348668,
+   "sel_pct_med": 0.08595641646489104
+  },
+  {
+   "date": "2024-04-01",
+   "pool": "ablation_smallcap",
+   "eligible": 57,
+   "n_valid_ratio": 57,
+   "excluded": 12,
+   "overlap": 0,
+   "sel_pct_max": 0.631578947368421,
+   "sel_pct_med": 0.19298245614035087
+  },
+  {
+   "date": "2024-07-01",
+   "pool": "prod_allcap",
+   "eligible": 440,
+   "n_valid_ratio": 440,
+   "excluded": 88,
+   "overlap": 0,
+   "sel_pct_max": 0.225,
+   "sel_pct_med": 0.10795454545454546
+  },
+  {
+   "date": "2024-07-01",
+   "pool": "ablation_smallcap",
+   "eligible": 114,
+   "n_valid_ratio": 114,
+   "excluded": 23,
+   "overlap": 0,
+   "sel_pct_max": 0.43859649122807015,
+   "sel_pct_med": 0.14473684210526316
+  },
+  {
+   "date": "2024-10-08",
+   "pool": "prod_allcap",
+   "eligible": 328,
+   "n_valid_ratio": 328,
+   "excluded": 66,
+   "overlap": 0,
+   "sel_pct_max": 0.5823170731707317,
+   "sel_pct_med": 0.24390243902439024
+  },
+  {
+   "date": "2025-01-02",
+   "pool": "prod_allcap",
+   "eligible": 1142,
+   "n_valid_ratio": 1142,
+   "excluded": 229,
+   "overlap": 0,
+   "sel_pct_max": 0.4019264448336252,
+   "sel_pct_med": 0.1020140105078809
+  },
+  {
+   "date": "2025-01-02",
+   "pool": "ablation_smallcap",
+   "eligible": 222,
+   "n_valid_ratio": 222,
+   "excluded": 45,
+   "overlap": 0,
+   "sel_pct_max": 0.545045045045045,
+   "sel_pct_med": 0.1036036036036036
+  },
+  {
+   "date": "2025-04-01",
+   "pool": "prod_allcap",
+   "eligible": 1498,
+   "n_valid_ratio": 1498,
+   "excluded": 300,
+   "overlap": 0,
+   "sel_pct_max": 0.1288384512683578,
+   "sel_pct_med": 0.038384512683578106
+  },
+  {
+   "date": "2025-04-01",
+   "pool": "ablation_smallcap",
+   "eligible": 473,
+   "n_valid_ratio": 473,
+   "excluded": 95,
+   "overlap": 0,
+   "sel_pct_max": 0.4439746300211416,
+   "sel_pct_med": 0.07928118393234673
+  },
+  {
+   "date": "2025-07-01",
+   "pool": "prod_allcap",
+   "eligible": 1817,
+   "n_valid_ratio": 1817,
+   "excluded": 364,
+   "overlap": 0,
+   "sel_pct_max": 0.3935057787561915,
+   "sel_pct_med": 0.07649972482113374
+  },
+  {
+   "date": "2025-07-01",
+   "pool": "ablation_smallcap",
+   "eligible": 538,
+   "n_valid_ratio": 538,
+   "excluded": 108,
+   "overlap": 0,
+   "sel_pct_max": 0.2732342007434944,
+   "sel_pct_med": 0.05947955390334572
+  },
+  {
+   "date": "2025-10-09",
+   "pool": "prod_allcap",
+   "eligible": 2383,
+   "n_valid_ratio": 2383,
+   "excluded": 477,
+   "overlap": 0,
+   "sel_pct_max": 0.21737305916911456,
+   "sel_pct_med": 0.04007553503986572
+  },
+  {
+   "date": "2025-10-09",
+   "pool": "ablation_smallcap",
+   "eligible": 530,
+   "n_valid_ratio": 530,
+   "excluded": 106,
+   "overlap": 0,
+   "sel_pct_max": 0.6188679245283019,
+   "sel_pct_med": 0.14528301886792452
+  },
+  {
+   "date": "2026-01-05",
+   "pool": "prod_allcap",
+   "eligible": 1668,
+   "n_valid_ratio": 1668,
+   "excluded": 334,
+   "overlap": 0,
+   "sel_pct_max": 0.3135491606714628,
+   "sel_pct_med": 0.1303956834532374
+  },
+  {
+   "date": "2026-01-05",
+   "pool": "ablation_smallcap",
+   "eligible": 355,
+   "n_valid_ratio": 355,
+   "excluded": 71,
+   "overlap": 0,
+   "sel_pct_max": 0.6450704225352113,
+   "sel_pct_med": 0.11408450704225352
+  },
+  {
+   "date": "2026-04-01",
+   "pool": "prod_allcap",
+   "eligible": 1472,
+   "n_valid_ratio": 1472,
+   "excluded": 295,
+   "overlap": 0,
+   "sel_pct_max": 0.25,
+   "sel_pct_med": 0.07846467391304349
+  },
+  {
+   "date": "2026-04-01",
+   "pool": "ablation_smallcap",
+   "eligible": 314,
+   "n_valid_ratio": 314,
+   "excluded": 63,
+   "overlap": 0,
+   "sel_pct_max": 0.7261146496815286,
+   "sel_pct_med": 0.23089171974522293
+  },
+  {
+   "date": "2026-07-01",
+   "pool": "prod_allcap",
+   "eligible": 897,
+   "n_valid_ratio": 897,
+   "excluded": 180,
+   "overlap": 0,
+   "sel_pct_max": 0.30992196209587514,
+   "sel_pct_med": 0.07469342251950947
+  },
+  {
+   "date": "2026-07-01",
+   "pool": "ablation_smallcap",
+   "eligible": 208,
+   "n_valid_ratio": 208,
+   "excluded": 42,
+   "overlap": 0,
+   "sel_pct_max": 0.7836538461538461,
+   "sel_pct_med": 0.15144230769230768
+  }
+ ],
+ "generated_at": "2026-09-17 01:35:04"
+}

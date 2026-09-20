@@ -1,0 +1,16 @@
+{
+  "n_all": 5839,
+  "n_passed_top100": 21,
+  "live_buy_ranks": [
+    60,
+    75
+  ],
+  "de_buy_ranks": [
+    39,
+    27
+  ],
+  "hist_buy_ranks": [
+    10
+  ],
+  "hist_top10_passed": 1
+}

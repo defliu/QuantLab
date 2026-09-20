@@ -356,6 +356,8 @@ flowchart TD
 | 全天零委托但日志显示「再平衡完成」 | 盘前空 bar 误判停牌 + 季度键死守卫 |
 | 账本幻影持仓 | account_id 戳不匹配 / 远程 config 未同步 |
 | 中文显示 `????A??` | 编码腐蚀，禁止部署，回退 git HEAD |
+| 实盘评分卡 SC_F2/SC_F5 恒值（评分坍缩） | **死代码防线**：A 静态扫描 `scripts/scan_deadcode.py`（P1 建列后判 / P2 passorder 真值）+ build 前置；B 健康监控 `scripts/check_scorecard_health.py`（SC_F2/F5 坍缩→error 告警）；C 快照回放回归 `data/schedules/test_g2_rerun.py`；D deploy_predict_g2.py 落盘前 FAIL-LOUD 断言。调度：B 每日 20:15 / A 周六 09:00 / C 周六 09:10（2026-09-20 落地，事故 T-20260919-002） |
+| 当日选股结果异常但落盘产物健康（运行时执行偏差盲区） | **每日复跑对比（T-20260920-001，2026-09-20 晚扩展 ENS/V1.3 三臂覆盖）**：`g2_candidates_night.ps1` 20:05 deploy 后固化 `data_live/snapshot_g2_<runDay>.parquet` + `data_live/snapshot_v13_<runDay>.parquet`；`data/schedules/compare_g2_daily.py` 20:10 备份基准 → 重放对比 G2 臂（ts_code 排序 + SC_F2/SC_F5 逐位）与 ENS 融合臂（`--ensemble --ens-live`，ts_code 排序 + total_new 逐位，Tushare 主源不一致=error / 新浪兜底仅记录 / 未知=warn）；`data/schedules/compare_v13_daily.py` 20:12 重放 `deploy_predict.py --model v3 --top-k 10` 对比 V1.3 臂（model_prob/score_total/SC_F1~6/combo 逐位，纯离线确定性任一不一致=error）。调度：周一~五 20:10 G2 `Quant_P16_G2RerunCompare_Daily` / 20:12 V1.3 `Quant_P16_V13RerunCompare_Daily`（2026-09-20 落地，20260918 历史复跑 G2/V1.3 PASS；ENS/AB 臂抓到并修复 `SC_F2` KeyError，且暴露 09-21 ENS 候选仅 1 只——已用修复版重生成 10 只池） |
 
 ## 章节来源
 

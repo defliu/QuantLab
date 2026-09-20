@@ -45,7 +45,7 @@ def main():
     from xtquant import xtdata
 
     # 主库最后日期
-    main_df = pd.read_parquet(MAIN_DAILY, columns=[])
+    main_df = DC.read_main_daily(columns=[])
     last_date = main_df.index.get_level_values("trade_date").max()
     start = args.start or (last_date + pd.Timedelta(days=1)).strftime("%Y%m%d")
     end = args.end or time.strftime("%Y%m%d")
@@ -99,12 +99,14 @@ def main():
         if c not in ("trade_date", "ts_code"):
             incr[c] = pd.to_numeric(incr[c], errors="coerce")
     print(f"    增量行数: {len(incr):,} | 日期: {incr['trade_date'].min().date()} ~ {incr['trade_date'].max().date()} | 股票: {incr['ts_code'].nunique()}")
+    real_start = incr["trade_date"].min().strftime("%Y%m%d")
+    real_end = incr["trade_date"].max().strftime("%Y%m%d")
 
     print("[4/4] 写入临时增量库 ...")
     incr.to_parquet(OUT_INCR, index=False)
     meta = {
         "last_main_date": str(last_date.date()),
-        "incremental_range": [start_s, end_s],
+        "incremental_range": [real_start, real_end],
         "source": "miniQMT xtdata",
         "updated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
         "n_rows": len(incr),

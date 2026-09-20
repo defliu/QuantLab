@@ -102,7 +102,9 @@ def main():
     else:
         latest = pd.Timestamp("2007-01-01")
     start = (latest + pd.Timedelta(days=1)).strftime("%Y%m%d")
-    end = (pd.Timestamp.now().normalize() - pd.Timedelta(days=1)).strftime("%Y%m%d")
+    # 2026-09-14 修复：原 end=now-1 天把"今天"排除在区间外，19:30 刷新永远拉不到当日 moneyflow
+    #（连续多日 moneyflow 停在 T-1 → 候选/快照失真）。改为当天；当日数据未出则由 L120 空帧容错跳过，次日再补。
+    end = pd.Timestamp.now().normalize().strftime("%Y%m%d")
     if start > end:
         print("已是最新（latest=%s），无需刷新" % latest.date())
         return

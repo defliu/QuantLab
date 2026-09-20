@@ -17,6 +17,9 @@
 # 2026-09-07: 新增步骤5 paper_forward_exit.py 出场规则前向验证（ATR2.0 挂观察，exit_ablation 的延续）。
 # 2026-09-13: 新增步骤6 paper_forward_downgrade.py 纸面自动降级闸（T-20260913-001 P1-8）：
 #             任一策略纸面臂样本外持续为负 → 自动写冻结标记 + 飞书告警，次日 rebalance 只卖不买。
+# 2026-09-16: 新增步骤7 track_sold_forward.py 实盘卖出后 T+1/3/5 前向跟踪（T-20260916-003）：
+#             对 qmt_trade_log + 三桥 fills 的每笔实盘 SELL 回填后续开收盘 vs 卖出价，
+#             产物 data/real/sold_forward_live.csv + sold_forward_<date>.md（含卖飞警示）。
 $ErrorActionPreference = "Stop"
 $proj = $PSScriptRoot
 $py = "C:\Users\Administrator\AppData\Roaming\TRAE SOLO CN\ModularData\ai-agent\vm\tools\python\python.exe"
@@ -33,6 +36,8 @@ try {
     $pfExit = $LASTEXITCODE
     & $py -u paper_forward_downgrade.py *>> $log
     $dgExit = $LASTEXITCODE
+    & $py -u track_sold_forward.py *>> $log
+    $tfExit = $LASTEXITCODE
     # 三臂纸面季评（2026-09-13 立，P1-1）：每日随管道跑（样本不足自动标"样本不足"不排名），
     # 连续两季最末才提议退役/降配；只提议不动资金分配。失败记 ALERT 不阻断主链（季评是观察件）。
     & $py -u paper_quarterly_review.py *>> $log
@@ -52,6 +57,10 @@ try {
     }
     if ($dgExit -ne 0) {
         Add-Content -Path $log -Value "[$stamp] DOWNGRADE-ALERT paper_forward_downgrade 异常退出 (exit=$dgExit)"
+        exit 2
+    }
+    if ($tfExit -ne 0) {
+        Add-Content -Path $log -Value "[$stamp] SOLD-FWD-ALERT track_sold_forward 异常退出 (exit=$tfExit)"
         exit 2
     }
     if ($qrExit -ne 0) {

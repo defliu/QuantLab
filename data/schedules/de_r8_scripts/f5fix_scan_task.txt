@@ -1,0 +1,39 @@
+# DE 任务书：同类死代码全库扫描 + 预防机制意见（T-20260919-002 复盘）
+
+- 指派：DE（deveco）；opencode 汇总方案
+- 背景：deploy_predict_g2.py 死代码（先无条件填 NaN 建列 → 后置"列缺失"判断永假）导致实盘 F5 恒 5.0 / F2 恒新浪兜底 39 天未被发现。诚哥要求定预防机制。你的任务是提供存量证据 + 机制意见。
+
+## 一、全库扫描（只读，禁改禁 commit）
+
+扫描以下实盘链路文件（+ 你发现的其他明显相关文件），找出**同类"条件永假/回退永不触发"死代码**：
+
+重点文件：
+- D:\QuantLab\projects\Project_16_LightGBM股票大师\deploy_predict_g2.py（已修，参考其原模式）
+- D:\QuantLab\projects\Project_16_LightGBM股票大师\deploy_predict.py
+- D:\QuantLab\projects\Project_16_LightGBM股票大师\scorecard_real.py
+- D:\QuantLab\projects\Project_16_LightGBM股票大师\build_g2_daily.py
+- D:\QuantLab\projects\Project_16_LightGBM股票大师\rebalance*.py（若有）
+- D:\QuantLab\projects\Project_16_LightGBM股票大师\g2_realtime.py
+- D:\QuantLab\broker\qmt_builder.py、broker\qmt_order.py
+- D:\QuantLab\data\schedules\*.py（定时任务脚本，重点含实盘动作的）
+
+要识别的模式：
+1. `for c in [...]: if c not in df.columns: df[c]=np.nan` 之后紧跟 `if "X" not in df.columns and ...`（X 已被建列 → 永假）
+2. 任何**无条件** `df["X"] = 默认值/0/NaN` 之后，同一函数内再出现 `if "X" not in df.columns`（永假）
+3. 同一条件判断两次但中间列被必然创建/必然删除
+4. 其他你能识别的"回退分支永不触发"结构
+
+对每个命中输出：文件 / 行号 / 变量 / 风险等级（高=实盘链路会被消费 / 中=纸面或定时 / 低=研究脚本）
+
+## 二、预防机制意见（300 字内）
+
+诚哥候选机制（简要回答哪些落地成本低见效快，有没有更简单替代）：
+A. 静态扫描脚本：识别"填 NaN 在前、判缺失在后"模式，纳入定时任务前置/构建前置
+B. 数据健康监控：每日检查实盘 CSV 的 SC_F1~F6 分布坍缩（恒值/标准差 0）→ 告警
+C. 快照回放回归测试：历史快照+当前代码重放，断言 SC_F5 非恒值、F2 主源生效
+D. 其他你认为更有效/更简单的机制
+
+## 输出
+
+- 写 D:\QuantLab\data\schedules\de_r8_scripts\f5fix_scan\scan_report.md（命中清单表 + 机制意见）
+- 汇报 200 字内

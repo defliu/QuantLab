@@ -40,6 +40,14 @@ def build():
     # 1. 语法检查（py3.6）：用当前解释器 py_compile 先过一遍
     subprocess.run([sys.executable, "-m", "py_compile", SRC], check=True)
 
+    # 1.1 死代码静态扫描前置（T-20260919-002 三道防线·A，2026-09-20）：命中 P1 建列后判 / P2 passorder 真值判断即中止构建
+    _scan = subprocess.run([sys.executable, r"D:\QuantLab\scripts\scan_deadcode.py", "--paths", SRC],
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if _scan.stdout:
+        print(_scan.stdout.decode("utf-8", "replace")[-2000:])
+    if _scan.returncode != 0:
+        raise SystemExit("[DEADCODE-REJECT] 死代码扫描命中（P1建列后判 / P2 passorder真值判断），中止构建")
+
     # 2. 禁用语法扫描
     src_lines = src.split("\n")
     for i, line in enumerate(src_lines, 1):

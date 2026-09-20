@@ -1,0 +1,27 @@
+{
+  "date": "20260918",
+  "target": [
+    {
+      "code": "603257.SH",
+      "name": "中国瑞林",
+      "total": 64.0,
+      "prob": 0.5535
+    },
+    {
+      "code": "000729.SZ",
+      "name": "燕京啤酒",
+      "total": 61.0,
+      "prob": 0.556
+    }
+  ],
+  "strategy_capital": 88569.77,
+  "target_value_each": 42070.64,
+  "sell": [],
+  "buy": [],
+  "trim": [],
+  "hold": [
+    "603049.SH",
+    "603237.SH"
+  ],
+  "locked": []
+}

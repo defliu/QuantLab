@@ -1,0 +1,50 @@
+{
+  "date": "20260917",
+  "executed_live": true,
+  "executed_at": "2026-09-17 09:55:35",
+  "tier": 2,
+  "target": [
+    {
+      "code": "603237.SH",
+      "name": "五芳斋",
+      "total": 61.0,
+      "prob": 0.5768
+    },
+    {
+      "code": "002483.SZ",
+      "name": "润邦股份",
+      "total": 58.0,
+      "prob": 0.5364
+    }
+  ],
+  "strategy_capital": 87482.68,
+  "target_value_each": 41554.27,
+  "sell": [
+    {
+      "code": "601058.SH",
+      "cost": 14.482109677419356,
+      "vol": 3100,
+      "reason": "MATURE"
+    }
+  ],
+  "buy": [
+    {
+      "code": "603237.SH",
+      "vol": 2800,
+      "held_vol": 0,
+      "held_value": 0.0,
+      "price": 14.62,
+      "total": 61.0,
+      "action": "新晋"
+    }
+  ],
+  "trim": [],
+  "hold": [
+    "603049.SH"
+  ],
+  "locked": [],
+  "guard_note": [
+    "卖601058.SH:FILLED(重试1次)",
+    "买603237.SH:FILLED(重试1次)"
+  ]
+}

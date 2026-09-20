@@ -1,0 +1,27 @@
+{
+  "date": "20260916",
+  "target": [
+    {
+      "code": "603049.SH",
+      "name": "中策橡胶",
+      "total": 61.0,
+      "prob": 0.6279
+    },
+    {
+      "code": "603329.SH",
+      "name": "上海雅仕",
+      "total": 61.0,
+      "prob": 0.5454
+    }
+  ],
+  "strategy_capital": 87904.08,
+  "target_value_each": 41754.44,
+  "sell": [],
+  "buy": [],
+  "trim": [],
+  "hold": [
+    "601058.SH",
+    "603049.SH"
+  ],
+  "locked": []
+}

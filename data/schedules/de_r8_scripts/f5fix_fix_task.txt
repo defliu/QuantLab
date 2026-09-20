@@ -1,0 +1,59 @@
+# DE 任务书：修复 deploy_predict_g2.py 三处 F5/F2 死代码（T-20260919-002）
+
+- 指派：DE（deveco）执行，opencode 验收
+- 关联：T-20260919-002；死代码实证见 data/schedules/probe_f2_main_source.py 与 data/schedules/de_r8_scripts/f5fix_rerun/
+
+## 目标
+
+修复 `D:\QuantLab\projects\Project_16_LightGBM股票大师\deploy_predict_g2.py` 中 F2/F5 回退永不执行的死代码，
+使 F2 走 Tushare moneyflow 主源（mf_main_net 万元→元）、F5 用真实板块涨幅（ind_pct_ths）写入评分卡。
+
+## 死代码机制（已实证，勿重新调查）
+
+现代码三处都是同一模式（先填 NaN 再判断）：
+
+```python
+for c in ["main_net", "industry_pct", "volume_ratio"]:
+    if c not in pre.columns:
+        pre[c] = np.nan          # ← 先执行：列被强行创建
+if "main_net" not in pre.columns and "mf_main_net" in pre.columns:
+    pre["main_net"] = pre["mf_main_net"] * 1e4     # ← 条件永假，永不执行
+if "industry_pct" not in pre.columns and "ind_pct_ths" in pre.columns:
+    pre["industry_pct"] = pre["ind_pct_ths"]        # ← 条件永假，永不执行
+```
+
+后果：main_net 恒 NaN → F2 恒走新浪兜底；industry_pct 恒 NaN → F5 恒中性 5.0（39 个实盘 CSV 的 SC_F5 全 5.0）。
+
+## 修复（最小改动，顺序调换）
+
+把两个回退 `if` 判断移到 `for c in [...]` 填 NaN 循环**之前**（先真实回退、后 NaN 兜底），
+其余代码一字不动。三处同样处理：
+
+1. 主流程（约 L112-120，变量 `pre`）
+2. --ab 分支（约 L226-232，变量 `ab_pre`）
+3. --ensemble 分支（约 L269-275，变量 `en_pool`）
+
+修复后语义：快照有 mf_main_net/ind_pct_ths 时 main_net/industry_pct 取真实值；列真缺失时才补 NaN。
+volume_ratio 保持原样（NaN 兜底，本次不增强）。
+
+## 硬约束
+
+- **只允许修改 1 个文件**：`D:\QuantLab\projects\Project_16_LightGBM股票大师\deploy_predict_g2.py`
+- 禁止修改任何其他文件（尤其禁止动 `versions/` 历史存档、`build/` 产物、scorecard_real.py、build_g2_daily.py）
+- 禁止 git commit、禁止 git add、禁止任何 git 写操作
+- 禁止联网、禁止调用行情/新浪接口、禁止跑策略
+- 禁止改动与本次修复无关的代码（不重构、不改注释风格、不动 print、不动日志格式）
+- 改完用 miniqmt venv 做语法检查：`C:/Users/Administrator/.workbuddy/binaries/python/envs/miniqmt/Scripts/python.exe -m py_compile D:\QuantLab\projects\Project_16_LightGBM股票大师\deploy_predict_g2.py`
+
+## 输出（交付物）
+
+- 在 `D:\QuantLab\data\schedules\de_r8_scripts\f5fix_fix\` 新建目录（不存在则创建，只许写此目录）
+- 写 `fix_report.md`：三处的修改前/修改后代码对照（各 4-6 行即可）+ py_compile 结果
+- 汇报格式：精简，300 字内
+
+## 验收标准（opencode 将独立执行）
+
+1. `git diff deploy_predict_g2.py` 审读：只改了顺序，无其他无关改动
+2. grep 确认三处回退 if 均在填 NaN 循环之前
+3. py_compile 通过
+4. 用探针/最小脚本确认修复后 main_net 非空数 >0、industry_pct 非空数 >0（opencode 侧做，DE 不必跑）

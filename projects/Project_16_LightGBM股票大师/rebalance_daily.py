@@ -353,11 +353,12 @@ def main():
             # 不足 → 补仓到目标股数
             vol = -diff
             if vol >= C.MIN_ORDER_VOL:
+                # 标签修正（2026-09-14 P3）：held_vol=0 是新晋建仓，不是补仓；仅动标签，不改逻辑
                 buy_orders.append({"code": code, "vol": vol, "held_vol": held_vol, "held_value": held_value,
-                                   "price": price, "total": t["total"], "action": "补仓"})
+                                   "price": price, "total": t["total"], "action": "新晋" if held_vol <= 0 else "补仓"})
             else:
                 buy_orders.append({"code": code, "vol": 0, "held_vol": held_vol, "held_value": held_value,
-                                   "price": price, "total": t["total"], "action": "补仓不足一手"})
+                                   "price": price, "total": t["total"], "action": "新晋不足一手" if held_vol <= 0 else "补仓不足一手"})
         else:
             # 超配 → 减仓到目标股数（受今日可卖限制）
             trim_vol = min(diff, sellable.get(code, 0))
@@ -445,7 +446,7 @@ def main():
         remark = "planA_mature" if reason == "MATURE" else "planA_pk_out"
         r = order_guard.order_with_guard(trader, account, s["code"], "SELL", s["vol"], price, remark)
         print(f"    卖出 {s['code']} {s['vol']}股 [{reason}] -> {r['note']}")
-        guard_note.append(f"卖{s['code']}:{r['action']}")
+        guard_note.append(f"卖{s['code']}:{r['action']}(重试{r.get('attempts',1)}次)")
         if r["ok"] and r["traded_vol"] > 0:
             log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), s["code"], "SELL",
                              r["traded_vol"], price, reason, r["order_id"]])
@@ -454,7 +455,7 @@ def main():
     for t in trim_orders:
         r = order_guard.order_with_guard(trader, account, t["code"], "SELL", t["vol"], t["price"], "planA_trim")
         print(f"    减仓(超配) {t['code']} {t['vol']}股 -> {r['note']}")
-        guard_note.append(f"减{t['code']}:{r['action']}")
+        guard_note.append(f"减{t['code']}:{r['action']}(重试{r.get('attempts',1)}次)")
         if r["ok"] and r["traded_vol"] > 0:
             log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), t["code"], "SELL",
                              r["traded_vol"], t["price"], "TRIM_OVR", r["order_id"]])
@@ -526,7 +527,7 @@ def main():
         placed_buy_total += order_amt
         r = order_guard.order_with_guard(trader, account, b["code"], "BUY", vol, b["price"], "planA_new_top")
         print(f"    买入 {b['code']} {vol}股 -> {r['note']}")
-        guard_note.append(f"买{b['code']}:{r['action']}")
+        guard_note.append(f"买{b['code']}:{r['action']}(重试{r.get('attempts',1)}次)")
         if r["ok"] and r["traded_vol"] > 0:
             log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), b["code"], "BUY",
                              r["traded_vol"], b["price"], b["total"], r["order_id"]])

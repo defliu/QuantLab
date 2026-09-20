@@ -1,0 +1,16 @@
+你是 Project_16 修复工程师（DE，2026-09-14）。工作目录：D:\QuantLab。本任务可分析+实施修复，但严格遵守文件权限边界。
+允许读取（只读分析）：D:\QuantLab\projects\Project_16_LightGBM股票大师\ 下 order_guard.py、rebalance_daily.py、de_report_daily.ps1、de_guard_runner.ps1、de_rebalance_guard_daily.ps1、g2_candidates_night.ps1、gen_positions_cfg_v13.py、reconcile_g2.py、data\qmt_trade_log.csv、data\schedules\ 下 de_v13_compare_20260914.md、de_g2_compare_20260914.md、de_ens_compare_20260914.md、de_report_close_20260914.log、daily_20260914_163002.log、D:\QMT_POOL\g2_bridge\state\、p16_ensemble_bridge\state\、p16_v13_risk\state\ 的 json。
+允许修改（仅这 3 处，禁止其他任何文件）：
+1) D:\QuantLab\projects\Project_16_LightGBM股票大师\rebalance_daily.py —— 仅加一行：在 `guard_note.append(f"买{b['code']}:{r['action']}")`（约 L529）后追加 attempts 信息，改为 `guard_note.append(f"买{b['code']}:{r['action']}(重试{r.get('attempts',1)}次)")`；同时卖出侧（SELL 委托后）guard_note 同样加 attempts。不得改动任何其他逻辑。
+2) D:\QuantLab\projects\Project_16_LightGBM股票大师\de_report_daily.ps1 —— 在 deveco run 后加失败重试：若 `$rc -ne 0` 或报告未生成，等待 60 秒后重跑 1 次 deveco run（同一 prompt），仍失败则按原逻辑结束。保持幂等。
+3) D:\QuantLab\projects\Project_16_LightGBM股票大师\g2_candidates_night.ps1 —— 检查其"次日候选"命名逻辑：周五（20:05 运行）是否生成下一交易日（周一）候选？若当前用运行日命名导致周一候选缺失，请修复为按"下一交易日"生成候选文件（参考 is_trade_day.py 的日历），保证周五生成周一可用的 <下交易日>_g2_top10.csv。若逻辑已正确则不改，在报告说明。
+禁止：修改 order_guard.py 核心循环（MAX_RETRY/撤单重试）、qmt_config.py、任何 QMT 桥内策略源码、任何 .py 除上述3处外的文件；禁止 commit；禁止运行任何 --live 或下单；禁止运行 rebalance_daily.py / reconcile_*.py（只读分析）。
+任务步骤：
+1) 逐项分析 4 个问题的根因（证据到文件/行号）：
+   A. V1.3 买入 601890.SH 今日 CANCELED_TIMEOUT：order_guard.py 循环逻辑是否完整（MAX_RETRY=5）？guard_note 为何不显示重试次数？结合 de_v13_compare_20260914.md 与 order_guard.py 代码判断是"重试 5 次仍失败"还是"未重试"。601890 今日行情（腾讯 qt.gtimg.cn 取价）是否导致买入价 9.78 追不上（如开盘急拉）？
+   B. G2/融合 20260914 候选断链：data\selections\g2\ 无 20260914_g2_top10.csv（最新 20260911）。g2_candidates_night.ps1（20:05 周一~五）命名与"下一交易日"逻辑是否覆盖周五→周一？09:25 TRAE 候选预生成是否可能补？
+   C. 盘后报告 de_report_close_20260914 exit=1：de_report_close_20260914.log 尾部是否有模型服务过载/会话错误？
+   D. TRAE G2 日终对账今日无产物（reconcile_g2_20260914 缺失，但 14:34 有真实买入 603332）：de_guard_runner.ps1 的 reconcile 检测是否会告警/补跑？
+2) 实施上述允许的 3 处修改。
+3) 输出完整修复报告到 D:\QuantLab\data\schedules\de_fix_plan_20260914.md：四项根因分析（附证据）+ 修改清单（文件/行号/改动内容）+ 验证建议 + 未决事项。若某项根因与你原判断不同，明确说明。
+硬约束：只改允许的 3 处；如遇不确定只记录、不擅自行动。

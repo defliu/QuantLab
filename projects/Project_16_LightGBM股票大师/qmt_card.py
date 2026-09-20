@@ -206,10 +206,37 @@ def send_lark_card(card, uid=None, chat_id=_NO_CHAT, as_ident=None):
         )
         ok = r.returncode == 0
         print(f"    卡片推送[{as_ident}] {'群' if chat_id else '私聊'}: {'成功' if ok else '失败'} {(r.stdout or r.stderr).strip()[:160]}")
+        if not ok:
+            _write_feishu_fallback(card, "lark-cli 非零退出: %s" % ((r.stderr or r.stdout).strip()[:160]))
         return ok
     except Exception as e:
         print(f"    !! 卡片推送异常: {e!r}")
+        _write_feishu_fallback(card, "lark-cli 异常: %s" % e)
         return False
+
+
+def _write_feishu_fallback(card, reason):
+    """R3/P2-4（T-20260915-001）：飞书推送失败时写本地兜底文件，确保补跑失败/告警可被发现。
+    写入 data/schedules/feishu_fallback_<date>.json（同文件追加，保持历史）。"""
+    try:
+        fallback_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "schedules")
+        os.makedirs(fallback_dir, exist_ok=True)
+        path = os.path.join(fallback_dir, "feishu_fallback_%s.json" % time.strftime("%Y%m%d"))
+        title = (card or {}).get("header", {}).get("title", {}).get("content", "未知")
+        rec = {"ts": time.strftime("%Y-%m-%d %H:%M:%S"), "title": title, "reason": reason}
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            data = []
+        if not isinstance(data, list):
+            data = []
+        data.append(rec)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        print(f"    [fallback] 飞书推送失败已写本地兜底: {path}")
+    except Exception as e:
+        print(f"    !! fallback 文件写入失败: {e!r}")
 
 
 if __name__ == "__main__":

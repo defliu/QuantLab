@@ -73,6 +73,15 @@ if ((Test-Path $outFile) -and ((Get-Item $outFile).LastWriteTime.Date -eq (Get-D
 $msg = "Read the file $promptFile and strictly follow every instruction in it. This is a READ-ONLY report generation task. Do NOT place orders, do NOT use --live, do NOT modify any files, do NOT commit. Write your report to the output path specified in the file."
 & $deveco run $msg --dangerously-skip-permissions --dir D:\QuantLab --format json *>> $log
 $rc = $LASTEXITCODE
+# 失败重试（2026-09-14）：模型服务过载等导致 exit!=0 或报告未生成 → 等 60 秒用同一 prompt 重跑 1 次；
+# 仍失败则按原逻辑结束。幂等：外层"当日报告已存在则跳过 DE"保护不变，重跑为只读报告生成，无副作用。
+if (($rc -ne 0) -or (-not (Test-Path $outFile))) {
+    Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] deveco 首次运行未成功(exit=$rc，报告已生成=$((Test-Path $outFile)))，60 秒后重试 1 次" -Encoding UTF8
+    Start-Sleep -Seconds 60
+    & $deveco run $msg --dangerously-skip-permissions --dir D:\QuantLab --format json *>> $log
+    $rc = $LASTEXITCODE
+    Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] deveco 重试 exit=$rc，报告已生成=$((Test-Path $outFile))" -Encoding UTF8
+}
 }
 Add-Content -Path $log -Value "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] deveco exit=$rc" -Encoding UTF8
 Add-Content -Path $log -Value "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] ==== DE 报告 $Task 结束 ====" -Encoding UTF8

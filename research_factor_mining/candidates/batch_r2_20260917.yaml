@@ -1,0 +1,52 @@
+batch_id: r2_20260917
+created: 2026-09-16
+author: DE-R2 + TRAE
+direction: "正式批R2：A-北向自身分位(8) + A-龙虎榜席位结构(7,top_inst已落盘解锁) + A-研报修正分位(8) + B-财务背离(8) + 价格行为族(9)"
+universe: "smallcap_30e"  # circ_mv 0~30亿 + pe/pb>0 + 非ST + 非停牌
+note: "S0 预登记（DE R2 设计 + TRAE 审核）。direction_hint=+ 表示值大=预期看多；IC 按 hint 翻转后判定。fn 在 factor_defs_r2.py 实现（run_screen 已合并挂载）。top_inst 经 TRAE 实测已落盘（2012-2026，167万行），LHB_INST_* 两条正常启用。"
+candidates:
+  # ============ A-北向：自身历史分位族（hk_hold_full, 2016-06 起） ============
+  - {id: HK_RATIO_PCT250,     name: 北向持股比例自身250日分位,  direction: A-北向, source: northbound/hk_hold_full, fn: hk_ratio_pct250,     logic: "当前比例处于自身历史高位=外资已下重注(拥挤)", direction_hint: -1}
+  - {id: HK_RATIO_Z250,       name: 北向持股比例自身250日z值,   direction: A-北向, source: northbound/hk_hold_full, fn: hk_ratio_z250,       logic: "自身历史标准分(分布稳健版)", direction_hint: -1}
+  - {id: HK_RATIO_CHG20_PCT,  name: 20日增持量自身历史分位,     direction: A-北向, source: northbound/hk_hold_full, fn: hk_ratio_chg20_pct,  logic: "增持幅度相对自身历史的异常度", direction_hint: 1}
+  - {id: HK_RATIO_CHG60_PCT,  name: 60日增持量自身历史分位,     direction: A-北向, source: northbound/hk_hold_full, fn: hk_ratio_chg60_pct,  logic: "中期配置行为的自身分位", direction_hint: 1}
+  - {id: HK_VOL_PCT250,       name: 北向持股数自身250日分位,    direction: A-北向, source: northbound/hk_hold_full, fn: hk_vol_pct250,       logic: "持股数量维度(排除股价干扰)", direction_hint: -1}
+  - {id: HK_RATIO_FROM_PEAK,  name: 距自身持股峰值回撤,         direction: A-北向, source: northbound/hk_hold_full, fn: hk_ratio_from_peak,  logic: "外资从峰值减仓=撤离信号", direction_hint: 1}
+  - {id: HK_HOLD_DAYS,        name: 北向连续在册天数,           direction: A-北向, source: northbound/hk_hold_full, fn: hk_hold_days,        logic: "连续持有久=配置盘而非交易盘", direction_hint: 1}
+  - {id: HK_RATIO_STABILITY,  name: 近60日持股比例波动率,       direction: A-北向, source: northbound/hk_hold_full, fn: hk_ratio_stability,  logic: "比例高波动=交易盘(负向)", direction_hint: -1}
+  # ============ A-龙虎榜：席位结构族（top_list 2005 起 + top_inst 2012 起） ============
+  - {id: LHB_AMOUNT_RATE_20D, name: 上榜日成交额占流通盘比,     direction: A-龙虎榜, source: lhb/top_list, fn: lhb_amount_rate_20d, logic: "上榜日筹码换手剧烈(博弈激烈)", direction_hint: -1}
+  - {id: LHB_BUY_RATIO_20D,   name: 买方席位成交占比均值,       direction: A-龙虎榜, source: lhb/top_list, fn: lhb_buy_ratio_20d,   logic: "买方席位集中=游资对倒特征", direction_hint: -1}
+  - {id: LHB_NETRATE_60D,     name: 60日净买入率均值,           direction: A-龙虎榜, source: lhb/top_list, fn: lhb_netrate_60d,     logic: "中期净买入率(20日版-0.035的加长版)", direction_hint: 1}
+  - {id: LHB_TIMES_60D,       name: 60日上榜次数,               direction: A-龙虎榜, source: lhb/top_list, fn: lhb_times_60d,       logic: "中期上榜频率(验证-0.095的衰减)", direction_hint: -1}
+  - {id: LHB_NET_MV_60D,      name: 60日净买入额/流通市值,      direction: A-龙虎榜, source: lhb/top_list, fn: lhb_net_mv_60d,      logic: "相对规模化的中期席位资金流", direction_hint: 1}
+  - {id: LHB_INST_NET_20D,    name: 机构席位20日净买入,         direction: A-龙虎榜, source: lhb/top_inst, fn: lhb_inst_net_20d,    logic: "Hong2025:机构席位短期正相关无长期信息", direction_hint: 1}
+  - {id: LHB_INST_FLAG_20D,   name: 近20日机构席位上榜哑变量,   direction: A-龙虎榜, source: lhb/top_inst, fn: lhb_inst_flag_20d,   logic: "机构参与=区别于纯游资炒作", direction_hint: 1}
+  # ============ A-研报：修正分位族（report_rc_daily, 2006 起, 尾部滞后2026-05） ============
+  - {id: RES_RATING_PCT,      name: 当前评级自身两年分位,       direction: A-研报, source: research/report_rc_daily, fn: res_rating_pct,      logic: "评级自身历史最看好分位=预期打满", direction_hint: -1}
+  - {id: RES_UPDOWN_120D,     name: 120日上调-下调次数,         direction: A-研报, source: research/report_rc_daily, fn: res_updown_120d,     logic: "评级上调净次数=预期改善(信息通道)", direction_hint: 1}
+  - {id: RES_TP_RET_60D,      name: 60日目标价隐含收益,         direction: A-研报, source: research/report_rc_daily, fn: res_tp_ret_60d,      logic: "目标价空间=卖方上行预期", direction_hint: 1}
+  - {id: RES_TP_CHG_120D,     name: 目标价120日修正幅度,        direction: A-研报, source: research/report_rc_daily, fn: res_tp_chg_120d,     logic: "目标价上调=预期修正", direction_hint: 1}
+  - {id: RES_EPS_CHG_120D,    name: EPS预测120日修正,           direction: A-研报, source: research/report_rc_daily, fn: res_eps_chg_120d,    logic: "盈利预测上修=基本面边际改善", direction_hint: 1}
+  - {id: RES_COUNT_SEASON,    name: 覆盖数同比变化,             direction: A-研报, source: research/report_rc_daily, fn: res_count_season,    logic: "同比去季节性的关注度变化", direction_hint: -1}
+  - {id: RES_RATING_DISP_60D, name: 60日评级分歧度,             direction: A-研报, source: research/report_rc_daily, fn: res_rating_disp_60d, logic: "卖方分歧大=不确定性高", direction_hint: -1}
+  - {id: RES_INIT_COVER_120D, name: 120日首次覆盖哑变量,        direction: A-研报, source: research/report_rc_daily, fn: res_init_cover_120d, logic: "历史首篇研报=关注度零到一", direction_hint: -1}
+  # ============ B-财务：科目背离族（fina_indicator PIT, 全期） ============
+  - {id: FIN_REV_NP_DIV,      name: 营收增速-净利增速,          direction: B-财务, source: finance/fina_indicator, fn: fin_rev_np_div,      logic: "增收不增利=增长质量差", direction_hint: -1}
+  - {id: FIN_REV_NP_GAPSIGN,  name: 营收增净利降哑变量,         direction: B-财务, source: finance/fina_indicator, fn: fin_rev_np_gapsign,  logic: "经典增收不增利排雷", direction_hint: -1}
+  - {id: FIN_NP_OCF_DIV,      name: 净利增速-现金流增速,        direction: B-财务, source: finance/fina_indicator, fn: fin_np_ocf_div,      logic: "Sloan应计:利润快于现金流=质量低", direction_hint: -1}
+  - {id: FIN_NP_OCF_DIV_Q,    name: 单季净利-现金流背离,        direction: B-财务, source: finance/fina_indicator, fn: fin_np_ocf_div_q,    logic: "单季版应计(更灵敏)", direction_hint: -1}
+  - {id: FIN_REV_ASSET_DIV,   name: 总资产增速-营收增速,        direction: B-财务, source: finance/fina_indicator, fn: fin_rev_asset_div,   logic: "低效扩产/商誉堆砌", direction_hint: -1}
+  - {id: FIN_MARGIN_TREND,    name: 毛利率同比变动,             direction: B-财务, source: finance/fina_indicator, fn: fin_margin_trend,    logic: "毛利率边际改善=定价力增强", direction_hint: 1}
+  - {id: FIN_ROE_STABILITY,   name: 近8季ROE标准差(负),         direction: B-财务, source: finance/fina_indicator, fn: fin_roe_stability,   logic: "ROE稳定=盈利可预测", direction_hint: 1}
+  - {id: FIN_Q_NP_ANNUAL,     name: 单季净利同比-累计净利同比,  direction: B-财务, source: finance/fina_indicator, fn: fin_q_np_annual,     logic: "季度分布异常=盈余管理嫌疑", direction_hint: -1}
+  # ============ 其他：价格行为族（daily 主库衍生, 2009 起, 零新数据） ============
+  - {id: PX_MAX20,            name: 近20日最大单日涨幅,         direction: 其他, source: daily/stock_daily, fn: px_max20,            logic: "MAX彩票效应(MAX5排雷的因子化度量)", direction_hint: -1}
+  - {id: PX_LIMITUP_CNT20,    name: 近20日涨停次数,             direction: 其他, source: daily/stock_daily, fn: px_limitup_cnt20,    logic: "涨停密集=彩票+注意力(Hu2026)", direction_hint: -1}
+  - {id: PX_OVERNIGHT_20D,    name: 近20日隔夜收益均值,         direction: 其他, source: daily/stock_daily, fn: px_overnight_20d,    logic: "隔夜高=散户情绪推开盘(彩票偏好)", direction_hint: -1}
+  - {id: PX_INTRADAY_20D,     name: 近20日日内收益均值,         direction: 其他, source: daily/stock_daily, fn: px_intraday_20d,     logic: "日内收益=盘中真买盘(与隔夜互补)", direction_hint: 1}
+  - {id: PX_TURN_PCT252,      name: 20日均换手自身一年分位,     direction: 其他, source: daily/stock_daily, fn: px_turn_pct252,      logic: "换手自身历史高位=过热(分位化剔流动性差异)", direction_hint: -1}
+  - {id: PX_AMT_RATIO_20D,    name: 20日均成交额/流通市值,      direction: 其他, source: daily/stock_daily, fn: px_amt_ratio_20d,    logic: "换手的金额加权版", direction_hint: -1}
+  - {id: PX_VOL_STD20,        name: 近20日日收益标准差,         direction: 其他, source: daily/stock_daily, fn: px_vol_std20,        logic: "短期波动=彩票/博弈特征", direction_hint: -1}
+  - {id: PX_PRICE_LEVEL,      name: 绝对股价,                   direction: 其他, source: daily/stock_daily, fn: px_price_level,      logic: "低价溢价(LSY2019注意壳价值下缘)", direction_hint: 1}
+  - {id: PX_LISTED_NEW,       name: 上市未满250日哑变量,        direction: 其他, source: daily/stock_daily, fn: px_listed_new,       logic: "次新=无历史+高波动+高关注三雷叠加", direction_hint: -1}

@@ -1,0 +1,200 @@
+{
+  "window": [
+    "2024-07-01",
+    "2026-08-14"
+  ],
+  "strats": {
+    "V14": {
+      "label": "V1.4（v3正式模型27特征+代理评分卡，红线58，N=5）",
+      "hold": 5,
+      "rows": {
+        "open": {
+          "n_trades": 186,
+          "n_days": 516,
+          "win_rate": 0.46236559139784944,
+          "profit_loss_ratio": 1.3562910980527256,
+          "total_return": 0.14583684625187399,
+          "annual_return": 0.06874456103010806,
+          "max_drawdown": -0.42341701615971594,
+          "sharpe": 0.3624659848839537,
+          "turnover_ann": 44.504715040543005,
+          "avg_hold_days": 5.548387096774194,
+          "reasons": {
+            "MATURE": 149,
+            "TP": 10,
+            "STOP": 23,
+            "SKIP_DOWN": 1,
+            "TRAIL": 2
+          },
+          "n_underweight_days": 0
+        },
+        "close": {
+          "n_trades": 186,
+          "n_days": 516,
+          "win_rate": 0.4838709677419355,
+          "profit_loss_ratio": 1.3273375408094146,
+          "total_return": 0.4171271471329663,
+          "annual_return": 0.18561542578126788,
+          "max_drawdown": -0.3067941239367591,
+          "sharpe": 0.6437211684102119,
+          "turnover_ann": 44.39311929148243,
+          "avg_hold_days": 5.548387096774194,
+          "reasons": {
+            "MATURE": 149,
+            "TP": 10,
+            "STOP": 23,
+            "SKIP_DOWN": 1,
+            "TRAIL": 2
+          },
+          "n_underweight_days": 0
+        },
+        "next_open": {
+          "n_trades": 166,
+          "n_days": 516,
+          "win_rate": 0.5,
+          "profit_loss_ratio": 1.2501107638786262,
+          "total_return": 0.3920663139700695,
+          "annual_return": 0.17532912412711665,
+          "max_drawdown": -0.27205931989051224,
+          "sharpe": 0.6446742170015064,
+          "turnover_ann": 39.3823227498264,
+          "avg_hold_days": 6.216867469879518,
+          "reasons": {
+            "MATURE": 129,
+            "STOP": 21,
+            "SKIP_DOWN": 2,
+            "TRAIL": 6,
+            "TP": 8
+          },
+          "n_underweight_days": 0
+        }
+      }
+    },
+    "G2": {
+      "label": "G2桥（g2 live模型20260915+真实评分卡，红线60，N=15）",
+      "hold": 15,
+      "rows": {
+        "open": {
+          "n_trades": 76,
+          "n_days": 516,
+          "win_rate": 0.5789473684210527,
+          "profit_loss_ratio": 1.233481688321681,
+          "total_return": 0.6272621148009074,
+          "annual_return": 0.26844005694033,
+          "max_drawdown": -0.31500240366789123,
+          "sharpe": 0.9987922017897651,
+          "turnover_ann": 18.017408382237367,
+          "avg_hold_days": 13.56578947368421,
+          "reasons": {
+            "MATURE": 46,
+            "STOP": 17,
+            "TP": 7,
+            "TRAIL": 4
+          },
+          "n_underweight_days": 1
+        },
+        "close": {
+          "n_trades": 76,
+          "n_days": 516,
+          "win_rate": 0.5526315789473685,
+          "profit_loss_ratio": 1.2888828189968295,
+          "total_return": 0.516231507125334,
+          "annual_return": 0.22540834595367,
+          "max_drawdown": -0.34666295098752054,
+          "sharpe": 0.8631726919357993,
+          "turnover_ann": 17.95585497528832,
+          "avg_hold_days": 13.56578947368421,
+          "reasons": {
+            "MATURE": 46,
+            "STOP": 17,
+            "TP": 7,
+            "TRAIL": 4
+          },
+          "n_underweight_days": 1
+        },
+        "next_open": {
+          "n_trades": 76,
+          "n_days": 516,
+          "win_rate": 0.5263157894736842,
+          "profit_loss_ratio": 1.6562495105860906,
+          "total_return": 0.8681524574647954,
+          "annual_return": 0.35690736776456444,
+          "max_drawdown": -0.232657950666173,
+          "sharpe": 1.242845888316455,
+          "turnover_ann": 17.682111640408465,
+          "avg_hold_days": 13.56578947368421,
+          "reasons": {
+            "MATURE": 41,
+            "TRAIL": 10,
+            "STOP": 15,
+            "TP": 8
+          },
+          "n_underweight_days": 1
+        }
+      }
+    },
+    "ENS": {
+      "label": "融合桥-payload口径（G2信号，红线60，N=10）",
+      "hold": 10,
+      "rows": {
+        "open": {
+          "n_trades": 100,
+          "n_days": 516,
+          "win_rate": 0.52,
+          "profit_loss_ratio": 1.367344161322975,
+          "total_return": 0.600861946476871,
+          "annual_return": 0.2583479117094636,
+          "max_drawdown": -0.24964024889563896,
+          "sharpe": 0.8938565741604151,
+          "turnover_ann": 23.71371924313396,
+          "avg_hold_days": 10.32,
+          "reasons": {
+            "MATURE": 81,
+            "STOP": 11,
+            "TP": 5,
+            "TRAIL": 1
+          },
+          "n_underweight_days": 0
+        },
+        "close": {
+          "n_trades": 100,
+          "n_days": 516,
+          "win_rate": 0.56,
+          "profit_loss_ratio": 1.3013737116155697,
+          "total_return": 0.8638317223065208,
+          "annual_return": 0.3553737979634537,
+          "max_drawdown": -0.2611475627797675,
+          "sharpe": 1.1036568713553783,
+          "turnover_ann": 23.695560872529185,
+          "avg_hold_days": 10.32,
+          "reasons": {
+            "MATURE": 81,
+            "STOP": 11,
+            "TP": 5,
+            "TRAIL": 1
+          },
+          "n_underweight_days": 0
+        },
+        "next_open": {
+          "n_trades": 94,
+          "n_days": 516,
+          "win_rate": 0.5638297872340425,
+          "profit_loss_ratio": 1.5035025863260754,
+          "total_return": 1.1333724484687782,
+          "annual_return": 0.4477947060456684,
+          "max_drawdown": -0.22983069030729852,
+          "sharpe": 1.4792754023140076,
+          "turnover_ann": 22.189857166016065,
+          "avg_hold_days": 10.97872340425532,
+          "reasons": {
+            "MATURE": 73,
+            "TP": 7,
+            "STOP": 11,
+            "TRAIL": 1
+          },
+          "n_underweight_days": 0
+        }
+      }
+    }
+  }
+}

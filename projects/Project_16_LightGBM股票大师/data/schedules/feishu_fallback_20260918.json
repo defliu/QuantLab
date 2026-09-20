@@ -1,0 +1,7 @@
+[
+  {
+    "ts": "2026-09-18 09:52:58",
+    "title": "集合竞价预判 20260918 推送失败",
+    "reason": "lark-cli bot身份无app secret(cli_aade2524ddbd9bd6 secret在keychain不可达); user身份open_id跨应用(ou_bd13444d8ea53c28249c669f43f3eeff属bot应用)。报告已保存 data/real/集合竞价预判_20260918.md"
+  }
+]

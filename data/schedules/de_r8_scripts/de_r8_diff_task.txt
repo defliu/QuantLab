@@ -1,0 +1,54 @@
+# DE 任务书：R8 回测结果 vs 历史回测结果差异归因（诚哥问「差距怎么这么大」）
+
+## 背景
+
+诚哥看到 R8 评估报告（绝对年化：V14 K2 +6.9% / G2 K2 +26.8% / ENS K2 +25.8%）与"之前的历史回测结果"（G2 日超额 +0.213% / V1.4 日超额 +0.157% / V2.0 报告"年化 75.88%、日超额 +0.149%"）差距巨大，要求与 DE 一起归因。
+
+## 已被 TRAE 钉死的事实（直接采信，不要重新推导，防止归因漂移）
+
+1. **口径根本不同**：历史报告报的是**日超额**（策略账户净值日收益均值 − 等权市场基准日收益均值），R8 报的是**绝对年化**（账户净值复合年化）。
+2. **等权市场基准测试期年化 = +27.4%（+0.096%/日）**（TRAE 已用 feature_panel_v3.parquet 的 fwd_ret 逐日等权均值实算：516 日，2024-07-01~2026-08-14，分段前段 +40.6%/242日、后段 +16.8%/274日）。
+3. **R8 引擎（de_r8_common.py）下 G2 K2 N15 绝对日收益 +0.109%/日（年化 +26.8%）→ 日超额仅约 +0.013%/日**；V14 K2 N5 绝对 +0.052%/日（年化 +6.9%）→ 日超额约 **−0.044%/日**（跑输基准）。
+4. **模型版本不是主因**：TRAE 已用 R8 引擎（audit_r8.py）分别跑 1964t（20260825）与 1522t（20260915）——1964t 绝对 +0.0865%/日、1522t +0.109%/日，新模型反而略优。两代模型在 R8 引擎下都远低于历史审计的 +0.213%/日超额。
+5. **剩余 ~0.2pp/日 的差异 = 历史引擎（scan_rotate_cost_real.py）与 DE 引擎（de_r8_common.py）的实现差异**，必须逐行定位。
+
+## DE 任务
+
+### 任务 1：历史引擎复现
+用历史引擎 scan_rotate_cost_real.py 按 09-10 审计配置原样重跑 G2（模型 = 20260825_1964t），验证 +0.213%/日 可复现：
+```
+$env:BT_PANEL="data\feature_panel_v3_enh2_n3_bt.parquet"
+$env:BT_MODEL="D:\QuantLab\models\lgb_model_v3_g2_strong_real_20260825_1964t.txt"
+$env:BT_META="data\features_v3_g2_strong_real_20260825.json"
+$env:BT_THRESHOLD="60"  $env:BT_TOP="2"  $env:BT_EXIT="live_trail"
+$env:BT_N_LIST="15"  $env:BT_SLIPS="0.001"
+python scan_rotate_cost_real.py --exec
+```
+用 miniqmt venv：`C:/Users/Administrator/.workbuddy/binaries/python/envs/miniqmt/Scripts/python.exe`。输出重定向到 de_r8_scripts/out/。
+
+### 任务 2：历史引擎跑新模型
+同配置换 1522t（BT_MODEL=...20260915_1522t.txt, BT_META=...features_v3_g2_strong_real_20260915.json）重跑，看历史引擎口径下新模型日超额是多少。
+
+### 任务 3：逐日对比两引擎，定位差异代码行
+同模型（1964t）、同配置（K2/N15/红线60/live_trail）下，逐日对比：
+- per_day 候选集合/顺序（历史=prob top10 未过滤、买入时筛红线；DE=先红线再 prob top10）——是否产生不同候选？
+- 评分卡输入差异：历史对**当日全面板 day** 调 `SR.compute_real_scorecard(day, est)`；DE 对 **top100 pool** 调 `SR.compute_real_scorecard(pool, est)`。检查 compute_real_scorecard 内部是否依赖当日截面（如排名、全市场分位），导致两种输入结果不同 → 候选不同。若如此，请用 1~2 个具体交易日证明（对比两种输入的 F 值/total/候选股票差异）。
+- 买入序列、出场（reasons 分布）、逐日账户收益的差异出现在哪一天/哪类股票。
+- 滑点方向：历史含 0.1%/边滑点反而更高，说明滑点不是差异源，确认即可。
+
+### 任务 4：归因报告
+输出 de_r8_scripts/DE_R8差异归因_20260919.md，把诚哥问的差距拆成四部分并量化：
+A. 口径差异（日超额 vs 绝对年化）——量化换算（+0.213%/日 ≈ 年化超额 ~70%，审计报告自己已标注"禁止引用"）；
+B. 引擎实现差异（任务 3 定位的具体行/具体天）——量化对超额的影响；
+C. 模型版本（1964t vs 1522t）——量化（已初步证明影响小，确认）；
+D. 历史数字系统性偏乐观（测试集双重使用：测试期 2024-07~2026-08 100% 落在模型训练窗内；审计报告已警示"纸面前向 G2 首批 4 笔 −0.0715%/日、胜率 25%"）。
+
+报告必须给诚哥一个清晰的结论："R8 的数字（绝对年化、超额≈基准）是否更接近真实"。
+
+## 约束
+
+- 只允许读：D:\QuantLab\projects\Project_16_LightGBM股票大师\（scan_rotate_cost_real.py、scorecard_real.py、data_config.py、deploy_predict.py、review_full.py、data\feature_panel_v3_enh2_n3_bt.parquet、data\feature_panel_v3.parquet）、D:\QuantLab\data\schedules\de_r8_scripts\（de_r8_common.py 及 out/）、D:\QuantLab\models\ 下相关模型与 meta。
+- 允许写：仅 D:\QuantLab\data\schedules\de_r8_scripts\out\ 与 DE_R8差异归因_20260919.md。
+- 禁止修改上述只读文件外的任何其他文件；禁止 commit；禁止触发行情/交易连接。
+- 环境：miniqmt venv python（有 lightgbm/pandas 3.0.5）；3.13.12 无 lightgbm 不可用。
+- 过程中输出关键日志（每步完成一行），卡死风险时允许分两步交付（先任务1-3 结果，再任务4 报告）。

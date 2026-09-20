@@ -1,22 +1,26 @@
 {
   "date": "20260911",
   "account_id": "70180771",
-  "capital": 100000.0,
+  "capital": 98469.21,
   "pool": [
     {
-      "code": "600409.SH",
+      "code": "603225.SH",
       "total": 65.0
     },
     {
-      "code": "300138.SZ",
-      "total": 64.0
+      "code": "601233.SH",
+      "total": 65.0
     },
     {
-      "code": "002412.SZ",
+      "code": "000949.SZ",
+      "total": 65.0
+    },
+    {
+      "code": "603271.SH",
       "total": 62.5
     },
     {
-      "code": "002824.SZ",
+      "code": "600409.SH",
       "total": 62.5
     },
     {
@@ -24,72 +28,53 @@
       "total": 62.5
     },
     {
-      "code": "603985.SH",
+      "code": "000524.SZ",
       "total": 62.5
     },
     {
-      "code": "300201.SZ",
+      "code": "002365.SZ",
       "total": 62.5
     },
     {
-      "code": "002780.SZ",
+      "code": "600191.SH",
       "total": 62.5
-    },
-    {
-      "code": "601636.SH",
-      "total": 61.5
-    },
-    {
-      "code": "601233.SH",
-      "total": 60.0
-    }
-  ],
-  "ledger": {},
-  "note": "融合候选池 10 只（红线 60）",
-  "hold_days": 10,
-  "hold_dates": {},
-  "sells": [],
-  "buys": [
-    {
-      "code": "600409.SH",
-      "vol": 7400,
-      "price": 6.37,
-      "held": 0,
-      "target_vol": 7400,
-      "total": 65.0
     },
     {
       "code": "300138.SZ",
-      "vol": 4100,
-      "price": 11.44,
-      "held": 0,
-      "target_vol": 4100,
-      "total": 64.0
+      "total": 61.0
     }
   ],
-  "skips": [],
-  "seq": 1,
-  "written": true,
-  "hold_dates_after": {
+  "ledger": {
+    "300138.SZ": {
+      "vol": 4100,
+      "cost": 11.4491,
+      "src": "cfg"
+    },
+    "600409.SH": {
+      "vol": 7400,
+      "cost": 6.3852,
+      "src": "cfg"
+    }
+  },
+  "note": "融合候选池 10 只（红线 60）",
+  "hold_days": 10,
+  "hold_dates": {
     "600409.SH": "20260911",
     "300138.SZ": "20260911"
   },
-  "orders": [
+  "sells": [],
+  "buys": [],
+  "skips": [
     {
-      "action": "BUY",
-      "code": "600409.SH",
-      "vol": 7400,
-      "price": 6.37,
-      "reason": "融合选股Top1(total=65.0)",
-      "strategy_order_id": "P16_20260911_0001"
-    },
-    {
-      "action": "BUY",
       "code": "300138.SZ",
       "vol": 4100,
-      "price": 11.44,
-      "reason": "融合选股Top2(total=64.0)",
-      "strategy_order_id": "P16_20260911_0002"
+      "reason": "持有未满10日(20260911起,已0日,日历OK)"
+    },
+    {
+      "code": "600409.SH",
+      "vol": 7400,
+      "reason": "持有未满10日(20260911起,已0日,日历OK)"
     }
-  ]
+  ],
+  "orders": []
 }

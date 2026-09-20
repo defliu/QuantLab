@@ -61,7 +61,8 @@ def _load_holdings(C):
         except Exception:
             pass
         return {}
-    return h.get("positions", {}) or {}
+    # 共享账户红线：只认自己的四腿，过滤他人持仓/测试残留（DE 验收实证）
+    return {k: v for k, v in (h.get("positions", {}) or {}).items() if k in LEGS}
 
 
 def _save_holdings(C, positions, nav):
@@ -272,6 +273,9 @@ def _settle(C):
         data = C.get_trade_detail_data(ACCOUNT_ID, "stock", "position")
         for p in data or []:
             code = getattr(p, "m_strInstrumentID", "") or getattr(p, "m_strCode", "") or ""
+            if code not in LEGS:
+                # 共享账户红线：只认自己的四腿，绝不纳管其他策略持仓（DE 终版验收实证）
+                continue
             vol = int(getattr(p, "m_nVolume", 0) or 0)
             if vol <= 0:
                 vol = int(getattr(p, "m_nCurrentPosition", 0) or 0)

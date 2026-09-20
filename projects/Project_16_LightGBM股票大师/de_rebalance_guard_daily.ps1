@@ -35,6 +35,21 @@ if ($LASTEXITCODE -ne 0) {
     exit 0
 }
 
+# P1-3 低危修复（T-20260915-001 延续）：当日换仓未执行（桥 orders 缺失）时告警
+# 新 guard（rebalance_g2_guard/rebalance_ens_guard/rebalance_daily_guard 10:07/10:08/10:05）已能自动补跑，
+# 此处仅加"缺失即告警"兜底，确保 DE 核验链路不静默（本脚本本身只核验不下单）。
+$ordersCheck = ""
+switch ($Strategy) {
+    "g2"   { $ordersCheck = "D:\QMT_POOL\g2_bridge\cmd\orders_$date.json" }
+    "ens"  { $ordersCheck = "D:\QMT_POOL\p16_ensemble_bridge\cmd\orders_$date.json" }
+    "v13"  { $ordersCheck = "" }  # V1.3 miniQMT 直连无桥 orders 文件，跳过此检查
+}
+if ($ordersCheck -and -not (Test-Path $ordersCheck)) {
+    Add-Content -Path $log -Value "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] ⚠ $Strategy 当日换仓未执行（$ordersCheck 缺失）——已由 guard 任务兜底或需人工核查，DE 核验继续（只读不下单）" -Encoding UTF8
+    $pushMsg = "【DE兜底 $Strategy $date】当日换仓未执行（orders 缺失），guard 兜底/人工核查见日志"
+    & $py -c "import sys; sys.path.insert(0, r'D:\QuantLab\projects\Project_16_LightGBM股票大师'); from qmt_bridge_client import notify_feishu; notify_feishu(sys.argv[1])" "$pushMsg" 2>&1 | Out-String | ForEach-Object { Add-Content -Path $log -Value $_ -Encoding UTF8 }
+}
+
 switch ($Strategy) {
     "v13" {
         $prompt = @"

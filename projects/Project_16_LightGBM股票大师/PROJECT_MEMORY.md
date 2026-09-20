@@ -700,6 +700,24 @@ ebalance_g2.py 买入循环低开校验（gap_guard）：极端低开<=-5%跳过
 - **决策**：G2 默认【不过滤】（deploy_predict_g2 与 g2_config.POSFILTER_MODE 默认 ""，仅显式 PF_MODE_G2 启用）；低开校验保留（执行保护）；V1.3 链路 lite 保留。
 - **年化澄清**：官方可复现 G2 = +0.149%日超额 → 年化约 45%；「75.88%」为更早流传乐观口径，V2.0收益真实性评估报告判定不可直接采信（归因链断裂/回测期=测试集/寻优未校正/样本外转负/实盘-1.49%），且 +0.149% 本就对应 45% 而非 75.88%。
 - **教训**：过滤规则适用性强依赖模型，必须用各策略自己的模型+真实面板复核，不可跨模型推广（险些让 G2 上线有害配置）。
+
+
+## 2026-09-20 · F2/F5 死代码事故（T-20260919-002）修复 + 三道防线落地
+
+> 对应看板 `T-20260919-002`；DE 扫描报告 `data/schedules/de_r8_scripts/f5fix_scan/scan_report.md`、修复报告 `.../f5fix_fix/fix_report.md`。
+
+- **事故**：`deploy_predict_g2.py` L112-119 先 `for c in [...]: if c not in pre.columns: pre[c]=np.nan` 无条件建列，后置 `if "main_net" not in pre.columns and ...` 永假 → **F2 恒新浪兜底、F5 恒 5.0**，实盘 2026-08-17~09-18 共 39 天评分卡坍缩无人发现（每日 top1 可被翻转）。
+- **教训（三类死代码高危模式）**：
+  1. **P1 建列后判**：先填 NaN 建列再 `if col not in df.columns` → 判断永假。修法=先真回退再 NaN 兜底（判断移到填 NaN 前）。
+  2. **P2 passorder 返回值当订单号**：`order_id = passorder(...)` 后 `if order_id:` 永假（异步返回 0/None），正确判 `ret == 0`。qmt_builder mfic 模板 L204/L332/L357 仍含此死代码（三重引号字符串内，AST 不可见需文本层扫描，未部署实盘待修）。
+  3. **死代码藏身模板字符串**：AST 看不到，必须正则文本层兜底（`scan_deadcode.py` find_p2_text_hits）。
+- **三道防线（已落地+定时任务）**：
+  - **A 静态扫描** `D:\QuantLab\scripts\scan_deadcode.py`（P1 建列后判/P2 passorder 真值，AST+文本双层）：接入 `build_p16_g2.py`/`build_p16_ens.py`/`build_p16_v13_risk.py` 构建前置（命中即中止构建）+ schtasks `Quant_P16_DeadcodeScan_Weekly`（周六 09:00）。默认扫 P16 全链路+broker+qmt_builder+data/schedules+versions 存档。
+  - **B 数据健康监控** `D:\QuantLab\scripts\check_scorecard_health.py`：每日 20:15（schtasks `Quant_P16_ScorecardHealth_Daily`），SC_F2/SC_F5 nunique<2 → error 飞书告警，快照非空率/新鲜度/live 日志 7 日检查；退出码 0=PASS/1=error/2=warn。**注意**：SC_F3/SC_F6 恒值是常态（Top100 当日分档同档），warn 级不告警 error。
+  - **C 快照回放回归** `D:\QuantLab\data\schedules\test_g2_rerun.py`：周六 09:10（schtasks `Quant_P16_G2Rerun_Weekly`），重放 deploy_predict_g2 主流程 + 独立校验 CSV 健康（列齐全/SC_F2/F5 非坍缩/候选非空）。
+  - **D FAIL-LOUD**：deploy_predict_g2.py 主/--ab/--ensemble 三处断言，`SC_F2/SC_F5 nunique<=1 or main_net 全 NaN` 即 `raise SystemExit` 中止落盘（宁可空仓不选错），随 20:05 候选自动执行零额外调度。
+- **坏样本归档**：`data/selections/g2/20260921_g2_top10.csv`、`20260921_g2_top2.csv`（修复前坏代码生成，SC_F5 恒 5.0）已归档 `.bak_bad_deadcode`，防 B 误报/防 rebalance 消费。
+- **存量命中待处理**：versions/ 存档 3 文件 P1×12 条（回滚/复制即复活死代码）+ qmt_builder mfic 模板 P2×3（L204/L332/L357，未部署实盘，P0 模式）。
 - **已同步**：VERSIONS.md G2-V1.0/V1.4 行修正、归档 versions/G2-V1.0_20260908 与 V1.4_20260908 同步最终版代码、变更说明 HTML v2。
 
 
@@ -1034,3 +1052,32 @@ ightly_check.py check_e 加 E6：读快照，conflict 任务仍 Active → FAIL�
 - **P1-1 三臂纸面季评**（paper_quarterly_review.py）：复用降级闸同口径，双季最末才提议退役/降配、只提议不动资金、臂间重合率防同源误读。首跑 G2 n=8 超额-0.02423 与降级闸一致；样本不足如实标注。已挂 paper_forward_daily.ps1 16:45 管道尾（QUARTERLY-ALERT 不阻断主链）。
 - **TRAE 交叉验证**（诚哥要求）：全部属实——①白名单合规（DE 未碰 rebalance/ps1/模型）；②G2_EXTRA 断源数据源独立复核（Get-Item+read 确认北向 08-07/lhb+ths 08-21/研报 08-28）；③v3_enh 冻结 08-23 复核属实；④季评 n=8 数字与降级闸一致；⑤PS1 语法+BOM 复验通过。
 - **遗留待拍板**：①v3_enh 方案 A/B ②P0-4 差异一+三实施（改 rebalance_ens，dry-run+拍板）③features_v3_enh.json dropped 交集一行修复 ④P1-2/3/4（前向底座/M2/回滚真实trial）。09-14 周一看板待观察清单不变。
+
+## 2026-09-19 · R8 回测 vs 历史回测差异归因（T-20260919-001，历史日超额口径证伪）
+
+- **诚哥问题**：R8 评估报告（V14 K2 +6.9% / G2 K2 +26.8% / ENS K2 +25.8% 绝对年化）与历史回测（G2 日超额 +0.213% / V1.4 +0.157% / V2.0「年化 75.88%」）差距怎么这么大？
+- **归因**（TRAE 钉死事实 + DE 引擎级消融 + 独立复算核对，报告 `data/schedules/de_r8_scripts/DE_R8差异归因_20260919.md`）：~0.224pp/日差距 **100% 来自两引擎候选构造顺序相反**——历史引擎 `scan_rotate_cost_real.py`「模型 prob top10 → 买入时才筛红线」（**实盘从未执行的选股规则**，日均候选 3.38 只）vs DE/实盘引擎 `de_r8_common.py`「top100 → 先筛红线 → prob top10 → 总分排序买入」（日均 9.5 只）；**相同候选下两引擎记账逐日一致（残差 0.0000pp）**。叠加测试集双重使用（测试窗 100% 落在训练窗内）系统性偏乐观。
+- **教训（本文件必读）**：①**回测报告的数字必须先核对「选股规则是否与实盘信号链一致」再引用**——历史 +0.213%/日衡量的是从未上线的策略变体，不可作为上线依据；②**实盘预期锚定 R8 绝对年化口径**（G2 K2 ≈+27%，超额≈0，等权基准本身年化 +27~30%）；③纸面前向才是最终裁判（G2 首批 4 笔 −0.0715%/日、胜率 25% 已示警）；④「年化折算」类数字一律禁止对外引用（审计报告已自标注）。
+- **真实可改进点（新发现）**：prob top10 票均笔 +3.05%/胜率 63.3% vs 深挖票（prob 11~100）均笔 +0.38%/胜率 44.2%——「先红线再选 + 总分排序」用弱信号（评分卡总分）稀释了强信号（模型 prob）。买入排序改「prob 优先」待回测+样本外验证（防过拟合）。
+- **遗留待诚哥拍板**：①买入排序 prob vs 总分（新增，先验证）②TOP_N 上调 ③买入时刻微调 ④ENS_FUSION 26% 欠配率影子盘验证。
+- **看板**：T-20260919-001 已闭环；知识卡 `P16 概述.md` 已同步（顶部新段落 + 旧 +0.213%/+0.211% 引用标注证伪）。
+- **DE 独立核查（2026-09-19，诚哥「你让de也核查一下」；报告 `data/schedules/de_r8_scripts/de_r8_candidate_check.md`，任务书 `de_r8_candidate_check_task.txt`）**：TRAE 四条主张全成立（行号微调：红线 L159、picks L178）；**核心新增**：实盘红线后 top10 键 = `total_new`（deploy_predict_g2.py L178），DE 引擎 = `prob`（de_r8_common.py L161-162）——「DE 引擎=实盘信号链」修正为「同族非相同」。**516 天量化反转**：变体 A（prob top10）年化 +26.8%/超额≈0 vs **变体 B（total_new top10）年化 +39.4%/超额 +0.045pp/日**——**「实盘稀释更重」不成立（收益意义上），实盘口径反而更高**；候选集 453/516 天不同、成交重叠仅 15/76；B−A=+0.04pp/日≈引擎间差距 1/3。「R8 数字更接近实盘预期」方向维持；**顺带支持实盘现行 total_new 键，无需为对齐 DE 改排序**（此前「prob 优先可改进点」待重新评估）。**P1 新发现（看板 T-20260919-002）**：实盘 F5 恒中性 5.0 死代码——L112-114 先填 NaN 使列必然存在 → L117/L119 回退分支永假（mf_main_net/ind_pct_ths 永不执行）；多日实盘 CSV SC_F5 全=5.0；实盘评分卡与回测面板存在 **F2/F5 train-serving skew**，每日 top1 可被翻转（09-18 实盘 top1=rank12 600712 vs 快照口径 rank60 300062）；`--ab`/`--ensemble` 分支同模式。改法：L117/L119 判断移到 L112 填 NaN 循环前，**落地待拍板**（改后需模拟端核对 SC_F5 出现真实值）。
+
+## 2026-09-20 · G2 每日盘后选股复跑对比机制（T-20260920-001，诚哥「每天复跑一遍，双重保障」3 点全同意拍板落地）
+
+- **背景**：2026-08-17~09-18 F2/F5 死代码事故 39 天无人发现——A/B/C/D 四防线都查「事后产物」，抓不到「当日运行时执行偏差」（当日主源失效被新浪兜底 / 数据扰动 / 代码回退时，落盘产物仍健康、后续防线不报）。
+- **机制（对比口径分级）**：
+  ①**留档**：`g2_candidates_night.ps1`（20:05）deploy 全部跑完后 `Copy-Item g2_latest_features.parquet → data_live/snapshot_g2_<runDay>.parquet`（次日 build_g2_daily 会重建覆盖最新快照，不提前留档则复跑无当日输入可对比；留档失败置 snapFail 并入 exit）。
+  ②**复跑对比**：`data/schedules/compare_g2_daily.py`（20:10）备份基准 `_g2_top10.csv.compare_base` → 用留档快照重放 `deploy_predict_g2.py --date <runDay> --top 10`（cwd=P16）→ 对比 ts_code 集合/排序 + SC_F2/SC_F5 逐位。
+  ③**分级告警**：Tushare 主源（确定性口径）不一致 = **error 告警**（当日运行时主源失效/数据扰动/代码回退）；新浪当日兜底（盘中实时盘后不可复现）= **仅记录差异不告警**（deploy stdout 打印 `F2 主源=Tushare每日快照(主源)` / `新浪当日(兜底,Tushare滞后)` 可自动区分）；无留档快照 = 降级用当前快照仅健康校验（单源结论 + warn，快照缺失本身提示留档步骤故障）。**通知口径（2026-09-20 诚哥拍板「失败成功都通知」）**：PASS/新浪兜底差异推 info 成功蓝卡，error 推红卡，warn 推橙卡；SKIP（非交易日）不推避免噪音，降级路径已推 warn 不重复。
+  ④**调度**：schtasks `Quant_P16_G2RerunCompare_Daily` 周一~五 20:10（紧随 20:05 候选、赶在次日快照覆盖前）。退出码 0=PASS / 1=error / 2=warn。
+- **验证**：20260918 历史复跑全流程 PASS——F2 主源=Tushare，10 只 ts_code 排序 / SC_F2 / SC_F5 逐位一致，exit=0（当前快照最新日恰=20260918，Copy 为 snapshot_g2_20260918.parquet 模拟留档）。复跑对 paper_forward_live.csv 幂等（按 (date,code) 去重，不产生重复行）。
+- **注意**：`de_g2_compare_daily.ps1`（10:05 dry-run 换仓核验 rebalance_g2）与本机制不同，勿混淆勿删。
+- **看板**：T-20260920-001；repowiki `QMT架构集成.md` 故障排查表已追加「运行时执行偏差盲区」行。
+- **2026-09-20 晚间扩展 ENS/V1.3 覆盖（诚哥「只是g2吗，融合的，v1.3的没有吗」）**：
+  - **V1.3 留档**：`g2_candidates_night.ps1`（20:05）追加 `Copy-Item latest_features.parquet → data_live/snapshot_v13_<runDay>.parquet`（latest_features 为 16:30 merge 产物，夜间脚本不改动；留档失败置 snapFail13 并入 exit）。
+  - **ENS 融合臂**：`compare_g2_daily.py` 追加 `_replay_ens()`（重放 `deploy_predict_g2.py --date <runDay> --top 10 --ensemble --ens-live`）+ `_cmp_ens()`（ts_code 集合/排序 + total_new 逐位）+ `_ens_compare()`（备份 `g2_ens/<runDay>_g2_top10.csv` → 重放 → 按 `_f2_source` 分级，Tushare 不一致=error / 新浪仅记录 / 未知=warn）；退出码 `rc = max(rc_g2, rc_ens)`。
+  - **V1.3 复跑对比**：新建 `data/schedules/compare_v13_daily.py`（镜像 G2 模式：`_replay` 用 `deploy_predict.py --date YYYY-MM-DD --model v3 --top-k 10`；对比 ts_code 集合/排序 + model_prob/score_total/SC_F1~F6/combo 共 9 列逐位；**V1.3 纯离线确定性，任一不一致一律 error**；DEGRADE 无留档快照时先查当前 latest_features 最新日==run_day，非当日 warn+exit 2 无法重放校验）。调度 schtasks `Quant_P16_V13RerunCompare_Daily` 周一~五 20:12（注册成功，PowerShell /TR 引号用单引号包裹 + 内部 `''` 转义）。
+  - **验证抓到 3 个真实问题（20260918 历史 --no-send + 修复版重生成）**：①**ENS 臂 FAIL-LOUD KeyError bug（已修）**：deploy_predict_g2.py 融合分支只合并 `total_new_real`，FAIL-LOUD 检查引用未合并的 `SC_F2/SC_F5` → `KeyError: 'SC_F2'` 必崩（09-20 加防线 D 时引入，夜间 20:05 尚未触发）；已补 `for f in ("F1".."F6"): en_pool[f"SC_{f}"] = en_sc[f].values`。②**AB 臂同模式 KeyError（重生成时抓到，已修）**：--ab 分支 L238 同样只合并 total_new，夜间链路 `--ab --ensemble --ens-live` 连跑时 AB 先崩（20260918 重生成实测 exit 1）；同法补 6 列 SC_* 合并。③**09-21（周一）ENS 候选仅 1 只（605098.SH）**：09-18 夜间死代码时代「融合无候选通过红线 60 → 空仓」不落盘 → `g2_ens/20260918` 残留 09-17 的 1 只副本，09-18 夜间把它复制为周一 09-21 候选 → 周一 rebalance_ens 将消费仅 1 只的候选。
+  - **09-21 ENS 候选处理（已按推荐方案执行，备份 `.bak_repair_20260920`）**：修复版 `deploy_predict_g2.py --date 20260918 --top 10 --pool 100 --ab --ensemble --ens-live` 重生成（G2/AB/ENS 各 10 只，F2 主源=Tushare 确定性），复制 `g2_ens/20260918_g2_top10.csv` → `g2_ens/20260921_g2_top10.csv`（trade_date 改写 20260921）→ 周一 rebalance_ens 消费完整 10 只池。
+  - **验证结果**：V1.3 PASS（10 只 model_prob/score_total/SC_F1~6/combo 逐位一致）；G2 PASS；ENS 重放修复后 10 只但基准异常（1 只）→ 标 ERROR——机制正确识别出历史坏产物。

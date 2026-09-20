@@ -1,0 +1,83 @@
+# DE R8 任务书：P16 三个在跑策略的「持仓票个数」与「买入时间」全面回测实证评估
+
+## 一、任务背景
+
+诚哥要求全面评估 Project_16 三个在跑策略的持仓票个数与买入时间是否为最佳方案。
+你的角色 = 独立评估员。要求用回测实证（网格扫描 + 对照回测）给出可量化结论，不要空谈。
+
+## 二、三个在跑策略现状（事实，勿改动）
+
+| 策略 | 账号 | 持仓数 | 候选池 | 红线 | 持有期 | 换仓执行时刻 | 执行机制 |
+|---|---|---|---|---|---|---|---|
+| V1.4 (v3_enh) | miniQMT 67014907 | TOP_N=2 | top10 | 58 | HOLD_DAYS=5 | 10:05 换仓 Guard | rebalance_daily.py |
+| G2 桥 | 大QMT 70180771 | TOP_N=2 | top10 | 60 | HOLD_DAYS=15 | 10:07 换仓 Guard | rebalance_g2.py |
+| 融合桥(ENS) | 大QMT 70180771 | TOP_N=2 | top10 | 60 | HOLD_DAYS=10 | 10:08 换仓 Guard | rebalance_ens.py |
+
+关键参数文件：
+- V1.4: projects/Project_16_LightGBM股票大师/rebalance_daily.py（REDLINE=58, TOP_N=2, HOLD_DAYS=5）
+- G2: 同目录 g2_config.py（TOP_N=2, SELECT_TOP=10, REDLINE=60, HOLD_DAYS=15）
+- ENS: 同目录 g2_ens_config.py（TOP_N=2, SELECT_TOP=10, REDLINE=60, HOLD_DAYS=10）
+- 风控（三策略一致）：止损 -7% / 止盈 +15% / 追盈激活 +8% 峰值回撤 8%（桥内 tick 级）
+
+选股信号链：deploy_predict_g2.py 产出候选（--top 10, --threshold 60）；V1.4 走 deploy_predict.py v3。
+
+## 三、数据与模型（只读）
+
+- 特征面板: D:\QuantLab\projects\Project_16_LightGBM股票大师\data\feature_panel_v3.parquet
+  31 列，含 trade_date / ts_code / 特征列 / fwd_ret（次日收益，close→close），2019-01-10 ~ 2026-09-18
+- V1.4 模型: D:\QuantLab\models\lgb_model_v3.txt（meta: data/features_v3.json）
+- G2/ENS live 模型: D:\QuantLab\projects\Project_16_LightGBM股票大师\data\g2_live_model.json
+  → D:/QuantLab/models/lgb_model_v3_g2_strong_real_20260915_1522t.txt + data/features_v3_g2_strong_real_20260915.json
+- 日线主库: D:\astock\daily\stock_daily.parquet（含 open/high/low/close/vol/amount 等，不复权口径注意 adj_factor）
+- 分钟线（买入时刻对照用）: D:\astock\min_1min\<ts_code>.parquet（覆盖全市场约 5800 只；注意列名/时间格式需自检）
+- 股票池: D:\QuantLab\data\universe_all_a.csv
+- 评分卡实现: deploy_predict.py 的 compute_scorecard（SC_F1~F6 加权），可 import 复用
+
+已有可复用回测脚本（参考口径，不必照抄）：
+- scan_topk.py：持仓数网格 Top1~6 的模板（用 v3 模型+红线65+等权）
+- scan_rotate_cost.py / scan_rotate_cost_real.py：带真实成本的换仓回测（N 持有期 + 止损止盈）
+- scan_tailbuy.py：尾盘买入口径（14:50 close 近似）
+- backtest_dual.py：T+1 收盘买入持有 1 日理想化口径
+
+## 四、评估任务（三策略 × 两个维度）
+
+### 维度 A：持仓票个数网格
+对每个策略分别跑 TOP_N ∈ {1, 2, 3, 4, 5, 6} 的等权持仓回测：
+- 信号：T 日收盘按各自红线选 topK（V1.4 用 v3 模型+红线58；G2/ENS 用 g2 live 模型+红线60）
+- 成交：T+1 日 open 买入（或明确标注所用口径），持有 N 交易日到期卖出，含止损 -7%/止盈 +15%
+- 成本：佣金万2双边最低5元 + 印花税万5卖出 + 过户费万0.1沪市双边（或标注简化口径）
+- 输出每个 K 的：年化 / 最大回撤 / 夏普 / 胜率 / 盈亏比 / 换手
+- 结论：当前 TOP_N=2 是否最优？若最优请给出差距量化；若非最优指出最优 K
+
+测试窗口建议：2024-07-01 ~ 2026-08-14（对齐历史审计口径），如数据允许再加 2026-08-15 ~ 2026-09-18 近期段做稳健性交叉。
+
+### 维度 B：买入时刻对照
+对每个策略固定 TOP_N=2，对照不同买入时刻对收益的影响：
+- 候选：09:35 / 10:00 / 10:05 / 10:10 / 10:30 / 14:45（尾盘）/ 次日 open / 次日 close
+- 使用分钟线数据（D:\astock\min_1min）取对应时刻价格作为成交价（或标注缺失处理）
+- 若无分钟线覆盖的股票，退而用 open / close 对照即可（必须明确标注）
+- 输出各买入时刻的：年化 / 回撤 / 相对当前 10:05 的差额
+- 结论：当前 10:05~10:08 换仓时刻是否最优？尾盘买入是否显著更好/更差？
+
+### 维度 C（补充，如时间允许）：卖出时刻敏感性
+- 到期卖出 vs 尾盘卖出 vs 次日 open 卖出对照（简要）
+
+## 五、产出要求
+
+1. 将完整报告写入: D:\QuantLab\projects\Project_16_LightGBM股票大师\results\DE_R8_持仓数与买入时刻评估_20260918.md
+   报告必须含：三策略 × 各 K 的完整指标表、买入时刻对照表、明确的"最优方案"结论与量化差距。
+2. 将你写的回测脚本放在 D:\QuantLab\data\schedules\de_r8_scripts\ 下（只放新脚本，供复核）。
+3. 每步回测打印关键中间指标（年化/回撤/胜率），便于盯梢核验。
+4. 若某步无法完成（如分钟线缺失），明确标注 SKIP 原因，不要静默跳过。
+
+## 六、硬性约束（违反=任务失败）
+
+1. 只读文件：允许读取上述数据/模型/脚本路径。
+2. 只写文件：仅允许写 D:\QuantLab\data\schedules\de_r8_scripts\ 与上面指定的报告路径。
+3. 禁止：修改任何现有 .py/.yaml/.json 源码或配置；禁止 git commit；禁止调用 passorder/下单类任何真实交易接口；
+   禁止写 D:/QMT_POOL 任何文件；禁止 import 会触发真实行情/交易连接的模块（qmt_bridge_client 的写路径、xtquant 等）。
+4. 回测中的 QMT 侧行为全部用内存模拟（文件桥/mock），绝不落真实盘。
+5. 数据口径必须 PIT 安全：不得使用未来信息（信号日 T 只能用 ≤T 的数据）。
+6. 所有数值结论必须可复现：写明所用脚本/参数/窗口/成本口径。
+
+最后一行必须以 "DE_R8_DONE <总结一句>" 开头输出你的结论摘要。

@@ -96,6 +96,28 @@ sequenceDiagram
 
 ## 关键机制深度解析
 
+### 离线数据升级制度（2026-09-14 立，E 盘离线包 → D:/astock）
+
+主库升级流程见 `scripts/update_astock_from_e.py`（唯一事实源），制度要点：
+
+- **主行情（daily/stock_daily）**：E 盘离线包若有到最新日期的**全量版** → **不备份、直接全量替换迁移**（`replace=True`，写临时文件 `.tmp_full` 后 `os.replace` 原子替换 = 删除旧文件 + 迁移新全量版）；若只有**增量版** → **增量文件放增量目录、不合并进主库**（防增量合并口径污染）。
+- **其他数据（finance/lhb/research/board/board_fundflow/basic）**：可合并（按主键去重、冲突以 E 版为准、只增不删），写前备份为 `<name>.bak_20260913`。
+- **安全**：任何一步异常立即停止，后续表不动；写后必须复核（行数/日期范围）并生成验证报告；执行前 `--dry-run`（默认）只打印计划不写盘。
+- **校验**：全量替换前校验 E 行数 ≥ D 行数（否则拒绝，判定 E 非全量版）；合并模式先检查 index 层级一致（replace 模式跳过该检查）。
+
+### 在线增量补充（2026-09-14 立，Tushare → G2 周训数据保鲜）
+
+离线数据包未及时下载时，G2 周训（train_g2）的 G2_EXTRA 特征数据源可用 Tushare 在线增量保鲜（`scripts/refresh_online_incremental.py`）：
+
+- **可补表**：`lhb/top_list`（按 ts_code 去重对齐 D:/astock 口径：多原因上榜每股 1 行，多日累计偏离优先）、`research/report_rc_daily`、`northbound/hk_hold_full`（写回保持 RangeIndex 结构，兼容 `hk["trade_date"]` 列访问）；写前备份 `.bak_online` + 写后复核。
+- **北向重要发现**：hk_hold 2026 实测已恢复日频（09-07~09-11 每日 959~1011 只），推翻"2024-08 起季频披露、无当日值"的旧结论——北向不再是断源天花板。
+- **受限**：`board/ths_daily`/`board_fundflow/moneyflow_ind_ths` 需 Tushare 5000 积分档（当前 2000 档无权限），暂靠离线包。
+- **接入**：`run_scheduled.ps1` retrain 模式 train_g2 前置（best-effort，失败只告警不阻断训练）；moneyflow 有独立每日 19:30 刷新。
+
+章节来源
+- [scripts/update_astock_from_e.py](file://scripts/update_astock_from_e.py)
+- [scripts/refresh_online_incremental.py](file://scripts/refresh_online_incremental.py)
+
 ### 增量合并与主仓+Updatedata优先策略
 - 策略规则：将主仓与Updatedata下各周增量文件统一为MultiIndex后拼接，按(trade_date, ts_code)去重，保留最后一行。由于增量文件最后被追加concat，同键重复时将“后者覆盖前者”，即增量优先。
 - 可恢复性：单个增量文件异常会被捕获并记录警告，继续尝试其他周；缺失字段或格式不对的文件将被跳过，保证总体健壮。

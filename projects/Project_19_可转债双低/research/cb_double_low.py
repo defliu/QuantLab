@@ -334,10 +334,14 @@ def judge_criteria(yearly, cagr, maxdd, conv_mode, freq, topn):
     else:
         res["C2"] = ("待定", "样本不足")
     recent = ex_all[ex_all.index >= "2024"] if len(ex_all) else pd.Series(dtype=float)
+    last_year_val = float(ex_all.iloc[-1]) if len(ex_all) else 0.0
+    last_year_key = ex_all.index[-1] if len(ex_all) else "?"
     if len(recent) >= 2:
+        # C3 修复（2026-09-14）：加"最近 1 年超额>0"硬条件，防止高均值掩盖近期转负（纯双低 2026 -5.1% 案例）
         res["C3 2024+ 超额<2%且单调下滑"] = (
-            "PASS" if (recent.mean() >= 0.02 or len(recent) < 3) else "FAIL",
-            "2024+均值=%.2f%%" % (recent.mean() * 100))
+            "PASS" if (recent.mean() >= 0.02 and last_year_val > 0) else "FAIL",
+            "2024+均值=%.2f%% 最近年(%s)超额=%.2f%%" % (
+                recent.mean() * 100, last_year_key, last_year_val * 100))
     else:
         res["C3"] = ("待定", "2024+样本不足")
     res["C4 全开年化<8%或回撤>-20%"] = (

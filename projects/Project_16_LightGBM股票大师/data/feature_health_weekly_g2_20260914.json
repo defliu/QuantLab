@@ -1,0 +1,374 @@
+{
+  "generated_at": "2026-09-14 17:00:39",
+  "panel": "G2 训练面板口径（feature_panel_v3 + _enh asof + g2 增强）",
+  "mode": "g2",
+  "n_features": 43,
+  "rules": {
+    "ALERT": "近4周|IC|<0.01 且 缺失率>5%",
+    "WATCH": "近4周|IC|<0.01 或 缺失率>5%"
+  },
+  "features": {
+    "vol_ratio_5_20": {
+      "ic_abs_mean_4w": 0.02048,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "amount_ma5": {
+      "ic_abs_mean_4w": 0.16328,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "volume_ratio": {
+      "ic_abs_mean_4w": 0.07106,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "above_ma60": {
+      "ic_abs_mean_4w": 0.03204,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "rsi6": {
+      "ic_abs_mean_4w": 0.10975,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "above_ma20": {
+      "ic_abs_mean_4w": 0.08523,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "turn_ma5": {
+      "ic_abs_mean_4w": 0.06099,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "vol20": {
+      "ic_abs_mean_4w": 0.07452,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "mom_20": {
+      "ic_abs_mean_4w": 0.05683,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "rel_mom_20": {
+      "ic_abs_mean_4w": 0.05683,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "mom_10": {
+      "ic_abs_mean_4w": 0.08476,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "mom_5": {
+      "ic_abs_mean_4w": 0.06312,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "dist_250_low": {
+      "ic_abs_mean_4w": 0.12928,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "mom_60": {
+      "ic_abs_mean_4w": 0.07367,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "macd_hist": {
+      "ic_abs_mean_4w": 0.06881,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "pb": {
+      "ic_abs_mean_4w": 0.08073,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "dv_ttm": {
+      "ic_abs_mean_4w": 0.05059,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "sc_is_unlock": {
+      "ic_abs_mean_4w": 0.02067,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "pe_ttm": {
+      "ic_abs_mean_4w": 0.0945,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "fin_ocf_to_profit": {
+      "ic_abs_mean_4w": 0.02906,
+      "missing_rate_4w": 0.12363,
+      "verdict": "WATCH",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "sc_days_since": {
+      "ic_abs_mean_4w": 0.04576,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "fin_dt_netprofit_yoy": {
+      "ic_abs_mean_4w": 0.08778,
+      "missing_rate_4w": 0.0025,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "fc_days_since": {
+      "ic_abs_mean_4w": 0.03807,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "pos_250": {
+      "ic_abs_mean_4w": 0.11575,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "fin_netprofit_yoy": {
+      "ic_abs_mean_4w": 0.07975,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "log_mv": {
+      "ic_abs_mean_4w": 0.20165,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "fc_force": {
+      "ic_abs_mean_4w": 0.09827,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "dv_year_sum": {
+      "ic_abs_mean_4w": 0.06294,
+      "missing_rate_4w": 0.00613,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "enh慢变量"
+    },
+    "ex_days_since": {
+      "ic_abs_mean_4w": 0.05179,
+      "missing_rate_4w": 0.00613,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "enh慢变量"
+    },
+    "ex_yoy": {
+      "ic_abs_mean_4w": 0.02553,
+      "missing_rate_4w": 0.00649,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "enh慢变量"
+    },
+    "fc_pchange": {
+      "ic_abs_mean_4w": 0.09449,
+      "missing_rate_4w": 0.00613,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "enh慢变量"
+    },
+    "industry_mom20": {
+      "ic_abs_mean_4w": 0.05121,
+      "missing_rate_4w": 0.00613,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "enh慢变量"
+    },
+    "turnover_rank": {
+      "ic_abs_mean_4w": 0.05646,
+      "missing_rate_4w": 0.00613,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "enh慢变量"
+    },
+    "lhb_net": {
+      "ic_abs_mean_4w": 0.01745,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "g2增强"
+    },
+    "lhb_count": {
+      "ic_abs_mean_4w": 0.01017,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "g2增强"
+    },
+    "north_chg": {
+      "ic_abs_mean_4w": null,
+      "missing_rate_4w": 1.0,
+      "verdict": "WATCH",
+      "stale_source": true,
+      "group": "g2增强"
+    },
+    "rc_rating": {
+      "ic_abs_mean_4w": 0.10149,
+      "missing_rate_4w": 0.98996,
+      "verdict": "WATCH",
+      "stale_source": false,
+      "group": "g2增强"
+    },
+    "rc_num": {
+      "ic_abs_mean_4w": 0.0358,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "g2增强"
+    },
+    "mf_main_net": {
+      "ic_abs_mean_4w": 0.04621,
+      "missing_rate_4w": 0.25,
+      "verdict": "WATCH",
+      "stale_source": false,
+      "group": "g2增强"
+    },
+    "mf_elg_net": {
+      "ic_abs_mean_4w": 0.03875,
+      "missing_rate_4w": 0.25,
+      "verdict": "WATCH",
+      "stale_source": false,
+      "group": "g2增强"
+    },
+    "mf_main_ratio": {
+      "ic_abs_mean_4w": 0.07133,
+      "missing_rate_4w": 0.25,
+      "verdict": "WATCH",
+      "stale_source": false,
+      "group": "g2增强"
+    },
+    "ind_pct_ths": {
+      "ic_abs_mean_4w": 0.16311,
+      "missing_rate_4w": 0.25,
+      "verdict": "WATCH",
+      "stale_source": false,
+      "group": "g2增强"
+    },
+    "ind_net_ths": {
+      "ic_abs_mean_4w": 0.0736,
+      "missing_rate_4w": 0.25,
+      "verdict": "WATCH",
+      "stale_source": false,
+      "group": "g2增强"
+    }
+  },
+  "alerts": [],
+  "watches": [
+    "fin_ocf_to_profit",
+    "north_chg",
+    "rc_rating",
+    "mf_main_net",
+    "mf_elg_net",
+    "mf_main_ratio",
+    "ind_pct_ths",
+    "ind_net_ths"
+  ],
+  "g2_extra_source_freshness": {
+    "lhb/top_list.parquet": {
+      "features": [
+        "lhb_net",
+        "lhb_count"
+      ],
+      "max_date": "2026-09-11",
+      "lag_days": 3
+    },
+    "northbound/hk_hold_full.parquet": {
+      "features": [
+        "north_chg"
+      ],
+      "max_date": "2026-09-11",
+      "lag_days": 3
+    },
+    "research/report_rc_daily.parquet": {
+      "features": [
+        "rc_rating",
+        "rc_num"
+      ],
+      "max_date": "2026-09-11",
+      "lag_days": 3
+    },
+    "moneyflow/moneyflow.parquet": {
+      "features": [
+        "mf_main_net",
+        "mf_elg_net",
+        "mf_main_ratio"
+      ],
+      "max_date": "2026-09-11",
+      "lag_days": 3
+    },
+    "board/ths_daily.parquet": {
+      "features": [
+        "ind_pct_ths",
+        "ind_net_ths"
+      ],
+      "max_date": "2026-09-11",
+      "lag_days": 3
+    },
+    "board_fundflow/moneyflow_ind_ths.parquet": {
+      "features": [
+        "ind_pct_ths",
+        "ind_net_ths"
+      ],
+      "max_date": "2026-09-11",
+      "lag_days": 3
+    }
+  }
+}

@@ -50,6 +50,18 @@ modules:
         children: []
         depends_on: []
         related_to: []
+    factor_mining_pipeline:
+        dir_name: 闲时因子挖掘管线（research_factor_mining）
+        title: 闲时因子挖掘管线（research_factor_mining）
+        scope:
+            - research_factor_mining/
+        source_files: []
+        children: []
+        depends_on:
+            - factors_lib
+            - data_layer
+        related_to:
+            - research_audit
     mcp_services:
         dir_name: A 股 MCP 服务进程 (Ashare + tdx)
         title: A 股 MCP 服务进程 (Ashare + tdx)
@@ -348,6 +360,7 @@ modules:
             - broker_adapter
             - config_bundle
             - data_layer
+            - factor_mining_pipeline
             - factors_lib
             - mcp_services
             - memory_store

@@ -129,13 +129,16 @@ def incr_max_date():
 
 def recent_trade_date():
     """最近应出数据的交易日（P0-1 外部锚：交易日历 + 节假日表，不依赖增量库/面板自身）。
-    今天若为交易日则返回今天；否则回退最近交易日。日历不可用时降级增量库锚。"""
+    2026-09-15 修复：此前"今天若为交易日则返回今天"，导致盘前/凌晨（未收盘）检查的期望=今日 →
+    A1/B1/B6 恒 FAIL 误报（09-15 01:00 实证：增量/面板/merged 均正确到 09-14 周一，却报"期望 09-15"）。
+    修复语义：只有今天已收盘（>=15:00）才返回今天，否则回退最近已收盘交易日（T-1）。"""
     try:
         sys.path.insert(0, PROJ)
         import is_trade_day as ITD
         cal = ITD.load_calendar()
-        today = datetime.date.today()
-        if ITD.is_trade_day(today, cal)["is_trade_day"]:
+        now = datetime.datetime.now()
+        today = now.date()
+        if ITD.is_trade_day(today, cal)["is_trade_day"] and now.hour >= 15:
             return today.isoformat()
         d = today
         for _ in range(20):

@@ -1,0 +1,26 @@
+{
+  "strategy": "v14",
+  "topk": 2,
+  "hold": 5,
+  "redline": 58.0,
+  "period": [
+    "2024-07-01",
+    "2026-08-14"
+  ],
+  "n_days": 516,
+  "n_trades": 186,
+  "win_rate": 0.46236559139784944,
+  "profit_loss_ratio": 1.3562910980527256,
+  "total_return": 0.14583684625187399,
+  "annual_return": 0.06874456103010806,
+  "max_drawdown": -0.42341701615971594,
+  "sharpe": 0.3624659848839537,
+  "reasons": {
+    "MATURE": 149,
+    "TP": 10,
+    "STOP": 23,
+    "SKIP_DOWN": 1,
+    "TRAIL": 2
+  },
+  "n_skip_exec": 12
+}

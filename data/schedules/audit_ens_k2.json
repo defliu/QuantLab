@@ -1,0 +1,25 @@
+{
+  "strategy": "ens",
+  "topk": 2,
+  "hold": 10,
+  "redline": 60.0,
+  "period": [
+    "2024-07-01",
+    "2026-08-14"
+  ],
+  "n_days": 516,
+  "n_trades": 100,
+  "win_rate": 0.52,
+  "profit_loss_ratio": 1.367344161322975,
+  "total_return": 0.600861946476871,
+  "annual_return": 0.2583479117094636,
+  "max_drawdown": -0.24964024889563896,
+  "sharpe": 0.8938565741604151,
+  "reasons": {
+    "MATURE": 81,
+    "STOP": 11,
+    "TP": 5,
+    "TRAIL": 1
+  },
+  "n_skip_exec": 0
+}

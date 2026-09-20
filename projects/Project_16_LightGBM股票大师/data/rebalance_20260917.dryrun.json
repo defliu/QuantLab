@@ -1,0 +1,27 @@
+{
+  "date": "20260917",
+  "target": [
+    {
+      "code": "603237.SH",
+      "name": "五芳斋",
+      "total": 61.0,
+      "prob": 0.5768
+    },
+    {
+      "code": "002483.SZ",
+      "name": "润邦股份",
+      "total": 58.0,
+      "prob": 0.5364
+    }
+  ],
+  "strategy_capital": 87482.68,
+  "target_value_each": 41554.27,
+  "sell": [],
+  "buy": [],
+  "trim": [],
+  "hold": [
+    "603049.SH",
+    "603237.SH"
+  ],
+  "locked": []
+}

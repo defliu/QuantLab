@@ -154,6 +154,11 @@
 - `filter_func` 模式：市值等过滤条件以 callable 传入评分函数，在函数内部应用（预过滤会降低收益）。
 - 数据缓存：`data/cache/` 目录，过期时间 1 天。
 - 主数据源 `D:/astock/` 是买断离线资产（2009 起、财务全量、PIT 字段齐）；`adj_factor` 是后复权因子，前复权价 = 原始价 × (adj_factor / 最新 adj_factor)。目录结构：`daily/stock_daily.parquet`（2009-01-05 ~ 2026-08-21，1457 万行 × 33 列）、`basic/stock_basic.parquet`（5892 只）、`finance/*.parquet`（8 张财务表）、`min_{1,5,15,30,60}min/<ts_code>.parquet`（各 5826 只，含 trade_time）。
+- **离线数据升级制度（2026-09-14 立，唯一事实源 `scripts/update_astock_from_e.py`）**：E 盘离线数据包（`E:\temp\行情数据\`）升级 D:/astock 时：
+  1. **主行情（daily/stock_daily）**：若有到最新日期的全量版 → **不备份、直接全量替换迁移**（`replace=True`，写临时文件后 `os.replace` 原子替换 = 删除旧文件 + 迁移新全量版）；若只有增量版 → **增量文件放增量目录、不合并进主库**（防口径污染）。
+  2. **其他数据（finance/lhb/research/board/board_fundflow/basic）**：可合并（按主键去重，冲突以 E 版为准，只增不删），写前备份为 `<name>.bak_20260913`。
+  3. 任何一步异常立即停止，后续表不动；执行后必须写后复核（行数/日期范围）并生成验证报告。
+  4. **在线增量补充（2026-09-14 立，`scripts/refresh_online_incremental.py`）**：离线包未及时下载时，G2 周训（train_g2）数据源可用 Tushare 在线增量保鲜——lhb/top_list（按 ts_code 去重对齐 D:/astock 口径）、research/report_rc_daily、northbound/hk_hold_full（**保持 RangeIndex 结构**，兼容 `hk["trade_date"]` 列访问）三表写前备份 `.bak_online` + 写后复核；**北向 hk_hold 2026 实测已恢复日频**（推翻"2024-08 起季频无当日值"旧结论），不再是断源天花板；ths_daily/moneyflow_ind_ths 需 Tushare 5000 积分档（2000 档无权限），暂靠离线包。已接入 `run_scheduled.ps1` retrain 模式 train_g2 前置（best-effort，失败只告警不阻断）。moneyflow 已有独立每日 19:30 刷新。
 - **备用数据源（回测交叉验证，全局规则）**：`E:/huicexitong/runtime/sj/gpsj.duckdb`（`data/gpsj_reader.py` 鸭子类型 reader，与 astock_reader 同 4 方法接口）。口径与 D:/astock 同源：adj_factor/换手率/市值/成交额/不复权价逐字段一致（已验 2025 全年 ATR MAX5 回测差异 0）。**注意 gpsj `收盘价` 列是前复权价，禁止直接用**，reader 已封装为取 `不复权_*` 列 + `复权因子`；全市场覆盖仅 2015-01 起，2015 前非全市场不可用于全市场选股对比。**每个新策略/因子回测定稿后，必须用备用数据源随机抽取 1 个自然年做同区间对比**，两源 CAGR/最大回撤应基本一致（差异 >1pp 需排查数据口径），模板 `research_audit/compare_gpsj_astock_2025.py`。**源不可用时的降级规则（2026-08-29 立，当前即处于此状态）**：先调 `data/gpsj_reader.py` 的 `is_available()`；返回 False 则脚本打印 `[SKIP]` 并 `return 0`，**在报告显著位置标注「单源结论（仅 astock），未经备用源交叉验证」**，既不静默跳过、也不阻断交付。恢复方式：设置环境变量 `GPSJ_DB_PATH` 或改 `gpsj_reader.GPSJ_DB_PATH` 默认路径。
 - look-ahead 是回测第一杀手：复权 look-ahead、宇宙选择 look-ahead（静态池套全期）、撮合 look-ahead（盘中取当日 close）都击中过；"盘中 vs 尾盘对照差异 >30pp 且方向反转"是验证 look-ahead 的干净方法。
 
@@ -203,6 +208,15 @@
 13:05  午后检查：验证持仓
 14:50  日终处理：对账、保存状态、发送日报
 ```
+
+## 定时任务模型降级规范（2026-09-14 立）
+
+- **问题**：TRAE 定时任务（自动化）执行时若默认模型卡顿/超时，agent 会话停摆 → 任务失败。
+- **官方机制**：Auto 模式（自动挑选可用内置模型）最接近"自动跳模型"，仅支持内置模型；模型管理面板可禁用不稳定模型防默认选中；定时任务本身不支持"指定多模型备选池"（官方文档确认）。
+- **工程兜底（本项目已落地，11 个活跃任务已带降级条款）**：所有定时任务 message 必须包含「模型降级条款」——①任一步工具调用超时/报错先重试 1 次（间隔 10 秒）；②重试仍失败且已完成步骤可独立交付则跳过未开始步骤直接结束，记录 `[MODEL-DEGRADE] 步骤N未执行`；③绝不因模型异常重复执行已完成动作（不重复下单/推告警/写文件/跑脚本）；④结束前用 `push_alert_card.py` 推「模型降级执行」人工核对卡（推送失败仅记录）。
+- **核心原则**：关键任务必须"脚本优先"——核心动作（换仓/对账/刷新/生成候选）全部下沉为纯 Python 脚本（不依赖 LLM），agent 只做"调脚本+核对+报告"。模型卡住只影响报告层，不阻塞脚本已完成的业务动作。**真实下单任务额外约束**：模型异常发生在下单前则宁可不买也绝不冒险下单，发生在下单后绝不重复下单，如实记录并告警人工核对。
+- **大盘风控 T 档已脚本化（2026-09-14 立，`market_tier.py`）**：开盘实时复核的 T 值判断（沪深300 → 空仓/半仓/正常）从"agent 读行情手工判断"改为确定性脚本——复用 `rebalance_g2.load_hs300_pct()`（腾讯行情实时取价）+ `_calc_tier()`（三档门控），数据缺失自动 fail-safe T=1 半仓。**agent 只读脚本输出的 tier 字段作为 --top 参数，禁止自行用其他行情源重算 T 值**（消除模型能力导致的仓位误判）。
+- **新建定时任务必须带降级条款**（复制上方标准条款到 message 末尾）；核心交易类任务必须引用已就绪脚本而非让模型自主推理。
 
 ## 与实盘策略工程的关系
 

@@ -1,0 +1,8 @@
+# 模块：闲时因子挖掘管线（research_factor_mining）
+
+module_id: factor_mining_pipeline
+dir_name: 闲时因子挖掘管线（research_factor_mining）
+scope:
+  - research_factor_mining/
+status: 试点完成（2026-09-16），正式批次待启动
+owner: TRAE + DE（设计/裁决）+ 人工（拍板）

@@ -1,0 +1,254 @@
+{
+  "task": "F5/F2 死代码修正口径重放 + 实盘持仓收益对比",
+  "task_ref": "T-20260919-002 关联；任务书 data/schedules/de_r8_scripts/f5fix_rerun_task.txt",
+  "generated_at": "2026-09-20 01:28:19",
+  "window": {
+    "buy_days": 20,
+    "first": "20260817",
+    "last": "20260911",
+    "forward_data_until": "2026-09-18"
+  },
+  "coverage": {
+    "daily_merged": "2009-01-05 ~ 2026-09-18（主库 09-11 + 增量 09-14~09-18 合并；前向行情比任务书假设的 9/11 多 5 个交易日）",
+    "moneyflow": "2007-01-04 ~ 2026-09-18，窗口内逐日 ~5545 只全覆盖",
+    "incr_rollover_gap": "data_live/incremental_daily.parquet 仅保留 2026-09-14~09-18，08-17~09-13 增量已轮转删除 → F5 自算改用 merged_daily_full 同公式重建",
+    "ths_daily_881": "覆盖到 2026-09-11 但周更不完整（8/14=10 板块、8/19=6、8/20=12、8/25=17），仅作交叉验证",
+    "comp_table": "90 个 881 板块 / 5557 只股票，静态 2026-08-14",
+    "selections": "top2: 08-17~09-11 全有（09-08 缺→回退 top10 前2行）；top10: 仅 09-02~09-11 有（10行/日）→ 08-17~09-01 共 12 天修正重排宇宙退化为 top2 本身"
+  },
+  "f5_validation_vs_ths_daily": {
+    "n_boards_compared": 1508,
+    "median_abs_diff_pp": 0.598,
+    "p90_abs_diff_pp": 1.842,
+    "within_0p5pp_pct": 42.8,
+    "corr": 0.8807
+  },
+  "score_changes": {
+    "f2_changed_vs_csv": 56,
+    "f5_changed_vs_csv": 92,
+    "total_new_recheck_mismatch": 0,
+    "sc_f2_dist": {
+      "2.0": 6,
+      "5.0": 1,
+      "6.0": 38,
+      "8.0": 2
+    },
+    "f2_new_dist": {
+      "2.0": 17,
+      "6.0": 30
+    },
+    "sc_f5_dist": {
+      "5.0": 47
+    },
+    "f5_new_dist": {
+      "2.0": 15,
+      "4.0": 4,
+      "5.0": 5,
+      "8.0": 12,
+      "10.0": 11
+    },
+    "total_new_csv_mean": 68.17,
+    "total_new_corr_mean": 67.06,
+    "below_threshold60_after_corr": 8
+  },
+  "actual_arm": {
+    "positions": 40,
+    "buyable": 40,
+    "unbuyable": 0,
+    "closed": 28,
+    "truncated": 12,
+    "closed_mean_ret_pct": -2.158,
+    "closed_median_ret_pct": -5.325,
+    "closed_win_rate_pct": 35.7,
+    "closed_sum_ret_pct": -60.415,
+    "all_mean_ret_pct_float": -1.319,
+    "all_sum_ret_pct_float": -52.744,
+    "all_win_rate_pct_float": 45.0,
+    "exit_reason_dist": {
+      "STOP": 13,
+      "TRUNCATED": 12,
+      "MATURE": 7,
+      "TRAIL": 6,
+      "TP": 2
+    },
+    "skip_reason_dist": {}
+  },
+  "corrected_arm": {
+    "positions": 40,
+    "buyable": 40,
+    "unbuyable": 0,
+    "closed": 29,
+    "truncated": 11,
+    "closed_mean_ret_pct": -2.335,
+    "closed_median_ret_pct": -6.212,
+    "closed_win_rate_pct": 34.5,
+    "closed_sum_ret_pct": -67.705,
+    "all_mean_ret_pct_float": -1.056,
+    "all_sum_ret_pct_float": -42.252,
+    "all_win_rate_pct_float": 45.0,
+    "exit_reason_dist": {
+      "STOP": 14,
+      "TRUNCATED": 11,
+      "MATURE": 7,
+      "TRAIL": 6,
+      "TP": 2
+    },
+    "skip_reason_dist": {}
+  },
+  "unique_positions": {
+    "actual_only": {
+      "n": 7,
+      "closed": 2,
+      "mean_ret_pct": -3.422,
+      "sum_ret_pct": -23.951,
+      "detail": [
+        {
+          "date": "20260903",
+          "code": "001266.SZ",
+          "ret_pct": 1.71,
+          "reason": "TRUNCATED"
+        },
+        {
+          "date": "20260904",
+          "code": "000062.SZ",
+          "ret_pct": -2.86,
+          "reason": "TRUNCATED"
+        },
+        {
+          "date": "20260907",
+          "code": "603551.SH",
+          "ret_pct": -3.65,
+          "reason": "TRUNCATED"
+        },
+        {
+          "date": "20260908",
+          "code": "300475.SZ",
+          "ret_pct": -10.17,
+          "reason": "STOP"
+        },
+        {
+          "date": "20260909",
+          "code": "603093.SH",
+          "ret_pct": -9.83,
+          "reason": "STOP"
+        },
+        {
+          "date": "20260910",
+          "code": "300475.SZ",
+          "ret_pct": 0.66,
+          "reason": "TRUNCATED"
+        },
+        {
+          "date": "20260910",
+          "code": "300748.SZ",
+          "ret_pct": 0.2,
+          "reason": "TRUNCATED"
+        }
+      ]
+    },
+    "corrected_only": {
+      "n": 7,
+      "closed": 3,
+      "mean_ret_pct": -1.923,
+      "sum_ret_pct": -13.458,
+      "detail": [
+        {
+          "date": "20260903",
+          "code": "300259.SZ",
+          "ret_pct": -9.77,
+          "reason": "STOP"
+        },
+        {
+          "date": "20260904",
+          "code": "002824.SZ",
+          "ret_pct": -8.14,
+          "reason": "STOP"
+        },
+        {
+          "date": "20260907",
+          "code": "002741.SZ",
+          "ret_pct": 6.68,
+          "reason": "TRUNCATED"
+        },
+        {
+          "date": "20260908",
+          "code": "002145.SZ",
+          "ret_pct": 6.48,
+          "reason": "TRUNCATED"
+        },
+        {
+          "date": "20260909",
+          "code": "603045.SH",
+          "ret_pct": 3.97,
+          "reason": "TRUNCATED"
+        },
+        {
+          "date": "20260910",
+          "code": "001313.SZ",
+          "ret_pct": -9.38,
+          "reason": "STOP"
+        },
+        {
+          "date": "20260910",
+          "code": "601636.SH",
+          "ret_pct": -3.3,
+          "reason": "TRUNCATED"
+        }
+      ]
+    }
+  },
+  "paired_common_positions": {
+    "n": 33,
+    "mean_diff_pp": 0.0
+  },
+  "composition_diff_days": 6,
+  "divergence_agg": {
+    "n_days": 6,
+    "corrected_better_days": 3,
+    "corrected_worse_days": 3,
+    "cum_day_diff_pp": 5.246,
+    "mean_day_diff_pp": 0.874
+  },
+  "top5_divergence_days": [
+    {
+      "date": "20260908",
+      "actual_top2": "603093.SH,300475.SZ",
+      "corrected_top2": "603093.SH,002145.SZ",
+      "day_ret_actual_pct": -9.865,
+      "day_ret_corrected_pct": -1.537,
+      "day_diff_pct": 8.328
+    },
+    {
+      "date": "20260909",
+      "actual_top2": "603663.SH,603093.SH",
+      "corrected_top2": "603663.SH,603045.SH",
+      "day_ret_actual_pct": -0.907,
+      "day_ret_corrected_pct": 5.993,
+      "day_diff_pct": 6.901
+    },
+    {
+      "date": "20260910",
+      "actual_top2": "300475.SZ,300748.SZ",
+      "corrected_top2": "001313.SZ,601636.SH",
+      "day_ret_actual_pct": 0.428,
+      "day_ret_corrected_pct": -6.34,
+      "day_diff_pct": -6.768
+    },
+    {
+      "date": "20260903",
+      "actual_top2": "300475.SZ,001266.SZ",
+      "corrected_top2": "300475.SZ,300259.SZ",
+      "day_ret_actual_pct": -3.197,
+      "day_ret_corrected_pct": -8.938,
+      "day_diff_pct": -5.741
+    },
+    {
+      "date": "20260907",
+      "actual_top2": "603551.SH,300373.SZ",
+      "corrected_top2": "300373.SZ,002741.SZ",
+      "day_ret_actual_pct": 0.55,
+      "day_ret_corrected_pct": 5.718,
+      "day_diff_pct": 5.168
+    }
+  ]
+}

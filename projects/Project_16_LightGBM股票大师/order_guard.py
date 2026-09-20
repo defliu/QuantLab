@@ -34,7 +34,15 @@ ORDER_JUNK = 57           # 废单
 
 WAIT_SECONDS = 60          # 单次委托最长等待（秒）
 POLL_INTERVAL = 3          # 轮询间隔（秒）
-MAX_RETRY = 5              # 最大撤单重试次数
+# ---- 总守护窗口权衡（2026-09-14 P1 修复）----
+# AGENTS「实盘执行红线」：买入 pending 超时必须重试，语义口径为 300s×3 次 ≈ 15 分钟仍不成交才放弃。
+# 此前 60s×5=5 分钟（601890.SH 案例实证追不上高开低走行情）。现取 60s×10=10 分钟折中：
+#   ① 单轮 60s 已覆盖限价单短期撮合窗口，轮次越多 → 追价机会越多（第 2 轮起每轮刷新现价），
+#      比单轮拉长到 300s 更容易跟上移动行情，滑点也更可控（逐轮小步追，而非一次挂高）；
+#   ② rebalance_daily 换仓为多笔串行，单笔上限 10 分钟可防整轮换仓窗口过多溢出交易时段；
+#   ③ 总时长 10 分钟 < 红线 15 分钟，属保守侧：红线语义是"不得早于约 15 分钟放弃"，并非要求等满。
+# 不取 MAX_RETRY=15（=15 分钟满格）：多笔串行时整轮换仓最坏 10 只 × 15 分钟会溢出当日交易时段。
+MAX_RETRY = 10             # 最大撤单重试次数（总窗口 ≈ 60s×10 = 10 分钟）
 
 
 def get_limit_prices(code):
@@ -139,8 +147,15 @@ def order_with_guard(trader, account, code, side, vol, price=None, remark="order
 
     while attempts < MAX_RETRY:
         attempts += 1
-        # 刷新价格（重试时价格可能已变化；若传入价无效则现价）
-        px = price if price and price > 0 else _fetch_price(code)
+        # 价格（2026-09-14 P1 追价修复）：首轮用传入价（有效时）；
+        # 第 2 轮起追价——刷新最新现价重挂（此前 5 次重试全复用同一旧价，601890.SH 案例实证追不上）；
+        # 追价取价失败则回退传入价。
+        if attempts > 1:
+            px = _fetch_price(code)
+            if not px or px <= 0:
+                px = price if price and price > 0 else None
+        else:
+            px = price if price and price > 0 else _fetch_price(code)
         if not px or px <= 0:
             return {"ok": False, "action": "ERROR", "traded_vol": total_traded,
                     "order_id": last_order_id, "attempts": attempts,

@@ -44,6 +44,16 @@ function Log($m) {
     Add-Content -Path $log -Value $line -Encoding UTF8
 }
 
+# ---- 飞书通知（2026-09-15，T-20260903-027 延续：诚哥要求"失败成功都飞书通知"）----
+# 复用 qmt_bridge_client.notify_feishu（g2_config.LARK_CLI/FEISHU_OPEN_ID 已配置）；$py 在 L62 赋值，
+# 本函数只在脚本流程中调用（$py 必已就绪）；任何异常静默（通知失败不影响任务本身）。
+function Notify-Feishu($msg) {
+    try {
+        $env:P16_ALERT_MSG = $msg
+        & $py -c "import os,sys; sys.path.insert(0, r'D:\QuantLab\projects\Project_16_LightGBM股票大师'); from qmt_bridge_client import notify_feishu; notify_feishu(os.environ.get('P16_ALERT_MSG',''))" 2>&1 | Out-Null
+    } catch { }
+}
+
 # ---- Python 解释器（优先 PATH，但必须带 numpy/lightgbm；否则回退内置）----
 $FALLBACK_PY = "C:\Users\Administrator\AppData\Roaming\TRAE SOLO CN\ModularData\ai-agent\vm\tools\python\python.exe"
 function Get-GoodPy {
@@ -191,8 +201,12 @@ try {
             }
             # 0) 重训前备份当前正式模型，防止覆盖（SERVER_DEPLOY.md 六、安全与备份 第2条要求）
             $formalModel = "D:/QuantLab/models/lgb_model_v3.txt"
+            # 2026-09-14 修复：备份目录从 versions\models\（含中文"股票大师"）改到 D:/QuantLab/models/bak/
+            # （LightGBM C++ 库打不开中文路径模型，gate_strategy_layer 加载 --live 备份时 Could not open）
+            $modelBakDir = "D:/QuantLab/models/bak"
+            New-Item -ItemType Directory -Force -Path $modelBakDir | Out-Null
             if (Test-Path $formalModel) {
-                $modelBak = Join-Path $proj ("versions\models\lgb_model_v3_pre_retrain_" + (Get-Date -Format 'yyyyMMdd_HHmmss') + ".txt")
+                $modelBak = Join-Path $modelBakDir ("lgb_model_v3_pre_retrain_" + (Get-Date -Format 'yyyyMMdd_HHmmss') + ".txt")
                 Copy-Item $formalModel $modelBak -Force
                 Log "已备份正式模型 -> $modelBak"
             }
@@ -250,9 +264,9 @@ try {
                         $v13Meta = Join-Path $proj "data\features_v3.json"
                         # 旧正式模型 = 本次 retrain 开头备份的 pre_retrain 文件（时间戳在 1.5-2 小时前，
                         # 不能重新 Get-Date——会生成不同时间戳导致 Test-Path 恒 False、门禁被永远跳过，T-20260910-005 修复）
-                        $oldFormal = Get-ChildItem (Join-Path $proj "versions\models\lgb_model_v3_pre_retrain_*.txt") -ErrorAction SilentlyContinue |
+                        $oldFormal = Get-ChildItem (Join-Path $modelBakDir "lgb_model_v3_pre_retrain_*.txt") -ErrorAction SilentlyContinue |
                             Sort-Object LastWriteTime | Select-Object -Last 1 | ForEach-Object { $_.FullName }
-                        if (Test-Path $v13Meta -and (Test-Path $oldFormal)) {
+                        if ((Test-Path $v13Meta) -and (Test-Path $oldFormal)) {
                             Log "[策略层门禁] V1.4 最优配置（fixed/N10/红线58/TOP2+lite）候选 vs 旧正式 复核（约10分钟）..."
                             Run-Py "gate_strategy_layer.py --strategy V1.4 --candidate $candModel --meta $v13Meta --live $oldFormal --live-meta $v13Meta"
                             if ($LASTEXITCODE -eq 2) {
@@ -289,11 +303,23 @@ try {
                 try { $g2Cur = (Get-Content $g2LivePointer -Raw | ConvertFrom-Json).model_path } catch { }
             }
             if ($g2Cur -and (Test-Path $g2Cur)) {
-                $g2LiveBak = Join-Path $proj ("versions\models\lgb_model_v3_g2_strong_real_pre_retrain_" + (Get-Date -Format 'yyyyMMdd_HHmmss') + ".txt")
+                $g2LiveBak = Join-Path $modelBakDir ("lgb_model_v3_g2_strong_real_pre_retrain_" + (Get-Date -Format 'yyyyMMdd_HHmmss') + ".txt")
                 Copy-Item $g2Cur $g2LiveBak -Force
                 Log "已备份 G2 live 模型 -> $g2LiveBak"
             } else {
                 Log "G2 live 指针缺失，跳过备份（train_g2 失败时回退 08-25 初始 live）"
+            }
+            # ---- G2 外部表在线增量补充（2026-09-14 立，诚哥拍板"全做"）----
+            # 背景：G2_EXTRA 中 lhb/北向/研报/mf 来自 D:/astock 表，若离线包未及时下载，
+            #       train_g2 训练面板这些特征会退化（断源→NaN/0）。本步用 Tushare 在线增量
+            #       把 lhb/top_list、research/report_rc_daily、northbound/hk_hold_full 三表
+            #       刷到 T-1（moneyflow 已有每日 19:30 独立刷新；同花顺板块 2 特征需 5000 积分档，
+            #       诚哥拍板暂不升级，继续靠 E 盘离线包）。
+            # 仅 best-effort：失败/限频只告警不阻断 train_g2（用现有数据训练，断源由特征健康周报兜底告警）。
+            Log "[在线增量] Tushare 补充 lhb/研报/北向到 T-1（best-effort，失败不阻断训练）..."
+            & $py "D:/QuantLab/scripts/refresh_online_incremental.py" --apply --days 30 2>&1 | ForEach-Object { Log $_ }
+            if ($LASTEXITCODE -ne 0) {
+                Log "!! [在线增量] refresh_online_incremental 异常（exit=$LASTEXITCODE）—— G2_EXTRA 训练数据可能未补齐，由特征健康周报兜底告警"
             }
             if (-not $skipG2) {
                 Run-Py "train_g2.py --promote"
@@ -365,8 +391,15 @@ try {
         }
     }
     Log "[$Mode] 完成"
+    Notify-Feishu "[$Mode] 完成"
 }
 catch {
     Log "[$Mode] 异常: $_"
+    # 加固（2026-09-15，T-20260903-027）：此前 catch 吞掉终止性错误 + 无退出码 →
+    # schtasks Last Result 恒 0 → 周训/任务中断无任何告警（09-14 周训实证：L255 语法错误中断，
+    # G2 重训未执行却显示"成功"）。①所有模式异常飞书告警（成功也通知，诚哥 2026-09-15 要求）；
+    # ②retrain 中断置退出码非 0（周训失败必须可见）。
+    Notify-Feishu ("[$Mode] 异常: " + $_.ToString())
+    if ($Mode -eq "retrain") { exit 1 }
 }
 Pop-Location

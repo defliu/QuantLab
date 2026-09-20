@@ -44,8 +44,12 @@ def _sell_fee(amt, code):
 
 
 def _adj_series(code):
-    """构造 {YYYY-MM-DD: adj} 累计复权序列：主库尾部 adj + 增量库 preClose 跳变续接 + 腾讯今日跳变。
-    返回 (series, latest_adj)。任一环节缺失则序列截止于已覆盖部分。"""
+    """构造 {YYYY-MM-DD: adj} 累计复权序列 + 返回 (series, latest_adj)。
+
+    权威源 = 主库 adj_factor（后复权因子，已含历史全部除权跳变，逐日稳定）。
+    增量库/腾讯仅用于把 latest_adj 延伸到主库未覆盖的最新交易日（只取相对变化率，
+    不复写 series 中已存在日期的值）——避免增量库滚动窗口丢跳变导致除权因子次日回弹
+    （T-20260915-003：601058 成本 14.4838→14.331→14.4838→14.8426 漂移根因）。"""
     import pandas as pd
     series = {}
     last_adj = None
@@ -66,6 +70,7 @@ def _adj_series(code):
         except Exception:
             pass
     incr = os.path.join(PROJ, "data_live", "incremental_daily.parquet")
+    incr_latest = None
     if os.path.exists(incr) and last_adj:
         try:
             d2 = pd.read_parquet(incr, columns=["trade_date", "ts_code", "close", "preClose"])
@@ -75,13 +80,19 @@ def _adj_series(code):
                 dt = str(row["trade_date"])[:10]
                 close = float(row["close"])
                 pre = float(row["preClose"])
+                if dt in series:
+                    last_close = close
+                    continue
                 if last_close is not None and pre > 0 and abs(pre / last_close - 1.0) > 0.005:
                     last_adj = last_adj * (pre / last_close)
                 series[dt] = last_adj
                 last_close = close
+            incr_latest = str(sub["trade_date"].iloc[-1])[:10]
         except Exception:
             pass
-    if last_close:
+    # 腾讯延伸仅当增量库滞后于主库（最后日期 < 主库最后日期）才用——增量库已覆盖最新时
+    # 腾讯昨收(last_close 的 preClose) 会与 last_close 跨日比较误触发跳变（T-20260915-003）。
+    if last_close and (incr_latest is None or incr_latest < (sorted(series.keys())[-1] if series else "")):
         try:
             import urllib.request
             sym = code.split(".")[0]
@@ -151,10 +162,11 @@ def fifo_positions():
             tc = 0.0
             for v, cp, bd in dq:
                 factor = 1.0
-                if latest:
+                if latest and latest > 0:
                     base = series.get(bd, 0) or 0
-                    if base > 0 and abs(latest / base - 1.0) > 1e-6:
-                        factor = latest / base
+                    if base > 0 and base != latest:
+                        # 前复权口径：成本折算 = 买入日adj / 最新adj（除息后 latest 跳升 → factor<1 成本下调）
+                        factor = base / latest
                 tc += v * cp * factor
             out[code] = (tv, tc / tv)
     return out
