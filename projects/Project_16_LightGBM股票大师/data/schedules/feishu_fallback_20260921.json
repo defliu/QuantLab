@@ -1,0 +1,22 @@
+[
+  {
+    "ts": "2026-09-21 20:10:51",
+    "title": "G2 每日复跑 PASS",
+    "reason": "lark-cli 非零退出: {\n  \"ok\": false,\n  \"identity\": \"bot\",\n  \"error\": {\n    \"type\": \"config\",\n    \"subtype\": \"not_configured\",\n    \"message\": \"openclaw context detected but lark-cli"
+  },
+  {
+    "ts": "2026-09-21 20:11:39",
+    "title": "G2/ENS 每日复跑 PASS",
+    "reason": "lark-cli 非零退出: {\n  \"ok\": false,\n  \"identity\": \"bot\",\n  \"error\": {\n    \"type\": \"config\",\n    \"subtype\": \"not_configured\",\n    \"message\": \"openclaw context detected but lark-cli"
+  },
+  {
+    "ts": "2026-09-21 20:12:05",
+    "title": "V1.3 每日复跑 PASS",
+    "reason": "lark-cli 非零退出: {\n  \"ok\": false,\n  \"identity\": \"bot\",\n  \"error\": {\n    \"type\": \"config\",\n    \"subtype\": \"not_configured\",\n    \"message\": \"openclaw context detected but lark-cli"
+  },
+  {
+    "ts": "2026-09-21 20:15:02",
+    "title": "G2 数据健康[WARN] 2 项",
+    "reason": "lark-cli 非零退出: {\n  \"ok\": false,\n  \"identity\": \"bot\",\n  \"error\": {\n    \"type\": \"config\",\n    \"subtype\": \"not_configured\",\n    \"message\": \"openclaw context detected but lark-cli"
+  }
+]

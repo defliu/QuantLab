@@ -86,10 +86,10 @@
   "label_col": "label",
   "fwd_ret_col": "fwd_ret",
   "fwd_days": 1,
-  "n_rows": 4801016,
-  "n_stocks": 4308,
+  "n_rows": 4803807,
+  "n_stocks": 4309,
   "date_range": [
     "2019-01-10 00:00:00",
-    "2026-09-18 00:00:00"
+    "2026-09-21 00:00:00"
   ]
 }

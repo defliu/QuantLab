@@ -112,7 +112,7 @@ def backfill_live(hold):
     df = pd.read_csv(log_csv, encoding="utf-8-sig")
     df = df.drop_duplicates(subset=["date", "code"], keep="last").reset_index(drop=True)
     # rank 补全：2026-09-02 起 live 由 deploy_predict_g2.py 写入 Top10，历史行（Top2）无 rank。
-    # 实盘 g2_config.TOP_N=2，统计时按 rank<=2 取实盘口径子集。
+    # 实盘 g2_config.TOP_N=3（2026-09-21 拍板 2→3），统计时按 rank<=3 取实盘口径子集。
     if "rank" not in df.columns:
         df["rank"] = np.nan
     if df["rank"].isna().any():
@@ -160,7 +160,7 @@ def backfill_live(hold):
     done = df[~df["ret"].isna()]
     print(f"      backfill: 回填 {len(done)}/{len(df)} 笔（hold={hold}，本次新算 {newly}）")
     if len(done):
-        for tag, sub in (("全部", done), ) + ((("TOP2子集", done[done["rank"] <= 2]),) if "rank" in done.columns else ()):
+        for tag, sub in (("全部", done), ) + ((("TOP3子集", done[done["rank"] <= 3]),) if "rank" in done.columns else ()):
             if len(sub):
                 print(f"      [{tag}] n={len(sub)} 均值 {sub['ret'].mean():+.3%} "
                       f"胜率 {(sub['ret'] > 0).mean():.1%} 中位 {sub['ret'].median():+.3%}")

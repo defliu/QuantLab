@@ -43,7 +43,7 @@ import position_filter as PF
 sys.path.append(C.XTPACK)
 
 REDLINE = 58.0
-TOP_N = 2
+TOP_N = 5  # 2026-09-21 拍板 TOP_N 2→5（依据《持仓只数最优论证_20260921.md》）
 HOLD_DAYS = 5  # 持有期满交易日数（到期制卖出，替代原 PK_OUT 日频翻转；T-20260904-001）
 CAP_FILE = os.path.join(os.path.dirname(C.TRADE_LOG), "strategy_capital.json")
 

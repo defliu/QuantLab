@@ -6,7 +6,7 @@
 # 2026-09-10: deploy_predict_g2 增加 --ensemble --ens-live（融合 live 管道：v3_enh+G2 rank融合 w=0.5 红线60）。
 #        3) paper_forward.py --backfill (回填 live 候选未来 N=10 交易日 open→open 收益，审计 P1-1)
 #        4) forward_stats.py    (超额统计报告 data/real/forward_stats_<date>.md)
-#        5) paper_forward_exit.py --top 2 --hold 10 (出场规则前向验证：对 rank<=2 实盘口径候选逐笔模拟
+#        5) paper_forward_exit.py --top 3 --hold 10 (出场规则前向验证：对 rank<=3 实盘口径候选逐笔模拟
 #           none/fixed/live_trail/atr20 等规则，累积 N>=30 + 逐笔配对 t>2 判定是否值得改实盘出场参数；
 #           产物 data/real/paper_forward_exit_live.csv + paper_forward_exit_<date>.md)
 # 2026-08-25: g2_realtime.py 接入，F2/F5 当日实时化（V1.1 资产未触碰）
@@ -32,7 +32,7 @@ try {
     & $py -u paper_forward.py --backfill --hold 10 *>> $log
     $bfExit = $LASTEXITCODE
     & $py -u forward_stats.py --hold 10 *>> $log
-    & $py -u paper_forward_exit.py --top 2 --hold 10 *>> $log
+    & $py -u paper_forward_exit.py --top 3 --hold 10 *>> $log
     $pfExit = $LASTEXITCODE
     & $py -u paper_forward_downgrade.py *>> $log
     $dgExit = $LASTEXITCODE

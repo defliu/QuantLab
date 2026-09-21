@@ -2,7 +2,7 @@
 """前向纸面验证统计 forward_stats.py —— 只读，不写 live 日志。
 
 功能：对 paper_forward_live.csv 中已回填的样本，按「同窗口全市场等权」配对计算超额收益，
-      并输出 TOP2（实盘口径，g2_config.TOP_N=2）与 Top10 全集两个维度的统计。
+      并输出 TOP3（实盘口径，g2_config.TOP_N=3）与 Top10 全集两个维度的统计。
 
 用法：
     python forward_stats.py              # 输出到 stdout + data/real/forward_stats_<date>.md
@@ -104,7 +104,7 @@ def main():
     res = res.sort_values(["date", "rank"]).reset_index(drop=True)
 
     pending = df[df["ret"].isna()]
-    stats = [summarize(res, "全部"), summarize(res[res["rank"] <= 2], "TOP2(实盘口径)")]
+    stats = [summarize(res, "全部"), summarize(res[res["rank"] <= 3], "TOP3(实盘口径)")]
     stats = [s for s in stats if s]
 
     print("\n=== 前向纸面验证统计（hold=%s）===" % (args.hold or "live"))
@@ -148,9 +148,9 @@ def main():
         md.append(f"⚠️ 有效样本 {len(res)} 笔 < 判定门槛 {N_MIN} 笔，**不作任何结论**。"
                   f"当前进度 {len(res)}/{N_MIN}（{len(res) / N_MIN:.0%}）。")
         md.append("")
-        md.append("按当前速度（约 2 笔/交易日，仅 TOP2 口径）需再约 %d 个交易日；"
+        md.append("按当前速度（约 3 笔/交易日，仅 TOP3 口径）需再约 %d 个交易日；"
                   "若按 Top10 全集口径约 %d 个交易日。"
-                  % (math.ceil((N_MIN - len(res)) / 2), math.ceil((N_MIN - len(res)) / 10)))
+                  % (math.ceil((N_MIN - len(res)) / 3), math.ceil((N_MIN - len(res)) / 10)))
     else:
         md.append(f"样本已达 {len(res)} 笔，可进入判定：超额 >0 且 t>2 视为正向证据。")
     out = os.path.join(REAL, f"forward_stats_{datetime.datetime.now().strftime('%Y%m%d')}.md")

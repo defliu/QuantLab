@@ -383,3 +383,6 @@
 
 > 上线记录（promote_model.py）
 - [20260914_174407] lgb_model_v3_retrain_20260914.txt -> lgb_model_v3.txt (树数 4151 / 特征 27 / auto: 周更重训自动上线 | testIC 0.04450 / ICIR 0.3552 / acc 0.5214)
+
+> 上线记录（promote_model.py）
+- [20260921_180740] lgb_model_v3_retrain_20260921.txt -> lgb_model_v3.txt (树数 6617 / 特征 27 / auto: 周更重训自动上线 | testIC 0.04315 / ICIR 0.3428 / acc 0.5215)

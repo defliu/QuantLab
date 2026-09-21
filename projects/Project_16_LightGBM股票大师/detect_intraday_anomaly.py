@@ -13,6 +13,17 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 MAX_AGE_SEC = 600
 VOLATILITY_PCT = 5.0
+# 午休感知（2026-09-21 修复，T-20260921-002）：午休 11:30~13:00 无行情推送、心跳随 handlebar
+# 停更（实测每个交易日 12:00/12:30 恒误报 ~1800/~3600 秒），窗口内阈值放宽为
+# 「距午休开始的时长 + MAX_AGE_SEC」，午休前真停更的桥仍能被抓到。
+LUNCH_START_SEC = 11 * 3600 + 30 * 60  # 11:30:00
+LUNCH_END_SEC = 13 * 3600  # 13:00:00
+
+
+def _effective_max_age(now_sec):
+    if LUNCH_START_SEC < now_sec <= LUNCH_END_SEC:
+        return (now_sec - LUNCH_START_SEC) + MAX_AGE_SEC
+    return MAX_AGE_SEC
 
 BRIDGES = {
     "G2": ("D:/QMT_POOL/g2_bridge", "state"),
@@ -141,11 +152,13 @@ def _quote(code):
 def main():
     anomalies = []
     # 1) 桥心跳
+    now_sec = int(time.strftime("%H")) * 3600 + int(time.strftime("%M")) * 60 + int(time.strftime("%S"))
+    eff_max_age = _effective_max_age(now_sec)
     for name, (base, sub) in BRIDGES.items():
         age = _latest_heart_age(os.path.join(base, sub))
         if age is None:
             anomalies.append("[桥] %s 无心跳文件" % name)
-        elif age > MAX_AGE_SEC:
+        elif age > eff_max_age:
             anomalies.append("[桥] %s 心跳已 %d 秒未刷新" % (name, int(age)))
     # 2) 持仓单日波动
     for strat, (cmd_dir, prefix) in CFGS.items():

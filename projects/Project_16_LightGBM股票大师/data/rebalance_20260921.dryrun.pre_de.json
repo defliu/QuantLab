@@ -1,0 +1,27 @@
+{
+  "date": "20260921",
+  "target": [
+    {
+      "code": "603257.SH",
+      "name": "中国瑞林",
+      "total": 71.0,
+      "prob": 0.5171
+    },
+    {
+      "code": "002215.SZ",
+      "name": "诺 普 信",
+      "total": 67.0,
+      "prob": 0.5488
+    }
+  ],
+  "strategy_capital": 88778.77,
+  "target_value_each": 42169.92,
+  "sell": [],
+  "buy": [],
+  "trim": [],
+  "hold": [
+    "603049.SH",
+    "603237.SH"
+  ],
+  "locked": []
+}

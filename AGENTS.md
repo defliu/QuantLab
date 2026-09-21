@@ -74,6 +74,7 @@
 - 所有 QMT 运行产物必须是 GBK 编码，并且首行必须是 `# coding=gbk`。
 - **QMT 策略必须经客户端策略编辑器「粘贴」部署，直接把文件生成/复制到 `<QMT>\python\` 运行目录无效**（2026-09-10 实证：客户端对策略加密存储，python\ 下的明文文件不会被加载）。唯一生效流程：`build.py` 构建+四道校验 → 记事本打开产物 → **人工粘贴**进客户端策略编辑器 → 查日志 `BUILD_TAG` 核对「本地构建版本 = 实际运行版本」。QMT 为自绘 UI（无 UIA 控件、无子 HWND、最小化时窗口 rect=-32000），**粘贴不可自动化**，人工粘贴是设计内动作，不要浪费时间尝试脚本化（失败方案存档 `projects/Project_16_LightGBM股票大师/deploy_paste_qmt.ps1`）。
 - **含中文的 `.ps1` 脚本（定时任务用）必须带 UTF-8 BOM**：Windows PowerShell 5.1 对无 BOM 文件按 ANSI/GBK 解码 → 中文变乱码 → 字符串引号被吞 → 级联「意外的标记」解析错误；**每次编辑含中文的 .ps1 后必须校验 BOM 仍在**（教训 T-20260903-015：编辑工具改写时丢 BOM，导致 run_scheduled.ps1 在 powershell.exe 下解析崩溃，09-14 周训将依赖此规则）。
+- **计划任务注册规范（2026-09-21 立，T-20260921-001/002）**：①注册/重建含中文路径的 schtasks 一律用 `Register-ScheduledTask`/`Set-ScheduledTask` + `New-ScheduledTaskAction` 对象方式，**禁止 XML/schtasks 命令行拼接**（中文路径会 UTF-8→Latin-1 乱码写入任务定义，Intraday_Review 因此静默停摆 3 个交易日）；注册后必须回读 `Actions.Arguments` 核对实际存储值。②LogonType 一律 **S4U**（`New-ScheduledTaskPrincipal -LogonType S4U`），禁止 Interactive（每 30 分钟在桌面弹 PowerShell 窗口）；全部 39 个 Quant* 任务已切换，xtquant 在 S4U session 0 连 miniQMT 实测可用。
 - QMT 运行环境按 Python 3.6.8 兼容处理。
 - 禁止在 QMT 运行产物或会被合并进产物的代码中使用 Python 3.6 不支持的语法，包括但不限于：
   - `dict[str, ...]`

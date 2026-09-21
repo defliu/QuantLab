@@ -4,7 +4,7 @@
 背景（T-20260904-002 追盈止损 ablation 的延续）：
 exit_ablation 显示 ATR2.0（红线60/N=10）方向稳定为正但逐笔 t=1.18 不显著，
 按统计纪律不能据此改实盘出场参数。本脚本把各出场规则挂进 G2 前向验证管道：
-对 paper_forward_live.csv 中实盘口径候选（rank<=2，即 g2_config.TOP_N=2 真实交易口径）
+对 paper_forward_live.csv 中实盘口径候选（rank<=3，即 g2_config.TOP_N=3 真实交易口径）
 逐笔模拟各出场规则，累积真实前向样本，按判定门槛 N>=30 + 逐笔配对 t>2 再拍板。
 
 规则逻辑与 scan_rotate_cost_real.simulate(exec_ok=True) 分支逐行对齐：
@@ -18,9 +18,9 @@ exit_ablation 显示 ATR2.0（红线60/N=10）方向稳定为正但逐笔 t=1.18
 ATR 用建仓日快照不再重算；MATURE 优先于止损/止盈。
 
 用法：
-  python paper_forward_exit.py --top 2 --hold 10     # 默认：实盘口径 rank<=2，N=10
+  python paper_forward_exit.py --top 3 --hold 10     # 默认：实盘口径 rank<=3，N=10
   python paper_forward_exit.py --selfcheck           # 用已回填行核对 none 口径 == backfill ret（精度校验）
-  python paper_forward_exit.py --top 10              # 用 Top10 全集更快累积（统计口径不同，勿与 rank<=2 混判）
+  python paper_forward_exit.py --top 10              # 用 Top10 全集更快累积（统计口径不同，勿与 rank<=3 混判）
   python paper_forward_exit.py --rules atr20,atr25   # 指定规则子集
 """
 import argparse
@@ -228,8 +228,8 @@ def run(rules, top, hold):
     live = live.drop_duplicates(subset=["date", "code"], keep="last").reset_index(drop=True)
     if "rank" not in live.columns:
         live["rank"] = np.nan
-    if top == 2:
-        sub = live[live["rank"] <= 2]
+    if top == 3:
+        sub = live[live["rank"] <= 3]
     else:
         sub = live.copy()
     sub = sub.sort_values(["date", "rank"]).reset_index(drop=True)
@@ -313,7 +313,7 @@ def run(rules, top, hold):
     # ---------- Markdown 报告 ----------
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     md = [f"# P16 出场规则前向验证（paper_forward_exit）· {now}", "",
-          f"> 候选源：paper_forward_live.csv（G2 红线60，rank<=2 实盘口径，持仓2）| 持有 N={hold} | open→open",
+          f"> 候选源：paper_forward_live.csv（G2 红线60，rank<=3 实盘口径，持仓3）| 持有 N={hold} | open→open",
           f"> 数据源：主库最新 {main_last} | 增量最新 {inc_last or 'NA'} | 合并最新 {last_trade}"
           + (" | **行情停更告警**" if stale else ""),
           f"> 规则逻辑与 scan_rotate_cost_real.simulate(exec_ok) 分支对齐：峰值用昨日/持有日高点、一字跌停顺延、T+1、ATR 建仓日快照", "",
@@ -346,7 +346,7 @@ def run(rules, top, hold):
     md += ["", "## 判定", ""]
     if len(mature) < N_MIN:
         md.append(f"⚠️ 有效样本 {len(mature)} 笔 < 判定门槛 {N_MIN} 笔，**不作任何结论**。"
-                  f"进度 {len(mature)}/{N_MIN}（约 2 笔/交易日，按 rank<=2 需再约 {math.ceil((N_MIN-len(mature))/2)} 个交易日）。")
+                  f"进度 {len(mature)}/{N_MIN}（约 3 笔/交易日，按 rank<=3 需再约 {math.ceil((N_MIN-len(mature))/3)} 个交易日）。")
     else:
         if "atr20" in rules and "live_trail" in rules:
             d = mature["atr20_ret"] - mature["live_trail_ret"]
@@ -404,7 +404,7 @@ def selfcheck():
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--top", type=int, default=2, help="rank<=N 的候选口径（2=实盘口径）")
+    ap.add_argument("--top", type=int, default=3, help="rank<=N 的候选口径（3=实盘口径）")
     ap.add_argument("--hold", type=int, default=10)
     ap.add_argument("--rules", default="none,fixed,live_trail,atr20",
                     help="逗号分隔，可用 atr25/atr30/time/ma5")

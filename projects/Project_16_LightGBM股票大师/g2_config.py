@@ -27,7 +27,7 @@ START_CAPITAL = 100000.0             # 初始 10 万
 G2_CAPITAL_FILE = os.path.join(BRIDGE_DIR, "g2_strategy_capital.json")
 
 # ---- 交易参数（对齐 V1.3 口径） ----
-TOP_N = 2                            # 目标持仓数（等权，对齐回测 TOP）
+TOP_N = 3                            # 目标持仓数（等权；2026-09-21 拍板 TOP_N 2→3，依据《持仓只数最优论证_20260921.md》）
 SELECT_TOP = 10                      # 候选池大小（对齐回测 TOP10；deploy_predict_g2 --top 10 产出 _g2_top10.csv）
 RESERVE_CASH_PCT = 0.05              # 保留现金 5%（总仓 95%）
 MIN_ORDER_VOL = 100                  # 整手
