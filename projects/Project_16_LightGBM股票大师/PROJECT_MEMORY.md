@@ -929,7 +929,9 @@ ebalance_g2.py 买入循环低开校验（gap_guard）：极端低开<=-5%跳过
 
 - **拍板（2026-09-10 诚哥）**：①G2 实盘配置由 N10-fixed 升级到网格最优 N15-live_trail（+0.213%）；②融合(ensemble) 现在直接上线（纸面前向 0 笔即上线，**覆盖防过拟合 30 笔裁判红线**，T-20260910-103/104 让步）；③融合走 70180771 虚拟子账户，初始 10 万。
 - **G2 升级**：g2_config.HOLD_DAYS 10→15。审计（策略优化审计_20260910.md）已确认桥出场逻辑（STOP→TP→TRAIL + 激活8%+保本底线）与回测 live_trail（TRAIL_FIRST=0）语义一致 → **桥无需重建**（仍 184724），仅 rebalance 持有期变 15 日；现有持仓自动延至 15 交易日。
-- **融合管道（全新独立资产，与 G2 零耦合）**：选股 deploy_predict_g2 --ensemble --ens-live（v3_enh+G2 rank 融合 w=0.5 红线60，候选 top10 by ens → 买入 top2 by total_new，16:45 管道并入）；g2_ens_config.py/qmt_bridge_client_ens.py/ebalance_ens.py/econcile_ens.py/gen_positions_cfg_ens.py/uild_p16_ens.py/strategy_p16_ens_bridge_src.py 七件套；独立目录 D:/QMT_POOL/p16_ensemble_bridge + 独立资金池 ens_strategy_capital.json（10万）+ 独立账本 g2_ens_hold_dates.json。桥产物 BUILD **20260910-233536**（GBK/Py3.6/无MOCK 已验）。
+- **融合管道（全新独立资产，与 G2 零耦合）**：选股 deploy_predict_g2 --ensemble --ens-live（v3_enh+G2 rank 融合 w=0.5 红线60，候选 top10 by ens → 买入 top2 by total_new，16:45 管道并入）；g2_ens_config.py/qmt_bridge_client_ens.py/
+ebalance_ens.py/
+econcile_ens.py/gen_positions_cfg_ens.py/uild_p16_ens.py/strategy_p16_ens_bridge_src.py 七件套；独立目录 D:/QMT_POOL/p16_ensemble_bridge + 独立资金池 ens_strategy_capital.json（10万）+ 独立账本 g2_ens_hold_dates.json。桥产物 BUILD **20260910-233536**（GBK/Py3.6/无MOCK 已验）。
 - **同账户双桥隔离（关键设计）**：G2 与融合同一账号 70180771、同一大QMT 客户端并跑。隔离 = 双桥都「纳管全账户持仓」但 _check_risk_signals 只评估自家成本锚（cost>0）的票；对方票 cost=0 跳过。叠加「融合换仓跳过 g2_hold_dates 已有票」的重叠规避。**已知残余风险：G2 侧无反向互斥**（G2 候选若撞融合持仓会双买）——观察期日终对账盯同票双账本，用户确认后才给 G2 加对称互斥。
 - **部署与验证**：09-11 00:09 模拟模式误启 7s 手动停止 → 00:10 交易模式重启；QMT 日志 [P16ENS][BUILD] BUILD_TAG=20260910-233536 account=70180771 + [P16ENS][INIT] positions=0 无报错；heart_20260911.json 心跳正常、peak.json 空。外部层 dry-run 全通（融合选股落盘 / rebalance_ens 重叠规避+TOP2 / reconcile_ens 飞书通知）；资金分配表双份 +10万，check_capital_allocation.py exit 0。
 - **调度**：融合换仓 TW 任务 051bc2d9 **09:52**（09-10 由 09:50 后移 2 分钟避 G2 同刻下单）+ 融合日终对账 18c0c8d2 15:45；盘前成本锚 ps1 增第三腿 gen_positions_cfg_ens.py（UTF-8 BOM 已校验）；push_fill_card.py 增 --source ens。
@@ -968,12 +970,16 @@ ebalance_g2.py 买入循环低开校验（gap_guard）：极端低开<=-5%跳过
 
 ## 2026-09-13 · ENS 资金池滚动补齐（T-20260913-001 P0，对齐 G2 reconcile_g2._roll_g2_capital）
 
-- **根因**：econcile_ens.py 无资金池滚动逻辑，ns_strategy_capital.json 停在 09-10 初始 10 万（de_recheck B-5 观察项）——已实盘建仓 600409/300138 后买入预算失真（浮亏时仍按 10 万配仓），随盈亏累积偏差扩大。
+- **根因**：
+econcile_ens.py 无资金池滚动逻辑，ns_strategy_capital.json 停在 09-10 初始 10 万（de_recheck B-5 观察项）——已实盘建仓 600409/300138 后买入预算失真（浮亏时仍按 10 万配仓），随盈亏累积偏差扩大。
 - **修复（reconcile_ens.py）**：补三个函数——_all_fills()（遍历 state 目录所有 fills_<date>.json 跨日累计）、_realized_pnl_from_fills()（FIFO 配对已实现盈亏，与 positions_from_fills 同口径）、_float_pnl_now()（最新 positions_cfg 成本含费 + fetch_price 现价）；_roll_ens_capital(date) = START_CAPITAL + realized + float_pnl，account_id 戳原子写 save_ens_capital（<=0 跳过）。main() 挂 ⑤ 资金池段：capital_prev 先读再滚，md 报告新增"资金池"节，飞书通知带资金池。
-- **验证**：①单测 5/5 PASS（沙箱临时目录：FIFO 650/浮盈 50/滚动 100700/幂等二次滚动一致/空仓回退 10 万）；②端到端 econcile_ens.py --date 20260913：资金池 **100000→98469.21**（已实现 0 + 浮盈 -1531），positions_cfg FALLBACK 回退 0911 持仓（周日无当日快照属正常），md/飞书均带资金池。
+- **验证**：①单测 5/5 PASS（沙箱临时目录：FIFO 650/浮盈 50/滚动 100700/幂等二次滚动一致/空仓回退 10 万）；②端到端 
+econcile_ens.py --date 20260913：资金池 **100000→98469.21**（已实现 0 + 浮盈 -1531），positions_cfg FALLBACK 回退 0911 持仓（周日无当日快照属正常），md/飞书均带资金池。
 - **生效路径**：TW 对账任务 18c0c8d2（15:45 日终对账）直接调 reconcile_ens.py → 自动生效，无需改调度。
-- **⚠️ 测试坑**：ead_fills/read_positions 用的是 qmt_bridge_client_ens 模块级 STATE_DIR/CMD_DIR 常量（不是 g2_ens_config.G 的），沙箱测试必须同时 patch CL.STATE_DIR/CL.CMD_DIR 才不污染真实 QMT_POOL。
-- **⚠️ 周日跑对账会误报"账本比账户多 N 股"**（ead_positions(date) 无当日快照返回空 → 账户侧=0）：交易日 15:45 有当日 positions 快照不会误报，非修复引入。
+- **⚠️ 测试坑**：
+ead_fills/read_positions 用的是 qmt_bridge_client_ens 模块级 STATE_DIR/CMD_DIR 常量（不是 g2_ens_config.G 的），沙箱测试必须同时 patch CL.STATE_DIR/CL.CMD_DIR 才不污染真实 QMT_POOL。
+- **⚠️ 周日跑对账会误报"账本比账户多 N 股"**（
+ead_positions(date) 无当日快照返回空 → 账户侧=0）：交易日 15:45 有当日 positions 快照不会误报，非修复引入。
 - **相关**：三策略自我迭代讨论纪要与 DE 稿见 data/三策略自我迭代_讨论纪要_20260913.md、data/de_self_iteration_discuss_20260913.md（DE 稿"心跳告警未注册"结论已过时——09-12 已补注册，待 09-14 盘中真实触发核对）。
 
 ## 2026-09-13 · 纸面自动降级闸落地（T-20260913-001 P1-8）
@@ -991,7 +997,8 @@ _slots=0 + plan["downgrade_frozen"]；rebalance_daily.py（V1.3）在 exec_buys 
 ## 2026-09-13 · 自我迭代机制批量落地（T-20260913-001 全部执行，诚哥"所有任务都完成"）
 
 ### 1. C2 G2 反向互斥对称化
-- g2_config.py 加 ENS_HOLD_DATES_FILE（指向 rebalance_g2_ens/g2_ens_hold_dates.json）；ebalance_g2.py 买入段候选池排除 ENS 账本持仓（对齐 rebalance_ens 的 G2 单向规避）。实测 dry-run「跳过 ENS 持仓 2 只: 300138.SZ,600409.SH」，G2 候选 Top1 与 ENS 无冲突正常买入。
+- g2_config.py 加 ENS_HOLD_DATES_FILE（指向 rebalance_g2_ens/g2_ens_hold_dates.json）；
+ebalance_g2.py 买入段候选池排除 ENS 账本持仓（对齐 rebalance_ens 的 G2 单向规避）。实测 dry-run「跳过 ENS 持仓 2 只: 300138.SZ,600409.SH」，G2 候选 Top1 与 ENS 无冲突正常买入。
 
 ### 2. F1 特征级 IC/覆盖率周报
 - 新脚本 eature_health_weekly.py：V1.3 面板（feature_panel_v3.parquet 27 特征）近 4 周逐日横截面 Spearman IC + 缺失率；ALERT=近4周|IC|<0.01 且缺失率>5%，WATCH=二者之一；--check 只读；挂 retrain 前置（面板刷新前跑=用上周期数据评估）。**首跑发现真信号：fin_ocf_to_profit 缺失率 13.34% WATCH**（经营现金流/净利润比缺失率偏高，待人工裁决）。**踩坑：面板 index 是 [None] 扁平表（列含 trade_date/ts_code/fwd_ret），不是 MultiIndex**。
@@ -1000,7 +1007,9 @@ _slots=0 + plan["downgrade_frozen"]；rebalance_daily.py（V1.3）在 exec_buys 
 - 新脚本 check_enh_freshness.py：enh 面板末日 vs 最近交易日（merged_daily_full，trade_date 在 index），>7 天 exit 2。挂 run_scheduled retrain：$skipG2 阻断 train_g2（补 if 守卫 + else 日志）。实测 enh 面板落后 0 天 PASS。
 
 ### 4. M3 观察期回滚条件自动化
-- ollback_check_g2.py 加 --auto：深度劣化（前向 < 基线 − AUTO_THRESHOLD=0.0005）自动回退 prev_model + 飞书；轻度劣化仍 exit 2 人工；_do_rollback 抽取复用（--apply 也走它）。单测 9/9 PASS（深度自动回退+meta推断/轻度人工/通过观察期）。**踩坑：trading_days_since 默认参数绑定了 import 时旧路径，改函数内读全局 LIVE_CSV**。挂 daily 尾部 ollback_check_g2.py --auto。
+- 
+ollback_check_g2.py 加 --auto：深度劣化（前向 < 基线 − AUTO_THRESHOLD=0.0005）自动回退 prev_model + 飞书；轻度劣化仍 exit 2 人工；_do_rollback 抽取复用（--apply 也走它）。单测 9/9 PASS（深度自动回退+meta推断/轻度人工/通过观察期）。**踩坑：trading_days_since 默认参数绑定了 import 时旧路径，改函数内读全局 LIVE_CSV**。挂 daily 尾部 
+ollback_check_g2.py --auto。
 
 ### 5. E6 双调度器一致性巡检
 - 新文件 data/tw_schedule_snapshot.json（TW 侧 13 任务快照，agent 会话手动更新，标记 conflict_with 任务）；
@@ -1018,11 +1027,15 @@ ightly_check.py check_e 加 E6：读快照，conflict 任务仍 Active → FAIL�
 ## 2026-09-13 · DE 独立审查自我迭代批次 + P0/P1/P2 修复（T-20260913-001 收尾）
 
 - **DE 审查**（报告 data/de_audit_self_iteration_20260913.md）：9 项机制 7 PASS + 1 FAIL（⑥自动回滚列名死链）+ 横切 BOM 丢失。TRAE 逐项独立复核全部确认属实后修复复验。
-- **P0-1（真 bug）**：ollback_check_g2.py 读 	rade_date/wd_ret 列，真实 paper_forward_live.csv schema 是 date/et——trial 存在时必 exit 1，自动回退/轻度告警永不可达。**教训：MOCK 单测用 mock schema 自证自测=假阴性（AGENTS「MOCK 测不到真实 schema」的又一实例）**。修复：列名对齐 + 单测改用真实 schema（11/11 PASS）。
+- **P0-1（真 bug）**：
+ollback_check_g2.py 读 	rade_date/wd_ret 列，真实 paper_forward_live.csv schema 是 date/
+et——trial 存在时必 exit 1，自动回退/轻度告警永不可达。**教训：MOCK 单测用 mock schema 自证自测=假阴性（AGENTS「MOCK 测不到真实 schema」的又一实例）**。修复：列名对齐 + 单测改用真实 schema（11/11 PASS）。
 - **P0-2（违反硬规则）**：run_scheduled.ps1/paper_forward_daily.ps1 被编辑工具改写丢 UTF-8 BOM（首字节 35,32 无 EF BB BF），PS5.1 中文乱码；09-14 周训前置。已补 BOM（EF BB BF 复验 OK）。**教训：每次编辑含中文 .ps1 后必须复验 BOM（AGENTS T-20260903-015 硬规则再次命中，PROJECT_MEMORY 09-12 声称「BOM 完好」已失效——写入者是不同会话）**。
 - **P1-1**：paper_forward_downgrade.py docstring 承诺「推送失败 exit 2」但 main 恒 return 0 → 调度 DOWNGRADE-ALERT 分支不可达。修复：推送失败 return 2（mock 验证）。
-- **P1-2**：ollback_check_g2.py --auto 回退失败静默 return 0 → 假阳性「已自动回退 OK」。修复：失败 return 2 + 飞书告警。
-- **P2-1（规格偏离）**：讨论纪要 M3 要求「连续 3 日」深度劣化才自动回退，实现为单次。修复：ollback_streak.json 计数，连续 3 交易日才触发；方法论第七节同步（对齐）。
+- **P1-2**：
+ollback_check_g2.py --auto 回退失败静默 return 0 → 假阳性「已自动回退 OK」。修复：失败 return 2 + 飞书告警。
+- **P2-1（规格偏离）**：讨论纪要 M3 要求「连续 3 日」深度劣化才自动回退，实现为单次。修复：
+ollback_streak.json 计数，连续 3 交易日才触发；方法论第七节同步（对齐）。
 - **P2-6**：E6 快照新鲜度未校验（手动快照过期→假 PASS）。修复：generated_at >7 天 WARN。
 - **P2-13**：_do_rollback 指针写入非原子。修复：tmp+os.replace。
 - **剩余 P2 记录待办**（DE 报告③节）：V1.3 臂 N10 vs 实盘 N5 口径；互斥读文件 fail-open 告警；漂移 argmax 无容差；gate 回滚后漂移复查用被拒候选；ENS 预算基数未扣保留持仓（预存分歧）；回滚 CSV 回填 --hold 10 vs N15。
@@ -1092,3 +1105,21 @@ ightly_check.py check_e 加 E6：读快照，conflict 任务仍 Active → FAIL�
 - **联动约束提醒**：①ENS 融合红线内日均仅 9.9 只，K=5 时 26% 交易日欠配（R8 发现，需影子盘验证）；②单日最大换手 30% 全局红线与 N=10 轮动结构性冲突（最差日 60~100%），任何 TOP 档无法满足，需另行拍板豁免口径；③融合/G2 同面板同源持仓高度重合，上调后重叠度变化观察两周。
 - **看板**：T-20260921-001；repowiki `QMT架构集成.md` 已同步（复跑对比行 + 持仓数论证行）。
 - **✅ 执行落地（2026-09-21 晚间，诚哥拍板「把三个策略都改了，让de来执行，你交叉验证签收」）**：DE 执行 6 文件改动 + TRAE 独立交叉验证签收。**A 组 config**：`g2_config.py:30 TOP_N=2→3`、`g2_ens_config.py:32 TOP_N=2→5`、`rebalance_daily.py:46 TOP_N=2→5`（V1.3 实盘 `--top` 目标持仓=5；T=0 清仓/降半仓语义不变）。**B 组纸面口径**：`paper_forward.py:163` rank<=2→3、`paper_forward_exit.py:231-232/407` 分支条件 + default 2→3（**只改 L232 不改 L231 分支条件会落入 else 变 Top10 全集口径**）、`forward_stats.py:107` rank<=2→3。**TRAE 验证**：git diff 逐条核对 6 文件与 DE 报告一致、miniqmt venv py_compile 6/6、无越权改动（未动 versions/、capital_allocation.yaml、未 commit）。**TRAE 补修 ps1（DE 未授权改 ps1 的盲区，4 个均补 UTF-8 BOM + PowerShell 语法 OK）**：`paper_forward_daily.ps1:35 --top 2→3`（否则覆盖 default=3 落入 else 分支）；`de_rebalance_guard_daily.ps1:60 --top 2→5` + L61/L74/L87 核验文案（V1.3/ENS/G2 各自 top5/top5/top3）；`g2_candidates_night.ps1:22 --top 2→3` + L6/L31/L70/L24 文案（夜间 top3 候选 + 次日副本）；`de_g2_compare_daily.ps1:35 top2→top3` 文案。**资金校验**：`check_capital_allocation.py` PASS（EXIT=0，10 万/策略不变）。**遗留待拍板**：①三臂共用脚本 `paper_forward_downgrade.py:154`/`paper_forward_ab_stats.py:93`/`paper_quarterly_review.py:70` 单一 rank<=2 阈值不再对齐任一臂（3/5/5 分化）；②`deploy_predict_g2.py:209` 过时注释 TOP_N=2；③升级实盘前纸面前向验证 30 笔门槛 / ENS 欠配 26% 影子盘 / 单日换手 30% 豁免口径。
+
+
+## 2026-09-22 · 夜间检修 B2/B5/D1 三项修复（T-20260922-001，01:00 nightly_check FAIL=3 复跑 FAIL=0）
+
+- **B2 模型-面板绑定不一致（P0 级）**：09-21 周更 auto_promote 上线 6617 树候选 → 18:41 策略层门禁 FAIL（excess +0.0008 < live +0.0011）→ run_scheduled.ps1 回滚了正式模型文件但**未回滚绑定记录** → verify 报「模型被改动但未登记」。**根因=回滚链路只管模型文件不管绑定，绑定唯一真相源被留在「新模型」状态**。修复：①绑定回滚至 09-14 版（4151 树/mtime 精确一致，git fb75a96 原版 + 修复备注），verify_model_panel_sync.py exit=0；②promote_model.py 提升前自动备份绑定（model_panel_binding.json.bak_<stamp>）；③run_scheduled.ps1 门禁 FAIL 回滚分支同步回滚绑定（BOM EF BB BF 复验完好）。
+- **B5 enh 面板滞后 + 刷新校验失败（P1 级）**：09-14 E 盘离线包全量替换主库（daily 08-21→09-11）后，旧面板末日 09-09~11 的 turnover_rank 由「增量反推（float_share=08-21 vintage ffill）」变「主库原生」，换手率微差 → 精确复现 0% 触发门禁拦截。**实测每日 Spearman 0.997+，定性=数据源 vintage 升级而非口径 bug**。修复：refresh_panel_enh.py 门禁分级——4 事件特征仍要求 ≥99% 精确复现；turnover_rank <99% 时查 Spearman，≥0.98 判「vintage 升级」放行、<0.98 仍 FAIL。实跑重刷 enh 面板至 **2026-09-21**（旧面板备份 .bak_20260922_023037），check_enh_freshness.py 落后 0 天 PASS。
+- **D1 悟道探活盘前时序伪失败（P2 级）**：01:00 无 date 参数请求「当日」市场概要，上游当日概要未就绪 → 恒 FAIL → fail_count 日增 → 熔断常开，09-04 起每日靠人工 record ok 收尾。修复：nightly_check.py D1 探活显式 date=<最近已收盘交易日>（与人工复核同口径）；02:25 实测 date=2026-09-21 成功（强度 84）→ record ok → 熔断清零。
+- **端到端验证**：全量 nightly_check.py（无 --fix）复跑 **FAIL=0 WARN=1 exit=0**；01:00 原报告备份 data/cache/nightly_check_20260922.md.bak_0100_run。
+- **教训**：①回滚链路必须覆盖该资产登记的全部真相源（模型文件+绑定+指针），只回滚文件=半吊子回滚；②数据 vintage 升级（反推值→原生值）会表现为「精确复现崩、秩相关仍极高」——门禁应区分「口径漂移」与「源升级」，否则数据升级日必误拦；③探活类检查请求的资源必须是「该时刻必然存在」的（T-1 而非 T 日）；④**PowerShell 双引号 here-string 里 markdown 反引号是转义符**（`n=`换行/`r=CR/`t=Tab，写文件必腐蚀，本文 09-13 段 1031/1035 行同源损伤），写含反引号文本一律用单引号 here-string @'...'@。
+- **遗留待拍板**：①E6 TW 调度快照过期（09-13）未修，需 Schedule list 刷新——**✅ 已闭环（09-22 07:30 刷新+renderer 日志交叉验证，见下节）**；②09-21 G2 周更重训被 enh 陈旧阻断未跑成，本周是否人工补跑 train_g2 --promote 待拍板——**✅ 已闭环（09-22 07:3x 补跑，候选被 strict 门禁 G3 拒绝，live 维持 09-15 版，见下节）**；③绑定 gap 设计内预警：面板(09-21)超前绑定(09-14)，09-23 起 verify 将告警「模型待周更 promote」——09-21 候选被双门禁拒绝属设计行为，下周一重训过门禁后自愈，**不要为此放宽阈值**。
+
+## 2026-09-22 · 夜间检修遗留两项落地：G2 周更补跑 + E6 快照刷新（07:25~07:55 会话）
+
+- **G2 周更补跑（09-21 被 enh 陈旧阻断的补跑，用户拍板执行）**：链路复刻 run_scheduled retrain 分支的 G2 段。①check_enh_freshness PASS（B5 修复后面板 2026-09-21，落后 0 天）；②promote 前 live 备份 `models/bak/lgb_model_v3_g2_strong_real_pre_retrain_20260922_073000.txt`（MD5 与源一致；retrain 分支的 PS ConvertFrom-Json 因指针 JSON 含 `Infinity` 解析失败会跳过备份——09-21 实证，本次手工 Copy-Item 绕过）；③`train_g2.py --promote`（TRAE python）：候选 `0922_1705t`（43 特征，test IC 0.07958，指标 ic=0.14846/tail=0.17425/**top2=+0.0135**）vs live 0915_1522t（ic=0.14523/tail=0.17342/**top2=+0.0155**）同窗对比 → **G3 top2_ret FAIL，门禁整体 FAIL，live 指针未动**（维持 09-15 版至下周一）。设计内 fail-loud，不放宽阈值不强制上线。日志 `data/real/train_g2_rerun_20260922.log`。
+- **在线增量未重跑（有意跳过）**：09-21 retrain 已跑（lhb→09-21、北向→09-18 达标；report_rc 被限频属 best-effort 设计内）；rc 断源由特征健康周报 WATCH 兜底，且 09-15 live 训练时 rc 同样只到 09-11，G1 同窗对比公平。策略层门禁与 config_drift_recheck 因无 promote 按设计跳过。
+- **P1 新发现（待拍板修复，本会话未改）**：`run_scheduled.ps1` L356 G2 策略层门禁命令不传 `--live` → `gate_strategy_layer.py` 缺省读当前 live 指针，而 train_g2 --promote 已把指针指向新候选 → **候选自己比自己，diff=0 恒 PASS，--rollback 分支死代码**（融合分支同病；V1.4 分支显式传 pre_retrain 备份 --live 不受影响）。修法=仿 V1.4 传 `--live <pre_retrain 备份>` 或 gate 缺省改读 trial.prev_model。意味着：历次 G2 promote 后的策略层门禁可能均未真检验（需回溯 09-15 版 promote 是否人工跑过带 --live 的门禁）。
+- **E6 TW 快照刷新**：本会话无 TRAE Schedule list 直连能力，改用 **TRAE renderer 日志触发证据重建**（`TRAE SOLO CN/logs/*/renderer*.log` 的 scheduled_task_triggered 事件）：10 Active 任务 09-15~09-22 每交易日全有触发、3 Paused（eda9b0c3/c63cff58/f43df15a）零触发、快照外新任务 **5f2bd77c 夸克行情数据每周更新检查**（09-13 后新建，观测 09-21T03:00 定时触发与 cron `0 3 * * MON` 吻合）。与 07:30 并发会话写入的快照内容**完全一致**——快照已被刷新，遵守双写红线不重复写，本会话独立交叉验证签收。方法可复用：无 TRAE 面板时用 renderer 日志重建清单+状态。
+- **端到端验证**：nightly_check.py（无 --fix）复跑 **FAIL=0 WARN=0 exit=0**；E6 PASS（快照 14 项新鲜，无 Active 冲突）；B2 模型-面板绑定一致维持。全程无 commit、无下单、无复盘-下单混淆（仅训练/门禁/检查类脚本）。

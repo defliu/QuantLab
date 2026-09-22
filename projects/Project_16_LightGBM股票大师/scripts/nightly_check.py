@@ -294,9 +294,15 @@ def check_c():
 # ---------------- D 数据源连通性 ----------------
 def check_d(fix):
     print("\n==== D 数据源连通性 ====")
-    # D1 悟道探活（直连）
+    # D1 悟道探活（直连；2026-09-22 D1 修复：显式请求最近已收盘交易日）
+    # 背景：01:00 盘前当日市场概要未就绪（上游开盘啦 MARKET_SUMMARY_NOT_READY），无 date 参数
+    # 的探活恒 FAIL → fail_count 日增、熔断常开——09-04 起连续多日盘前时序伪失败（晨报实证，
+    # 每日靠人工「显式 date=T-1 复核成功 → record ok」收尾）。修复：探活直接用 date=<T-1>，
+    # 与人工复核口径一致；此时仍 FAIL 才是真故障。
     try:
-        out = subprocess.run([PY, os.path.join(PROJ, "scripts", "wudao_client.py"), "market_overview", "{}"],
+        probe_date = recent_trade_date()
+        probe_args = json.dumps({"date": probe_date}) if probe_date else "{}"
+        out = subprocess.run([PY, os.path.join(PROJ, "scripts", "wudao_client.py"), "market_overview", probe_args],
                              capture_output=True, text=True, timeout=30, cwd=PROJ,
                              encoding="utf-8", errors="replace")
         ok = out.returncode == 0 and "WUDAO-ERR" not in (out.stdout or "")
@@ -304,7 +310,7 @@ def check_d(fix):
             subprocess.run([PY, os.path.join(PROJ, "scripts", "data_source_router.py"), "record", "wudao",
                             "ok" if ok else "fail"], capture_output=True, text=True, timeout=20, cwd=PROJ,
                            encoding="utf-8", errors="replace")
-        log("D", "D1 悟道探活", "PASS" if ok else "FAIL", "market_overview")
+        log("D", "D1 悟道探活", "PASS" if ok else "FAIL", "market_overview date=%s" % probe_date)
     except Exception as e:
         log("D", "D1 悟道探活", "FAIL", repr(e))
     # D1 腾讯探活

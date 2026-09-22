@@ -134,6 +134,12 @@ def main():
 
     # ---- 5) 写入模型-面板绑定记录（verify_model_panel_sync.py 校验用）----
     try:
+        # 备份 pre-promote 绑定（2026-09-22 B2 修复）：策略层门禁 FAIL 回滚正式模型时，
+        # run_scheduled.ps1 需同步回滚绑定，否则 verify_model_panel_sync 恒报「模型被改动但未登记」
+        if os.path.exists(BINDING):
+            binding_bak = BINDING + ".bak_" + stamp
+            shutil.copy2(BINDING, binding_bak)
+            print(f"已备份 pre-promote 绑定记录 -> {os.path.basename(binding_bak)}")
         import pandas as pd
         panel_path = os.path.join(DC.DATA_DIR, f"feature_panel{suffix}.parquet")
         pdate = None

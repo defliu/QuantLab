@@ -5,7 +5,7 @@
 人工复盘后 `--unfreeze` 解除。设计文档：`D:/QuantLab/data/纸面自动降级闸_设计_20260913.md`。
 
 判定（保守，防误触发）：
-  - 已到期样本 n >= 30（rank<=2 实盘 TOP2 口径）
+  - 已到期样本 n >= 30（按各臂实盘 TOP_N 口径：G2=3/V1.3=5/ENS=5）
   - 样本外超额均值 mean_excess < 0
   - mean_excess < -0.0002（-0.02pp/日 幅度阈值，防微负抖动）
 
@@ -35,17 +35,18 @@ REAL = os.path.join(DC.DATA_DIR, "real")
 MERGED = os.path.join(DC.LIVE_DIR, "merged_daily_full.parquet")
 MARK_FILE = os.path.join(REAL, "paper_forward_downgrade.json")
 
-# 臂 -> (csv 相对文件名, 持有期, 对应 rebalance 策略 key)；路径运行时 join REAL（测试可覆盖 D.REAL）
+# 臂 -> (csv 相对文件名, 持有期, 每臂实盘 TOP_N/rank 过滤阈值)；路径运行时 join REAL（测试可覆盖 D.REAL）
+# rank_n 对齐 2026-09-21 拍板（T-20260921-003）：G2=3 / V1.3=5 / ENS=5，2026-09-22 复核
 # 口径注记（P2-8 确认）：G2 臂 N15=live N15 一致；ENS 臂 N10=live N10 一致；
 # V1.3 臂 N10=纸面候选口径（ab_v3enh 按 N10 回填），与实盘 rebalance_daily HOLD_DAYS=5（到期制）不一致——
 # 评估窗口比实盘长，属"候选口径"有意为之（与 paper_forward_ab_stats 三臂同源），降级判定按候选口径统一。
 ARMS = {
-    "G2": ("paper_forward_live.csv", 15),
-    "V1.3": ("paper_forward_ab_v3enh.csv", 10),
-    "ENS": ("paper_forward_ens.csv", 10),
+    "G2": ("paper_forward_live.csv", 15, 3),
+    "V1.3": ("paper_forward_ab_v3enh.csv", 10, 5),
+    "ENS": ("paper_forward_ens.csv", 10, 5),
 }
 
-MIN_SAMPLES = 30          # 最小已到期样本（rank<=2）
+MIN_SAMPLES = 30          # 最小已到期样本
 EXCESS_FLOOR = -0.0002    # 超额均值幅度阈值（-0.02pp/日）
 EXCESS_SIGN = 0.0         # 均值必须为负
 
@@ -135,8 +136,8 @@ def save_mark(mark):
     os.replace(tmp, MARK_FILE)
 
 
-def _eval_arm(key, hold, check_only=False):
-    """评估单个臂，返回 (n, mean_excess, t, win, ret, bench, frozen, trigger)。"""
+def _eval_arm(key, hold, rank_n, check_only=False):
+    """评估单个臂，返回 (n, mean_excess, t, win, ret, bench, frozen, trigger)。rank_n=该臂实盘 TOP_N。"""
     csv_path = os.path.join(REAL, ARMS[key][0])
     if not os.path.exists(csv_path):
         return (0, None, None, None, None, None, False, False)
@@ -151,8 +152,8 @@ def _eval_arm(key, hold, check_only=False):
     if df is None or df.empty:
         return (0, None, None, None, None, None, False, False)
     for _, r in df.iterrows():
-        if "rank" in df.columns and pd.notna(r.get("rank")) and int(r["rank"]) > 2:
-            continue  # 实盘 TOP2 口径
+        if "rank" in df.columns and pd.notna(r.get("rank")) and int(r["rank"]) > rank_n:
+            continue  # 实盘 TOP_N 口径（rank<=rank_n）
         d0 = str(r["date"])
         if d0 not in cal:
             continue
@@ -203,8 +204,8 @@ def _eval_all(check_only=False):
     changed = False
     any_trigger = False
     alerts = []
-    for key, (_, hold) in ARMS.items():
-        n, mean_excess, t, win, ret, bench, frozen, trigger = _eval_arm(key, hold, check_only)
+    for key, (_, hold, rank_n) in ARMS.items():
+        n, mean_excess, t, win, ret, bench, frozen, trigger = _eval_arm(key, hold, rank_n, check_only)
         line = "%-5s n=%-3d 超额=%-9s t=%s 胜率=%s ret=%s bench=%s" % (
             key, n,
             ("%.5f" % mean_excess) if mean_excess is not None else "-",

@@ -1,7 +1,8 @@
 {
   "_说明": "TW(TraeWork) 侧定时任务清单快照 —— 供 QuantLab nightly_check E6「双调度器一致性巡检」核对（T-20260910-008 教训固化，2026-09-13 建）。任何一方新建定时任务前必须互查对方已注册任务清单；D:/QMT_POOL 下所有文件生成调度唯一 owner = QuantLab schtasks。本快照由 agent 会话手动更新（TRAE Schedule list 导出）。",
-  "generated_at": "2026-09-13 19:30:00",
+  "generated_at": "2026-09-22 07:30:00",
   "tasks": [
+    {"id": "5f2bd77c", "name": "夸克行情数据每周更新检查", "cron": "0 3 * * MON", "status": "Active", "role": "夸克网盘分享数据每周一检查+按需转存本地", "owner": "TW"},
     {"id": "18c0c8d2", "name": "融合日终对账(项目16大QMT)", "cron": "50 15 * * MON-FRI", "status": "Active", "role": "融合对账协调（下指令+核对）", "owner": "TW"},
     {"id": "051bc2d9", "name": "融合换仓(项目16大QMT)", "cron": "52 9 * * MON-FRI", "status": "Active", "role": "融合换仓执行协调", "owner": "TW"},
     {"id": "eda9b0c3", "name": "成本锚生成(项目16V1.3)", "cron": "0 9 * * MON-FRI", "status": "Paused", "role": "【已拍板应彻底删除】曾与 Quant_P16_CfgPremarket_0900 双写 positions_cfg_v13（T-20260910-008）；删除确认待 TW 执行", "owner": "TW", "conflict_with": "Quant_P16_CfgPremarket_0900"},

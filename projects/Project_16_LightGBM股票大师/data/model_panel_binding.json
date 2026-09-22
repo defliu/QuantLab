@@ -1,12 +1,12 @@
 {
   "formal_model": "lgb_model_v3.txt",
-  "model_mtime": 1789985258.9681337,
-  "model_trees": 6617,
+  "model_mtime": 1789379045.97543,
+  "model_trees": 4151,
   "panel_file": "feature_panel_v3.parquet",
-  "panel_max_date": "2026-09-21",
-  "promote_time": "20260921_180740",
-  "candidate": "lgb_model_v3_retrain_20260921.txt",
-  "note": "auto: 周更重训自动上线 | testIC 0.04315 / ICIR 0.3428 / acc 0.5215",
-  "test_ic": 0.043148,
-  "icir": 0.342823
+  "panel_max_date": "2026-09-14",
+  "promote_time": "20260914_174407",
+  "candidate": "lgb_model_v3_retrain_20260914.txt",
+  "note": "auto: 周更重训自动上线 | testIC 0.04450 / ICIR 0.3552 / acc 0.5214 | 2026-09-22 B2修复：09-21候选(6617树)策略层门禁FAIL已回滚模型，绑定同步回滚至09-14版",
+  "test_ic": 0.044499,
+  "icir": 0.355192
 }

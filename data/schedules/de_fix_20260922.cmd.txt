@@ -1,0 +1,32 @@
+deveco run "目标：落地修复 Project_16 夜间检修(2026-09-22)发现的 4 项问题中的 B2/B5/D1（代码+数据层面），并验证。全程禁止 commit、禁止真实下单、禁止 --live 模式、禁止修改未列出的任何文件。
+
+【工作目录】D:\QuantLab\projects\Project_16_LightGBM股票大师
+【Python】C:\Users\Administrator\AppData\Roaming\TRAE SOLO CN\ModularData\ai-agent\vm\tools\python\python.exe
+【只读分析报告】已由前次 DE 会话产出，见 D:\QuantLab\data\schedules\de_nightly_20260922.md，含逐项根因与精确修复建议，直接按其\"四、修复建议\"执行。
+
+━━━ B2 模型-面板同步 FAIL（根因：策略层门禁回滚未回写绑定记录）━━━
+现状：正式模型 lgb_model_v3.txt=09-14版(4151树)，但 data/model_panel_binding.json 仍记录被拒候选 retrain_20260921(6617树)。verify_model_panel_sync.py 恒 FAIL。
+修复（改 1 个数据文件 + 1 个脚本 + 验证）：
+1. 按 de_nightly_20260922.md L101-105 的命令回滚绑定 data/model_panel_binding.json 到 09-14 现役模型口径：model_trees=4151、model_mtime=正式模型实际 mtime、panel_max_date=2026-09-14、candidate=lgb_model_v3_retrain_20260914.txt、promote_time=20260921_184126_rollback、test_ic=0.04450、icir=0.3552（note 注明\"策略层门禁FAIL回滚至09-14正式模型\"）。
+2. 根修 run_scheduled.ps1 的 272-275 行回滚分支：在 Copy-Item 回滚正式模型后，补一段绑定记录回写（还原 trees/mtime/panel_max_date/candidate/test_ic/icir 六字段为新滚动前的旧绑定值），并修正 287 行\"绑定写入异常\"误诊文案为\"回滚后绑定已回写\"。改动保持最小，用 $ErrorActionPreference=Stop 下 try/catch 捕获。
+3. 验证：python verify_model_panel_sync.py 应输出\"一致\"（面板09-21 vs 绑定09-14 gap=7 在阈值内）。
+
+━━━ B5 enh 面板滞后10天（根因：turnover_rank 精确复现门禁自锁）━━━
+现状：refresh_panel_enh.py 连续6个交易日 exit1（重叠期 turnover_rank 复现率0.00%），面板冻结在 09-11；G2 周训 09-21 被 check_enh_freshness.py 硬门禁挡掉。
+修复（改 1 个脚本 + 手动重刷 + 复核 + 补跑 G2 周训）：
+1. 修门禁口径 refresh_panel_enh.py:193-198：对 turnover_rank 的重叠期校验从精确一致（np.isclose atol=1e-6）改为相关性/容差口径（与同一函数内 industry_mom20 的 :201-205 同思路），建议 Spearman/Pearson corr>=0.99 或 mean|Δrank|<=0.05（按前次实测 corr=0.9972 应放行）。事件特征 ex_days_since 等4项保留精确一致门禁不变。
+2. 手动重刷：python refresh_panel_enh.py → 面板末日推进到 2026-09-21、六项校验全过。
+3. 复核：python check_enh_freshness.py → 输出 [OK] enh 面板新鲜（<=7 天）。
+4. 补跑 G2 周训：确认 enh 修复后，按 retrain log 指引补跑 train_g2 链使其产出新 G2 live，核对 G2 live 指针更新。若 train_g2 需要 --promote 或会改动正式模型/绑定，先停下来向用户报告，不要擅自 promote。
+
+━━━ D1 悟道探活 FAIL（根因：探活撞服务端行为变更）━━━
+现状：nightly_check.py:299 以空参 {} 调 market_overview，凌晨1点今日数据必然未就绪；服务端已改为不再自动回退前一交易日。
+修复：nightly_check.py check_d 探活参数改为显式传递上一交易日 date（<recent_trade_date()>），并兼容服务端提示的 error 参数格式；或将 MARKET_SUMMARY_NOT_READY 降级为 WARN 不计入健康 FAIL。改后本地单测该探活函数路径（可 mock 或 dry 验证）。
+
+━━━ E6 TW调度快照过期（非阻塞，另行人工处理，DE 不动）━━━
+不要处理 E6。如遇到相关文件只读不要改。
+
+【输出与验证】
+- 每项修复后跑对应验证命令并把真实 stdout 粘进最终报告；禁止只写\"预计成功\"。
+- 最终报告写到 D:\QuantLab\data\schedules\de_fix_20260922.md，含：每项改动 diff 摘要、验证命令真实输出、是否触及正式模型/绑定/实盘文件清单。
+- 全程只读除上述列出的文件与项目 data 产物之外的一切；不改 models/ 下任何 txt，train_g2 若会自动写正式模型必须先停下报告。" --dangerously-skip-permissions --dir D:\QuantLab --format json

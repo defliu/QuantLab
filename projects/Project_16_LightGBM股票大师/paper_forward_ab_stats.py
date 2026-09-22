@@ -25,10 +25,10 @@ import data_config as DC
 
 REAL = os.path.join(DC.DATA_DIR, "real")
 MERGED = os.path.join(DC.LIVE_DIR, "merged_daily_full.parquet")  # 主库+增量合并（最新收盘）
-ARMS = {  # 臂 -> (csv, 持有期N)
-    "G2(live,N15)": (os.path.join(REAL, "paper_forward_live.csv"), 15),
-    "v3_enh(N10)": (os.path.join(REAL, "paper_forward_ab_v3enh.csv"), 10),
-    "融合(N10)": (os.path.join(REAL, "paper_forward_ens.csv"), 10),
+ARMS = {  # 臂 -> (csv, 持有期N, 每臂实盘 TOP_N/rank 统计阈值，对齐 2026-09-21 拍板)
+    "G2(live,N15)": (os.path.join(REAL, "paper_forward_live.csv"), 15, 3),
+    "v3_enh(N10)": (os.path.join(REAL, "paper_forward_ab_v3enh.csv"), 10, 5),
+    "融合(N10)": (os.path.join(REAL, "paper_forward_ens.csv"), 10, 5),
 }
 
 _RET_CACHE = {}
@@ -66,8 +66,8 @@ def main():
     today = pd.Timestamp.today()
     cal = _calendar()
     print(f"=== 纸面三臂对比（各自最优持有期，交易日到期口径，截至 {today.date()}）===")
-    print(f"{'臂':<14}{'候选':>6}{'已到期':>6}{'收益均值':>10}{'胜率':>8}{'rank<=2笔':>9}")
-    for name, (path, hold) in ARMS.items():
+    print(f"{'臂':<14}{'候选':>6}{'已到期':>6}{'收益均值':>10}{'胜率':>8}{'rank<=TOP_N笔':>12}")
+    for name, (path, hold, rank_n) in ARMS.items():
         if not os.path.exists(path):
             print(f"{name:<14} 无文件")
             continue
@@ -90,7 +90,7 @@ def main():
                 rets.append(float(v))
         mean = float(np.mean(rets)) if rets else np.nan
         win = float(np.mean([x > 0 for x in rets])) if rets else np.nan
-        r2 = len(df[df["rank"] <= 2]) if "rank" in df.columns else len(df)
+        r2 = len(df[df["rank"] <= rank_n]) if "rank" in df.columns else len(df)
         print(f"{name:<14}{len(df):>6}{len(rets):>6}{mean:>10.4f}{win:>8.1%}{r2:>9}")
 
 

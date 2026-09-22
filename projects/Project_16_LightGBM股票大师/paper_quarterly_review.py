@@ -8,7 +8,7 @@
 
 口径（与 paper_forward_downgrade 完全同源，直接 import 复用）：
   - 超额 = 个股 open→open 复权收益 − 同窗口全市场等权基准
-  - 实盘 TOP2 口径（rank<=2），已到期样本（信号日+hold+1 交易日 <= 最新日）
+  - 实盘 TOP_N 口径（rank<=该臂实盘 TOP_N，G2=3/V1.3=5/ENS=5），已到期样本（信号日+hold+1 交易日 <= 最新日）
   - G2 臂 N15=live 一致；ENS 臂 N10=live 一致；V1.3 臂 N10=候选口径（实盘 N5，有意为之）
 
 判定规则（保守）：
@@ -50,9 +50,9 @@ def _quarter(ds):
 
 
 def _arm_rows(key):
-    """读单臂 CSV → 已到期 TOP2 样本 DataFrame[quarter, date, code, ret, bench, excess]。
-    成熟口径与 PD._eval_arm 完全一致（rank<=2 + 日历到期 + load_open/load_bench）。"""
-    _, hold = PD.ARMS[key]
+    """读单臂 CSV → 已到期 TOP_N 样本 DataFrame[quarter, date, code, ret, bench, excess]。
+    成熟口径与 PD._eval_arm 完全一致（rank<=该臂实盘 TOP_N + 日历到期 + load_open/load_bench）。"""
+    _, hold, rank_n = PD.ARMS[key]
     csv_path = os.path.join(REAL, PD.ARMS[key][0])
     if not os.path.exists(csv_path):
         return pd.DataFrame(columns=["quarter", "date", "code", "ret", "bench", "excess"])
@@ -67,8 +67,8 @@ def _arm_rows(key):
         return pd.DataFrame(columns=["quarter", "date", "code", "ret", "bench", "excess"])
     rows = []
     for _, r in df.iterrows():
-        if "rank" in df.columns and pd.notna(r.get("rank")) and int(r["rank"]) > 2:
-            continue  # 实盘 TOP2 口径
+        if "rank" in df.columns and pd.notna(r.get("rank")) and int(r["rank"]) > rank_n:
+            continue  # 实盘 TOP_N 口径（rank<=rank_n）
         d0 = str(r["date"])
         if d0 not in cal:
             continue
@@ -131,7 +131,7 @@ def build_report(check_only=False):
     data = {}   # key -> rows DataFrame
     for k in arms:
         data[k] = _arm_rows(k)
-        print("[载入] %-5s 到期TOP2样本 %d 笔（CSV 全量行含未到期/非TOP2）" % (k, len(data[k])))
+        print("[载入] %-5s 到期TOP%d样本 %d 笔（CSV 全量行含未到期/非TOP_N）" % (k, PD.ARMS[k][2], len(data[k])))
 
     quarters = sorted(set().union(*[set(d["quarter"]) for d in data.values()])) if any(len(d) for d in data.values()) else []
 
@@ -194,7 +194,7 @@ def build_report(check_only=False):
     lines.append("")
     lines.append("> 生成：%s" % pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"))
     lines.append("> 数据：paper_forward_live（G2, N15）/ paper_forward_ab_v3enh（V1.3, N10 候选口径，实盘 N5）/ paper_forward_ens（ENS, N10）")
-    lines.append("> 超额口径 = 个股 open→open 复权收益 − 同窗口全市场等权基准（与降级闸同源，rank<=2 已到期）")
+    lines.append("> 超额口径 = 个股 open→open 复权收益 − 同窗口全市场等权基准（与降级闸同源，rank<=该臂实盘 TOP_N 已到期）")
     lines.append("")
     lines.append("**制度声明：季评只提议、不动资金分配。** 资金分配是共享账户红线"
                  "（config/capital_allocation.yaml + scripts/check_capital_allocation.py 硬流程），"
@@ -237,7 +237,7 @@ def build_report(check_only=False):
     if not quarters:
         lines.append("## （无到期样本）")
         lines.append("")
-        lines.append("三臂当前均无已到期 TOP2 样本，无季度可评估。")
+        lines.append("三臂当前均无已到期 TOP_N 样本，无季度可评估。")
         lines.append("")
 
     lines.append("## 臂间候选重合率（非独立性警告）")

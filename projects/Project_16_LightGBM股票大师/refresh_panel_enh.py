@@ -13,6 +13,8 @@
   - turnover_rank：真实换手率按交易日全市场百分位排名。主库区用原生 turnover_rate；
     增量区（incremental 仅 OHLCV，merged 中为 ffill 旧值）用 vol(手)/float_share(万股) 反推
     （build_g2_daily F6 已验证口径，对官方中位误差 0.00%）。历史 100% 复现。
+    主库全量升级会使旧面板末几日由「反推」变「原生」（float_share vintage 微差 → rank 微移，
+    实测 Spearman 0.997+/精确 0%）——校验门禁对此放行（相关>=0.98），见 5.3（T-20260922 B5）。
   - industry_mom20：stock_basic.industry（当前 vintage）+ 全市场未复权 close 20 日动量，
     按 (trade_date, industry) 等权均值。与冻结面板相关 0.983~0.9966——原始 08-23 版行业映射
     快照随研发电脑遗失不可恢复，此为可找回的最佳口径；偏差已记录 T-20260912-001。
@@ -189,14 +191,32 @@ def main():
                      suffixes=("_old", "_new"), validate="one_to_one")
         if len(m) < 0.9 * len(pv):
             fail(f"重叠期 join 匹配率 {len(m)/len(pv):.2%}（<90%，行网格漂移）")
-        # 4 事件特征 + turnover_rank：确定性口径，必须 ~100% 一致
-        for c in ["ex_days_since", "fc_pchange", "dv_year_sum", "ex_yoy", "turnover_rank"]:
+        # 4 事件特征：确定性口径，必须 ~100% 一致
+        for c in ["ex_days_since", "fc_pchange", "dv_year_sum", "ex_yoy"]:
             a, b = m[c + "_old"].astype(float), m[c + "_new"].astype(float)
             eq = np.isclose(a, b, atol=1e-6, equal_nan=True)
             rate = eq.mean()
             if rate < 0.99:
                 fail(f"重叠期 {c} 复现率 {rate:.2%}（<99%，口径漂移）")
             log(f"    重叠期 {c:16s} 复现率 {rate*100:.2f}%")
+        # turnover_rank：精确复现优先；<99% 时查 Spearman 相关区分两类漂移——
+        #   ① 数据源 vintage 升级（非代码 bug，放行）：如 2026-09-14 E盘主库全量替换后，
+        #     旧面板末日数日由「增量区反推（float_share=旧vintage ffill）」变「主库原生 turnover_rate」，
+        #     换手率微差致 rank 逐股微移（实测精确复现 0% 但 Spearman 0.997+），信号本身未变；
+        #   ② 代码口径漂移（FAIL）：rank 相关亦崩塌（如全市场排名口径改错）。
+        a, b = m["turnover_rank_old"].astype(float), m["turnover_rank_new"].astype(float)
+        eq = np.isclose(a, b, atol=1e-6, equal_nan=True)
+        rate = eq.mean()
+        if rate >= 0.99:
+            log(f"    重叠期 turnover_rank    复现率 {rate*100:.2f}%")
+        else:
+            ok_mask = a.notna() & b.notna()
+            corr = float(a[ok_mask].corr(b[ok_mask], method="spearman")) if ok_mask.sum() else float("nan")
+            if corr >= 0.98:
+                log(f"    重叠期 turnover_rank    复现率 {rate*100:.2f}%（<99%）但 Spearman {corr:.4f}>=0.98"
+                    " —— 数据源 vintage 升级（反推→主库原生），放行（T-20260922 B5）")
+            else:
+                fail(f"重叠期 turnover_rank 复现率 {rate:.2%}（<99%）且 Spearman {corr:.4f}（<0.98，口径漂移）")
         # industry_mom20：vintage 偏差已知，只查相关性不阻塞
         a, b = m["industry_mom20_old"].astype(float), m["industry_mom20_new"].astype(float)
         corr = a.corr(b)

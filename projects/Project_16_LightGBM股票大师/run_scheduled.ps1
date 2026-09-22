@@ -273,6 +273,18 @@ try {
                                 Log "!! [策略层门禁] FAIL —— 新正式模型在 V1.4 最优配置下差于旧模型，回滚旧正式模型（$oldFormal）"
                                 Copy-Item $oldFormal $formalModel -Force
                                 Log "[策略层门禁] 已回滚正式模型 -> $formalModel（旧模型 restore）"
+                                # ---- 绑定记录同步回滚（2026-09-22 B2 修复）----
+                                # promote_model.py 提升时已备份 pre-promote 绑定（model_panel_binding.json.bak_<stamp>）；
+                                # 只回滚模型不回滚绑定 → verify_model_panel_sync 恒报「模型被改动但未登记」（09-21 实证）
+                                $bindingFile = Join-Path $proj "data\model_panel_binding.json"
+                                $bindingBak = Get-ChildItem (Join-Path $proj "data\model_panel_binding.json.bak_*") -ErrorAction SilentlyContinue |
+                                    Sort-Object LastWriteTime | Select-Object -Last 1 | ForEach-Object { $_.FullName }
+                                if ($bindingBak) {
+                                    Copy-Item $bindingBak $bindingFile -Force
+                                    Log "[策略层门禁] 已同步回滚绑定记录 -> $bindingFile（$(Split-Path $bindingBak -Leaf)）"
+                                } else {
+                                    Log "!! [策略层门禁] 未找到绑定备份（model_panel_binding.json.bak_*），绑定未回滚 —— 需人工同步 data/model_panel_binding.json 与当前正式模型"
+                                }
                             } elseif ($LASTEXITCODE -eq 0) {
                                 Log "[策略层门禁] PASS —— 新正式模型在 V1.4 最优配置下不差于旧模型，保留上线"
                             } else {

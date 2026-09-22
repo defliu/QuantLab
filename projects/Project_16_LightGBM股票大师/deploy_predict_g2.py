@@ -206,8 +206,9 @@ def main():
     with open(md_path, "w", encoding="utf-8") as f:
         f.write("\n".join(md))
     # 追加 live 日志（code 必须用 ts_code，不能用 iterrows 的整数 index）；幂等去重
-    # rank=1..N 按 total_new 降序（picks 已 nlargest 排序）；实盘 g2_config.TOP_N=2，
-    # 前向统计时 rank<=2 即实盘口径子集，Top10 全集用于更快累积 N>30 样本。
+    # rank=1..N 按 total_new 降序（picks 已 nlargest 排序）；实盘 g2_config.TOP_N=3（2026-09-21 拍板 2→3），
+    # 前向统计/降级闸按各臂实盘 TOP_N 过滤（G2=3/V1.3=5/ENS=5，见 paper_forward_downgrade.ARMS），
+    # Top 全集写入用于更快累积 N>30 样本。
     rows = [{"date": target.date(), "code": s["ts_code"], "rank": rk,
              "total_new": s["total_new"], "prob": s["prob"]}
             for rk, (_, s) in enumerate(picks.iterrows(), 1)]
