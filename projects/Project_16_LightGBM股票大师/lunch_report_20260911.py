@@ -429,6 +429,12 @@ def send_lark_message(msg):
     # 移除可能干扰的环境变量
     env.pop("LARKSUITE_CLI_APP_ID", None)
     env.pop("LARKSUITE_CLI_USER_ACCESS_TOKEN", None)
+    # 2026-09-23 修（T-20260923-004）：清扫 openclaw/hermes 上下文信号
+    # （原实现完全没有清理，S4U 会话下必然 config/not_configured）。
+    for _k in list(env.keys()):
+        _u = _k.upper()
+        if _u.startswith("OPENCLAW") or _u.startswith("HERMES") or _u == "LARK_CHANNEL":
+            env.pop(_k, None)
     env["LARKSUITE_CLI_STRICT_MODE"] = "off"
     cmd = [
         lark_cli, "im", "+messages-send",

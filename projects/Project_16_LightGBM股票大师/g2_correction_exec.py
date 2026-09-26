@@ -207,9 +207,12 @@ def main():
 
     # 10) 更新 g2_hold_dates（新买建仓日=运行日；**不移除旧票建仓日**——防 09:50 换仓读旧账本时
     #     因 hold_dates 缺失而误触发 SELL（旧票到期前保持 SKIP，15:40 reconcile 后账本自然切换））
+    # 必须带 ledger：_update_hold_dates 的陈旧清理以 plan.ledger 为 active 基集，
+    # 缺 ledger 会把全部存量建仓日 pop 掉（T-20260922 级 P1）。
     plan = {"date": date, "account_id": R.G.ACCOUNT_ID, "capital": capital,
             "sells": [],
-            "buys": [{"code": o["code"], "vol": o["vol"]} for o in orders if o["action"] == "BUY"]}
+            "buys": [{"code": o["code"], "vol": o["vol"]} for o in orders if o["action"] == "BUY"],
+            "ledger": R.load_g2_ledger(date)}
     try:
         hd = R._update_hold_dates(plan, date)
         R.save_hold_dates(hd)

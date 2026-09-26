@@ -45,8 +45,10 @@ def load_rows():
 
 
 def derive_positions(rows, exclude=frozenset()):
-    """BUY - SELL 净额（price=0 的 SELL 为市价清仓记录，同样扣减；未买入过的代码忽略）。
+    """BUY - SELL 净额（price=0 的 SELL 为市价清仓记录，同样扣减持仓量；未买入过的代码忽略）。
     exclude：超买/手工标的集合，不在其内则不计入（用于策略真实口径）。
+    已实现盈亏：仅 price>0 的 SELL 计入；price<=0 视为成交价未回填，跳过盈亏（与
+    strategy_capital.calc_realized 同口径），但仍消耗 FIFO 成本层以保持持仓成本正确。
     返回 {code: (net_vol, avg_cost_含费_fifo)}
     """
     q = defaultdict(deque)  # code -> deque[(vol, cost_per含费)]
@@ -68,8 +70,9 @@ def derive_positions(rows, exclude=frozenset()):
             while sv > 0 and q[code]:
                 v, cost_per = q[code][0]
                 take = min(v, sv)
-                sell_amt = price * take
-                realized += (sell_amt - sell_fee(sell_amt, code)) - cost_per * take
+                if price > 0:  # price=0 成交价未回填：不算盈亏，避免把成本全写成亏损
+                    sell_amt = price * take
+                    realized += (sell_amt - sell_fee(sell_amt, code)) - cost_per * take
                 sv -= take
                 q[code][0] = (v - take, cost_per)
                 if q[code][0][0] <= 0:

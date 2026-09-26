@@ -41,6 +41,32 @@ def _all_fills():
     return out
 
 
+def _other_strategy_hold_codes():
+    """读另一策略(G2)持仓 code 集合（同券商账号 70180771，不同桥目录）——
+    对账时用于隔离：对方策略的持仓不算融合孤儿仓（AGENTS：两策略共账号，各自账本仅认自己）。
+    """
+    other_dir = "D:/QMT_POOL/g2_bridge/cmd"
+    codes = set()
+    try:
+        files = sorted([f for f in os.listdir(other_dir)
+                        if f.startswith("positions_cfg_") and f.endswith(".json")])
+        # 取最新一份（YYYYMMDD 字典序 = 日期序）
+        for fn in reversed(files):
+            try:
+                with open(os.path.join(other_dir, fn), encoding="utf-8") as f:
+                    d = json.load(f)
+                if str(d.get("account_id", "")) == G.ACCOUNT_ID:
+                    for p in d.get("positions", []):
+                        if p.get("code"):
+                            codes.add(p["code"])
+                    break
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return codes
+
+
 def _realized_pnl_from_fills():
     """跨全部历史 fills FIFO 配对算累计已实现盈亏（不含费用，与 positions_from_fills 同口径）。"""
     from collections import deque
@@ -143,7 +169,7 @@ def main():
     report = {
         "date": date, "account_id": G.ACCOUNT_ID,
         "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "fills": [], "pending": [], "orphans": [], "ledger": {}, "asset": {},
+        "fills": [], "pending": [], "orphans": [], "cross_strategy": [], "ledger": {}, "asset": {},
         "issues": [],
     }
 
@@ -192,22 +218,45 @@ def main():
     pos = read_positions(date) or {}
     acct = {p.get("code", ""): int(p.get("volume", 0) or 0) for p in pos.get("positions", [])}
     report["account_positions"] = acct
-    # 差额对账：超额=账户多（孤儿/重复建仓），不足=账本多（卖出未回写/丢失）
+    # SNAPSHOT_MISSING guard：休市日 QMT 不产出 state/positions_<date>.json → acct 空而账本非空，
+    # 差额循环 diff=acct-ledger 全负，会误报"账本比账户多 N 股（卖出未回写/丢失）"
+    # （2026-09-25 中秋休市实测：融合 5 条假阳性，人工核对真实差额=0）。
+    # 此时跳过差额/孤儿判定，提示写 notes 不进 issues（防 de_guard_runner 以 issues 非空误触发 DE 兜底）。
+    snapshot_missing = (not acct) and bool(ledger)
+    report["snapshot_missing"] = snapshot_missing
     deltas = {}
-    for code in set(ledger) | set(acct):
-        diff = acct.get(code, 0) - ledger.get(code, 0)
-        if diff:
-            deltas[code] = diff
+    if snapshot_missing:
+        report.setdefault("notes", [])
+        report["notes"].append(
+            "SNAPSHOT_MISSING：账户快照不存在，差额与孤儿判定已跳过，请人工核对上一交易日快照")
+    else:
+        # 差额对账：超额=账户多（孤儿/重复建仓），不足=账本多（卖出未回写/丢失）
+        for code in set(ledger) | set(acct):
+            diff = acct.get(code, 0) - ledger.get(code, 0)
+            if diff:
+                deltas[code] = diff
     report["deltas"] = deltas
+    # 跨策略隔离（T-20260922-004）：同账号 70180771 上 G2 的持仓对融合账本而言是"他人持仓"，
+    # 不算融合孤儿仓——只提示归属，不进孤儿/告警，避免共享账号互判误报
+    other_codes = _other_strategy_hold_codes()
+    report["other_strategy_holdings"] = sorted(other_codes)
     for code, diff in deltas.items():
         if diff > 0:
-            report["orphans"].append({"code": code, "vol": diff,
-                                      "hint": "账户比融合账本多 %d 股（孤儿/重复建仓，融合不主动处理，仅预警）" % diff})
-            report["issues"].append("持仓差额: %s 账户比账本多 %d 股" % (code, diff))
+            if code in other_codes:
+                report["cross_strategy"].append({"code": code, "vol": diff,
+                                                 "hint": "账户比融合账本多 %d 股（G2 持仓，同账号非融合孤儿）" % diff})
+            else:
+                report["orphans"].append({"code": code, "vol": diff,
+                                          "hint": "账户比融合账本多 %d 股（孤儿/重复建仓，融合不主动处理，仅预警）" % diff})
+                report["issues"].append("持仓差额: %s 账户比账本多 %d 股" % (code, diff))
         else:
             report["issues"].append("持仓差额: %s 账本比账户多 %d 股（卖出未回写/丢失，需排查）" % (code, -diff))
     if report["orphans"]:
         report["issues"].append("发现 %d 只持仓超额（孤儿/重复），融合不主动处理，仅预警" % len(report["orphans"]))
+    if report["cross_strategy"]:
+        # 提示类进 notes（不进 issues，防 de_guard_runner 以 issues 非空每日误报）
+        report.setdefault("notes", [])
+        report["notes"].append("账户含 %d 只 G2 持仓（同账号，非融合孤儿，仅提示）" % len(report["cross_strategy"]))
 
     # ④ 资产
     report["asset"] = read_asset(date) or {}
@@ -239,11 +288,17 @@ def main():
             diff = av - lv
             flag = "✓" if diff == 0 else ("⚠ 账户多 %d" % diff if diff > 0 else "⚠ 账户少 %d" % -diff)
             f.write("- %s 融合账本=%d 账户=%d %s\n" % (code, lv, av, flag))
+        if report.get("snapshot_missing"):
+            f.write("⚠ SNAPSHOT_MISSING: 账户快照不存在，差额与孤儿判定跳过，请人工核对上一交易日快照。\n")
         f.write("\n## 持仓差额/孤儿\n")
+        if report["cross_strategy"]:
+            f.write("同账号 G2 持仓（非融合孤儿，仅提示）：\n")
+            for s in report["cross_strategy"]:
+                f.write("- %s %d 股：%s\n" % (s["code"], s["vol"], s["hint"]))
         if report["orphans"]:
             for o in report["orphans"]:
                 f.write("- %s %d 股：%s\n" % (o["code"], o["vol"], o["hint"]))
-        else:
+        if not report["orphans"] and not report["cross_strategy"]:
             f.write("- 无\n")
         f.write("\n## 问题\n")
         if report["issues"]:

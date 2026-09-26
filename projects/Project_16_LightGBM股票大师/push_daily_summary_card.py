@@ -23,10 +23,46 @@ for _stream in ("stdout", "stderr"):
         pass
 
 import qmt_card as QC
+from qmt_bridge_client import fetch_price
 
 PROJECT = os.path.dirname(os.path.abspath(__file__))
 CACHE_DIR = os.path.join(PROJECT, "data", "cache")
 G2_FILLS = r"D:/QMT_POOL/g2_bridge/state/fills_%s.json"
+
+# V1.3 持仓真实源（gen_positions_cfg_v13.py 每日 09:00 生成，成本含费/除权调整）
+V13_CMD_DIR = r"D:/QMT_POOL/p16_v13_risk/cmd"
+V13_ACCOUNT = "67014907"
+
+
+def _load_v13(date):
+    """读 V1.3 真实持仓源 positions_cfg_v13_<date>.json（回退最近一份），
+    构造 holdings[{code,vol,cost,pnl_pct}] + capital（成本合计）。
+    修根因（T-20260922-005）：此前读无人写入的 data/cache/holdings_<date>.json → 永远"无持仓数据"。"""
+    try:
+        files = sorted([f for f in os.listdir(V13_CMD_DIR)
+                        if f.startswith("positions_cfg_v13_") and f.endswith(".json")])
+    except Exception:
+        files = []
+    pos = []
+    # 精确命中当日；否则回退最近一份（当日文件未生成时）
+    for target in ["positions_cfg_v13_%s.json" % date] + list(reversed(files)):
+        try:
+            d = json.load(open(os.path.join(V13_CMD_DIR, target), encoding="utf-8"))
+        except Exception:
+            continue
+        if str(d.get("account_id", "")) == V13_ACCOUNT:
+            pos = d.get("positions", []) or []
+            break
+    holdings = []
+    for p in pos:
+        code, vol, cost = p.get("code"), int(p.get("vol", 0) or 0), float(p.get("cost", 0) or 0)
+        if not code or vol <= 0 or cost <= 0:
+            continue
+        price = fetch_price(code)
+        pnl = ((price / cost - 1) * 100) if (price and price > 0) else 0.0
+        holdings.append({"code": code, "vol": vol, "cost": cost, "pnl_pct": pnl})
+    capital = sum(h["cost"] * h["vol"] for h in holdings)
+    return {"holdings": holdings, "capital": capital, "date": date}
 
 
 def _fmt(x, nd=2, sign=False):
@@ -48,11 +84,7 @@ def _clip(s, n=40):
 
 
 def _load(date):
-    v13 = {}
-    p = os.path.join(CACHE_DIR, "holdings_%s.json" % date)
-    if os.path.exists(p):
-        with open(p, encoding="utf-8") as f:
-            v13 = json.load(f)
+    v13 = _load_v13(date)
     g2 = {"fills": [], "trades": []}
     p = G2_FILLS % date
     if os.path.exists(p):
@@ -76,10 +108,10 @@ def _build_card(data, date, summary):
         except (TypeError, ValueError):
             pass
     if hs:
-        lines.append("**V1.3（67014907）**　持仓 %d 只，平均浮盈 %s，资金池 ¥%s" % (
+        lines.append("**V1.3（67014907）**　持仓 %d 只，平均浮盈 %s，成本合计 ¥%s" % (
             len(hs), _f_pct(tot / len(hs)), _fmt(v13.get("capital"))))
     else:
-        lines.append("**V1.3（67014907）**　（无持仓数据，15:40 未写入）")
+        lines.append("**V1.3（67014907）**　（空仓或无持仓源）")
     # G2 概览
     trades = g2.get("trades", [])
     g2_filled_buy = sum(1 for t in trades if t.get("action") == "BUY")

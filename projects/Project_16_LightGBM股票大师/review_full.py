@@ -243,8 +243,9 @@ def main():
                 continue
             cur = s.get("catalyst_score")
             if cur is None or (isinstance(cur, float) and np.isnan(cur)):
-                s["catalyst_score"] = c.get("catalyst_score", 0.0)
-                s["catalyst_note"] = c.get("catalyst_note", "")
+                cs = c.get("catalyst_score")
+                s["catalyst_score"] = float(cs) if cs is not None else 0.0
+                s["catalyst_note"] = c.get("catalyst_note", "") or ""
                 src = str(s.get("source", "") or "")
                 s["source"] = (src + "+cache") if src else "cache"
                 n_f3 += 1

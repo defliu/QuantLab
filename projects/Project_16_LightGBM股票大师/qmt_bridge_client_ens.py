@@ -43,11 +43,26 @@ def _today():
 # 原子写 / 读
 # ============================================================
 def _atomic_write_json(path, data):
-    """临时文件 + rename，避免内置桥读到半个 JSON。"""
+    """临时文件 + rename，避免内置桥读到半个 JSON。
+    makedirs 自愈 + OSError 重试（对齐桥内实现，防外部文件锁 WinError 5）。"""
+    d = os.path.dirname(path)
+    if d:
+        try:
+            os.makedirs(d, exist_ok=True)
+        except Exception:
+            pass
     tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    os.replace(tmp, path)
+    last_err = None
+    for _ in range(5):
+        try:
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            os.replace(tmp, path)
+            return
+        except OSError as e:
+            last_err = e
+            time.sleep(0.2)
+    raise last_err if last_err else OSError("atomic write failed")
 
 
 def _read_json(path):
@@ -270,12 +285,18 @@ def notify_feishu(text):
     env = dict(os.environ)
     env.pop("LARKSUITE_CLI_APP_ID", None)
     env.pop("LARKSUITE_CLI_USER_ACCESS_TOKEN", None)
-    env.pop("HERMES_HOME", None)
-    env.pop("OPENCLAW_HOME", None)
-    env.pop("LARK_CHANNEL", None)
+    # 2026-09-23 修（T-20260923-004）：按前缀清扫 openclaw/hermes 上下文信号
+    # （原清单漏 OPENCLAW_CLI，致 S4U 会话推送 config/not_configured 全失败）。
+    for _k in list(env.keys()):
+        _u = _k.upper()
+        if _u.startswith("OPENCLAW") or _u.startswith("HERMES") or _u == "LARK_CHANNEL":
+            env.pop(_k, None)
     env["LARKSUITE_CLI_STRICT_MODE"] = "off"
     env["LARKSUITE_CLI_NO_UPDATE_NOTIFIER"] = "1"
     env["LARKSUITE_CLI_NO_SKILLS_NOTIFIER"] = "1"
+    tag = (os.environ.get("LARK_SRC_TAG") or "").strip()   # 来源标记，未设置则不改动文本
+    if tag and not text.startswith(tag):
+        text = tag + " " + text
     try:
         r = subprocess.run(
             [cli, "im", "+messages-send", "--user-id", uid,

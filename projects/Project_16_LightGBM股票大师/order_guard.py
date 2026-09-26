@@ -123,11 +123,14 @@ def wait_order_fill(trader, account, order_id, timeout=WAIT_SECONDS):
     """等待委托成交，单次最多 timeout 秒。返回 (final_status, traded_vol, order_vol)。
 
     终止条件：全部成交 / 废单 / 已撤 / 部撤 / 超时。
+    超时前必须回查一次真实状态：丢弃部成量会导致按全量重报（双倍建仓）。
     """
     deadline = time.time() + timeout
+    last = None
     while time.time() < deadline:
         r = _query_order(trader, account, order_id)
         if r:
+            last = r
             status, traded, vol = r
             if vol > 0 and traded >= vol:
                 return ORDER_SUCCEEDED, traded, vol   # 全部成交
@@ -135,7 +138,16 @@ def wait_order_fill(trader, account, order_id, timeout=WAIT_SECONDS):
                 return status, traded, vol
             # 已报/部成/待撤 等 → 继续等
         time.sleep(POLL_INTERVAL)
-    return 255, 0, 0  # 超时
+    # 超时：回查一次，返回最后一次已知真实状态（保留部成量）
+    r = _query_order(trader, account, order_id)
+    if r:
+        status, traded, vol = r
+        if vol > 0 and traded >= vol:
+            return ORDER_SUCCEEDED, traded, vol
+        return status, traded, vol
+    if last:
+        return last
+    return 255, 0, 0  # 超时且始终查不到
 
 
 def order_with_guard(trader, account, code, side, vol, price=None, remark="order_guard"):
@@ -180,30 +192,62 @@ def order_with_guard(trader, account, code, side, vol, price=None, remark="order
             return {"ok": True, "action": "FILLED", "traded_vol": total_traded,
                     "order_id": oid, "attempts": attempts,
                     "note": f"{code} 委托#{attempts} 全部成交 {total_traded}股 @{px:.2f}"}
-        if status in (ORDER_JUNK,):
-            print(f"    !! {code} 委托废单，重试")
-            continue
-        if status in (ORDER_CANCELED, ORDER_PART_CANCEL):
-            print(f"    !  {code} 委托已撤/部撤，重试剩余 {remaining - traded} 股")
-            remaining -= traded
+        # 部成(55)也必须扣减 remaining，否则按全量重报=双倍建仓
+        if status in (ORDER_JUNK, ORDER_CANCELED, ORDER_PART_CANCEL, ORDER_PART_SUCC, 255):
+            if status == ORDER_JUNK:
+                print(f"    !! {code} 委托废单(成交{traded})，重试剩余")
+            elif status == 255:
+                print(f"    !  {code} 等待超时(成交{traded}/{order_vol})，撤单后重试剩余")
+            else:
+                print(f"    !  {code} 委托已撤/部撤/部成(成交{traded})，重试剩余")
+            if traded > 0:
+                remaining = max(0, remaining - traded)
             if remaining <= 0:
                 return {"ok": True, "action": "FILLED", "traded_vol": total_traded,
                         "order_id": oid, "attempts": attempts,
                         "note": f"{code} 已全部成交(含部成) {total_traded}股"}
+
+            # 超时/仍活跃 → 先撤单；撤单失败绝不直接重挂（防活单并存双倍成交）
+            if status in (ORDER_JUNK, ORDER_CANCELED, ORDER_PART_CANCEL):
+                time.sleep(1)
+                continue
+            cancel = trader.cancel_order_stock(account, oid)
+            if cancel != 0:
+                # 撤单失败：确认原单死透(53/54/57)或查不到才允许重挂
+                print(f"    !! {code} 撤单失败(cancel={cancel})，确认原单状态后再重试")
+                confirmed_dead = False
+                for _ in range(8):
+                    time.sleep(1)
+                    r2 = _query_order(trader, account, oid)
+                    if r2 is None:
+                        confirmed_dead = True
+                        break
+                    st2, tr2, _v2 = r2
+                    if st2 in (ORDER_JUNK, ORDER_CANCELED, ORDER_PART_CANCEL):
+                        if tr2 > 0:
+                            # 补记撤单窗口内部成量
+                            pass
+                        confirmed_dead = True
+                        break
+                    if st2 == ORDER_SUCCEEDED:
+                        # 撤前已全成
+                        total_traded += max(0, tr2 - traded)
+                        return {"ok": True, "action": "FILLED", "traded_vol": total_traded,
+                                "order_id": oid, "attempts": attempts,
+                                "note": f"{code} 撤前已全部成交 {total_traded}股"}
+                if not confirmed_dead:
+                    # 原单仍活跃：本轮不重挂，避免双倍
+                    print(f"    !! {code} 原单仍活跃，本轮放弃重挂（已成交 {total_traded}）")
+                    return {"ok": traded > 0, "action": "CANCELED_TIMEOUT" if traded > 0 else "ERROR",
+                            "traded_vol": total_traded, "order_id": oid, "attempts": attempts,
+                            "note": f"{code} 撤单失败且原单仍活跃，未重挂（防双倍）"}
+                # 死透确认后允许重挂
+            print(f"    !  {code} 已撤单，更新价格重试剩余 {remaining} 股")
+            time.sleep(2)
             continue
 
-        # 超时未全成 → 撤单 → 重试剩余
-        cancel = trader.cancel_order_stock(account, oid)
-        if cancel == 0:
-            print(f"    !  {code} 等待超时未全成(成交{traded}/{order_vol})，已撤单，更新价格重试剩余")
-        else:
-            print(f"    !! {code} 撤单失败(cancel={cancel})，稍后重试")
-        remaining = max(0, remaining - traded)
-        if remaining <= 0:
-            return {"ok": True, "action": "FILLED", "traded_vol": total_traded,
-                    "order_id": oid, "attempts": attempts,
-                    "note": f"{code} 已全部成交(含部成) {total_traded}股"}
-        time.sleep(2)
+        # 部成未达终态(50/51/52等活跃态) → 继续等（wait 已超时路径上面处理）
+        continue
 
     return {"ok": False, "action": "CANCELED_TIMEOUT", "traded_vol": total_traded,
             "order_id": last_order_id, "attempts": attempts,

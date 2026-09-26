@@ -254,16 +254,26 @@ def _buy(trader, account, code, vol, price):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default=today_str(), help="清单日期 YYYYMMDD（默认今天）")
-    ap.add_argument("--top", type=int, default=TOP_N, help="目标持仓数（大盘降半仓传 1）")
+    ap.add_argument("--top", type=int, default=TOP_N,
+                    help="T档或目标持仓数：0=清仓 / 1=半仓持1只 / >=2=按TOP_N满仓（上游09:45/10:05传T档，脚本内部归一)")
     ap.add_argument("--hold-days", type=int, default=HOLD_DAYS, help="持有期满交易日数（到期制卖出，替代 PK_OUT 日频翻转）")
     ap.add_argument("--live", action="store_true", help="真实换仓（默认 dry-run）")
     args = ap.parse_args()
+
+    # --- --top 归一化（2026-09-22 修复，T-20260922-003）---
+    # 上游（09:45 开盘实时复核任务 + 10:05 rebalance_daily_guard.ps1）把 --top 当「T 档」传：
+    #   T=0 → --top 0（大盘破位清仓）、T=1 → --top 1（半仓持1只）、T=2 → --top 2（常态满仓）。
+    # 原实现直接把 args.top 当「目标持仓数」用（选股只数 L266 + 持仓名额 L379）。
+    # 当 TOP_N=2 时 T=2 传 --top 2 恰好等于持仓数，无碍；TOP_N 上调到 5（2026-09-21 拍板）后，
+    # 09-22 实测 T=2 仍传 --top 2 → 选股只取 top2、且已持 2 只时新增名额 slots=0 → 换仓下达 0 单。
+    # 修复：非半仓/清仓场景（args.top>=2）一律归一到 TOP_N 作「目标持仓数」，args.top 仅保留部署档位语义。
+    eff_top = args.top if args.top < 2 else TOP_N
 
     sel_path = os.path.join(C.TRADE_LOG.rsplit("qmt_trade_log.csv", 1)[0], "selections", f"{args.date}_selection_full.csv")
     if not os.path.exists(sel_path):
         print(f"!! 找不到当日清单: {sel_path}\n   先运行 review_full 生成完整版清单")
         return
-    target = load_selection(sel_path, args.top)
+    target = load_selection(sel_path, eff_top)
     if not target:
         if args.top == 0:
             # T-20260904-003 修复：T=0（沪深300≤-1.5% 大盘破位）→ 清仓信号，
@@ -376,11 +386,11 @@ def main():
     #       新增买入（held_vol=0，会叠加持仓数）按 total 降序取前 slots 只。
     sell_codes = {s["code"] for s in sell_plan}
     n_after_sell = len([c for c in positions if c not in sell_codes])
-    slots = max(0, args.top - n_after_sell)
+    slots = max(0, eff_top - n_after_sell)
     _new_buys = [b for b in buy_orders if b.get("vol") and (b.get("held_vol") or 0) <= 0]
     _topups = [b for b in buy_orders if b.get("vol") and (b.get("held_vol") or 0) > 0]
     if len(_new_buys) > slots:
-        print(f"    [T-20260907-003] 卖出后仍持 {n_after_sell} 只 ≥ 目标 {args.top}，"
+        print(f"    [T-20260907-003] 卖出后仍持 {n_after_sell} 只 ≥ 目标 {eff_top}，"
               f"新增买入名额仅 {slots} 只 → 仅保留最高分 {slots} 只（防超买叠加，原计划 {len(_new_buys)} 只新增）")
     _new_buys.sort(key=lambda b: -(b.get("total") or 0))
     exec_buys = _topups + _new_buys[:slots]
@@ -418,6 +428,7 @@ def main():
         # 落盘计划（dry-run 写旁路 .dryrun.json，防覆盖当日 live 执行记录/幂等标记，DE 兜底 P2）
         plan = {"date": args.date, "target": target,
                 "strategy_capital": round(capital, 2), "target_value_each": round(target_value, 2),
+                "tier": args.top, "eff_top": eff_top,  # tier=T档位(0/1/2)；eff_top=归一后实际持仓上限
                 "sell": sell_plan, "buy": [o for o in exec_buys if o.get("vol")],
                 "trim": trim_orders, "hold": hold_plan, "locked": locked}
         out = os.path.join(os.path.dirname(C.TRADE_LOG), f"rebalance_{args.date}.dryrun.json")
@@ -544,7 +555,8 @@ def main():
         "date": args.date,
         "executed_live": True,
         "executed_at": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "tier": args.top,
+        "tier": args.top,          # T 档位（0=清仓/1=半仓/2=满仓），非持仓只数
+        "eff_top": eff_top,        # 归一后实际持仓只数上限（T>=2 时=TOP_N，T-20260922-003 修复）
         "target": target,
         "strategy_capital": round(capital, 2),
         "target_value_each": round(target_value, 2),

@@ -101,8 +101,11 @@ def _update_hold_dates(plan, date):
     - 账本中已不存在的 code（桥内风控卖出/手工纠正卖出不进 plan.sells）→ 清理陈旧条目（P2-5b，对齐 G2 版）
     返回更新后的 hold_dates dict（仅 live 时落盘）。"""
     hd = load_hold_dates()
-    # 卖出清仓移除
+    # 卖出清仓移除；但「等权减仓」非清仓（超配减仓后仍持有），必须保留建仓日——
+    # 否则 positions_cfg 丢票 → 桥内止损不再纳管（T-20260922-005 实盘止损失控）
     for s in plan.get("sells", []):
+        if s.get("note") == "等权减仓":
+            continue
         hd.pop(s.get("code", ""), None)
     # 买入（可能补仓也视为重新建仓；对已有持仓的加仓不覆盖原建仓日，保持最早建仓日语义）
     for b in plan.get("buys", []):
@@ -113,8 +116,10 @@ def _update_hold_dates(plan, date):
     # P2-5b 修复：防 ENS 陈旧条目让 G2 持续过度排除该候选（G2 反向互斥读此文件）
     # 2026-09-14 对齐 G2（T-20260914-004）：本次新买入 code（buys 里、成交后才进账本）必须保留，
     # 否则建仓日被误删 → 持有期计数失效
+    # T-20260922-005：等权减仓 code 也加入 active，防止被陈旧清理误删（减仓非清仓）
     active = set((plan.get("ledger") or {}).keys())
     active |= {b.get("code", "") for b in plan.get("buys", []) if b.get("code")}
+    active |= {s.get("code", "") for s in plan.get("sells", []) if s.get("note") == "等权减仓"}
     for code in list(hd.keys()):
         if code not in active:
             hd.pop(code, None)
@@ -384,7 +389,15 @@ def build_plan(date, capital):
         cand.sort(key=lambda p: p["total"], reverse=True)
         if g2_held:
             print("  [重叠规避] 跳过 G2 账本持仓 %d 只: %s" % (len(g2_held), ",".join(sorted(g2_held))))
-        budget_each = capital * (1 - G.RESERVE_CASH_PCT) / float(n_slots)
+        # ---- 动态等权（2026-09-22 对齐 V1.3，修复 TOP_N 上调后补仓资金不足）----
+        # 原实现"budget_each = 资金池×(1-保留)/空位"存在两个问题：①只补空位不减仓，老仓占满资金池
+        # 时补不到新 TOP_N；②预算用资金池总额未扣保留持仓成本，部分补仓场景总敞口超资金池
+        # （G2 早已修的 T-20260903-019 bug 未同步）。改为 V1.3 式等权（ENS 无大盘门控，用固定保留现金）：
+        #   target_value = 资金池×(1-保留5%)/TOP_N；kept 超配→SELL 减仓释放资金、新晋→建仓到目标股数。
+        # 注：此实盘等权口径与回测「只补空位」不同，历史回测数字须标注口径前提。
+        #
+        # 第一步：预取最多 n_slots 只新晋票（取价+低开校验通过）
+        new_targets = []   # [(code, price, total)]
         for i in range(n_slots):
             if not cand:
                 break
@@ -395,7 +408,6 @@ def build_plan(date, capital):
                 plan["skips"].append({"code": code, "reason": "取价失败跳过"})
                 continue
             # ---- 低开校验（G2-V1.0，T3）：极端低开(<=-5%)跳过；低开(-5~-3%)需放量承接才放行 ----
-            # 003005 型（低开-10%跌停接刀）→ 跳过；601999 型（低开-4.9%放量翻红）→ 放行
             _ohlc = _fetch_ohlc(code)
             if _ohlc:
                 _avg = _recent_avg_vol(code)
@@ -405,17 +417,57 @@ def build_plan(date, capital):
                     plan["skips"].append({"code": code, "reason": _why})
                     print(f"    !! {code} 低开拦截: {_why}")
                     continue
-            vol = int(budget_each / price / G.MIN_ORDER_VOL) * G.MIN_ORDER_VOL
-            if vol <= 0:
+            new_targets.append((code, price, best["total"]))
+
+        # 第二步：等权目标市值（固定分母 TOP_N；ENS 无大盘门控，deploy=1-保留5%）
+        target_value = capital * (1 - G.RESERVE_CASH_PCT) / float(G.TOP_N)
+        plan["target_value"] = round(target_value, 2)
+
+        # 第三步：对最终持有集平衡 —— 超配减仓收集（全部 SELL 先于 BUY）
+        rebalance_sells = []   # kept 超配减仓（未到期下界修正，释放资金）
+        balance_buys = []      # 新晋建仓（held=0 -> target_value）
+        # 3.1 新晋票建仓
+        for code, price, total in new_targets:
+            target_vol = int(target_value / price / G.MIN_ORDER_VOL) * G.MIN_ORDER_VOL
+            if target_vol < G.MIN_ORDER_VOL:
                 plan["skips"].append({"code": code, "reason": "资金不足一手(%s@%.2f)" % (code, price)})
                 continue
+            balance_buys.append({"code": code, "vol": target_vol, "price": round(price, 3), "total": total})
+        # 3.2 kept 超配减仓（仅当 held_value > target_value 且可卖充足；不下逆信号加仓）
+        for code in kept:
+            ld = ledger.get(code, {})
+            held_vol = int(ld.get("vol", 0) or 0)
+            price = fetch_price(code) or ld.get("cost", 0)
+            if not price or price <= 0:
+                continue
+            target_vol = int(target_value / price / G.MIN_ORDER_VOL) * G.MIN_ORDER_VOL
+            diff = held_vol - target_vol
+            if diff <= 0:
+                continue
+            sellable = load_sellable(date, code)
+            v = min(diff, sellable) if sellable is not None else diff
+            if v < G.MIN_ORDER_VOL:
+                plan["skips"].append({"code": code, "vol": held_vol, "reason": "超配但T+1锁定/不足一手"})
+                continue
+            rebalance_sells.append({"code": code, "vol": v, "cost": ld.get("cost", 0),
+                                    "price": round(price, 3)})
+        # 第四步：先卖后买 —— 超配减仓 SELL 排在所有 BUY 之前（承接到期 SELL 段之后）
+        for s in rebalance_sells:
             orders.append({
-                "action": "BUY", "code": code, "vol": vol, "price": round(price, 3),
-                "reason": "融合选股Top%d(total=%.1f)" % (i + 1, best["total"]),
+                "action": "SELL", "code": s["code"], "vol": s["vol"], "price": s["price"],
+                "reason": "动态等权超配减仓(目标市值%.0f)" % target_value,
                 "strategy_order_id": "P16_%s_%04d" % (date, seq0 + len(orders) + 1),
             })
-            plan["buys"].append({"code": code, "vol": vol, "price": round(price, 3),
-                                 "held": 0, "target_vol": vol, "total": best["total"]})
+            plan["sells"].append({"code": s["code"], "vol": s["vol"], "cost": s["cost"],
+                                  "price": s["price"], "note": "等权减仓"})
+        for j, b in enumerate(balance_buys):
+            orders.append({
+                "action": "BUY", "code": b["code"], "vol": b["vol"], "price": b["price"],
+                "reason": "融合选股Top%d(total=%.1f)" % (j + 1, b["total"]),
+                "strategy_order_id": "P16_%s_%04d" % (date, seq0 + len(orders) + 1),
+            })
+            plan["buys"].append({"code": b["code"], "vol": b["vol"], "price": b["price"],
+                                 "held": 0, "target_vol": b["vol"], "total": b["total"]})
     return orders, plan
 
 
@@ -488,10 +540,12 @@ def main():
 def _save_plan(plan, date):
     out_dir = os.path.join(G.DATA_DIR, "rebalance_g2_ens")
     os.makedirs(out_dir, exist_ok=True)
-    jp = os.path.join(out_dir, "rebalance_g2_ens_%s.json" % date)
+    # dry-run 写 .dryrun 旁路，避免污染 guard「正式 plan 存在=已执行」幂等（对齐 G2）
+    suffix = "" if plan.get("written") else ".dryrun"
+    jp = os.path.join(out_dir, "rebalance_g2_ens_%s%s.json" % (date, suffix))
     with open(jp, "w", encoding="utf-8") as f:
         json.dump(plan, f, ensure_ascii=False, indent=2)
-    mp = os.path.join(out_dir, "rebalance_g2_ens_%s.md" % date)
+    mp = os.path.join(out_dir, "rebalance_g2_ens_%s%s.md" % (date, suffix))
     with open(mp, "w", encoding="utf-8") as f:
         f.write("# 融合换仓计划 %s\n\n" % date)
         f.write("- 账号 %s | 资金池 %.0f 元 | %s\n\n" % (plan["account_id"], plan["capital"], plan["note"]))

@@ -223,9 +223,16 @@ def check_b(fix):
                     "刷新后 %s" % nd)
     else:
         log("B", "B1 面板最新日", "WARN", "面板读取失败")
-    # B2 verify
+    # B2 verify（T-20260923-005：识别门禁拒绝后的设计内 WARN，不再误报 FAIL）
     ok, out = run([PY, "verify_model_panel_sync.py"], timeout=120)
-    log("B", "B2 模型-面板同步", "PASS" if ok else "FAIL", out.strip().splitlines()[-1] if out else "")
+    last = out.strip().splitlines()[-1] if out else ""
+    if not ok:
+        b2_status = "FAIL"
+    elif "WARN" in out:
+        b2_status = "WARN"
+    else:
+        b2_status = "PASS"
+    log("B", "B2 模型-面板同步", b2_status, last)
     # B3 模型
     mp = "D:/QuantLab/models/lgb_model_v3.txt"
     if os.path.exists(mp):

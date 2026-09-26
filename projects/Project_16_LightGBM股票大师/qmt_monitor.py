@@ -252,6 +252,9 @@ def notify_feishu(text):
         print("    (未配置 LARK_CLI/FEISHU_OPEN_ID/LARK_PUSH_CHAT_ID，跳过飞书推送)")
         return False
     target = ["--chat-id", chat_id] if chat_id else ["--user-id", uid]
+    tag = (os.environ.get("LARK_SRC_TAG") or "").strip()   # 来源标记，未设置则不改动文本
+    if tag and not text.startswith(tag):
+        text = tag + " " + text
     try:
         import subprocess
         r = subprocess.run(
@@ -343,6 +346,11 @@ def main():
 
     peak = {c: c_cost for c, c_cost in positions.items()}
     sold = set()  # 已自动卖出的持仓，避免重复
+    # 持仓刷新：长循环只在启动时加载一次会漏掉盘中增仓/他端卖出/自动卖出后的量变化
+    # （T-fix：--positions 显式指定时不自动刷新；QMT 来源每 N 轮重查一次）
+    manual_positions = bool(args.positions)
+    refresh_every = max(1, int(60 / max(1.0, args.interval)))  # 约每 60s 刷新一轮
+    cycle = 0
 
     # 方案A（T-20260909）：--auto-sell 时建立一条交易连接供 order_guard 委托守护复用；
     # 连接失败则本次仅预警、不下单（防"连不上却裸下单静默挂单"）。
@@ -351,6 +359,46 @@ def main():
         trader, account = _connect_trader()
 
     while True:
+        cycle += 1
+        if (not manual_positions) and cycle > 1 and (cycle % refresh_every == 0):
+            try:
+                new_pos, new_vols, new_sellable = load_positions_from_qmt()
+                if new_pos:
+                    # 保留 peak / sold / 既有成本；同步量与可卖量；新代码补 peak；消失代码停止盯
+                    log_pos, _log_vols = load_positions_from_log()
+                    for c in list(positions.keys()):
+                        if c not in new_pos and c not in sold:
+                            print(f"    [刷新] {c} 已不在 QMT 持仓，移出盯盘")
+                            positions.pop(c, None)
+                            vols.pop(c, None)
+                            sellable.pop(c, None)
+                            peak.pop(c, None)
+                    for c, cost in new_pos.items():
+                        if c in sold:
+                            continue
+                        if c not in positions:
+                            # 新增持仓：QMT 成本缺失时用本地 FIFO 补，仍无则暂不纳入（防无成本误报）
+                            if cost and cost > 0:
+                                positions[c] = cost
+                            elif c in log_pos and log_pos[c] > 0:
+                                positions[c] = log_pos[c]
+                                print(f"    [刷新] 新增持仓 {c} 成本走FIFO {log_pos[c]:.4f}")
+                            else:
+                                print(f"    [刷新] {c} 无成本信息，暂不纳入盯盘")
+                                continue
+                            peak.setdefault(c, positions[c])
+                            print(f"    [刷新] 新增持仓 {c} 成本 {positions[c]:.4f}")
+                        # 已有持仓：QMT 成本缺失/为0时保留旧成本（防成本被冲掉）
+                        vols[c] = new_vols.get(c, 0)
+                        sellable[c] = new_sellable.get(c, 0)
+                    # watchlist 与 positions 对齐（新增代码纳入行情订阅）
+                    wl_extra = [c for c in watchlist if c not in positions]
+                    watchlist = list(dict.fromkeys(list(positions.keys()) + wl_extra))
+                else:
+                    print("    [刷新] QMT 查询无持仓，保留当前盯盘列表（可能非交易时段）")
+            except Exception as e:
+                print(f"    [刷新] 持仓刷新失败: {e!r}（本轮沿用旧持仓）")
+
         try:
             ticks = get_ticks(watchlist)
         except Exception as e:

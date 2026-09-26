@@ -625,7 +625,7 @@ def _handle_cancel_confirm(C, date, sid, info, now):
             _g_pending.pop(sid, None)
             print("[P16V13][CANCEL-CONFIRMED] %s %s status=%d" % (sid, code, st))
             return
-        if st in (55, 57):
+        if st == 57:
             _add_or_update_fill(date, {
                 "strategy_order_id": sid, "code": info.get("bridge_code", code), "action": action,
                 "vol": filled_so_far + dv, "price": info.get("price", 0), "status": "REJECTED",
@@ -635,6 +635,7 @@ def _handle_cancel_confirm(C, date, sid, info, now):
             _g_pending.pop(sid, None)
             print("[P16V13][CANCEL-REJECTED] %s %s status=%d" % (sid, code, st))
             return
+        # 55=部成是活跃态（原单仍在成交），不能当 REJECTED 弹出 pending（假终态=真单孤儿）
         # 仍活跃（2/48/49/50 等非终态）：撤单未生效！保留 pending（fail-loud），90s 后重发最多2次
         print("[P16V13][CANCEL-NOT-EFFECTIVE] %s %s status=%d 撤单未生效，订单仍活跃，保留pending复查" % (sid, code, st))
         if now - info.get("time", now) > 90 and info.get("cancel_retry", 0) < 2:
@@ -658,7 +659,7 @@ def _handle_cancel_confirm(C, date, sid, info, now):
 def _check_pending_orders(C, date):
     """检查所有pending订单状态。主判据=成交量(m_nDealVolume)，状态码仅辅助收尾。
     1a) filled_so_far+deal_vol >= vol → FILLED（成交量硬事实优先于一切状态码）
-    1b) status=55 废单 → 计retry重报剩余量
+    1b) status=57 废单 → 计retry重报剩余量（55=部成是活跃态，绝不当废单）
     1c) status in (53,54) → CANCELED 收尾(vol=total_deal)
     1d) deal>0 → PARTIAL_FILLED 进度回写
     然后超时判断 → 撤单→确认死透→重报剩余量；未确认延后复查。"""
@@ -743,6 +744,7 @@ def _check_pending_orders(C, date):
             _g_pending.pop(sid, None)
             continue
         # 1d) 有成交未满 → PARTIAL_FILLED 进度回写（filled_so_far不变，deal_vol是累计值）
+        # 注意：部成也必须走超时判断（否则停滞单永不撤/永不重报，挂到日终被 NEW-DAY 清掉）
         if deal_vol > 0:
             fill_price = float(getattr(matched, "m_dPrice", 0) or getattr(matched, "m_dAvgPrice", 0) or price)
             print("[P16V13][PARTIAL] %s %s deal=%d/%d" % (sid, code, total_deal, vol))
@@ -757,6 +759,10 @@ def _check_pending_orders(C, date):
                 "reason": info.get("risk_reason", "partial deal, waiting more"),
                 "ts": _now_str(),
             })
+            # 部成后若停滞超过 PENDING_TIMEOUT，同样走超时撤剩余/重报
+            elapsed = now - info.get("time", now)
+            if elapsed > PENDING_TIMEOUT:
+                _handle_timeout_retry(C, date, sid, info, now)
             continue
 
         # 2) 超时判断（有活跃单但无成交）
@@ -910,11 +916,16 @@ def _check_risk_signals(C, date):
                     info["peak"], TRAILING_PCT * 100, trail_line)
         if action == "HOLD":
             continue
-        # 触发 → 记防重复标记 → passorder 卖出 → 走 pending 状态机
+        # 触发 → passorder 卖出 → 成功才记防重复标记（下单失败当日可重试，防裸奔）
+        sid_pre = "P16_%s_RSK%04d" % (date, _g_today_risk_count + 1)
+        ret = _do_passorder(C, "SELL", code, can_use, last)
+        if ret is None or ret != 0:
+            print("[P16V13][RISK-FAIL] %s %s %s 卖%d股 ret=%s 未记 risk_sold（下轮重试） | %s" % (
+                action, sid_pre, code, can_use, ret, note))
+            continue
         _g_risk_sold.add(code)
         _g_today_risk_count += 1
         sid = "P16_%s_RSK%04d" % (date, _g_today_risk_count)
-        ret = _do_passorder(C, "SELL", code, can_use, last)
         print("[P16V13][RISK] %s %s %s 卖%d股 ret=%s | %s" % (action, sid, code, can_use, ret, note))
         _g_pending[sid] = {
             "code": code,
@@ -988,7 +999,7 @@ def _write_heartbeat(date):
 # ============================================================
 def init(C):
     """策略初始化。首部set_account确保主推推送；从心跳恢复pending/risk_sold；读外部成本表与peak。"""
-    global _g_today, _g_risk_sold
+    global _g_today, _g_risk_sold, _g_today_risk_count
     try:
         C.set_account(ACCOUNT_ID)
     except Exception:
@@ -1012,6 +1023,13 @@ def init(C):
         if rs:
             _g_risk_sold = set(str(x) for x in rs)
             print("[P16V13][INIT] 恢复risk_sold %d只" % len(_g_risk_sold))
+    # 恢复当日 risk_count（心跳有写、init 忽略 → 重启后 RSK sid 撞号覆盖 pending/fills）
+    try:
+        _g_today_risk_count = int(heart.get("risk_count", 0) or 0) if heart else 0
+        if _g_today_risk_count:
+            print("[P16V13][INIT] 恢复risk_count=%d" % _g_today_risk_count)
+    except Exception:
+        _g_today_risk_count = 0
     # 读外部成本表（外部每日写 cmd/positions_cfg_v13_<date>.json，FIFO 含费成本；缺失回退最近表）
     cfg = _load_positions_cfg(_g_today)
     if cfg and str(cfg.get("account_id", "") or "") == ACCOUNT_ID:

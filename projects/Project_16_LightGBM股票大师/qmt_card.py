@@ -56,14 +56,45 @@ def _env_for_cli(as_ident):
         env.pop("LARKSUITE_CLI_APP_ID", None)
         env.pop("LARKSUITE_CLI_USER_ACCESS_TOKEN", None)
         env["LARKSUITE_CLI_STRICT_MODE"] = "off"
-        # Agent 上下文信号：存在时 lark-cli 只认 hermes 绑定、忽略本地 config.json；
-        # 清掉后回退到本地 bot 凭据（本机必需；服务器无此变量不受影响）
-        env.pop("HERMES_HOME", None)
-        env.pop("OPENCLAW_HOME", None)
-        env.pop("LARK_CHANNEL", None)
+        # Agent 上下文信号：存在时 lark-cli 只认 hermes/openclaw 绑定、忽略本地 config.json；
+        # 清掉后回退到本地 bot 凭据（本机必需；服务器无此变量不受影响）。
+        # 2026-09-23 修（T-20260923-004）：原清单漏了 OPENCLAW_CLI —— 该变量在
+        # 交互会话为空、在 Windows 计划任务 S4U 会话为 "1"，导致 Windows 侧全部推送
+        # 返回 config/not_configured（"openclaw context detected but lark-cli is not bound to it"）。
+        # 故改为按前缀整体清扫，避免再有遗漏。
+        for _k in list(env.keys()):
+            _u = _k.upper()
+            if _u.startswith("OPENCLAW") or _u.startswith("HERMES") or _u == "LARK_CHANNEL":
+                env.pop(_k, None)
     env["LARKSUITE_CLI_NO_UPDATE_NOTIFIER"] = "1"
     env["LARKSUITE_CLI_NO_SKILLS_NOTIFIER"] = "1"
     return env
+
+
+def src_tag():
+    """推送来源标记（2026-09-23，T-20260923-003）。
+
+    WorkBuddy 侧自动化在子进程环境设 LARK_SRC_TAG=[WB] 后，其推送标题/文本会带标记前缀，
+    用于区分「同一 bot、同一私聊」下 WorkBuddy 与 TRAE/Windows 侧重复推送的来源。
+    未设置该环境变量时返回空串 → 标题与改造前逐字节一致，不影响既有任务。
+    """
+    t = (os.environ.get("LARK_SRC_TAG") or "").strip()
+    return (t + " ") if t else ""
+
+
+def apply_src_tag(card):
+    """在卡片 header.title 上打来源标记（幂等：已带标记不重复加）。原地修改并返回 card。"""
+    tag = src_tag()
+    if not tag or not isinstance(card, dict):
+        return card
+    try:
+        title = (card.get("header") or {}).get("title") or {}
+        content = title.get("content") or ""
+        if content and tag.strip() not in content:
+            title["content"] = tag + content
+    except Exception:
+        pass
+    return card
 
 
 def build_signal_card(sig, name=None):
@@ -196,6 +227,7 @@ def send_lark_card(card, uid=None, chat_id=_NO_CHAT, as_ident=None):
         print("    (未配置 LARK_CLI / FEISHU_OPEN_ID / LARK_PUSH_CHAT_ID，跳过卡片推送)")
         return False
     target = ["--chat-id", chat_id] if chat_id else ["--user-id", uid]
+    card = apply_src_tag(card)  # 来源标记（LARK_SRC_TAG 未设置时为 no-op）
     payload = json.dumps(card, ensure_ascii=False)
     try:
         r = subprocess.run(
