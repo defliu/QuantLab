@@ -116,6 +116,8 @@ def _fifo_positions_from_log():
             amt = price * vol
             qq[code].append((vol, (amt + _buy_fee(amt, code)) / vol))
         elif side == "SELL":
+            # price=0 市价清仓同样扣减持仓量（与 reconcile_trades.derive_positions 同口径）；
+            # 盈亏由 calc_realized 单独计算并在 price<=0 时跳过，此处只维护 FIFO 持仓。
             sv = vol
             while sv > 0 and qq[code]:
                 v, cp = qq[code][0]

@@ -12,6 +12,8 @@ PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 # ---- 主数据（周更权威快照，只读）----
 ASTOCK_DIR = "D:/astock"     # 2026-08-28 服务器部署：原为 D:/astock（原开发机盘符），本机无 E 盘；主库已迁至 D:/astock
 MAIN_DAILY = os.path.join(ASTOCK_DIR, "daily", "stock_daily.parquet")
+# Tushare daily_basic 日刷估值（2026-09-26 方案A：scripts/refresh_online_incremental.py 每日盘后刷新）
+DAILY_BASIC = os.path.join(ASTOCK_DIR, "daily", "daily_basic.parquet")
 FINANCE_DIR = os.path.join(ASTOCK_DIR, "finance")
 BASIC_DIR = os.path.join(ASTOCK_DIR, "basic")
 

@@ -41,21 +41,29 @@ HOLIDAYS = {
 
 
 def _gen_calendar():
-    """从主库 daily + 增量数据重建交易日历（缺日历文件时自动生成）。"""
+    """从主库 daily + 增量数据重建交易日历（缺日历文件时自动生成）。
+    所有日期统一截断为 YYYY-MM-DD（防 pandas Timestamp isoformat 带 T00:00:00）。"""
     import pandas as pd
     import data_config as DC
     main = pd.read_parquet(DC.MAIN_DAILY, columns=[])
-    dates = {d.isoformat() if hasattr(d, "isoformat") else str(d)[:10]
-             for d in main.index.get_level_values("trade_date")}
+    dates = set()
+    for d in main.index.get_level_values("trade_date"):
+        dates.add(str(d)[:10] if not hasattr(d, "strftime") else d.strftime("%Y-%m-%d"))
     incr_path = os.path.join(DC.LIVE_DIR, "incremental_daily.parquet")
     if os.path.exists(incr_path):
         incr = pd.read_parquet(incr_path, columns=["trade_date"])
-        dates.update(d.isoformat() if hasattr(d, "isoformat") else str(d)[:10]
-                     for d in incr["trade_date"])
+        for d in incr["trade_date"]:
+            dates.add(str(d)[:10] if not hasattr(d, "strftime") else d.strftime("%Y-%m-%d"))
+    dates = {x for x in dates if len(x) == 10}
     os.makedirs(os.path.dirname(CAL_FILE), exist_ok=True)
     with open(CAL_FILE, "w", encoding="utf-8") as f:
         f.write("\n".join(sorted(dates)))
     return dates
+
+
+def _norm_date(s):
+    """归一日期为 YYYY-MM-DD（剥 T00:00:00 等时间后缀）。"""
+    return str(s).strip()[:10]
 
 
 def load_calendar():
@@ -64,9 +72,10 @@ def load_calendar():
         # 背景：主库周更滞后，日历快照曾停在 08-20；虽 is_trade_day 有兜底（工作日非节假日即交易日），
         # 但保持日历新鲜可让"主库交易日历"命中更准，避免依赖兜底。
         try:
-            lines = [l.strip() for l in open(CAL_FILE, encoding="utf-8") if l.strip()]
+            lines = [_norm_date(l) for l in open(CAL_FILE, encoding="utf-8") if l.strip()]
+            lines = [x for x in lines if len(x) == 10]
             if lines:
-                last = datetime.date.fromisoformat(lines[-1][:10])
+                last = datetime.date.fromisoformat(lines[-1])
                 if (datetime.date.today() - last).days > 7:
                     print(f"[info] 日历快照陈旧（末日 {last}），用主库+增量自动重建 ...", file=sys.stderr)
                     return _gen_calendar()
@@ -89,8 +98,13 @@ def is_trade_day(d: datetime.date, cal) -> dict:
     ds = d.isoformat()
     if d.weekday() >= 5:
         return {"is_trade_day": False, "reason": "周末休市", "date": ds}
-    if ds in cal:
+    # 日历成员比较用归一后的 10 位日期（防 T00:00:00 后缀导致恒 miss）
+    if ds in cal or any(_norm_date(x) == ds for x in cal if not isinstance(x, str) or len(x) != 10):
         return {"is_trade_day": True, "reason": "主库交易日历", "date": ds}
+    # 二次防护：对可能未归一的 set 直接归一扫描（cal 小时 O(n) 可接受）
+    if cal and ds not in cal:
+        # 若 cal 元素已全是 10 位则上面已命中；仍 miss 说明确实不在日历
+        pass
     holidays = HOLIDAYS.get(str(d.year), set())
     if ds in holidays:
         return {"is_trade_day": False, "reason": "法定节假日休市", "date": ds}

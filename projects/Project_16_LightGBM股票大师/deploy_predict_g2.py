@@ -58,6 +58,92 @@ def _append_live_dedup(rows):
     os.replace(tmp, LIVE_LOG)
 
 
+def _fill_f3_events(df, verbose=False):
+    """F3 面板外事件 fail-safe（T-20260924-001 方案 C，2026-09-25 诚哥拍板）。
+
+    build_g2_daily 的事件列由 enh 面板 map 而来（面板宇宙 2026-09-23 仅 2791 只），
+    面板外候选 fc/ex/dv 四列全 NaN → deploy_predict._score_f3 加成条件全 False →
+    恒基线 4.0（SC_F3 死维度）。此处按 build_features_v2 同源口径为 NaN 行重算四列：
+      fc/ex：ann_date<=T 最近一次（merge_asof backward 语义），无事件=9999；
+             fc_pchange 窗口外(EVENT_WINDOW=90)置 0；PIT 安全（防未来函数）。
+      dv：T 日回溯至多 30 条分红记录，累计 DIV_WINDOW=365 天税后现金分红。
+    面板内行保持面板值不动；四列同时是模型特征（g2 43/AB 33 均含），故只在模型
+    predict 之后的评分池副本上调用（day 原帧不动）→ 模型输入/输出零变化，仅评分卡
+    F3 分量改变。任一数据源缺失/异常时保持 NaN（评分中性），不阻断选股。
+    返回重算行数。
+    """
+    EVENT_WINDOW, DIV_WINDOW = 90, 365
+    cols = ["fc_days_since", "ex_days_since", "fc_pchange", "dv_year_sum"]
+    need = [c for c in cols if c in df.columns]
+    if not need or len(df) == 0:
+        return 0
+    for c in need:
+        if df[c].dtype != np.float64:
+            df[c] = df[c].astype("float64")  # 池副本归一 dtype，避免 float32 列 setitem 拒写
+    miss = df[need].isna().any(axis=1)
+    n_miss = int(miss.sum())
+    if n_miss == 0:
+        if verbose:
+            print("    [F3] 事件列全部非空（面板内），无需 fail-safe")
+        return 0
+    try:
+        fc = pd.read_parquet(DC.FIN_FORECAST, columns=["ts_code", "ann_date", "p_change_max"])
+        ex = pd.read_parquet(DC.FIN_EXPRESS, columns=["ts_code", "ann_date"])
+        dv = pd.read_parquet(DC.FIN_DIVIDEND, columns=["ts_code", "ann_date", "cash_div_tax"])
+    except Exception as e:
+        if verbose:
+            print(f"    [F3] fail-safe 源读取失败（{e}），NaN 保持中性，不阻断")
+        return 0
+    for _df in (fc, ex, dv):
+        _df["ann_date"] = pd.to_datetime(_df["ann_date"], errors="coerce")
+    fc = fc.dropna(subset=["ann_date"]).sort_values(["ts_code", "ann_date"])
+    ex = ex.dropna(subset=["ann_date"]).sort_values(["ts_code", "ann_date"])
+    dv = dv.dropna(subset=["ann_date"]).sort_values(["ts_code", "ann_date"])
+    fc_g = {k: g for k, g in fc.groupby("ts_code")}
+    ex_g = {k: g for k, g in ex.groupby("ts_code")}
+    dv_g = {k: g for k, g in dv.groupby("ts_code")}
+
+    def _latest(g, td64):
+        """最近一次 ann_date<=T 的 (days, row)；无则 (9999, None)。"""
+        if g is None:
+            return 9999, None
+        pos = int(np.searchsorted(g["ann_date"].values, td64, side="right"))
+        if pos == 0:
+            return 9999, None
+        days = int((td64 - g["ann_date"].values[pos - 1]) / np.timedelta64(1, "D"))
+        return days, g.iloc[pos - 1]
+
+    filled = 0
+    for i in df.index[miss]:
+        row = df.loc[i]
+        code = str(row["ts_code"])
+        td64 = pd.Timestamp(row["trade_date"]).to_datetime64()
+        fd, frow = _latest(fc_g.get(code), td64)
+        if "fc_days_since" in need and pd.isna(row.get("fc_days_since")):
+            df.at[i, "fc_days_since"] = fd
+        if "fc_pchange" in need and pd.isna(row.get("fc_pchange")):
+            df.at[i, "fc_pchange"] = 0.0 if (frow is None or fd > EVENT_WINDOW) else frow["p_change_max"]
+        ed, _ = _latest(ex_g.get(code), td64)
+        if "ex_days_since" in need and pd.isna(row.get("ex_days_since")):
+            df.at[i, "ex_days_since"] = ed
+        if "dv_year_sum" in need and pd.isna(row.get("dv_year_sum")):
+            g = dv_g.get(code)
+            s = 0.0
+            if g is not None:
+                gdates = g["ann_date"].values
+                pos = int(np.searchsorted(gdates, td64, side="right"))
+                lo = max(0, pos - 30)
+                seg = g["cash_div_tax"].fillna(0.0).to_numpy()[lo:pos]
+                segd = (td64 - gdates[lo:pos]).astype("timedelta64[D]").astype(int)
+                s = float(seg[(segd <= DIV_WINDOW) & (segd >= 0)].sum())
+            df.at[i, "dv_year_sum"] = s
+        filled += 1
+    if verbose:
+        print(f"    [F3] 面板外事件 fail-safe：{filled}/{n_miss} 只重算"
+              f"（forecast/express/dividend PIT<={df['trade_date'].max().date()}）")
+    return filled
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default=None, help="目标交易日，缺省取快照最新日")
@@ -97,17 +183,44 @@ def main():
     # 2026-09-14 主库被重建为扁平结构（trade_date/ts_code 变为数据列 + 多余 'index' 列）：
     # 旧写法 .reset_index() 会得到 'index' 列 → KeyError: trade_date（当晚候选断链根因）。
     # 修复：探测 trade_date 是否在数据列，兼容新旧两种布局。
-    try:
-        daily = pd.read_parquet(DC.MAIN_DAILY, columns=["trade_date", "ts_code", "pe_ttm", "turnover_rate"])
-        if "trade_date" not in daily.columns:
-            raise KeyError("trade_date 不在数据列，回退旧布局")
-    except Exception:
-        daily = pd.read_parquet(DC.MAIN_DAILY, columns=["pe_ttm", "turnover_rate"]).reset_index()
+    # est 数据源优先 daily_basic（Tushare 日刷，当日真实估值口径，2026-09-26 方案A），
+    # 文件缺失/读取失败回退主库 MAIN_DAILY（周更快照）。布局探测同下：兼容扁平/旧两种。
+    daily = None
+    if os.path.exists(DC.DAILY_BASIC):
+        try:
+            daily = pd.read_parquet(DC.DAILY_BASIC, columns=["trade_date", "ts_code", "pe_ttm", "turnover_rate"])
+            if "trade_date" not in daily.columns:
+                raise KeyError("trade_date 不在数据列，回退旧布局")
+        except Exception:
+            try:
+                daily = pd.read_parquet(DC.DAILY_BASIC, columns=["pe_ttm", "turnover_rate"]).reset_index()
+            except Exception:
+                daily = None
+    if daily is None:
+        try:
+            daily = pd.read_parquet(DC.MAIN_DAILY, columns=["trade_date", "ts_code", "pe_ttm", "turnover_rate"])
+            if "trade_date" not in daily.columns:
+                raise KeyError("trade_date 不在数据列，回退旧布局")
+        except Exception:
+            daily = pd.read_parquet(DC.MAIN_DAILY, columns=["pe_ttm", "turnover_rate"]).reset_index()
     daily["trade_date"] = pd.to_datetime(daily["trade_date"])
     daily["ts_code"] = daily["ts_code"].astype(str)
     daily = daily.set_index(["trade_date", "ts_code"])
     idx = pd.MultiIndex.from_arrays([pre["trade_date"], pre["ts_code"]])
     est = daily.reindex(idx)
+    # ---- F6 est 时效自检（T-20260924-001 修复，2026-09-25 拍板落地）：主库周更滞后于快照日时 est 全 NaN ----
+    # 实锤：MAIN_DAILY max=2026-09-11（周更只读库），快照日 09-23 起 reindex 全 miss → SC_F6 全池恒 5.0
+    # （G2 上线即死维度，历史 16 交易日 CSV 全部 SC_F6=[5.0]）。且 est 带列全 NaN 会掩盖
+    # scorecard_real 的快照 pe_ttm/turn_ma5 兜底（est 非 None 即整列用 est）。
+    # 修复：est 命中率 < 50% 视为主库滞后 → est=None，F6 走快照兜底（build_g2_daily 已按 EPS 反推
+    # T 日口径，G2_RUNBOOK 验证 pe/pb 中位误差 0.00%）。AB/ENS 臂同判定（ab_est/en_est 同源）。
+    # 审核修正：历史产物 0902~0924 共 17 个 CSV 中 16 个恒 [5.0]，例外 20260911（09-14 重跑时
+    # est 恰命中主库 max=09-11，F6=[7,10] 反证根因），非「16 日全部恒」。
+    _est_hit = float(est["pe_ttm"].notna().mean()) if ("pe_ttm" in est.columns and len(est)) else 0.0
+    if _est_hit < 0.5:
+        print(f"    [F6] 主库 est 命中率 {_est_hit:.0%}（主库滞后快照日 {target.date()}）"
+              f"→ est=None，F6 走快照 pe_ttm/turn_ma5 兜底")
+        est = None
     # F2 评分卡口径：main_net 需为「元」（score_f2 阈值 5e7/1e7/1e8 均为元）
     # 快照 mf_main_net 是 moneyflow 五档「万元」，转元后作为评分卡主值；industry_pct 取 F5 当日自算值
     if "main_net" not in pre.columns and "mf_main_net" in pre.columns:
@@ -150,6 +263,8 @@ def main():
     _src = "Tushare每日快照(主源)" if mf_fresh else "新浪当日(兜底,Tushare滞后)"
     print(f"    F2 主源={_src}；新浪兜底覆盖 {rt_hit}/{len(pool_codes)} 只")
     # F5 为快照当日自算板块涨幅（build_g2_daily 已算），此处直接用 pre 的 industry_pct
+    # F3 面板外事件 fail-safe（T-20260924-001 方案 C）：predict 已完成，day 原帧不动
+    _fill_f3_events(pre, verbose=True)
     sc = SR.compute_real_scorecard(pre, est)
     pre["total_new"] = sc["total_new_real"].values
     for f in ("F1", "F2", "F3", "F4", "F5", "F6"):
@@ -227,7 +342,8 @@ def main():
             ab_bst = lgb.Booster(model_file=AB_MODEL)
             day["ab_prob"] = ab_bst.predict(day[ab_meta].astype("float32").values)
             ab_pre = day.nlargest(args.pool, "ab_prob").copy()
-            ab_est = daily.reindex(pd.MultiIndex.from_arrays([ab_pre["trade_date"], ab_pre["ts_code"]]))
+            ab_est = daily.reindex(pd.MultiIndex.from_arrays([ab_pre["trade_date"], ab_pre["ts_code"]])) \
+                if est is not None else None
             if "main_net" not in ab_pre.columns and "mf_main_net" in ab_pre.columns:
                 ab_pre["main_net"] = ab_pre["mf_main_net"] * 1e4
             if "industry_pct" not in ab_pre.columns and "ind_pct_ths" in ab_pre.columns:
@@ -235,6 +351,7 @@ def main():
             for c in ["main_net", "industry_pct", "volume_ratio"]:
                 if c not in ab_pre.columns:
                     ab_pre[c] = np.nan
+            _fill_f3_events(ab_pre)
             ab_sc = SR.compute_real_scorecard(ab_pre, ab_est)
             ab_pre["total_new"] = ab_sc["total_new_real"].values
             for f in ("F1", "F2", "F3", "F4", "F5", "F6"):
@@ -275,7 +392,8 @@ def main():
             day["ens"] = (day["rank_v"] + day["rank_g"]) / 2
             en_pre = day[(day["en_pg"] >= args.threshold / 100) | (day["en_pv"] >= args.threshold / 100)].copy()
             en_pool = en_pre.sort_values("ens", ascending=False).head(args.pool).copy()
-            en_est = daily.reindex(pd.MultiIndex.from_arrays([en_pool["trade_date"], en_pool["ts_code"]]))
+            en_est = daily.reindex(pd.MultiIndex.from_arrays([en_pool["trade_date"], en_pool["ts_code"]])) \
+                if est is not None else None
             if "main_net" not in en_pool.columns and "mf_main_net" in en_pool.columns:
                 en_pool["main_net"] = en_pool["mf_main_net"] * 1e4
             if "industry_pct" not in en_pool.columns and "ind_pct_ths" in en_pool.columns:
@@ -283,43 +401,48 @@ def main():
             for c in ["main_net", "industry_pct", "volume_ratio"]:
                 if c not in en_pool.columns:
                     en_pool[c] = np.nan
+            _fill_f3_events(en_pool)
             en_sc = SR.compute_real_scorecard(en_pool, en_est)
             en_pool["total_new"] = en_sc["total_new_real"].values
             for f in ("F1", "F2", "F3", "F4", "F5", "F6"):
                 en_pool[f"SC_{f}"] = en_sc[f].values
-            # ---- FAIL-LOUD 自检（T-20260919-002 防线D）：融合臂评分卡坍缩立即中止 ----
-            if en_pool["SC_F2"].nunique() <= 1 or en_pool["SC_F5"].nunique() <= 1 or en_pool["main_net"].notna().sum() == 0:
-                raise SystemExit("!! FAIL-LOUD（ENS）：SC_F2/SC_F5 恒值或 main_net 全 NaN——已中止 ENS 落盘")
-            en_pool = en_pool[en_pool["total_new"] >= args.threshold].copy()
+            # 空池先判：空表 nunique=0 会误触发下方 FAIL-LOUD（假阳性中止主臂落盘）
             if len(en_pool) == 0:
-                print(f"    [ENS] 融合无候选通过红线 {args.threshold:.0f} → 空仓")
+                print(f"    [ENS] 融合预筛后空池（概率/红线前）→ 空仓")
             else:
-                en_picks = en_pool.nlargest(args.top, "ens")
-                en_rows = [{"date": target.date(), "code": s["ts_code"], "rank": rk,
-                            "total_new": s["total_new"], "ens": s["ens"],
-                            "pv": s["en_pv"], "pg": s["en_pg"]}
-                           for rk, (_, s) in enumerate(en_picks.iterrows(), 1)]
-                _en_df = pd.DataFrame(en_rows)
-                if os.path.exists(ENS_LOG):
-                    _old = pd.read_csv(ENS_LOG, encoding="utf-8-sig")
-                    _en_df = pd.concat([_old, _en_df], ignore_index=True)
-                _en_df = _en_df.drop_duplicates(subset=["date", "code"], keep="last")
-                _tmp = ENS_LOG + ".tmp"
-                _en_df.to_csv(_tmp, index=False, encoding="utf-8-sig")
-                os.replace(_tmp, ENS_LOG)
-                print(f"    [ENS] 融合候选 {len(en_picks)} 只（Top{args.top}） -> {ENS_LOG}")
-                # 融合实盘选股落盘（--ens-live，供 rebalance_ens 消费：池=top10 by ens，买入=by total_new）
-                if args.ens_live:
-                    os.makedirs(ENS_SELECT, exist_ok=True)
-                    date_str2 = target.strftime("%Y%m%d")
-                    _ens_out = en_picks[["ts_code", "total_new", "ens", "en_pv", "en_pg"]].copy()
-                    _ens_out["trade_date"] = date_str2
-                    _ens_out = _ens_out.rename(columns={"en_pv": "pv", "en_pg": "pg"})
-                    _ens_out["total_new"] = _ens_out["total_new"].round(1)
-                    _ens_out["ens"] = _ens_out["ens"].round(4)
-                    _live_csv = os.path.join(ENS_SELECT, f"{date_str2}_g2_top{args.top}.csv")
-                    _ens_out.to_csv(_live_csv, index=False, encoding="utf-8-sig")
-                    print(f"    [ENS-LIVE] 融合实盘选股已写 {_live_csv}（{len(_ens_out)} 只，Top{args.top} by ens）")
+                # ---- FAIL-LOUD 自检（T-20260919-002 防线D）：融合臂评分卡坍缩立即中止 ----
+                if en_pool["SC_F2"].nunique() <= 1 or en_pool["SC_F5"].nunique() <= 1 or en_pool["main_net"].notna().sum() == 0:
+                    raise SystemExit("!! FAIL-LOUD（ENS）：SC_F2/SC_F5 恒值或 main_net 全 NaN——已中止 ENS 落盘")
+                en_pool = en_pool[en_pool["total_new"] >= args.threshold].copy()
+                if len(en_pool) == 0:
+                    print(f"    [ENS] 融合无候选通过红线 {args.threshold:.0f} → 空仓")
+                else:
+                    en_picks = en_pool.nlargest(args.top, "ens")
+                    en_rows = [{"date": target.date(), "code": s["ts_code"], "rank": rk,
+                                "total_new": s["total_new"], "ens": s["ens"],
+                                "pv": s["en_pv"], "pg": s["en_pg"]}
+                               for rk, (_, s) in enumerate(en_picks.iterrows(), 1)]
+                    _en_df = pd.DataFrame(en_rows)
+                    if os.path.exists(ENS_LOG):
+                        _old = pd.read_csv(ENS_LOG, encoding="utf-8-sig")
+                        _en_df = pd.concat([_old, _en_df], ignore_index=True)
+                    _en_df = _en_df.drop_duplicates(subset=["date", "code"], keep="last")
+                    _tmp = ENS_LOG + ".tmp"
+                    _en_df.to_csv(_tmp, index=False, encoding="utf-8-sig")
+                    os.replace(_tmp, ENS_LOG)
+                    print(f"    [ENS] 融合候选 {len(en_picks)} 只（Top{args.top}） -> {ENS_LOG}")
+                    # 融合实盘选股落盘（--ens-live，供 rebalance_ens 消费：池=top10 by ens，买入=by total_new）
+                    if args.ens_live:
+                        os.makedirs(ENS_SELECT, exist_ok=True)
+                        date_str2 = target.strftime("%Y%m%d")
+                        _ens_out = en_picks[["ts_code", "total_new", "ens", "en_pv", "en_pg"]].copy()
+                        _ens_out["trade_date"] = date_str2
+                        _ens_out = _ens_out.rename(columns={"en_pv": "pv", "en_pg": "pg"})
+                        _ens_out["total_new"] = _ens_out["total_new"].round(1)
+                        _ens_out["ens"] = _ens_out["ens"].round(4)
+                        _live_csv = os.path.join(ENS_SELECT, f"{date_str2}_g2_top{args.top}.csv")
+                        _ens_out.to_csv(_live_csv, index=False, encoding="utf-8-sig")
+                        print(f"    [ENS-LIVE] 融合实盘选股已写 {_live_csv}（{len(_ens_out)} 只，Top{args.top} by ens）")
 
 
 if __name__ == "__main__":

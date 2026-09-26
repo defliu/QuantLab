@@ -57,6 +57,33 @@ def _load_hold_codes():
     return set()
 
 
+def _load_prev_cfg_costs(date):
+    """读取最近一份（早于 date）positions_cfg 的 code→cost 映射。
+
+    部分卖出后账户 avg_price 会变为「保本价」（卖出收入抵减成本），不再是融合
+    原始成本；止损锚必须用原始成本，故已有持仓沿用前一日 positions_cfg 的 cost，
+    仅新仓位（首次出现）才取账户 avg_price。与 gen_positions_cfg_g2 同构。
+    """
+    try:
+        names = sorted([n for n in os.listdir(G.CMD_DIR)
+                        if n.startswith("positions_cfg_") and n.endswith(".json")], reverse=True)
+        for n in names:
+            d = n[len("positions_cfg_"):-5]
+            if d >= date:
+                continue
+            try:
+                with open(os.path.join(G.CMD_DIR, n), encoding="utf-8") as f:
+                    cfg = json.load(f)
+                if str(cfg.get("account_id", "")) != G.ACCOUNT_ID:
+                    continue
+                return {p["code"]: float(p.get("cost", 0) or 0) for p in cfg.get("positions", [])}
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return {}
+
+
 def main_with_date(date, dry_run=False):
     """按指定 date 生成 positions_cfg（供 CLI 与 rebalance_ens 复用）。返回退出码。"""
     print("== 融合 positions_cfg 生成（%s）== account=%s" % (date, G.ACCOUNT_ID))
@@ -71,6 +98,7 @@ def main_with_date(date, dry_run=False):
         print("[SKIP] state/ 无可用账户持仓快照（桥未导出），不写成本锚")
         return 0
     acct = {p.get("code", ""): p for p in pos.get("positions", [])}
+    prev_costs = _load_prev_cfg_costs(date)
 
     rows = []
     for code in sorted(hold_codes):
@@ -79,11 +107,18 @@ def main_with_date(date, dry_run=False):
             print("  [WARN] %s 在 hold_dates 但账户无该持仓（可能已清，建仓日未移除？），跳过" % code)
             continue
         vol = int(p.get("volume", 0) or 0)
-        cost = float(p.get("avg_price", 0) or 0)
+        # 已有持仓沿用前一日 cost（防账户保本价污染）；新仓位取账户 avg_price
+        if code in prev_costs and prev_costs[code] > 0:
+            cost = prev_costs[code]
+            src = "prev_cfg"
+        else:
+            cost = float(p.get("avg_price", 0) or 0)
+            src = "acct"
         if vol <= 0 or cost <= 0:
             print("  [WARN] %s 账户持仓 vol=%d cost=%.4f 非法，跳过" % (code, vol, cost))
             continue
         rows.append({"code": code, "cost": round(cost, 4), "vol": vol})
+        print("  %s %d@%.4f (%s)" % (code, vol, cost, src))
 
     if not rows:
         print("[SKIP] 融合持仓在账户中都无有效仓位，不写成本锚")

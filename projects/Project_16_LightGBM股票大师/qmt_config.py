@@ -71,7 +71,13 @@ SIGNAL_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "
 TRADE_LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "qmt_trade_log.csv")  # 成交记录
 
 # ---- 飞书推送（lark-cli 私聊通道）----
-LARK_CLI = r"C:\Users\Administrator\.trae-cn\plugins\trae-remote-official\lark\1.0.5\bin\lark-cli.exe"  # lark-cli 可执行文件
+# lark-cli 可执行文件（2026-09-23 路径加固 T-20260923-002）：
+#   主路径 = 与 TRAE 无关的独立副本（TRAE 升级/卸载不再中断飞书推送）；
+#   回退   = 原 TRAE 插件目录（1.0.5 实测可用）。主路径缺失自动回退，无需人工干预。
+#   两处 exe 曾 MD5 一致校验（ff86b854d819ea9195306ff0a8a98063），升级副本时需同步。
+_LARK_CLI_MAIN = r"C:\Users\Administrator\bin\lark-cli.exe"
+_LARK_CLI_FALLBACK = r"C:\Users\Administrator\.trae-cn\plugins\trae-remote-official\lark\1.0.5\bin\lark-cli.exe"
+LARK_CLI = _LARK_CLI_MAIN if os.path.exists(_LARK_CLI_MAIN) else _LARK_CLI_FALLBACK
 # 接收人 open_id（刘诚）。open_id 是「应用维度」的：
 #   bot cli_aade2524ddbd9bd6 下刘诚 = ou_bd13444d8ea53c28249c669f43f3eeff（已验证可私聊，2026-08-29 实测）
 #   （刘诚为「股票投研群」群主：user 视角群主 ou_34f40... == 刘诚，bot 视角群主 ou_bd13444... 即本值）

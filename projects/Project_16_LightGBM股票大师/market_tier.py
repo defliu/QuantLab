@@ -12,6 +12,13 @@ T 档（对齐 G2/V1.3 口径，T-20260904-004 / 2026-09-11）：
   T=2：HS300 >= -1.0%  → 正常（--top 2）
 数据缺失（腾讯取不到）→ fail-safe 按 T=1 半仓 + 醒目提示（刹车数据缺失时降速不裸奔）。
 
+【语义澄清 2026-09-23，防「TOP2 误读」】
+  输出的 tier/top 两个字段都是「T 档位」（0/1/2），**不是目标持仓只数**。
+  上游把 --top 传给 rebalance_daily.py 后，脚本内部会归一化（T-20260922-003）：
+    eff_top = args.top if args.top < 2 else TOP_N（TOP_N=5）
+  即 T=2 传 --top 2 实际按 TOP_N=5 只持仓执行，不会截断成 2 只。
+  看到 "top": 2 不代表持仓上限=2；持仓只数上限以 rebalance_daily.TOP_N 为准。
+
 用法：
   python market_tier.py                 # 取实时行情判定，输出一行摘要 + exit 0
   python market_tier.py --json          # 输出 JSON 供脚本消费
@@ -58,6 +65,9 @@ def main():
             "missing": missing,
             "note": deploy_note,
             "source": "tencent_qt.gtimg.cn" if not missing else "MISSING(fail-safe T=1)",
+            # 语义澄清（2026-09-23）：tier/top 均为 T 档位(0/1/2)，非目标持仓只数。
+            # rebalance_daily.py 收到 --top>=2 后会归一到 TOP_N(=5)，见 eff_top。
+            "semantics": "tier/top are TIER codes (0=clear,1=half,2=full), NOT position counts; rebalance_daily normalizes top>=2 to TOP_N",
         }
         print(json.dumps(out, ensure_ascii=False))
     else:
@@ -66,7 +76,7 @@ def main():
         else:
             print("沪深300 当日 %s → T=%d %s" % (hs_disp, tier, deploy_note))
         if args.top:
-            print("建议参数: --top %d" % top)
+            print("建议参数: --top %d （T 档位，非持仓只数；rebalance_daily 内部会归一到 TOP_N）" % top)
     sys.exit(0)
 
 

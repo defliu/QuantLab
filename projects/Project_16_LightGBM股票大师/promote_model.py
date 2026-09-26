@@ -156,6 +156,9 @@ def main():
             "candidate": os.path.basename(cand),
             "note": args.note,
         }
+        # T-20260923-005：成功 promote 即清除 gate_rejected（整个 binding 是新 dict，
+        # 天然不含 gate_rejected 键；此处显式记录以便追溯）。verify 不再把它当设计内等待。
+        # binding 是全新 dict，旧的 gate_rejected 字段不会被带入 —— 自动清除。
         # 指标入档：auto_promote.py 下次门禁据此做「相对不退步」判断（G3）
         try:
             if args.test_ic != "":

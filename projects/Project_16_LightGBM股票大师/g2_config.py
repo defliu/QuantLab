@@ -42,7 +42,10 @@ ENS_HOLD_DATES_FILE = os.path.join(DATA_DIR, "rebalance_g2_ens", "g2_ens_hold_da
 
 # ---- 飞书（沿用同一接收人，仅推送通道） ----
 FEISHU_OPEN_ID = "ou_bd13444d8ea53c28249c669f43f3eeff"
-LARK_CLI = r"C:\Users\Administrator\.trae-cn\plugins\trae-remote-official\lark\1.0.5\bin\lark-cli.exe"
+# lark-cli 可执行文件（2026-09-23 路径加固 T-20260923-002）：主路径独立于 TRAE，缺失自动回退旧路径
+_LARK_CLI_MAIN = r"C:\Users\Administrator\bin\lark-cli.exe"
+_LARK_CLI_FALLBACK = r"C:\Users\Administrator\.trae-cn\plugins\trae-remote-official\lark\1.0.5\bin\lark-cli.exe"
+LARK_CLI = _LARK_CLI_MAIN if os.path.exists(_LARK_CLI_MAIN) else _LARK_CLI_FALLBACK
 
 
 def load_g2_capital():

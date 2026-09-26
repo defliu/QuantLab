@@ -132,6 +132,26 @@ def main():
         live_meta = os.path.abspath(args.live_meta) if args.live_meta and os.path.exists(args.live_meta) else meta
     elif args.strategy in ("G2", "融合"):
         live_model, live_meta = load_live_g2()
+        # T-20260923-005 P1 修复：promote 已把指针指向候选时，候选==live → 自比较恒 PASS。
+        # 回退到 trial.prev_model（train_g2 --promote 写入的前一版）作为真正基准。
+        if os.path.abspath(live_model) == cand:
+            try:
+                d = json.load(open(G2_POINTER, encoding="utf-8"))
+                prev = (d.get("trial") or {}).get("prev_model")
+                if prev and os.path.exists(prev) and os.path.abspath(prev) != cand:
+                    prev_meta = os.path.join(DC.DATA_DIR, "features_v3_g2_strong_real_%s.json" % os.path.basename(prev).split("_")[-2])
+                    if os.path.exists(prev_meta):
+                        live_model, live_meta = prev, prev_meta
+                        log(f"  [fix] live 指针==候选，回退 trial.prev_model -> {os.path.basename(prev)}")
+                    else:
+                        log(f"  [fix] !! live 指针==候选且回退 meta 缺失（{prev_meta}），无法自比较——请显式传 --live")
+                        sys.exit(1)
+                else:
+                    log("  [fix] !! live 指针==候选但无可用 trial.prev_model，无法自比较——请显式传 --live")
+                    sys.exit(1)
+            except Exception as e:
+                log(f"  [fix] !! 回退 trial.prev_model 失败: {e}")
+                sys.exit(1)
     else:  # V1.4
         live_model = DC.model_file("_v3_enh")
         live_meta = os.path.join(DC.DATA_DIR, "features_v3_enh.json")
