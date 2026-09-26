@@ -19,6 +19,7 @@
 import argparse
 import json
 import os
+import warnings
 import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr
@@ -39,6 +40,34 @@ def calc_ic(y_true, y_pred):
     if mask.sum() < 5:
         return np.nan
     return spearmanr(y_true[mask], y_pred[mask]).correlation
+
+
+def train_cutoff(dates, hi, embargo):
+    """训练上界 = hi 及之前允许的最大交易日往前数 embargo 个交易日。
+
+    标签窗口跨未来 embargo 个交易日（fwd_ret 默认 horizon 1 日）。
+    切分首尾相接会让训练窗末尾若干行的标签窗口落进验证期（边界泄漏）；
+    回缩 embargo 个交易日后，任何训练样本的标签窗口都完整落在训练期内。
+    embargo=0 时行为与旧口径完全一致。
+    """
+    hi = pd.Timestamp(hi)
+    s = sorted(pd.Series(pd.to_datetime(dates)).dropna().unique())
+    if not s:
+        return None
+    a = [t for t in s if t <= hi]
+    if not a:
+        return None
+    k = max(0, min(int(embargo), len(a) - 1))
+    if int(embargo) > len(a) - 1:
+        # 静默 clamp 会把真实泄漏风险吞掉：训练窗实际长度不足以吃满 embargo，
+        # 多半是 rolling 折太靠数据起点（audit T-20260925-001 O2）。
+        # 只告警不改行为，让调用方看到真实情况。
+        warnings.warn(
+            "train_cutoff: embargo=%d 超过可用交易日数 %d，实际回缩 %d 日（可能被静默 clamp）"
+            % (int(embargo), len(a), len(a) - 1),
+            stacklevel=2,
+        )
+    return a[-1 - k]
 
 
 def daily_icir(panel, prob_col, ret_col):
@@ -119,6 +148,8 @@ def main():
     ap.add_argument("--split-train", default="2020-01-01/2023-06-30")
     ap.add_argument("--split-valid", default="2023-07-01/2024-06-30")
     ap.add_argument("--split-test", default="2024-07-01/2026-08-14")
+    ap.add_argument("--embargo-days", type=int, default=1,
+                    help="训练/验证边界隔离交易日数（>= 标签 horizon），0=旧口径不隔离")
     ap.add_argument("--rolling", action="store_true", help="附加季度滚动重训评估")
     ap.add_argument("--rolling-folds", type=int, default=6, help="滚动折数")
     ap.add_argument("--fine-lr", type=float, default=0.02, help="精调学习率")
@@ -146,7 +177,10 @@ def main():
     feat_cols = meta["feature_cols"]
     df["trade_date"] = pd.to_datetime(df["trade_date"])
     if args.limit_rows:
-        df = df.iloc[: args.limit_rows]
+        # 冒烟用：跨期随机抽样，而非 head(N) 头砍——头砍只会落在最早期，
+        # 默认 test 窗 (2024-07+) 会全被砍掉导致 evaluate 空样本崩溃
+        # （audit T-20260925-001 O3；对齐 train_g2.py build_panel 的做法）。
+        df = df.sample(n=args.limit_rows, random_state=0).sort_values("trade_date")
     print(f"    行数: {len(df):,}  特征数: {len(feat_cols)}")
 
     y = df["label"].astype(int).values
@@ -156,9 +190,11 @@ def main():
     tr0, tr1 = args.split_train.split("/")
     va0, va1 = args.split_valid.split("/")
     te0, te1 = args.split_test.split("/")
-    m_tr = (df["trade_date"] >= tr0) & (df["trade_date"] <= tr1)
+    cut_tr = train_cutoff(df["trade_date"], tr1, args.embargo_days) or pd.Timestamp(tr1)
+    m_tr = (df["trade_date"] >= tr0) & (df["trade_date"] <= cut_tr)
     m_va = (df["trade_date"] >= va0) & (df["trade_date"] <= va1)
     m_te = (df["trade_date"] >= te0) & (df["trade_date"] <= te1)
+    print(f"    embargo={args.embargo_days} 交易日内（train 上界 {pd.Timestamp(cut_tr).date()}）")
     print(f"    train: {m_tr.sum():,}  valid: {m_va.sum():,}  test: {m_te.sum():,}")
 
     print("[2/5] OPTUNA 参数寻优（目标=验证集 IC） ...")
@@ -206,7 +242,8 @@ def main():
             "n_trials": args.n_trials, "best_params": best_params, "best_valid_ic": study.best_value,
         },
         "fine_params": {k: v for k, v in fine_params.items() if k != "verbose"},
-        "splits": {"train": [tr0, tr1], "valid": [va0, va1], "test": [te0, te1]},
+        "splits": {"train": [tr0, str(pd.Timestamp(cut_tr).date())], "valid": [va0, va1], "test": [te0, te1]},
+        "embargo_days": args.embargo_days,
         "metrics": {
             "accuracy_0.5": res["acc"], "ic_all": res["ic_all"],
             "ic_daily_mean": res["ic_daily_mean"], "icir": res["icir"],
@@ -225,13 +262,19 @@ def main():
     if args.rolling:
         print("    [可选] 季度滚动重训评估 ...")
         fold_ics = {}
+        fold_cuts = {}
         fold_starts = pd.date_range("2021-01-01", "2026-03-31", freq="QS")
         for i, fs in enumerate(fold_starts):
             ve = fs + pd.DateOffset(months=3)
             te = ve + pd.DateOffset(months=3)
             if te > df["trade_date"].max():
                 break
-            m_r = df["trade_date"] < fs
+            # fs 是 valid 首日（非训练日）：旧口径训练上界 = <fs 的最大交易日，
+            # 需在 horizon 之外再多跨过 fs 本身，故 embargo+1
+            cut_r = train_cutoff(df["trade_date"], fs, args.embargo_days + 1) or fs
+            fold_cuts[str(fs.date())] = str(pd.Timestamp(cut_r).date())
+            print("      fold %s train 上界 %s (embargo=%d+1)" % (fs.date(), pd.Timestamp(cut_r).date(), args.embargo_days))
+            m_r = df["trade_date"] <= cut_r
             m_v = (df["trade_date"] >= fs) & (df["trade_date"] < ve)
             m_t = (df["trade_date"] >= ve) & (df["trade_date"] < te)
             if m_r.sum() < 10000 or m_t.sum() < 100:
@@ -243,6 +286,8 @@ def main():
         fics = pd.Series(fold_ics).dropna()
         report["rolling"] = {
             "fold_ic": {k: round(v, 5) for k, v in fics.items()},
+            "fold_train_cutoff": fold_cuts,
+            "embargo_days": args.embargo_days + 1,
             "mean_ic": float(fics.mean()),
             "std_ic": float(fics.std()),
             "icir": float(fics.mean() / fics.std()) if fics.std() > 0 else None,

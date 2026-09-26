@@ -14,6 +14,7 @@
 import argparse
 import json
 import os
+import warnings
 import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr
@@ -32,6 +33,34 @@ def calc_ic(y_true, y_pred):
     return spearmanr(y_true[mask], y_pred[mask]).correlation
 
 
+def train_cutoff(dates, hi, embargo):
+    """训练上界 = hi 及之前允许的最大交易日往前数 embargo 个交易日。
+
+    标签窗口跨未来 embargo 个交易日（默认 --fwd 1 = T 收盘→T+1 收盘）。
+    切分首尾相接会让训练窗末尾若干行的标签窗口落进验证期（边界泄漏）。
+    按此函数把训练上界回缩 embargo 个交易日后，任何训练样本的标签窗口都
+    完整落在训练期内。embargo=0 时行为与旧口径完全一致。
+    """
+    hi = pd.Timestamp(hi)
+    s = sorted(pd.Series(pd.to_datetime(dates)).dropna().unique())
+    if not s:
+        return None
+    a = [t for t in s if t <= hi]
+    if not a:
+        return None
+    k = max(0, min(int(embargo), len(a) - 1))
+    if int(embargo) > len(a) - 1:
+        # 静默 clamp 会把真实泄漏风险吞掉：训练窗实际长度不足以吃满 embargo，
+        # 说明 hi 之前根本凑不够 embargo 个交易日，多半是切分上界太靠数据起点。
+        # 只告警不改行为，让调用方看到真实情况（audit T-20260925-001 O2）。
+        warnings.warn(
+            "train_cutoff: embargo=%d 超过可用交易日数 %d，实际回缩 %d 日（可能被静默 clamp）"
+            % (int(embargo), len(a), len(a) - 1),
+            stacklevel=2,
+        )
+    return a[-1 - k]
+
+
 def daily_ic_series(panel, prob_col, ret_col):
     """按日计算全市场截面 IC 序列（用于 ICIR）。"""
     tmp = panel[["trade_date", ret_col, prob_col]].copy()
@@ -48,6 +77,8 @@ def main():
     ap.add_argument("--split-train", default="2020-01-01/2023-06-30")
     ap.add_argument("--split-valid", default="2023-07-01/2024-06-30")
     ap.add_argument("--split-test", default="2024-07-01/2026-08-14")
+    ap.add_argument("--embargo-days", type=int, default=1,
+                    help="训练/验证边界隔离交易日数（>= 标签 horizon），0=旧口径不隔离")
     args = ap.parse_args()
 
     train_rng, valid_rng, test_rng = args.split_train, args.split_valid, args.split_test
@@ -66,9 +97,11 @@ def main():
     fwd_ret = df["fwd_ret"].astype(float).values
     X = df[feat_cols].astype("float32").values
 
-    mask_tr = (df["trade_date"] >= train_rng[0]) & (df["trade_date"] <= train_rng[1])
+    cut_tr = train_cutoff(df["trade_date"], train_rng[1], args.embargo_days) or pd.Timestamp(train_rng[1])
+    mask_tr = (df["trade_date"] >= train_rng[0]) & (df["trade_date"] <= cut_tr)
     mask_va = (df["trade_date"] >= valid_rng[0]) & (df["trade_date"] <= valid_rng[1])
     mask_te = (df["trade_date"] >= test_rng[0]) & (df["trade_date"] <= test_rng[1])
+    print(f"    embargo={args.embargo_days} 交易日内（train 上界 {pd.Timestamp(cut_tr).date()}）")
     print(f"    train: {mask_tr.sum():,}  valid: {mask_va.sum():,}  test: {mask_te.sum():,}")
 
     print("[2/4] 训练 LightGBM 基线 ...")

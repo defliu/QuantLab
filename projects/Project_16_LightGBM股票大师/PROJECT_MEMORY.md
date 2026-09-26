@@ -713,7 +713,7 @@ ebalance_g2.py 买入循环低开校验（gap_guard）：极端低开<=-5%跳过
   3. **死代码藏身模板字符串**：AST 看不到，必须正则文本层兜底（`scan_deadcode.py` find_p2_text_hits）。
 - **三道防线（已落地+定时任务）**：
   - **A 静态扫描** `D:\QuantLab\scripts\scan_deadcode.py`（P1 建列后判/P2 passorder 真值，AST+文本双层）：接入 `build_p16_g2.py`/`build_p16_ens.py`/`build_p16_v13_risk.py` 构建前置（命中即中止构建）+ schtasks `Quant_P16_DeadcodeScan_Weekly`（周六 09:00）。默认扫 P16 全链路+broker+qmt_builder+data/schedules+versions 存档。
-  - **B 数据健康监控** `D:\QuantLab\scripts\check_scorecard_health.py`：每日 20:15（schtasks `Quant_P16_ScorecardHealth_Daily`），SC_F2/SC_F5 nunique<2 → error 飞书告警，快照非空率/新鲜度/live 日志 7 日检查；退出码 0=PASS/1=error/2=warn。**注意**：SC_F3/SC_F6 恒值是常态（Top100 当日分档同档），warn 级不告警 error。
+  - **B 数据健康监控** `D:\QuantLab\scripts\check_scorecard_health.py`：每日 20:15（schtasks `Quant_P16_ScorecardHealth_Daily`），SC_F2/SC_F5 nunique<2 → error 飞书告警，快照非空率/新鲜度/live 日志 7 日检查；退出码 0=PASS/1=error/2=warn。**注意（2026-09-24 T-20260924-001 修正旧说法「F3/F6 恒值是常态」）**：SC_F1 恒值=分档桶效应（设计内，warn）；**SC_F6 恒 5.0=MAIN_DAILY 滞后 est 全 NaN（数据源失效，须查主库 max）**；**SC_F3 恒 4.0=候选不在 enh 面板宇宙（覆盖断裂，非分档同档）**；warn 级不升 error，但 F6/F3 恒值必须按上述两查法定性，勿再当「常态」忽略。（09-25 方案 A+C 已修：F6/F3 恒值再现=修复回归，除两查外加查 est 自检日志与 `_fill_f3_events` 是否触发。**另：任务 LastResult 经 `powershell -Command` 包装 exit 2(warn)→1，与 exit 1(error) 不可区分；且假日 `latest_top10_csv` 会选中 +1 交易日副本（文件名最大）而非当日产物，两者均可造成「假 error」——判定必须复跑 `--no-send` 看输出或看飞书卡级别。**）
   - **C 快照回放回归** `D:\QuantLab\data\schedules\test_g2_rerun.py`：周六 09:10（schtasks `Quant_P16_G2Rerun_Weekly`），重放 deploy_predict_g2 主流程 + 独立校验 CSV 健康（列齐全/SC_F2/F5 非坍缩/候选非空）。
   - **D FAIL-LOUD**：deploy_predict_g2.py 主/--ab/--ensemble 三处断言，`SC_F2/SC_F5 nunique<=1 or main_net 全 NaN` 即 `raise SystemExit` 中止落盘（宁可空仓不选错），随 20:05 候选自动执行零额外调度。
 - **坏样本归档**：`data/selections/g2/20260921_g2_top10.csv`、`20260921_g2_top2.csv`（修复前坏代码生成，SC_F5 恒 5.0）已归档 `.bak_bad_deadcode`，防 B 误报/防 rebalance 消费。
@@ -1123,3 +1123,72 @@ ollback_streak.json 计数，连续 3 交易日才触发；方法论第七节同
 - **P1 新发现（待拍板修复，本会话未改）**：`run_scheduled.ps1` L356 G2 策略层门禁命令不传 `--live` → `gate_strategy_layer.py` 缺省读当前 live 指针，而 train_g2 --promote 已把指针指向新候选 → **候选自己比自己，diff=0 恒 PASS，--rollback 分支死代码**（融合分支同病；V1.4 分支显式传 pre_retrain 备份 --live 不受影响）。修法=仿 V1.4 传 `--live <pre_retrain 备份>` 或 gate 缺省改读 trial.prev_model。意味着：历次 G2 promote 后的策略层门禁可能均未真检验（需回溯 09-15 版 promote 是否人工跑过带 --live 的门禁）。
 - **E6 TW 快照刷新**：本会话无 TRAE Schedule list 直连能力，改用 **TRAE renderer 日志触发证据重建**（`TRAE SOLO CN/logs/*/renderer*.log` 的 scheduled_task_triggered 事件）：10 Active 任务 09-15~09-22 每交易日全有触发、3 Paused（eda9b0c3/c63cff58/f43df15a）零触发、快照外新任务 **5f2bd77c 夸克行情数据每周更新检查**（09-13 后新建，观测 09-21T03:00 定时触发与 cron `0 3 * * MON` 吻合）。与 07:30 并发会话写入的快照内容**完全一致**——快照已被刷新，遵守双写红线不重复写，本会话独立交叉验证签收。方法可复用：无 TRAE 面板时用 renderer 日志重建清单+状态。
 - **端到端验证**：nightly_check.py（无 --fix）复跑 **FAIL=0 WARN=0 exit=0**；E6 PASS（快照 14 项新鲜，无 Active 冲突）；B2 模型-面板绑定一致维持。全程无 commit、无下单、无复盘-下单混淆（仅训练/门禁/检查类脚本）。
+
+## 2026-09-23 · B2「模型-面板同步」反复事故彻底修复（T-20260923-005，授权「全权处理」，交易时段未跑重训）
+
+- **根因链（结构性循环，已复发多次）**：策略层门禁每次拒绝候选 → 模型回滚到上周版本、绑定回滚 → 面板继续日刷 → gap>7 → B2 每天 FAIL，直到下次周更成功。09-21 回滚未滚绑定的 P0 已在 T-20260922-001 修；09-23 gap=8 天 >7 此前必 FAIL——告警系统把「设计内等待」误报为「反复事故」。
+- **彻底修复五项**：
+  1. `verify_model_panel_sync.py` 新增 `gate_rejected` 感知——gap>7 但门禁拒绝在期望重训窗口内（`next_retrain>=今天`）→ **WARN/exit 0**（设计内等待）；超期未 promote → 恢复 FAIL（真·周更失败）；树数/mtime 不一致仍硬 FAIL（回滚链路 bug 不放过）。
+  2. `run_scheduled.ps1` V1.3 **策略层门禁 BEFORE auto_promote**——旧序 promote→策略层→FAIL回滚=每次拒绝留半吊子回滚窗口；新序策略层先跑（candidate vs pre_retrain 备份），PASS 才进模型层；FAIL=从未 promote，只写 `gate_rejected{at,layer,candidate,reason,next_retrain=下周一}`，无需回滚任何文件。门禁运行异常/缺文件 = fail-closed 拒绝 promote。
+  3. `run_scheduled.ps1` G2 门禁补传 `--live $g2LiveBak --live-meta $g2OldMeta`（修复 P1：promote 后指针==候选 → 自比较恒 PASS，`--rollback` 死代码；promote 前同时捕获 old meta 路径）。
+  4. `gate_strategy_layer.py` G2/融合缺省 live 解析防御——candidate==当前指针时回退 `trial.prev_model`，无可用回退则 exit 1 拒绝自比较。
+  5. `scripts/nightly_check.py` B2 解析输出含 `WARN` → 状态记 WARN 而非 FAIL（`write_report` 已支持 WARN 分类，FAIL 才告警）。
+- **`promote_model.py`** 成功 promote 重写全新 binding dict → `gate_rejected` 自动清除（无需显式删）。
+- **回溯补状态**：当前绑定已写入 09-21 18:41:26 策略层拒绝记录（`next_retrain=2026-09-28`），立即生效。
+- **验证（全部 PASS，未跑训练）**：`verify_model_panel_sync.py` exit=0 输出 WARN；`nightly_check.check_b` 复跑 **FAIL=0 WARN=1**（B2=WARN）；4 文件 py_compile exit=0；`run_scheduled.ps1` BOM `EF BB BF` 完好 + Parser `PARSE_OK`；binding `gate_rejected.next_retrain=2026-09-28`。
+- **边界**：仅改门禁/校验/调度层，未动训练、模型文件、实盘下单；下次周更 **09-28（周一）17:00** 首次验证新序（策略层 BEFORE promote）。
+- **看板**：T-20260923-005；repowiki `QMT架构集成.md` 新增「B2 反复 FAIL」行已同步；`WORKFLOW_REGISTRY.md` 四节已更新两条路径门禁顺序与 G2 --live。
+
+### 09-23 周训补跑实录（10:07–12:31，新序首次实战）+ 两尾巴修复
+
+- **V1.3 路径（策略层 BEFORE promote 新序首跑成功）**：面板刷新到 09-22 → train_optuna 候选 `lgb_model_v3_retrain_20260923.txt`（4151→候选，test IC 0.04554/ICIR 0.3605）→ 策略层门禁 **FAIL**（candidate excess **-0.0004** vs live **+0.0011**，差 -0.0015 > 容差 0.0002）→ **直接写 `gate_rejected(next_retrain=2026-09-28)` 并跳过 auto_promote，正式模型零改动**——旧序 promote→回滚 的半吊子窗口不复存在，新序实证成立。
+- **G2 路径**：train_g2 候选 `0923_2576t`（ic=0.07821/tail=0.1174/top2=+0.0156）vs live `0915_1522t`（ic=0.07905/tail=0.1257/top2=+0.0269）同窗 → **strict 三项全 FAIL → live 不变**（维持 09-15 版）。在线增量 lhb/北向 OK、report_rc 超限（10次/日额度，不阻断）。
+- **尾巴1 BOM 崩溃（本轮暴露）**：`verify_model_panel_sync.py --warn-only` 读 binding 抛 `Unexpected UTF-8 BOM` exit=1——根因是 `run_scheduled.ps1` 的 `Set-Content -Encoding UTF8` 写 binding **带 BOM**（`EF BB BF`），Python `encoding="utf-8"` 读炸。**修复**：`verify_model_panel_sync.py`、`auto_promote.py` 读 binding 改 `encoding="utf-8-sig"`（BOM 有无都能读）。py_compile OK。
+- **尾巴2 G2 指针误报（本轮暴露，09-21 已知未修）**：日志 `G2 live 指针缺失，跳过备份`——根因 `g2_live_model.json` 的 `quantile_fwd_ret["5"]: Infinity`（Python json 非标准写入）→ PowerShell `ConvertFrom-Json` 抛异常被 `catch{}` 吞 → `$g2Cur=null` → promote 前备份被误跳过 + `$g2OldMeta` 为空 → 下轮 G2 策略层门禁缺 `--live` 会重演自比较。**修复**：`run_scheduled.ps1` 改用正则提取 `model_path`/`meta_path`（不依赖 JSON 解析器接受 Infinity），已实测提取到 09-15 live 且文件存在。BOM `EF BB BF` + PARSE_OK 复验。
+- **验证**：`verify_model_panel_sync.py --warn-only` exit=0 输出 WARN（gate_rejected=09-23 11:17:50）；`nightly_check.check_b` **FAIL=0 WARN=1**；binding 经 utf-8-sig 正确解析含 `gate_rejected`；ps1 BOM 完好。
+- **边界**：正式模型仍 4151 树/09-14 版；G2 live 仍 0915_1522t；候选文件已留档待 09-28 复训对比。未动实盘下单。
+
+### 09-21 周训执行核实（T-20260923-006，防误判为任务失败）
+
+- **结论（三处独立佐证）**：`quant_weekly_retrain` 09-21 **LastRun=17:00:00 LastResult=0**（任务本身成功）；日志 `retrain_20260921_170003.log` 220 行完整（17:00 启动→19:42 结束）；正式模型 mtime=09-14、MD5 与 `models/bak/lgb_model_v3_pre_retrain_20260921_170116.txt` **完全一致**（回滚成功）。
+- **V1.3 链**：train_optuna 产候选 6617 树（18:07:39）→ 模型层 G0~G6 全 PASS、auto_promote 短暂上线（18:07:41）→ **策略层门禁 FAIL**（excess +0.0008 < live +0.0011，差 -0.0003 > 容差 +0.0002）→ 18:41:26 **回滚正式模型至 09-14 版**。**正式模型未更新 = 门禁有意拒绝差候选（设计内 fail-loud），不是调度没跑、不是任务执行失败**。
+- **G2 链同日**：`refresh_panel_enh` 校验失败（turnover_rank 复现率 0%，vintage 漂移）→ `check_enh_freshness` 落后 10 天 > 7 → **硬门禁阻断 G2 重训**（日志 L68/L218），G2 未训练属数据新鲜度阻断，亦非任务故障；09-22 人工补跑也被 strict 门禁拒（见 T-20260922-001）。
+- **伴生 P0（当时暴露、次日已修）**：回滚只还原模型文件**未回滚绑定** → verify 报「模型被改动但未登记」→ T-20260922-001 修（绑定回滚 + promote 前备份 + 回滚分支同步写绑定）。
+- **防误判记录落点**：①`results/周训执行核实报告_20260921.md`（完整时间线+判定）；②`VERSIONS.md` 0921 上线记录已加「已回滚、非任务失败」批注；③binding note 已注明「09-21候选策略层门禁FAIL已回滚」。**后续任何人见「正式模型仍 09-14 / gap>7」，先看本核实报告与 gate_rejected，勿直接定性为周训任务故障**。
+
+## 2026-09-23 T档 vs TOP_N 语义澄清（T-20260923-007）
+- 诚哥问「持仓仍2只、自动化仍判TOP2」：**TOP2=T档位不是持仓只数**；eff_top 已归一 TOP_N=5。
+- 落盘：market_tier.py semantics/建议行 + rebalance_daily.py dry/live JSON 记 tier+eff_top + WorkBuddy 配置明细 §三-1 澄清。
+- 持仓仍2只=09-23 过红线0票宁缺毋滥 + 09-21/22 受旧 --top bug（09-22晚已修）。
+- 规则：读 tier/top=2 先查同 JSON eff_top 与 TOP_N，勿当持仓只数。
+
+## 2026-09-24 G2 评分卡 SC_F1/F3/F6 nunique=1 排查（T-20260924-001）
+- 对象：`data/selections/g2/20260924_g2_top10.csv`（09-23 快照、trade_date=20260924）。
+- **SC_F6=数据源失效（实锤）**：`MAIN_DAILY` max=2026-09-11 滞后 12 天 → `deploy_predict_g2` est reindex 全 NaN → `review_full.score_f6` nan→5.0 恒值；`scorecard_real.compute_real_scorecard` est 非 None 即整列用 est、**不按行回退快照 pe_ttm/turn_ma5**（快照 pe 67% 非空、turn_ma5 全有，本可兜底）。Updatedata 最新仅 `8.31-9.4`，主库 09-11 后无增量包。
+- **SC_F3=面板宇宙覆盖断裂（非面板内事件源坏）**：`feature_panel_v3_enh` 09-23 仅 **2791 只**（v2 dropna BASE_FEATURES 收缩，universe 5488/stock_basic 5904），快照全市场 5839 → `build_g2_daily` map 后 **52.2% 事件列 NaN**；**top10 全部 0/10 不在面板** → `_score_f3` 加成条件全 False → 恒 4.0。面板内事件列 0% NaN；finance 源 forecast/express max=20260729、dividend=20260821 滞后是次因。
+- **SC_F1=分档桶效应（非数据源）**：pos_250 健康（快照 nunique=5287、nan 7.7%），top10 全落 [0.448,0.660] ⊂ <0.72 档 → `_score_f1` 恒 8.0。
+- **F2/F5 主源健康**（night log：Tushare 96/100 + sina 4/100，FAIL-LOUD 未触发）；重放 top10 与 CSV 代码序列完全一致。
+- 修复待拍板：A. scorecard_real est 全/行 NaN 回退快照 pe/turn（最小、只救 F6）；B. 催刷主库 Updatedata（治本，需 E 盘包）；C. F3 面板宇宙扩覆盖或 build_g2_daily 面板外 fail-safe（改选股口径需重验）；D. F1 不修。
+- 规则：SC_F6 恒 5.0 先查 MAIN_DAILY max 与 est reindex；SC_F3 恒 4.0 先查候选是否在 enh 面板宇宙内。
+- **✅ 方案 A 已执行（2026-09-25 诚哥拍板「动手修」，改动落 `deploy_predict_g2.py` 而非 `scorecard_real`）**——完整报告：`results/SC_F6数据源失效排查与修复报告_20260925.md`：
+  - **落点选择**：`scorecard_real.compute_real_scorecard` 被 `scan_rotate_cost_real`/`optimize_scorecard` 回测共用（口径须冻结），故改在 live 侧 `deploy_predict_g2.py`——est 构建后加**命中率自检**：`est["pe_ttm"]` 非空率 < 50% 视为主库滞后快照日 → `est=None`，让 scorecard_real 走**设计内**的快照 `pe_ttm`/`turn_ma5` 兜底（`build_g2_daily` 已按 EPS 反推 T 日口径，G2_RUNBOOK 验证中位误差 0.00%）；`--ab`/`--ensemble` 臂的 `ab_est`/`en_est` 同判定（`est is None` 时直接 None）。主库新鲜（命中 ≥50%）时行为不变，回测零影响。
+  - **只读验证（2026-09-25 快照，miniQMT venv，未写生产文件）**：est 命中率 0.0% → 修复前 Top100 SC_F6 恒 {5.0:100}；修复后 nunique=5，dist={1.0:14, 4.0:8, 5.0:55, 7.0:17, 10.0:6}，**均值仍 5.0 无系统性偏移**（红线穿越无方向性影响）；py_compile PASS。
+  - **生效时点**：09-25（周五）18:14 改毕，当晚 20:05 `g2_candidates_night` 首跑修复版；此前 09-24 夜间产物仍是旧口径（SC_F6=5.0），属预期。20:15 `check_scorecard_health` 的 SC_F6 warn 应消失（除非快照 pe/turn 也断）。
+  - **遗留**：①方案 B（主库停 09-11，需 E 盘离线包人工催刷）未做——兜底已让管线对主库滞后免疫，B 非紧急；②~~方案 C 未做~~ 已于同日执行（见下）；③修复版首夜（09-25）核对（中秋休市 target 停 09-24，产物=覆盖 `20260924`+复制 `20260928`）：日志 `[F6] 主库 est 命中率 0% → est=None` + `[F3] 面板外事件 fail-safe` 两行、CSV SC_F6/SC_F3 均非恒值（干跑预演 n=7 过红线，空仓则 CSV 项顺延）、20:15 health check 双 warn 消失。
+  - **✅ 方案 C 已执行（2026-09-25 诚哥拍板「F3 的问题也修了」，落 `deploy_predict_g2.py` 池副本而非 build_g2_daily 快照）**：`_fill_f3_events()`（L61）在三处 `compute_real_scorecard` 前（主臂 L251 verbose / AB L338 / ENS L388）对四列（fc_days/ex_days/fc_pchange/dv_year_sum）NaN 行按 `build_features_v2` 同源 PIT 口径重算（ann_date<=T backward、90 天事件窗、365 天分红窗回溯至多 30 条）；**只填 predict 之后的评分池副本 → 模型输入/输出零变化**（四列同时是 g2 43/AB 33 模型特征，改快照会动 Top100 构成不可归因）；源异常保持 NaN 中性不阻断。验证：py_compile PASS；重放 Top100 F3 nunique **1→4**（{4:60,5:7,7:25,9:8}）、红线≥60 穿越 **0→7**、rank corr 0.8398、prob 逐位不变、PIT 抽查 fc 3/3+dv 2/2 精确；端到端干跑（输出重定向临时目录、生产零接触）主臂 7 只过线 + AB/ENS 全通过。报告七/八章：`results/SC_F6数据源失效排查与修复报告_20260925.md`。
+  - **✅ 首跑核对（2026-09-25 20:05~20:23 实录，报告九章）**：夜跑 `[F6] est=None` + `[F3] fail-safe 100/100` 双行出现、top10/top3/AB/ENS/ENSLIVE 全 exit=0；产物 `20260924` n=7 与干跑逐位一致（F3=3 档/F6=2 档，两死维度解除）；20:10 compare PASS（**空仓一致性路径**：按运行日键控、假日两侧均空，逐位验证由干跑对生产完成）。**附带发现**：①假日 `g2_candidates_night.ps1` 次日副本按 `$runDay` 找源必跳过（产物按 target 命名）→ 0928 四副本停旧口径，已按脚本语义手工补生成 4 文件（夜志 `[MANUAL] 20:22:59` 留痕），health 复跑仅剩 F1 设计 warn；**ps1 根因（源改按快照 target 日定位）待拍板**。②health `latest_top10_csv` 取文件名最大者→假日查的是次日副本非当日产物（周中无碍），**改 mtime 选文件待拍板**。③**schtasks LastResult 经 `powershell -Command` 包装会把 python exit 2(warn) 显示成 1（与 exit 1 error 不可区分，实证 `cmd /c exit 2` 包装后=1）——判定健康勿信 LastResult，复跑 `--no-send` 或看飞书卡级别**。
+
+## 2026-09-25 训练切分加 embargo（T-20260925-001）
+- 起因：评估外部文章《会自己进化的ETF自动交易系统》（其用 Purged K-Fold + 5日 embargo）时发现 P16 全项目 **无 embargo / 无 purge**——固定三段与季度滚动切分首尾相接（train 2023-06-30 → valid 2023-07-01）。
+- **泄漏机理**：G2 标签 N3 = T+1 开盘→T+4 开盘（跨 4 个交易日的价格点），训练窗末尾若干行的标签窗口落进验证期 → 训练样本标签含验证期行情信息 → valid IC 被轻微抬高，early stopping / 超参搜索对着「掺水考官」调参。
+- **修复（三脚本同口径；审计勘误：原记「各 +18 行」不实，git numstat 实测 train_baseline +24/-1、train_g2 +36/-4、train_optuna +28/-3——含 17 行 `train_cutoff` 函数 + 各调用点/日志/报告字段改造）**：新增 `train_cutoff(dates, hi, embargo)` —— 训练上界 = hi 及之前允许的最大交易日**往前数 embargo 个交易日**（按真实交易日历取数，不用 DateOffset 天数，避开非交易日误差）；`embargo=0` 时严格回到旧口径。
+  - `train_g2.py`：`EMBARGO_DAYS = 4`（= N3 标签跨度 4 个价格点），固定三段 train 上界 2023-06-30 → **2023-06-26**。
+  - `train_baseline.py`：`--embargo-days` 默认 1（标签 horizon=1 日），可命令行覆盖。
+  - `train_optuna.py`：`--embargo-days` 默认 1，**季度滚动折同步生效**（`m_r` 由 `date < fs` 改为 `date <= train_cutoff(fs, args.embargo_days + 1)`；**审计 T-20260925-001 P1 修复（09-25）**：fs 是 valid 首日而非训练日，需额外跨过 fs 本身，故 embargo+1 = fs 前 2 个交易日，修后 21 折全部干净、逐折 cut 写入 `report["rolling"].fold_cuts` 并打日志）；optuna_report.json 的 `splits.train` 改记实际训练上界 + 新增 `embargo_days` 字段，报告可审计。
+- **实测（feature_panel_v3，1863 交易日 2019-01-10~2026-09-24）**：剔除 2023-06-27/28/29/30 四个交易日，train 2,075,966 → 2,066,366 行（-0.462%）；末样本 2023-06-26 的 N3 标签窗口末点 = **2023-06-30**（审计勘误：原记 06-29 是 +3 口径之误，06-26 后续 4 个交易日为 06-27/28/29/30）= 训练期最后交易日 < 2023-07-01，**已完全落在 valid 期之前，边界泄漏消除——embargo=4 为精确最小值，末点恰压训练期最后交易日、一点不宽松**。rolling 折 fs=2022-01-01 → 训练上界 2021-12-27 系 **embargo=4 口径**的数字（审计勘误：此语境是 train_optuna 默认 embargo=1，滚动折经 P1 修复按 embargo+1=2 回缩，实测训练上界 **2021-12-29**，末样本标签日 2021-12-30 < fs ✓）。
+- **边界健壮性（已单测）**：embargo 超过可用交易日数时钳到最小不抛错；空序列 / 上界之前无交易日返回 None，调用点用 `or pd.Timestamp(...)` 兜底回旧上界。
+- **踩坑**：`train_cutoff` 首版直接用 `hi` 比较 Timestamp，三个调用点传的都是字符串（如 `"2023-06-30"`）→ `Timestamp <= str` 抛 TypeError。已在函数入口 `hi = pd.Timestamp(hi)` 归一，单测用真实调用形态验证通过。
+- **影响定性**：改动幅度小（污染样本 ~0.5%），**不会改变收益结论**；价值在口径干净 + 按 Purged K-Fold 标准审计可过关。真正的大头仍是「回测期 ⊆ test 集双重使用」（见 09-09 ⑤ 与 T-20260909-001），embargo 只是顺手补的小缝。
+- 验证：三脚本 ast.parse 语法通过（审计勘误：原记 395/186/286 各多计 1 行，实测 **394/185/285**；P1 整改后 train_optuna 增至 292 行）+ `train_cutoff` 单测 + 真实面板边界打印全 PASS（一次性脚本已删，不留仓库）。
+- **未动**：`overnight_20260825.py` / `overnight_opt_20260825.py` / `versions/V20260909_*/train_g2.py` 仍为旧口径——它们是历史归档/一次性研究脚本，不属生产重训路径；若日后要复现 G2 生产训练，用 `train_g2.py` 即已带 embargo。
+

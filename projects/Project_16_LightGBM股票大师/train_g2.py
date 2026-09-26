@@ -53,6 +53,7 @@ IND_FEATS = ["ind_pct_ths", "ind_net_ths"]
 G2_EXTRA = LHB_FEATS + NORTH_FEATS + RC_FEATS + MF_FEATS + IND_FEATS
 
 # 训练参数（08-25 通宵寻优最优）
+EMBARGO_DAYS = 4
 PARAMS = dict(
     objective="binary", metric="auc", learning_rate=0.02, n_estimators=12000,
     max_depth=5, num_leaves=63, min_child_samples=1000, feature_fraction=0.9,
@@ -63,6 +64,29 @@ PARAMS = dict(
 
 def log(msg):
     print(msg, flush=True)
+
+
+def train_cutoff(dates, hi, embargo):
+    """训练上界 = hi 及之前允许的最大交易日往前数 embargo 个交易日。
+
+    G2 N3 标签 = adj_open_{T+4} / adj_open_{T+1} - 1（open→open），
+    训练样本最远用到 T+4 的开盘价。以 hi=2023-06-30（train 名义上界）为例：
+      06-30 前数 embargo 个交易日的实际边界样本（embargo=4）= 2023-06-26，
+      其 T+4 = 2023-06-30（06-27/28/29/30 四个连续交易日，压线训练期最后一天）
+      -> embargo=4 是使「所有训练样本标签窗口完整落在 train 期」的**精确最小值**；
+      embargo=3 时上界 = 06-27，其 T+4 = 07-03 ∈ valid 期，泄漏残留。
+    按此函数把训练上界回缩 embargo 个交易日后，任何训练样本的标签窗口都完整
+    落在训练期内。embargo=0 时行为与旧口径完全一致（hi 本身即最大交易日）。
+    """
+    hi = pd.Timestamp(hi)
+    s = sorted(pd.Series(pd.to_datetime(dates)).dropna().unique())
+    if not s:
+        return None
+    a = [t for t in s if t <= hi]
+    if not a:
+        return None
+    k = max(0, min(int(embargo), len(a) - 1))
+    return a[-1 - k]
 
 
 def build_panel(limit_rows=0, max_date=None):
@@ -187,9 +211,11 @@ def train_g2_strong_real(panel, feat, max_est=12000):
     X = d[feat].astype("float32").values
     y = d["label3"].astype(int).values
     fwd = d["fwd_ret3"].astype(float).values
-    m_tr = (d["trade_date"] >= "2020-01-01") & (d["trade_date"] <= "2023-06-30")
+    cut_tr = train_cutoff(d["trade_date"], "2023-06-30", EMBARGO_DAYS) or pd.Timestamp("2023-06-30")
+    m_tr = (d["trade_date"] >= "2020-01-01") & (d["trade_date"] <= cut_tr)
     m_va = (d["trade_date"] >= "2023-07-01") & (d["trade_date"] <= "2024-06-30")
     m_te = (d["trade_date"] >= "2024-07-01")
+    log(f"    embargo={EMBARGO_DAYS} 交易日内（train 上界 {pd.Timestamp(cut_tr).date()}）")
     log(f"    train {m_tr.sum():,}  valid {m_va.sum():,}  test {m_te.sum():,}")
 
     params = dict(PARAMS, n_estimators=max_est)
@@ -240,9 +266,18 @@ def _top2_sim(panel, prob, thr=0.60, cost=0.001):
 
 
 def eval_metrics(panel, feat, model, thr=0.60):
-    """门禁统一评估：整体 IC + 尾部 IC（prob>=thr）+ TOP2 可执行模拟，全部在同一 test 窗口。
-    G1 同窗口公平对比 / G2 尾部质量 / G3 可执行回测门槛 的度量源。"""
+    """门禁统一评估：仅在 test 窗口（trade_date >= 2024-07-01，与 train_g2_strong_real /
+    auto_promote 固定切分同口径）计算 整体 IC + 尾部 IC（prob>=thr）+ TOP2 可执行模拟。
+    G1 同窗口公平对比 / G2 尾部质量 / G3 可执行回测门槛 的度量源。
+
+    T-fix：原实现用全样本 panel 算 IC 却标 test_ic，与 train_g2_strong_real 的 test 窗、
+    auto_promote 的固定 test 切分不一致，门禁比较失真；现统一先过滤到 test 窗。
+    """
     from scipy.stats import spearmanr
+    panel = panel[panel["trade_date"] >= pd.Timestamp("2024-07-01")]
+    if len(panel) < 100:
+        log(f"!! eval_metrics: test 窗样本不足 ({len(panel)} < 100)，返回 nan 拒绝门禁")
+        return {"ic": float("nan"), "tail_ic": None, "top2_ret": float("nan"), "top2_n": 0}
     X = panel[feat].astype("float32").values
     if hasattr(model, "predict_proba"):
         prob = model.predict_proba(X)[:, 1]
@@ -338,7 +373,8 @@ def main():
 
     pointer = {
         "model_path": out_ascii, "meta_path": fjson,
-        "trained_date": stamp, "trees": bi, "test_ic": round(cand_m["ic"], 5),
+        "trained_date": stamp, "trees": bi,
+        "test_ic": (round(cand_m["ic"], 5) if cand_m["ic"] == cand_m["ic"] else None),  # NaN 防护
         "tail_ic": round(cand_m["tail_ic"], 5) if cand_m["tail_ic"] is not None else None,
         "top2_ret": round(cand_m["top2_ret"], 5), "top2_n": cand_m["top2_n"],
         "quantile_fwd_ret": {str(k): round(v, 5) for k, v in qret.items()},
