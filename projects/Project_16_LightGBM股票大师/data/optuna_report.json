@@ -2,28 +2,28 @@
   "optuna": {
     "n_trials": 20,
     "best_params": {
-      "max_depth": 6,
-      "num_leaves": 7,
+      "max_depth": 4,
+      "num_leaves": 15,
       "min_child_samples": 2000,
       "feature_fraction": 0.9,
-      "bagging_fraction": 0.9,
-      "lambda_l1": 0.012709324336863058,
-      "lambda_l2": 2.4470520656918113
+      "bagging_fraction": 0.7,
+      "lambda_l1": 0.020617091474798382,
+      "lambda_l2": 165.42992611153136
     },
-    "best_valid_ic": 0.08842174498629271
+    "best_valid_ic": 0.08517240701558203
   },
   "fine_params": {
     "objective": "binary",
     "metric": "auc",
     "learning_rate": 0.02,
     "n_estimators": 12000,
-    "max_depth": 6,
-    "num_leaves": 7,
+    "max_depth": 4,
+    "num_leaves": 15,
     "min_child_samples": 2000,
     "feature_fraction": 0.9,
-    "bagging_fraction": 0.9,
-    "lambda_l1": 0.012709324336863058,
-    "lambda_l2": 2.4470520656918113,
+    "bagging_fraction": 0.7,
+    "lambda_l1": 0.020617091474798382,
+    "lambda_l2": 165.42992611153136,
     "random_state": 42,
     "n_jobs": -1
   },
@@ -42,101 +42,101 @@
     ]
   },
   "metrics": {
-    "accuracy_0.5": 0.5214617390145965,
-    "ic_all": 0.04314773564337121,
-    "ic_daily_mean": 0.043084449482450625,
-    "icir": 0.34282251112945206,
+    "accuracy_0.5": 0.5218321557027858,
+    "ic_all": 0.04554157967507456,
+    "ic_daily_mean": 0.04457377584890254,
+    "icir": 0.36051561458708187,
     "quantile_fwd_ret": {
-      "1": 0.0003065478784465928,
-      "2": 0.0008670989508564066,
-      "3": 0.0009996092841457914,
-      "4": 0.0009284737591551855,
-      "5": 0.0024488748573692626
+      "1": 0.00015546701287285914,
+      "2": 0.000954234040858508,
+      "3": 0.0009406876406273004,
+      "4": 0.0010117663199972788,
+      "5": 0.002488439177821563
     }
   },
   "top20_features": [
     [
       "fc_days_since",
-      "3973"
-    ],
-    [
-      "rel_mom_20",
-      "2820"
-    ],
-    [
-      "mom_20",
-      "2728"
-    ],
-    [
-      "rsi6",
-      "2604"
+      "5072"
     ],
     [
       "volume_ratio",
-      "2485"
+      "3436"
     ],
     [
-      "above_ma60",
-      "2305"
+      "rsi6",
+      "3293"
+    ],
+    [
+      "rel_mom_20",
+      "3276"
+    ],
+    [
+      "mom_20",
+      "3147"
     ],
     [
       "mom_5",
-      "2295"
+      "2726"
     ],
     [
-      "mom_10",
-      "1690"
-    ],
-    [
-      "mom_60",
-      "1666"
+      "above_ma60",
+      "2534"
     ],
     [
       "dist_250_low",
-      "1645"
-    ],
-    [
-      "vol20",
-      "1586"
+      "2158"
     ],
     [
       "above_ma20",
-      "1563"
+      "2117"
     ],
     [
-      "macd_hist",
-      "1433"
+      "mom_10",
+      "2067"
+    ],
+    [
+      "mom_60",
+      "2003"
+    ],
+    [
+      "vol20",
+      "1976"
     ],
     [
       "vol_ratio_5_20",
-      "1352"
+      "1761"
+    ],
+    [
+      "macd_hist",
+      "1752"
     ],
     [
       "amount_ma5",
-      "1231"
+      "1597"
     ],
     [
       "pb",
-      "1189"
+      "1492"
     ],
     [
       "sc_days_since",
-      "1014"
+      "1441"
     ],
     [
       "pos_250",
-      "972"
+      "1215"
     ],
     [
       "turn_ma5",
-      "891"
+      "1192"
     ],
     [
       "log_mv",
-      "870"
+      "1150"
     ]
   ],
-  "model_file": "D:/QuantLab/models\\lgb_model_v3_retrain_20260921.txt",
-  "panel_max_date": "2026-09-21",
+  "model_file": "D:/QuantLab/models\\lgb_model_v3_retrain_20260923.txt",
+  "panel_max_date": "2026-09-22",
   "verdict": "PASS: test IC 显著为正，模型已保存，可进入阶段3(双轨选股接入)"
 }

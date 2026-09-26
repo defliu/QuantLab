@@ -1,0 +1,138 @@
+{
+  "date": "20260922",
+  "account_id": "70180771",
+  "capital": 99323.6,
+  "pool": [
+    {
+      "code": "002510.SZ",
+      "total": 67.5
+    },
+    {
+      "code": "300311.SZ",
+      "total": 66.0
+    },
+    {
+      "code": "688636.SH",
+      "total": 65.0
+    },
+    {
+      "code": "688193.SH",
+      "total": 65.0
+    },
+    {
+      "code": "688651.SH",
+      "total": 63.5
+    },
+    {
+      "code": "688450.SH",
+      "total": 63.5
+    },
+    {
+      "code": "688010.SH",
+      "total": 63.5
+    },
+    {
+      "code": "603021.SH",
+      "total": 62.5
+    },
+    {
+      "code": "000911.SZ",
+      "total": 62.5
+    },
+    {
+      "code": "600576.SH",
+      "total": 62.5
+    }
+  ],
+  "ledger": {
+    "300475.SZ": {
+      "vol": 200,
+      "cost": 170.1475,
+      "src": "cfg"
+    },
+    "605098.SH": {
+      "vol": 1000,
+      "cost": 54.8899,
+      "src": "cfg"
+    }
+  },
+  "note": "g2 候选池 10 只（红线 60）",
+  "hold_days": 15,
+  "hold_dates": {
+    "300475.SZ": "20260904",
+    "605098.SH": "20260916"
+  },
+  "sells": [
+    {
+      "code": "300475.SZ",
+      "vol": 100,
+      "cost": 170.1475,
+      "price": 184.57,
+      "note": "等权减仓"
+    },
+    {
+      "code": "605098.SH",
+      "vol": 500,
+      "cost": 54.8899,
+      "price": 53.34,
+      "note": "等权减仓"
+    }
+  ],
+  "buys": [
+    {
+      "code": "002510.SZ",
+      "vol": 5300,
+      "price": 5.83,
+      "held": 0,
+      "target_vol": 5300,
+      "total": 67.5
+    }
+  ],
+  "skips": [
+    {
+      "code": "300475.SZ",
+      "vol": 200,
+      "reason": "持有未满15日(20260904起,已12日,日历OK)"
+    },
+    {
+      "code": "605098.SH",
+      "vol": 1000,
+      "reason": "持有未满15日(20260916起,已4日,日历OK)"
+    }
+  ],
+  "hs300_pct": 0.8554,
+  "tier": 2,
+  "deploy_pct": 0.95,
+  "target_value": 31452.47,
+  "written": true,
+  "seq": 1,
+  "hold_dates_after": {
+    "002510.SZ": "20260922"
+  },
+  "orders": [
+    {
+      "action": "SELL",
+      "code": "300475.SZ",
+      "vol": 100,
+      "price": 184.57,
+      "reason": "动态等权超配减仓(目标市值31452)",
+      "strategy_order_id": "P16_20260922_0001"
+    },
+    {
+      "action": "SELL",
+      "code": "605098.SH",
+      "vol": 500,
+      "price": 53.34,
+      "reason": "动态等权超配减仓(目标市值31452)",
+      "strategy_order_id": "P16_20260922_0002"
+    },
+    {
+      "action": "BUY",
+      "code": "002510.SZ",
+      "vol": 5300,
+      "price": 5.83,
+      "reason": "g2选股Top1(total=67.5)",
+      "strategy_order_id": "P16_20260922_0003"
+    }
+  ]
+}

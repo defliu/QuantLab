@@ -1,0 +1,116 @@
+{
+  "date": "20260922",
+  "account_id": "70180771",
+  "generated_at": "2026-09-22 23:41:10",
+  "fills": [
+    {
+      "strategy_order_id": "P16_20260922_0002",
+      "code": "600409.SH",
+      "action": "SELL",
+      "vol": 4500,
+      "price": 6.43,
+      "status": "FILLED",
+      "reason": "deal confirmed"
+    },
+    {
+      "strategy_order_id": "P16_20260922_0003",
+      "code": "688450.SH",
+      "action": "BUY",
+      "vol": 500,
+      "price": 33.56,
+      "status": "FILLED",
+      "reason": "deal confirmed"
+    },
+    {
+      "strategy_order_id": "P16_20260922_0004",
+      "code": "688651.SH",
+      "action": "BUY",
+      "vol": 700,
+      "price": 24.88,
+      "status": "FILLED",
+      "reason": "deal confirmed"
+    },
+    {
+      "strategy_order_id": "P16_20260922_0001",
+      "code": "300138.SZ",
+      "action": "SELL",
+      "vol": 2500,
+      "price": 11.29,
+      "status": "FILLED",
+      "reason": "deal confirmed"
+    },
+    {
+      "strategy_order_id": "P16_20260922_0005",
+      "code": "603021.SH",
+      "action": "BUY",
+      "vol": 3400,
+      "price": 5.5,
+      "status": "FILLED",
+      "reason": "deal confirmed"
+    }
+  ],
+  "pending": [],
+  "orphans": [],
+  "cross_strategy": [
+    {
+      "code": "300475.SZ",
+      "vol": 100,
+      "hint": "账户比融合账本多 100 股（G2 持仓，同账号非融合孤儿）"
+    },
+    {
+      "code": "605098.SH",
+      "vol": 500,
+      "hint": "账户比融合账本多 500 股（G2 持仓，同账号非融合孤儿）"
+    },
+    {
+      "code": "002510.SZ",
+      "vol": 5300,
+      "hint": "账户比融合账本多 5300 股（G2 持仓，同账号非融合孤儿）"
+    }
+  ],
+  "ledger": {
+    "300138.SZ": 1600,
+    "600409.SH": 2900,
+    "603021.SH": 3400,
+    "688450.SH": 500,
+    "688651.SH": 700
+  },
+  "asset": {
+    "account_id": "70180771",
+    "date": "20260922",
+    "updated_at": "2026-09-22 15:00:05",
+    "total_asset": 9994849.35,
+    "cash_available": 9829669.35,
+    "market_value": 165180.0
+  },
+  "issues": [
+    "账户含 3 只 G2 持仓（同账号，非融合孤儿，仅提示）"
+  ],
+  "fills_total": 5,
+  "fills_by_status": {
+    "FILLED": 5
+  },
+  "pending_count": 0,
+  "account_positions": {
+    "600409.SH": 2900,
+    "603021.SH": 3400,
+    "605098.SH": 500,
+    "688450.SH": 500,
+    "688651.SH": 700,
+    "002510.SZ": 5300,
+    "300138.SZ": 1600,
+    "300475.SZ": 100
+  },
+  "deltas": {
+    "300475.SZ": 100,
+    "605098.SH": 500,
+    "002510.SZ": 5300
+  },
+  "other_strategy_holdings": [
+    "002510.SZ",
+    "300475.SZ",
+    "605098.SH"
+  ],
+  "capital_prev": 99827.54,
+  "capital_rolled": 99715.69
+}

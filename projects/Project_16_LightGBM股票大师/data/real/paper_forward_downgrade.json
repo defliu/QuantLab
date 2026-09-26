@@ -3,22 +3,22 @@
   "G2": {
     "frozen": false,
     "since": "",
-    "n": 20,
-    "mean_excess": -0.004563556578493391,
+    "n": 27,
+    "mean_excess": 0.008367136897151788,
     "note": ""
   },
   "V1.3": {
     "frozen": false,
     "since": "",
-    "n": 0,
-    "mean_excess": null,
+    "n": 10,
+    "mean_excess": 0.05802359377647197,
     "note": ""
   },
   "ENS": {
     "frozen": false,
     "since": "",
-    "n": 0,
-    "mean_excess": null,
+    "n": 2,
+    "mean_excess": 0.04374708122703422,
     "note": ""
   }
 }

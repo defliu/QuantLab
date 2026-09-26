@@ -1,0 +1,21 @@
+{
+  "date": "20260923",
+  "executed_live": true,
+  "executed_at": "2026-09-23 09:50:00",
+  "tier": 2,
+  "tier_note": "T=2 正常满仓（沪深300 -0.28%，来源腾讯行情）",
+  "target": [],
+  "target_note": "当日清单过红线(>=58)的票为 0，宁缺毋滥，本日不换仓",
+  "strategy_capital": 90038.77,
+  "sell": [],
+  "buy": [],
+  "trim": [],
+  "hold": [
+    {"ts_code": "603049.SH", "volume": 900, "cost": 44.48, "market_value": 40635.0, "buy_date": "2026-09-16", "hold_days": 6, "mature": true},
+    {"ts_code": "603237.SH", "volume": 2800, "cost": 14.61, "market_value": 42588.0, "buy_date": "2026-09-17", "hold_days": 5, "mature": true}
+  ],
+  "hold_note": "两只持仓均已到期(HOLD_DAYS=5)，但无候选过红线，按宁缺毋滥原则保留不卖",
+  "locked": [],
+  "guard_note": [],
+  "no_action_reason": "selection_full 8 只候选 total 均 < 58 红线（最高 603558.SH 健盛集团 51.0），无达标买入标的；到期持仓因无替代标的保留"
+}

@@ -1,0 +1,93 @@
+{
+  "date": "20260922",
+  "account_id": "70180771",
+  "capital": 99323.6,
+  "pool": [
+    {
+      "code": "002510.SZ",
+      "total": 67.5
+    },
+    {
+      "code": "300311.SZ",
+      "total": 66.0
+    },
+    {
+      "code": "688636.SH",
+      "total": 65.0
+    },
+    {
+      "code": "688193.SH",
+      "total": 65.0
+    },
+    {
+      "code": "688651.SH",
+      "total": 63.5
+    },
+    {
+      "code": "688450.SH",
+      "total": 63.5
+    },
+    {
+      "code": "688010.SH",
+      "total": 63.5
+    },
+    {
+      "code": "603021.SH",
+      "total": 62.5
+    },
+    {
+      "code": "000911.SZ",
+      "total": 62.5
+    },
+    {
+      "code": "600576.SH",
+      "total": 62.5
+    }
+  ],
+  "ledger": {
+    "300475.SZ": {
+      "vol": 200,
+      "cost": 170.1475,
+      "src": "cfg"
+    },
+    "605098.SH": {
+      "vol": 1000,
+      "cost": 54.8899,
+      "src": "cfg"
+    },
+    "002510.SZ": {
+      "vol": 5300,
+      "cost": 5.83,
+      "src": "fills"
+    }
+  },
+  "note": "g2 候选池 10 只（红线 60）",
+  "hold_days": 15,
+  "hold_dates": {
+    "002510.SZ": "20260922"
+  },
+  "sells": [],
+  "buys": [],
+  "skips": [
+    {
+      "code": "300475.SZ",
+      "vol": 200,
+      "reason": "建仓日缺失，fail-safe 跳过卖出（防误清仓）"
+    },
+    {
+      "code": "605098.SH",
+      "vol": 1000,
+      "reason": "建仓日缺失，fail-safe 跳过卖出（防误清仓）"
+    },
+    {
+      "code": "002510.SZ",
+      "vol": 5300,
+      "reason": "持有未满15日(20260922起,已0日,日历OK)"
+    }
+  ],
+  "hs300_pct": 0.7454,
+  "tier": 2,
+  "deploy_pct": 0.95,
+  "written": false,
+  "orders": []
+}

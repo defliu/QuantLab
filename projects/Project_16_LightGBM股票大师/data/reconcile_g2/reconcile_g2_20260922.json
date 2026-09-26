@@ -1,0 +1,111 @@
+{
+  "date": "20260922",
+  "account_id": "70180771",
+  "generated_at": "2026-09-22 23:39:47",
+  "fills": [
+    {
+      "strategy_order_id": "P16_20260922_0001",
+      "code": "300475.SZ",
+      "action": "SELL",
+      "vol": 100,
+      "price": 184.57,
+      "status": "FILLED",
+      "reason": "deal confirmed"
+    },
+    {
+      "strategy_order_id": "P16_20260922_0002",
+      "code": "605098.SH",
+      "action": "SELL",
+      "vol": 500,
+      "price": 53.34,
+      "status": "FILLED",
+      "reason": "deal confirmed"
+    },
+    {
+      "strategy_order_id": "P16_20260922_0003",
+      "code": "002510.SZ",
+      "action": "BUY",
+      "vol": 5300,
+      "price": 5.83,
+      "status": "FILLED",
+      "reason": "deal confirmed"
+    }
+  ],
+  "pending": [],
+  "orphans": [
+    {
+      "code": "300138.SZ",
+      "vol": 1600,
+      "hint": "账户比 G2 账本多 1600 股（孤儿/其他未知策略，G2 不主动处理，仅预警）"
+    },
+    {
+      "code": "600409.SH",
+      "vol": 2900,
+      "hint": "账户比 G2 账本多 2900 股（孤儿/其他未知策略，G2 不主动处理，仅预警）"
+    }
+  ],
+  "cross_strategy": [
+    {
+      "code": "603021.SH",
+      "vol": 3400,
+      "hint": "账户比 G2 账本多 3400 股（融合ENS 持仓，同账号非 G2 孤儿）"
+    },
+    {
+      "code": "688651.SH",
+      "vol": 700,
+      "hint": "账户比 G2 账本多 700 股（融合ENS 持仓，同账号非 G2 孤儿）"
+    },
+    {
+      "code": "688450.SH",
+      "vol": 500,
+      "hint": "账户比 G2 账本多 500 股（融合ENS 持仓，同账号非 G2 孤儿）"
+    }
+  ],
+  "ledger": {
+    "002510.SZ": 5300,
+    "300475.SZ": 100,
+    "605098.SH": 500
+  },
+  "asset": {
+    "account_id": "70180771",
+    "date": "20260922",
+    "updated_at": "2026-09-22 15:00:05",
+    "total_asset": 9994849.35,
+    "cash_available": 9829669.35,
+    "market_value": 165180.0
+  },
+  "issues": [
+    "持仓差额: 300138.SZ 账户比账本多 1600 股",
+    "持仓差额: 600409.SH 账户比账本多 2900 股",
+    "发现 2 只持仓超额（孤儿/未知），G2 不主动处理，仅预警",
+    "账户含 3 只融合ENS 持仓（同账号，非 G2 孤儿，仅提示）"
+  ],
+  "fills_total": 3,
+  "fills_by_status": {
+    "FILLED": 3
+  },
+  "pending_count": 0,
+  "account_positions": {
+    "600409.SH": 2900,
+    "603021.SH": 3400,
+    "605098.SH": 500,
+    "688450.SH": 500,
+    "688651.SH": 700,
+    "002510.SZ": 5300,
+    "300138.SZ": 1600,
+    "300475.SZ": 100
+  },
+  "deltas": {
+    "603021.SH": 3400,
+    "300138.SZ": 1600,
+    "688651.SH": 700,
+    "600409.SH": 2900,
+    "688450.SH": 500
+  },
+  "other_strategy_holdings": [
+    "603021.SH",
+    "688450.SH",
+    "688651.SH"
+  ],
+  "capital_rolled": 99157.8
+}

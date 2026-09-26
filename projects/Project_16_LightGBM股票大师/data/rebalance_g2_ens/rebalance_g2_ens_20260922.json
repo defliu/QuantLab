@@ -1,0 +1,161 @@
+{
+  "date": "20260922",
+  "account_id": "70180771",
+  "capital": 100305.77,
+  "pool": [
+    {
+      "code": "688450.SH",
+      "total": 63.5
+    },
+    {
+      "code": "688651.SH",
+      "total": 63.5
+    },
+    {
+      "code": "603021.SH",
+      "total": 62.5
+    },
+    {
+      "code": "000911.SZ",
+      "total": 62.5
+    },
+    {
+      "code": "920508.BJ",
+      "total": 60.5
+    },
+    {
+      "code": "300477.SZ",
+      "total": 60.5
+    },
+    {
+      "code": "920896.BJ",
+      "total": 60.5
+    }
+  ],
+  "ledger": {
+    "300138.SZ": {
+      "vol": 4100,
+      "cost": 11.4489,
+      "src": "cfg"
+    },
+    "600409.SH": {
+      "vol": 7400,
+      "cost": 6.3851,
+      "src": "cfg"
+    },
+    "688450.SH": {
+      "vol": 500,
+      "cost": 33.56,
+      "src": "fills"
+    },
+    "688651.SH": {
+      "vol": 700,
+      "cost": 24.88,
+      "src": "fills"
+    },
+    "603021.SH": {
+      "vol": 3400,
+      "cost": 5.5,
+      "src": "fills"
+    }
+  },
+  "note": "融合候选池 7 只（红线 60）",
+  "hold_days": 10,
+  "hold_dates": {
+    "688450.SH": "20260922",
+    "688651.SH": "20260922",
+    "603021.SH": "20260922"
+  },
+  "sells": [
+    {
+      "code": "300138.SZ",
+      "vol": 1600,
+      "cost": 11.4489,
+      "price": 11.29
+    },
+    {
+      "code": "600409.SH",
+      "vol": 2900,
+      "cost": 6.3851,
+      "price": 6.41
+    }
+  ],
+  "buys": [
+    {
+      "code": "000911.SZ",
+      "vol": 3600,
+      "price": 5.23,
+      "held": 0,
+      "target_vol": 3600,
+      "total": 62.5
+    },
+    {
+      "code": "920508.BJ",
+      "vol": 1200,
+      "price": 15.2,
+      "held": 0,
+      "target_vol": 1200,
+      "total": 60.5
+    }
+  ],
+  "skips": [
+    {
+      "code": "688450.SH",
+      "vol": 500,
+      "reason": "持有未满10日(20260922起,已0日,日历OK)"
+    },
+    {
+      "code": "688651.SH",
+      "vol": 700,
+      "reason": "持有未满10日(20260922起,已0日,日历OK)"
+    },
+    {
+      "code": "603021.SH",
+      "vol": 3400,
+      "reason": "持有未满10日(20260922起,已0日,日历OK)"
+    }
+  ],
+  "target_value": 19058.1,
+  "written": false,
+  "hold_dates_preview": {
+    "688450.SH": "20260922",
+    "688651.SH": "20260922",
+    "603021.SH": "20260922",
+    "000911.SZ": "20260922",
+    "920508.BJ": "20260922"
+  },
+  "orders": [
+    {
+      "action": "SELL",
+      "code": "300138.SZ",
+      "vol": 1600,
+      "price": 11.29,
+      "reason": "融合持有到期(满10日)",
+      "strategy_order_id": "P16_20260922_0002"
+    },
+    {
+      "action": "SELL",
+      "code": "600409.SH",
+      "vol": 2900,
+      "price": 6.41,
+      "reason": "融合持有到期(满10日)",
+      "strategy_order_id": "P16_20260922_0003"
+    },
+    {
+      "action": "BUY",
+      "code": "000911.SZ",
+      "vol": 3600,
+      "price": 5.23,
+      "reason": "融合选股Top1(total=62.5)",
+      "strategy_order_id": "P16_20260922_0004"
+    },
+    {
+      "action": "BUY",
+      "code": "920508.BJ",
+      "vol": 1200,
+      "price": 15.2,
+      "reason": "融合选股Top2(total=60.5)",
+      "strategy_order_id": "P16_20260922_0005"
+    }
+  ]
+}
