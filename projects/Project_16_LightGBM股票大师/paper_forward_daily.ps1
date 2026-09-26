@@ -20,7 +20,9 @@
 # 2026-09-16: 新增步骤7 track_sold_forward.py 实盘卖出后 T+1/3/5 前向跟踪（T-20260916-003）：
 #             对 qmt_trade_log + 三桥 fills 的每笔实盘 SELL 回填后续开收盘 vs 卖出价，
 #             产物 data/real/sold_forward_live.csv + sold_forward_<date>.md（含卖飞警示）。
-$ErrorActionPreference = "Stop"
+# PS5.1 下 native stderr 经 *>> 重定向会触发 ErrorRecord，Stop 会静默终止整条管道
+# （与 nightly_check_task 同口径，T-20260910-006 教训）；退出码逐步显式检查。
+$ErrorActionPreference = "Continue"
 $proj = $PSScriptRoot
 $py = "C:\Users\Administrator\AppData\Roaming\TRAE SOLO CN\ModularData\ai-agent\vm\tools\python\python.exe"
 $stamp = Get-Date -Format "yyyyMMdd_HHmmss"
@@ -28,10 +30,13 @@ $log = Join-Path $proj "data\real\g2_pipeline_daily.log"
 try {
     Push-Location $proj
     & $py -u build_g2_daily.py *>> $log
+    $bgExit = $LASTEXITCODE
     & $py -u deploy_predict_g2.py --ensemble --ens-live *>> $log
+    $dpExit = $LASTEXITCODE
     & $py -u paper_forward.py --backfill --hold 10 *>> $log
     $bfExit = $LASTEXITCODE
     & $py -u forward_stats.py --hold 10 *>> $log
+    $fsExit = $LASTEXITCODE
     & $py -u paper_forward_exit.py --top 3 --hold 10 *>> $log
     $pfExit = $LASTEXITCODE
     & $py -u paper_forward_downgrade.py *>> $log
@@ -43,6 +48,14 @@ try {
     & $py -u paper_quarterly_review.py *>> $log
     $qrExit = $LASTEXITCODE
     Pop-Location
+    if ($bgExit -ne 0) {
+        Add-Content -Path $log -Value "[$stamp] BUILD-ALERT build_g2_daily 异常退出 (exit=$bgExit)"
+        exit 2
+    }
+    if ($dpExit -ne 0) {
+        Add-Content -Path $log -Value "[$stamp] DEPLOY-ALERT deploy_predict_g2 异常退出 (exit=$dpExit)"
+        exit 2
+    }
     if ($bfExit -eq 2) {
         Add-Content -Path $log -Value "[$stamp] BACKFILL-ALERT 行情数据源停更，无新样本产出 (backfill exit=2)"
         exit 2

@@ -72,6 +72,18 @@ TABLES = [
         "date_is_str": True,
         "dedup_lhb": False,
     },
+    {
+        # 2026-09-26 方案A：Tushare daily_basic 日刷估值（G2 评分卡 F6 当日真实口径）
+        # 首次建库允许文件不存在（allow_create），之后按增量刷新与其余三表同逻辑
+        "name": "daily/daily_basic",
+        "path": os.path.join(ASTOCK, "daily", "daily_basic.parquet"),
+        "api": "daily_basic",
+        "index_cols": ["trade_date", "ts_code"],
+        "date_col": "trade_date",
+        "date_is_str": False,
+        "allow_create": True,
+        "dedup_lhb": False,
+    },
 ]
 
 
@@ -161,14 +173,23 @@ def refresh_table(pro, table, end_date, days, apply_mode):
     st = dict(name=name, status="PENDING")
 
     if not os.path.isfile(path):
-        raise RuntimeError("%s 不存在: %s" % (name, path))
-
-    cur = pd.read_parquet(path)
-    cur_max = _local_max(cur, table)
-    st["local_max"] = cur_max
-    print("  [%s] 本地最新 %s（%d 行）" % (name, cur_max, len(cur)))
+        if not table.get("allow_create"):
+            raise RuntimeError("%s 不存在: %s" % (name, path))
+        # 首建模式：文件不存在时跳过"文件必须存在"检查，从固定起始日期拉取
+        cur = None
+        cur_max = "20250601"
+        st["local_max"] = cur_max
+        print("  [%s] 本地文件不存在，首建模式（起始 %s）" % (name, cur_max))
+    else:
+        cur = pd.read_parquet(path)
+        cur_max = _local_max(cur, table)
+        st["local_max"] = cur_max
+        print("  [%s] 本地最新 %s（%d 行）" % (name, cur_max, len(cur)))
 
     dates = [d for d in trade_cal(pro, cur_max, end_date) if d > cur_max]
+    # trade_cal 的 Tushare API 路径返回倒序、bdate_range fallback 返回正序：统一为正序，
+    # 否则 dates[-days:] 取到的是窗口内最早 N 天（首建 --days 90 会拉 2025 年旧数据）
+    dates = sorted(dates)
     if not dates:
         st["status"] = "UP_TO_DATE"
         print("  [%s] 已最新，无需刷新" % name)
@@ -208,19 +229,25 @@ def refresh_table(pro, table, end_date, days, apply_mode):
     # 按目标表结构合并
     if table["index_cols"]:
         new = new.set_index(table["index_cols"])
-        if isinstance(cur.index, pd.MultiIndex) and cur.index.names == table["index_cols"]:
-            pass
+        if cur is None:
+            merged = new                      # 首建：无本地旧档，直接以新数据为 merged
         else:
-            cur = cur.reset_index()
-            cur = cur.set_index([c for c in table["index_cols"] if c in cur.columns])
-        merged = pd.concat([cur, new])
+            if isinstance(cur.index, pd.MultiIndex) and cur.index.names == table["index_cols"]:
+                pass
+            else:
+                cur = cur.reset_index()
+                cur = cur.set_index([c for c in table["index_cols"] if c in cur.columns])
+            merged = pd.concat([cur, new])
         merged = merged[~merged.index.duplicated(keep="last")]
         merged = merged.sort_index()
     else:
         keys = table["keys"]
         new = new.set_index(keys)
-        cur = cur.set_index(keys) if not isinstance(cur.index, pd.MultiIndex) else cur
-        merged = pd.concat([cur, new])
+        if cur is None:
+            merged = new                      # 首建：无本地旧档，直接以新数据为 merged
+        else:
+            cur = cur.set_index(keys) if not isinstance(cur.index, pd.MultiIndex) else cur
+            merged = pd.concat([cur, new])
         merged = merged[~merged.index.duplicated(keep="last")]
         merged = merged.sort_index()
         # 恢复 RangeIndex（原表为普通列结构：trade_date 是列不是索引，
@@ -229,11 +256,14 @@ def refresh_table(pro, table, end_date, days, apply_mode):
         if "col_order" in table:
             merged = merged[[c for c in table["col_order"] if c in merged.columns]]
 
-    bak = path + ".bak_online"
-    if os.path.exists(bak):
-        os.remove(bak)
-    shutil.copy2(path, bak)
-    st["backup"] = bak
+    if os.path.isfile(path):
+        bak = path + ".bak_online"
+        if os.path.exists(bak):
+            os.remove(bak)
+        shutil.copy2(path, bak)
+        st["backup"] = bak
+    else:
+        st["backup"] = None                    # 首建：无旧文件可备份
     merged.to_parquet(path)
     st["new_rows"] = len(merged)
 

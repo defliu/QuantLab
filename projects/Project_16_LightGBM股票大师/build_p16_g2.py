@@ -44,7 +44,11 @@ def build():
     _scan = subprocess.run([sys.executable, r"D:\QuantLab\scripts\scan_deadcode.py", "--paths", SRC],
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if _scan.stdout:
-        print(_scan.stdout.decode("utf-8", "replace")[-2000:])
+        # GBK 控制台无法编码替换字符时降级打印，不阻断构建
+        try:
+            print(_scan.stdout.decode("utf-8", "replace")[-2000:])
+        except UnicodeEncodeError:
+            print(repr(_scan.stdout[-500:]))
     if _scan.returncode != 0:
         raise SystemExit("[DEADCODE-REJECT] 死代码扫描命中（P1建列后判 / P2 passorder真值判断），中止构建")
 

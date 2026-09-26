@@ -57,9 +57,16 @@ try {
         if (Test-Path $planJson) {
             try {
                 $plan = Get-Content $planJson -Raw -Encoding UTF8 | ConvertFrom-Json
-                # 正式 json 由 --live 执行写出（NOOP 时 orders 空但 json 存在，written 可能缺失）
-                $already = $true; Log "  rebalance_g2_ens_$Date.json 已存在 → ENS 已执行（含 NOOP），跳过"
-                if ($plan.orders -and $plan.orders.Count -gt 0) { Log "    当日计划含 $($plan.orders.Count) 条指令" }
+                # 正式 json 由 --live 执行写出（NOOP 时 orders 空但 json 存在）
+                if ($plan.written -eq $true) {
+                    $already = $true; Log "  rebalance_g2_ens_$Date.json written=true → ENS 已执行（含 NOOP），跳过"
+                    if ($plan.orders -and $plan.orders.Count -gt 0) { Log "    当日计划含 $($plan.orders.Count) 条指令" }
+                } elseif ($null -eq $plan.written) {
+                    # 旧格式无 written 字段：文件存在视为已执行（兼容历史）
+                    $already = $true; Log "  rebalance_g2_ens_$Date.json 已存在（旧格式）→ ENS 已执行，跳过"
+                } else {
+                    Log "  plan 存在但 written=false（dry-run 残留？），继续兜底"
+                }
             } catch { Log "  !! 读取 $planJson 失败: $_" }
         }
     }
@@ -80,8 +87,11 @@ try {
         Log "!! $msg"
         if (-not $CheckOnly) {
             & $py "push_alert_card.py" --title "ENS 09:52 换仓漏触发(候选缺失)" --body $msg --level error 2>&1 | ForEach-Object { Log $_ }
-            New-Item -ItemType File -Path $lock -Force | Out-Null
+            # 失败不写锁，exit 1 可见
+            Pop-Location
+            exit 1
         }
+        Pop-Location
         exit 0
     }
     $latestCand = ($candFiles | Select-Object -First 1).Name
@@ -98,7 +108,8 @@ try {
         $msg = "ENS $Date guard 补跑 dry-run 校验失败（exit=$rc），未写桥未写锁。请人工核查（桥存活/候选新鲜/门控）。"
         Log "!! $msg"
         & $py "push_alert_card.py" --title "ENS guard 补跑 dry-run 失败" --body $msg --level error 2>&1 | ForEach-Object { Log $_ }
-        exit 0
+        Pop-Location
+        exit 1
     }
 
     # 第二步：--live 写桥
@@ -110,12 +121,19 @@ try {
         $msg = "ENS $Date guard 补跑 rebalance_ens --live 失败（exit=$rc2），未写锁供人工重试。请核对 orders_$Date.json 与桥状态。"
         Log "!! $msg"
         & $py "push_alert_card.py" --title "ENS guard 补跑 rebalance 失败" --body $msg --level error 2>&1 | ForEach-Object { Log $_ }
+        Pop-Location
+        exit 1
     } else {
         New-Item -ItemType File -Path $lock -Force | Out-Null
         Log "  ENS 补跑成功，已写桥"
     }
     Log "[guard] 完成"
+    Pop-Location
+    exit 0
 } catch {
     Log "[guard] 异常: $_"
+    Pop-Location
+    exit 1
 }
 Pop-Location
+exit 1

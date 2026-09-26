@@ -105,14 +105,21 @@ sequenceDiagram
 - **安全**：任何一步异常立即停止，后续表不动；写后必须复核（行数/日期范围）并生成验证报告；执行前 `--dry-run`（默认）只打印计划不写盘。
 - **校验**：全量替换前校验 E 行数 ≥ D 行数（否则拒绝，判定 E 非全量版）；合并模式先检查 index 层级一致（replace 模式跳过该检查）。
 
-### 在线增量补充（2026-09-14 立，Tushare → G2 周训数据保鲜）
+### 在线增量补充（2026-09-14 立，Tushare → G2 数据保鲜；2026-09-26 扩至 daily_basic 日刷）
 
-离线数据包未及时下载时，G2 周训（train_g2）的 G2_EXTRA 特征数据源可用 Tushare 在线增量保鲜（`scripts/refresh_online_incremental.py`）：
+离线数据包未及时下载时，G2 周训（train_g2）的 G2_EXTRA 特征数据源可用 Tushare 在线增量保鲜（`scripts/refresh_online_incremental.py`，TABLES 现含 4 表）：
 
-- **可补表**：`lhb/top_list`（按 ts_code 去重对齐 D:/astock 口径：多原因上榜每股 1 行，多日累计偏离优先）、`research/report_rc_daily`、`northbound/hk_hold_full`（写回保持 RangeIndex 结构，兼容 `hk["trade_date"]` 列访问）；写前备份 `.bak_online` + 写后复核。
+- **可补表**（写前备份 `.bak_online` + 写后复核）：
+  - `lhb/top_list`（按 ts_code 去重对齐 D:/astock 口径：多原因上榜每股 1 行，多日累计偏离优先）
+  - `research/report_rc_daily`
+  - `northbound/hk_hold_full`（写回保持 RangeIndex 结构，兼容 `hk["trade_date"]` 列访问）
+  - **`daily/daily_basic`（2026-09-26 方案A 新增）**：Tushare 日频估值（pe_ttm/turnover_rate/volume_ratio 等 16 列），MultiIndex（trade_date, ts_code），`allow_create=True` 首建模式（文件不存在时跳过旧文件直接建库，之后按增量刷新同其余表）；供 G2 评分卡 F6 当日真实口径——`deploy_predict_g2.py` 优先读 `data_config.DAILY_BASIC`，布局探测失败回退 `MAIN_DAILY` 快照，`_est_hit<0.5` 才走快照 pe_ttm/turn_ma5 兜底。
 - **北向重要发现**：hk_hold 2026 实测已恢复日频（09-07~09-11 每日 959~1011 只），推翻"2024-08 起季频披露、无当日值"的旧结论——北向不再是断源天花板。
 - **受限**：`board/ths_daily`/`board_fundflow/moneyflow_ind_ths` 需 Tushare 5000 积分档（当前 2000 档无权限），暂靠离线包。
-- **接入**：`run_scheduled.ps1` retrain 模式 train_g2 前置（best-effort，失败只告警不阻断训练）；moneyflow 有独立每日 19:30 刷新。
+- **接入**：
+  - 日频：`g2_candidates_night.ps1` 每晚 20:05 先刷 `--only daily/daily_basic --apply`（best-effort，失败不阻断 build_g2_daily，F6 走快照兜底）
+  - 周频：`run_scheduled.ps1` retrain 模式 train_g2 前置全表刷新 `--apply --days 30`（best-effort，失败只告警不阻断训练）
+  - moneyflow 有独立每日 19:30 刷新。
 
 章节来源
 - [scripts/update_astock_from_e.py](file://scripts/update_astock_from_e.py)

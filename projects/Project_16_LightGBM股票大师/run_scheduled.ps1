@@ -121,6 +121,9 @@ try {
                     # 现在每天增量入库后刷新面板到最新交易日，次日 09:15 候选自动用最新数据；约 10 分钟。
                     # 模型保持周更 promote（1 天增量分布差异可接受），verify 已放宽 ≤7 自然日差异不告警。
                     Run-Py "refresh_panel_v3.py"
+                    if ($LASTEXITCODE -ne 0) {
+                        Log "!! [v3面板] refresh_panel_v3 失败（exit=$LASTEXITCODE）—— 若继续 deploy 将用旧面板打分，需核查"
+                    }
                     # ---- 每日刷新 enh 面板（T-20260912-001）：33 特征慢变量（train_g2 / build_g2_daily 消费）----
                     # 背景：enh 面板此前无 writer，冻结在 8/14，实盘行业动量/换手排名/事件特征停摆一月。
                     Run-Py "refresh_panel_enh.py"
@@ -128,6 +131,9 @@ try {
                         Log "!! [enh面板] refresh_panel_enh 失败，G2 慢变量沿用旧面板（asof 落后），需核查"
                     }
                     Run-Py "deploy_predict.py --model v3 --top-k 10"
+                    if ($LASTEXITCODE -ne 0) {
+                        Log "!! [候选] deploy_predict 失败（exit=$LASTEXITCODE）—— 次日 09:15 候选可能缺失"
+                    }
                 } else {
                     Log "未能确定最新交易日，跳过 merge/deploy"
                 }
@@ -250,56 +256,86 @@ try {
                 #       门禁拒绝（坏模型被拦）属设计行为，不再触发面板同步硬校验，避免「拒绝被误报为系统故障」。
                 $candModel = "D:/QuantLab/models/lgb_model_v3$retrainTag.txt"
                 if (Test-Path $candModel) {
-                    Run-Py "auto_promote.py --candidate $candModel --yes"
-                    if ($LASTEXITCODE -ne 0) {
-                        Log "!! [自动上线] 门禁未通过，候选未上线 —— 正式模型保持不变（G0~G6 拒绝坏模型属设计行为，非故障；G6 面板同步不拦截本次拒绝，需人工核对 data/optuna_report.json 与上方 FAIL 项）"
-                        Run-Py "verify_model_panel_sync.py --warn-only"
-                        Log "[模型-面板同步]（门禁拒绝后 warn-only，仅供信息，不阻断）"
-                    } else {
-                        Log "[自动上线] 模型层门禁（G0~G6）通过，候选已提升为正式模型"
-                        # ---- 策略层回测门禁（T-20260910-003）：promote 后复核 V1.4 最优配置 ----
-                        # V1.3 周更候选是 27 特征模型，用配置库 V1.4 最优配置（fixed/N10/红线58/TOP2/lite，
-                        # 面板 v3_sc，已验证 27 特征可推理）对比候选与旧正式模型（同一面板，公平对比）。
-                        # 候选（新正式模型）不得差于 promote 前的旧正式模型；FAIL 则回滚旧正式模型。
-                        $v13Meta = Join-Path $proj "data\features_v3.json"
-                        # 旧正式模型 = 本次 retrain 开头备份的 pre_retrain 文件（时间戳在 1.5-2 小时前，
-                        # 不能重新 Get-Date——会生成不同时间戳导致 Test-Path 恒 False、门禁被永远跳过，T-20260910-005 修复）
-                        $oldFormal = Get-ChildItem (Join-Path $modelBakDir "lgb_model_v3_pre_retrain_*.txt") -ErrorAction SilentlyContinue |
-                            Sort-Object LastWriteTime | Select-Object -Last 1 | ForEach-Object { $_.FullName }
-                        if ((Test-Path $v13Meta) -and (Test-Path $oldFormal)) {
-                            Log "[策略层门禁] V1.4 最优配置（fixed/N10/红线58/TOP2+lite）候选 vs 旧正式 复核（约10分钟）..."
-                            Run-Py "gate_strategy_layer.py --strategy V1.4 --candidate $candModel --meta $v13Meta --live $oldFormal --live-meta $v13Meta"
-                            if ($LASTEXITCODE -eq 2) {
-                                Log "!! [策略层门禁] FAIL —— 新正式模型在 V1.4 最优配置下差于旧模型，回滚旧正式模型（$oldFormal）"
-                                Copy-Item $oldFormal $formalModel -Force
-                                Log "[策略层门禁] 已回滚正式模型 -> $formalModel（旧模型 restore）"
-                                # ---- 绑定记录同步回滚（2026-09-22 B2 修复）----
-                                # promote_model.py 提升时已备份 pre-promote 绑定（model_panel_binding.json.bak_<stamp>）；
-                                # 只回滚模型不回滚绑定 → verify_model_panel_sync 恒报「模型被改动但未登记」（09-21 实证）
-                                $bindingFile = Join-Path $proj "data\model_panel_binding.json"
-                                $bindingBak = Get-ChildItem (Join-Path $proj "data\model_panel_binding.json.bak_*") -ErrorAction SilentlyContinue |
-                                    Sort-Object LastWriteTime | Select-Object -Last 1 | ForEach-Object { $_.FullName }
-                                if ($bindingBak) {
-                                    Copy-Item $bindingBak $bindingFile -Force
-                                    Log "[策略层门禁] 已同步回滚绑定记录 -> $bindingFile（$(Split-Path $bindingBak -Leaf)）"
-                                } else {
-                                    Log "!! [策略层门禁] 未找到绑定备份（model_panel_binding.json.bak_*），绑定未回滚 —— 需人工同步 data/model_panel_binding.json 与当前正式模型"
-                                }
-                            } elseif ($LASTEXITCODE -eq 0) {
-                                Log "[策略层门禁] PASS —— 新正式模型在 V1.4 最优配置下不差于旧模型，保留上线"
-                            } else {
-                                Log "!! [策略层门禁] 运行异常（exit=$LASTEXITCODE）—— 无法评估，需人工核查，新正式模型暂保留"
+                    # ---- T-20260923-005 核心：策略层门禁 BEFORE promote（消除 promote→回滚→绑定不一致循环）----
+                    # 旧序：auto_promote(模型层) → 策略层 → FAIL回滚模型+绑定 —— 每次拒绝都留一次「半吊子回滚」窗口；
+                    # 新序：先策略层(candidate vs pre_retrain备份) → PASS才进auto_promote(模型层)；
+                    #       策略层FAIL = 从未promote，只写gate_rejected状态，无需回滚任何文件。
+                    $v13Meta = Join-Path $proj "data\features_v3.json"
+                    $oldFormal = Get-ChildItem (Join-Path $modelBakDir "lgb_model_v3_pre_retrain_*.txt") -ErrorAction SilentlyContinue |
+                        Sort-Object LastWriteTime | Select-Object -Last 1 | ForEach-Object { $_.FullName }
+                    $strategyGateOk = $false
+                    $strategyGateSkip = $false
+                    if ((Test-Path $v13Meta) -and (Test-Path $oldFormal)) {
+                        Log "[策略层门禁] V1.4 最优配置（fixed/N10/红线58/TOP2+lite）候选 vs 旧正式 复核 BEFORE promote（约10分钟）..."
+                        Run-Py "gate_strategy_layer.py --strategy V1.4 --candidate $candModel --meta $v13Meta --live $oldFormal --live-meta $v13Meta"
+                        if ($LASTEXITCODE -eq 0) {
+                            $strategyGateOk = $true
+                            Log "[策略层门禁] PASS —— 候选在 V1.4 最优配置下不差于旧正式，允许进入模型层门禁"
+                        } elseif ($LASTEXITCODE -eq 2) {
+                            # 策略层FAIL：从未promote，只写gate_rejected供B2识别设计内等待
+                            Log "!! [策略层门禁] FAIL —— 候选差于旧正式，拒绝进入模型层门禁/promote；写入 gate_rejected 等待下次周更"
+                            $nextMonday = (Get-Date).Date.AddDays(7 - (([int](Get-Date).DayOfWeek + 6) % 7))
+                            if ($nextMonday -le (Get-Date).Date) { $nextMonday = $nextMonday.AddDays(7) }
+                            $bindingFile = Join-Path $proj "data\model_panel_binding.json"
+                            try {
+                                $b = Get-Content $bindingFile -Raw -Encoding UTF8 | ConvertFrom-Json
+                                $b | Add-Member -NotePropertyName gate_rejected -NotePropertyValue ([ordered]@{
+                                    at = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+                                    layer = "strategy"
+                                    candidate = (Split-Path $candModel -Leaf)
+                                    reason = "V1.4策略层门禁FAIL（excess差>容差0.0002）"
+                                    next_retrain = $nextMonday.ToString("yyyy-MM-dd")
+                                }) -Force
+                                $b | ConvertTo-Json -Depth 5 | Set-Content $bindingFile -Encoding UTF8
+                                Log "[策略层门禁] 已写入 gate_rejected（next_retrain=$($nextMonday.ToString('yyyy-MM-dd'))）—— B2将显示WARN直至下次周更"
+                            } catch {
+                                Log "!! [策略层门禁] 写入 gate_rejected 失败: $_"
                             }
+                            Run-Py "verify_model_panel_sync.py --warn-only"
+                            $strategyGateSkip = $true
                         } else {
-                            Log "!! [策略层门禁] 未找到 V1.3 meta 或旧模型备份（$v13Meta / $oldFormal），跳过策略层复核"
+                            Log "!! [策略层门禁] 运行异常（exit=$LASTEXITCODE）—— 无法评估，fail-closed 拒绝 promote，需人工核查"
+                            $strategyGateSkip = $true
                         }
-                        # 仅 promote 成功后做硬校验：绑定必须与面板同版（gap=0），失败说明绑定写入异常
-                        Run-Py "verify_model_panel_sync.py"
+                    } else {
+                        Log "!! [策略层门禁] 未找到 V1.3 meta 或旧模型备份（$v13Meta / $oldFormal）—— 无法做策略层复核，fail-closed 拒绝 promote，需人工核查"
+                        $strategyGateSkip = $true
+                    }
+                    if ($strategyGateOk) {
+                        Run-Py "auto_promote.py --candidate $candModel --yes"
                         if ($LASTEXITCODE -ne 0) {
-                            Log "!! [模型-面板同步] promote 后绑定仍不一致 —— 绑定写入异常，需人工介入（data/model_panel_binding.json）"
+                            Log "!! [自动上线] 模型层门禁（G0~G6）未通过，候选未上线 —— 正式模型保持不变（G0~G6 拒绝坏模型属设计行为，非故障）"
+                            $nextMonday = (Get-Date).Date.AddDays(7 - (([int](Get-Date).DayOfWeek + 6) % 7))
+                            if ($nextMonday -le (Get-Date).Date) { $nextMonday = $nextMonday.AddDays(7) }
+                            $bindingFile = Join-Path $proj "data\model_panel_binding.json"
+                            try {
+                                $b = Get-Content $bindingFile -Raw -Encoding UTF8 | ConvertFrom-Json
+                                $b | Add-Member -NotePropertyName gate_rejected -NotePropertyValue ([ordered]@{
+                                    at = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+                                    layer = "model"
+                                    candidate = (Split-Path $candModel -Leaf)
+                                    reason = "auto_promote G0~G6模型层门禁FAIL"
+                                    next_retrain = $nextMonday.ToString("yyyy-MM-dd")
+                                }) -Force
+                                $b | ConvertTo-Json -Depth 5 | Set-Content $bindingFile -Encoding UTF8
+                                Log "[自动上线] 已写入 gate_rejected（next_retrain=$($nextMonday.ToString('yyyy-MM-dd'))）"
+                            } catch {
+                                Log "!! [自动上线] 写入 gate_rejected 失败: $_"
+                            }
+                            Run-Py "verify_model_panel_sync.py --warn-only"
+                            Log "[模型-面板同步]（门禁拒绝后 warn-only，仅供信息，不阻断）"
                         } else {
-                            Log "[模型-面板同步] 面板与正式模型同版，OK"
+                            Log "[自动上线] 模型层门禁（G0~G6）通过，候选已提升为正式模型（promote自动清除gate_rejected）"
+                            # 仅 promote 成功后做硬校验：绑定必须与面板同版（gap=0），失败说明绑定写入异常
+                            Run-Py "verify_model_panel_sync.py"
+                            if ($LASTEXITCODE -ne 0) {
+                                Log "!! [模型-面板同步] promote 后绑定仍不一致 —— 绑定写入异常，需人工介入（data/model_panel_binding.json）"
+                            } else {
+                                Log "[模型-面板同步] 面板与正式模型同版，OK"
+                            }
                         }
+                    } else {
+                        Log "!! [自动上线] 策略层门禁未过/异常，跳过 auto_promote —— 正式模型保持不变（设计内拒绝，gate_rejected已写或需人工）"
                     }
                 } else {
                     Log "!! [自动上线] 未找到候选模型 $candModel，跳过（重训可能失败）"
@@ -311,15 +347,30 @@ try {
             # deploy_predict_g2 / build_g2_daily 自动读最新 live（data/g2_live_model.json）。
             $g2LivePointer = Join-Path $proj "data\g2_live_model.json"
             $g2Cur = $null
+            $g2OldMeta = $null
             if (Test-Path $g2LivePointer) {
-                try { $g2Cur = (Get-Content $g2LivePointer -Raw | ConvertFrom-Json).model_path } catch { }
+                # T-20260923-005 尾巴：g2_live_model.json 含非标准 Infinity（Python 写入），
+                # ConvertFrom-Json 抛异常被吞 → $g2Cur=null → 备份被误跳过。
+                # 用正则提取 model_path/meta_path（不依赖 JSON 解析器接受 Infinity）。
+                $raw = Get-Content $g2LivePointer -Raw
+                $mPath = [regex]::Match($raw, '"model_path"\s*:\s*"([^"]+)"')
+                $mMeta = [regex]::Match($raw, '"meta_path"\s*:\s*"([^"]+)"')
+                if ($mPath.Success) { $g2Cur = $mPath.Groups[1].Value }
+                if ($mMeta.Success) { $g2OldMeta = $mMeta.Groups[1].Value }
             }
             if ($g2Cur -and (Test-Path $g2Cur)) {
                 $g2LiveBak = Join-Path $modelBakDir ("lgb_model_v3_g2_strong_real_pre_retrain_" + (Get-Date -Format 'yyyyMMdd_HHmmss') + ".txt")
                 Copy-Item $g2Cur $g2LiveBak -Force
                 Log "已备份 G2 live 模型 -> $g2LiveBak"
+                # T-20260923-005：同时捕获 promote 前 live 的 meta 路径，供 gate --live-meta 使用（防自比较）
+                if (-not $g2OldMeta -or -not (Test-Path $g2OldMeta)) {
+                    $g2OldStamp = [regex]::Match($g2Cur, 'g2_strong_real_(\d{8})_').Groups[1].Value
+                    $g2OldMeta = Join-Path $proj "data\features_v3_g2_strong_real_$g2OldStamp.json"
+                }
+                Log "G2 promote 前 live meta: $g2OldMeta"
             } else {
-                Log "G2 live 指针缺失，跳过备份（train_g2 失败时回退 08-25 初始 live）"
+                Log "G2 live 指针缺失或 model_path 无效，跳过备份（train_g2 失败时回退 08-25 初始 live）"
+                $g2OldMeta = $null
             }
             # ---- G2 外部表在线增量补充（2026-09-14 立，诚哥拍板"全做"）----
             # 背景：G2_EXTRA 中 lhb/北向/研报/mf 来自 D:/astock 表，若离线包未及时下载，
@@ -353,7 +404,8 @@ try {
                     $g2Meta = Join-Path $proj "data\features_v3_g2_strong_real_$g2Stamp.json"
                     if (Test-Path $g2Meta) {
                         Log "[策略层门禁] G2 最优配置（live_trail/N15/红线60/TOP2）候选 vs live 复核（约10分钟）..."
-                        Run-Py "gate_strategy_layer.py --strategy G2 --candidate $g2New --meta $g2Meta --rollback"
+                        # T-20260923-005 P1：显式传 --live $g2LiveBak（promote前备份），否则 promote后指针==候选 → 自比较恒PASS
+                        Run-Py "gate_strategy_layer.py --strategy G2 --candidate $g2New --meta $g2Meta --live $g2LiveBak --live-meta $g2OldMeta --rollback"
                         if ($LASTEXITCODE -eq 0) {
                             Log "[策略层门禁] PASS —— 新 G2 live 在最优配置下不差于旧 live，保留上线"
                         } elseif ($LASTEXITCODE -eq 2) {
@@ -412,6 +464,7 @@ catch {
     # G2 重训未执行却显示"成功"）。①所有模式异常飞书告警（成功也通知，诚哥 2026-09-15 要求）；
     # ②retrain 中断置退出码非 0（周训失败必须可见）。
     Notify-Feishu ("[$Mode] 异常: " + $_.ToString())
-    if ($Mode -eq "retrain") { exit 1 }
+    # 所有模式异常 exit 1（此前仅 retrain 置码，daily/monitor 异常仍 exit 0 导致 LastTaskResult 恒成功）
+    exit 1
 }
 Pop-Location

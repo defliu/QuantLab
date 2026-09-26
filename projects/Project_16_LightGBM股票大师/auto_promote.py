@@ -114,7 +114,8 @@ def main():
 
     bind = {}
     if os.path.exists(BINDING):
-        bind = json.load(open(BINDING, encoding="utf-8"))
+        # T-20260923-005 尾巴：PS 写 binding 带 BOM，用 utf-8-sig 读。
+        bind = json.load(open(BINDING, encoding="utf-8-sig"))
     prod_ic = bind.get("test_ic")
     bind_trees = bind.get("model_trees")
     bind_cand = bind.get("candidate", "")

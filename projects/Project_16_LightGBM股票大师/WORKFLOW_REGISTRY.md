@@ -74,10 +74,12 @@
 
 ### 1. 两条周更路径的门禁流水（周一 17:00 `quant_weekly_retrain`，无人值守）
 
-| 路径 | 模型层门禁 | 策略层门禁（新增） | 失败处置 |
-|---|---|---|---|
-| **V1.3 周更**（`train_optuna.py` + `auto_promote.py`） | G0~G6：IC下限/不退步/ICIR/分位单调/新面板 | `gate_strategy_layer.py --strategy V1.4 --candidate <新模型> --live <旧正式> --live-meta data/features_v3.json`（fixed/N10/红线58/TOP2+lite 最优配置，面板 v3_sc，27特征可推理） | 拒绝上线；回滚 pre_retrain 备份旧正式模型 |
-| **G2 周更**（`train_g2.py --promote`） | G1~G4 strict：同窗口IC/尾部IC/Top2可执行模拟/观测期回滚 | `gate_strategy_layer.py --strategy G2 --candidate <新live> --meta <新meta> --rollback`（live_trail/N15/红线60/TOP2 最优配置） | 拒绝上线；`--rollback` 自动回退 live 指针到 `trial.prev_model` |
+> **T-20260923-005 顺序升级（2026-09-23）**：V1.3 策略层门禁改为 **BEFORE** auto_promote（PASS 才进模型层；FAIL=从未 promote，只写 `gate_rejected`，无需回滚，消除「promote→回滚→绑定不一致」循环）。G2 仍为 promote 后复核（train_g2 --promote 是原子操作），但必须显式传 `--live <pre_retrain 备份> --live-meta <旧meta>`，否则 promote 后指针==候选 → 自比较恒 PASS（P1 已修）。门禁 FAIL 时 binding 写 `gate_rejected{next_retrain=下周一}` → `verify_model_panel_sync` B2 显示 **WARN**（设计内等待）而非 FAIL，超期未 promote 才恢复 FAIL。
+
+| 路径 | 顺序 | 模型层门禁 | 策略层门禁 | 失败处置 |
+|---|---|---|---|---|
+| **V1.3 周更**（`train_optuna.py` + `auto_promote.py`） | **策略层 BEFORE 模型层** | G0~G6：IC下限/不退步/ICIR/分位单调/新面板 | `gate_strategy_layer.py --strategy V1.4 --candidate <新模型> --live <旧正式> --live-meta data/features_v3.json`（fixed/N10/红线58/TOP2+lite 最优配置，面板 v3_sc，27特征可推理）——**先跑** | 策略层 FAIL → 写 `gate_rejected`（layer=strategy），跳过 auto_promote，正式模型不变；模型层 FAIL → 写 `gate_rejected`（layer=model）；均无需回滚文件 |
+| **G2 周更**（`train_g2.py --promote`，原子） | promote 后复核 | G1~G4 strict：同窗口IC/尾部IC/Top2可执行模拟/观测期回滚 | `gate_strategy_layer.py --strategy G2 --candidate <新live> --meta <新meta> --live <pre_retrain备份> --live-meta <旧meta> --rollback`（live_trail/N15/红线60/TOP2 最优配置）——**必须显式 --live** | 拒绝上线；`--rollback` 自动回退 live 指针到 `trial.prev_model`；`gate_strategy_layer` 缺省解析防御：candidate==指针时回退 trial.prev_model，否则 exit 1 |
 
 ### 2. 策略层门禁判定规则
 

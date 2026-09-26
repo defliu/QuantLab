@@ -80,8 +80,11 @@ try {
         Log "!! $msg"
         if (-not $CheckOnly) {
             & $py "push_alert_card.py" --title "G2 09:50 换仓漏触发(候选缺失)" --body $msg --level error 2>&1 | ForEach-Object { Log $_ }
-            New-Item -ItemType File -Path $lock -Force | Out-Null
+            # 失败不写锁（保留人工重试入口），exit 1 可见
+            Pop-Location
+            exit 1
         }
+        Pop-Location
         exit 0
     }
     $latestCand = ($candFiles | Select-Object -First 1).Name
@@ -98,7 +101,8 @@ try {
         $msg = "G2 $Date guard 补跑 dry-run 校验失败（exit=$rc），未写桥未写锁。请人工核查（桥存活/候选新鲜/门控）。"
         Log "!! $msg"
         & $py "push_alert_card.py" --title "G2 guard 补跑 dry-run 失败" --body $msg --level error 2>&1 | ForEach-Object { Log $_ }
-        exit 0
+        Pop-Location
+        exit 1
     }
 
     # 第二步：--live 写桥
@@ -110,12 +114,19 @@ try {
         $msg = "G2 $Date guard 补跑 rebalance_g2 --live 失败（exit=$rc2），未写锁供人工重试。请核对 orders_$Date.json 与桥状态。"
         Log "!! $msg"
         & $py "push_alert_card.py" --title "G2 guard 补跑 rebalance 失败" --body $msg --level error 2>&1 | ForEach-Object { Log $_ }
+        Pop-Location
+        exit 1
     } else {
         New-Item -ItemType File -Path $lock -Force | Out-Null
         Log "  G2 补跑成功，已写桥"
     }
     Log "[guard] 完成"
+    Pop-Location
+    exit 0
 } catch {
     Log "[guard] 异常: $_"
+    Pop-Location
+    exit 1
 }
 Pop-Location
+exit 1

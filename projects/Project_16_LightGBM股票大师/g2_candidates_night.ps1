@@ -13,6 +13,15 @@ $log = "$dir/data/schedules/g2_candidates_night.log"
 New-Item -ItemType Directory -Force -Path "$dir/data/schedules" | Out-Null
 $ts = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 Add-Content -Path $log -Value "[$ts] ==== G2 候选预生成（夜间）开始 ====" -Encoding UTF8
+# ---- daily_basic 当日估值刷新（2026-09-26 方案A）：best-effort，失败不阻断 build_g2_daily（F6 走快照兜底）----
+Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] [daily_basic] Tushare 刷新当日估值字段..." -Encoding UTF8
+$dbOut = & $py "D:/QuantLab/scripts/refresh_online_incremental.py" --only daily/daily_basic --apply 2>&1
+$dbRc = $LASTEXITCODE
+$dbOut | ForEach-Object { Add-Content -Path $log -Value "$_" -Encoding UTF8 }
+# 注：refresh_online_incremental.main 恒 exit 0（单表失败只在汇总里记 ERROR），故 rc 之外再看状态行
+if (0 -ne $dbRc -or ("$($dbOut -join ' ')" -match 'daily/daily_basic\] 失败|daily/daily_basic\s+ERROR')) {
+    Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] !! [daily_basic] 刷新异常，build_g2_daily 继续（F6 走快照兜底）" -Encoding UTF8
+}
 & $py "$dir/build_g2_daily.py" *>> $log
 $rc1 = $LASTEXITCODE
 Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] build_g2_daily exit=$rc1" -Encoding UTF8
@@ -57,6 +66,12 @@ if (Test-Path $snapSrc13) {
     $snapFail13 = 1
     Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] [WARN] latest_features.parquet 不存在，V1.3 快照留档跳过（复跑对比将降级为健康校验）" -Encoding UTF8
 }
+# ---- source 定位（T-20260924-001 D 根因，2026-09-26 拍板）：deploy 产物按快照 target 日命名，假日运行日≠target 时按 $runDay 找源必 miss ----
+# → 次日副本整段跳过、停在旧口径，20:15 check_scorecard_health 按文件名日期取到旧口径副本 → SC_F1/F3/F6 假阳 warn 推送。
+# 故读快照 trade_date.max 作实际产物日 $targetDay 定位源；读快照失败/结果非 8 位数字 → fallback $runDay（与旧行为一致，fail-safe）。
+# 快照留档（snapshot_g2_/snapshot_v13_）与 is_trade_day 推算 $nextDay 均按运行日，属禁止改动项，保持原样。
+$targetDay = & $py -c "import pandas as pd,sys; df=pd.read_parquet(sys.argv[1]); print(df['trade_date'].max().strftime('%Y%m%d'))" "$dir\data_live\g2_latest_features.parquet" 2>$null
+if ($LASTEXITCODE -eq 0 -and ("$targetDay".Trim()) -match '^\d{8}$') { $targetDay = ("$targetDay".Trim()) } else { $targetDay = $runDay }
 $nextDay = $null
 $probe = (Get-Date).Date
 for ($i = 0; $i -lt 10; $i++) {
@@ -66,32 +81,32 @@ for ($i = 0; $i -lt 10; $i++) {
 }
 $copyFail = 0
 if ($null -ne $nextDay -and $nextDay -ne $runDay) {
-    Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] 下一交易日=$nextDay（运行日=$runDay），生成次日候选副本" -Encoding UTF8
+    Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] 下一交易日=$nextDay（产物日(targetDay)=$targetDay），生成次日候选副本" -Encoding UTF8
     foreach ($n in @("top10", "top3")) {
-        $src = "$dir\data\selections\g2\${runDay}_g2_${n}.csv"
+        $src = "$dir\data\selections\g2\${targetDay}_g2_${n}.csv"
         $dst = "$dir\data\selections\g2\${nextDay}_g2_${n}.csv"
         if (Test-Path $src) {
             & $py -c "import pandas as pd,sys; df=pd.read_csv(sys.argv[1],encoding='utf-8-sig'); df['trade_date']=sys.argv[3]; df.to_csv(sys.argv[2],index=False,encoding='utf-8-sig')" $src $dst $nextDay *>> $log
             if ($LASTEXITCODE -ne 0) { $copyFail = 1 }
-            Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] 次日副本 ${runDay}_g2_${n}.csv -> ${nextDay}_g2_${n}.csv exit=$LASTEXITCODE" -Encoding UTF8
+            Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] 次日副本 ${targetDay}_g2_${n}.csv -> ${nextDay}_g2_${n}.csv exit=$LASTEXITCODE" -Encoding UTF8
         } else {
-            Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] [INFO] 当日 ${runDay}_g2_${n}.csv 不存在（红线无候选属设计内宁缺毋滥），跳过次日副本" -Encoding UTF8
+            Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] [INFO] 产物日(targetDay) ${targetDay}_g2_${n}.csv 不存在（红线无候选属设计内宁缺毋滥），跳过次日副本" -Encoding UTF8
         }
     }
-    $srcMd = "$dir\data\selections\g2\${runDay}_g2_selection.md"
+    $srcMd = "$dir\data\selections\g2\${targetDay}_g2_selection.md"
     $dstMd = "$dir\data\selections\g2\${nextDay}_g2_selection.md"
     if (Test-Path $srcMd) { Copy-Item -LiteralPath $srcMd -Destination $dstMd -Force }
     # ---- 融合（ens）次日候选副本（2026-09-14 P2，与 G2 副本同因）----
     # --ens-live 产物名 = 运行日，与 G2 同样存在"次日 freshness 闸拒收"断链；不复制则本修复只对
     # G2 生效、融合腿次日仍断（09-25 TRAE 失效日融合会重演 09-14 的 NOOP）。列结构含 trade_date，改写方式同上。
-    $srcEns = "$dir\data\selections\g2_ens\${runDay}_g2_top10.csv"
+    $srcEns = "$dir\data\selections\g2_ens\${targetDay}_g2_top10.csv"
     $dstEns = "$dir\data\selections\g2_ens\${nextDay}_g2_top10.csv"
     if (Test-Path $srcEns) {
         & $py -c "import pandas as pd,sys; df=pd.read_csv(sys.argv[1],encoding='utf-8-sig'); df['trade_date']=sys.argv[3]; df.to_csv(sys.argv[2],index=False,encoding='utf-8-sig')" $srcEns $dstEns $nextDay *>> $log
         if ($LASTEXITCODE -ne 0) { $copyFail = 1 }
-        Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] 次日副本(ens) ${runDay}_g2_top10.csv -> ${nextDay}_g2_top10.csv exit=$LASTEXITCODE" -Encoding UTF8
+        Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] 次日副本(ens) ${targetDay}_g2_top10.csv -> ${nextDay}_g2_top10.csv exit=$LASTEXITCODE" -Encoding UTF8
     } else {
-        Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] [INFO] 当日 ens ${runDay}_g2_top10.csv 不存在（红线无融合候选属设计内宁缺毋滥），跳过 ens 次日副本" -Encoding UTF8
+        Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] [INFO] 产物日(targetDay) ens ${targetDay}_g2_top10.csv 不存在（红线无融合候选属设计内宁缺毋滥），跳过 ens 次日副本" -Encoding UTF8
     }
 } else {
     $copyFail = 1

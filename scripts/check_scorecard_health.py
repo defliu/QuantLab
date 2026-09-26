@@ -43,7 +43,14 @@ FRESH_DAYS = 4                  # 快照新鲜度容差（自然日，容忍周�
 
 
 def latest_top10_csv():
-    """取 selections/g2/ 下最新日期的 *_top10.csv，返回 (path, date_str) 或 (None, None)。"""
+    """取 selections/g2/ 下最近生成（mtime 最大）的 *_top10.csv，返回 (path, date_str) 或 (None, None)。
+
+    原实现按文件名日期排序取最大（cands.sort(); f = cands[-1]），但假日/周末时夜间副本会以
+    「下一交易日」命名（文件名日期 > 当日真实产物），按文件名取最大会挑到次日副本——2026-09-25
+    中秋休市日 SC_F1/F3/F6 假阳 warn 即此因（副本停在旧口径）。改动 1（g2_candidates_night.ps1）
+    后副本与真实产物同源（均按快照 target 日取源再改写 trade_date），故改按 mtime 取最近生成者，
+    更贴近「检查当日部署产物」语义。
+    """
     if not os.path.isdir(SELECT_DIR):
         return None, None
     cands = []
@@ -52,8 +59,7 @@ def latest_top10_csv():
             cands.append(f)
     if not cands:
         return None, None
-    cands.sort()
-    f = cands[-1]
+    f = max(cands, key=lambda x: os.path.getmtime(os.path.join(SELECT_DIR, x)))
     return os.path.join(SELECT_DIR, f), f[:8]
 
 

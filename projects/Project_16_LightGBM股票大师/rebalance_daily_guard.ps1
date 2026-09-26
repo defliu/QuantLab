@@ -98,8 +98,8 @@ try {
                 $msg = "V1.3 $Date 09:45 换仓未执行，自动补跑失败（guard_backfill_v13.py）。异常: $($bf.error) 。请人工按 9:45 设定补跑：review_full + rebalance_daily --live。"
                 Log "!! $msg"
                 & $py "push_alert_card.py" --title "V1.3 09:45 换仓漏触发(补跑失败)" --body $msg --level error 2>&1 | ForEach-Object { Log $_ }
-                New-Item -ItemType File -Path $lock -Force | Out-Null
-                exit 0
+                # 失败不写锁（保留人工重试入口），exit 1 让 LastTaskResult 可见
+                exit 1
             }
             Log "  自动补跑成功，当日清单已生成: $(Split-Path $selFull -Leaf)"
         } else {
@@ -119,14 +119,16 @@ try {
     }
 
     # 大盘风控定 T（沪深300 腾讯实时；同 9:45 任务规则）
-    $tier = 2
+    # fail-safe：取数失败默认 T=1 半仓（对齐 market_tier.py / rebalance_g2，禁止满仓裸奔）
+    $tier = 1
     try {
         $hs = & $py -c "import urllib.request; d=urllib.request.urlopen(urllib.request.Request('https://qt.gtimg.cn/q=sh000300', headers={'User-Agent':'Mozilla/5.0'}), timeout=8).read().decode('gbk','ignore'); p=d.split('~'); n=float(p[3]); c=float(p[4]); print(round((n/c-1)*100,2))" 2>$null | Select-Object -Last 1
         $hsPct = [double]$hs
         if ($hsPct -le -1.5) { $tier = 0 }
         elseif ($hsPct -lt -1.0) { $tier = 1 }
+        else { $tier = 2 }
         Log "  沪深300 $hsPct% → T=$tier"
-    } catch { Log "  !! 沪深300 取数失败，默认 T=2" }
+    } catch { Log "  !! 沪深300 取数失败，fail-safe 默认 T=1 半仓（非满仓）"; $tier = 1 }
     if ($tier -eq 0) {
         # R2/P1-1（T-20260915-001，诚哥拍板方案 A）：T=0（沪深300≤-1.5%）且当日未换仓 → guard 自动清仓
         # 清仓 = rebalance_daily --top 0 --live（T-20260904-003 语义：全部策略持仓卖出 + 0 买入）
@@ -140,10 +142,13 @@ try {
             $msg = "V1.3 $Date T=0 大盘破位 guard 自动清仓失败（exit=$rc），未写锁供人工重试。请立即人工核对清仓！"
             Log "!! $msg"
             & $py "push_alert_card.py" --title "V1.3 T=0 自动清仓失败" --body $msg --level error 2>&1 | ForEach-Object { Log $_ }
+            Pop-Location
+            exit 1
         } else {
             New-Item -ItemType File -Path $lock -Force | Out-Null
         }
         Log "[guard] 完成"
+        Pop-Location
         exit 0
     }
 
@@ -155,15 +160,22 @@ try {
     $rc = $LASTEXITCODE
     Log "  >> exit=$rc"
     if ($rc -ne 0) {
-        # T-20260915-001 DE 复核 P1-3：live 失败不写锁（人工可重跑）+ 飞书告警
+        # T-20260915-001 DE 复核 P1-3：live 失败不写锁（人工可重跑）+ 飞书告警 + exit 1
         $msg = "V1.3 $Date guard 补跑 rebalance_daily --live 失败（exit=$rc），未写锁供人工重试。请核对 rebalance_$Date.json 与当日成交。"
         Log "!! $msg"
         & $py "push_alert_card.py" --title "V1.3 guard 补跑 rebalance 失败" --body $msg --level error 2>&1 | ForEach-Object { Log $_ }
+        Pop-Location
+        exit 1
     } else {
         New-Item -ItemType File -Path $lock -Force | Out-Null
     }
     Log "[guard] 完成"
+    Pop-Location
+    exit 0
 } catch {
     Log "[guard] 异常: $_"
+    Pop-Location
+    exit 1
 }
 Pop-Location
+exit 1

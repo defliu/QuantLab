@@ -62,3 +62,25 @@ config/data_source_keys.json
 
 # 运行时 pid 文件（不入库）
 *.pid
+
+# DE / Trae 工具副产物（2026-09-26 补，防累积）
+.commandcode/
+.trae/
+*.de_bak*
+*.trae_bak*
+*.compare_base*
+*.lock
+
+# DE 遗留的临时运行文件
+_de_run_fix.cmd
+_de_smoke_out.json
+_cleanup_report.txt
+
+# 每日市场数据缓存 / 调度任务元数据（本地重建，任意层级）
+data/astock_kit_data/
+**/data/astock_kit_data/
+data/schedules/
+**/data/schedules/
+
+# 错误日志
+*.err
