@@ -1,0 +1,98 @@
+# Project_21 预注册证伪线（机器可读唯一事实源）
+# 锁定 2026-09-28，拍板人：诚哥；人读版：specs/证伪线预注册锁定_20260928.md
+# M1 裁决脚本必须读本文件；禁止在脚本中另写阈值。
+# 任何修改：先改本文件并更新 changelog，再由诚哥重新拍板，且禁止在查看 M1 收益结果之后调整。
+
+meta:
+  locked_at: "2026-09-28"
+  locked_by: "诚哥"
+  recorded_by: "op"
+  human_readable: "specs/证伪线预注册锁定_20260928.md"
+  valid_before_results_seen: true   # 锁定时扫描产物仅含事件、未聚合收益
+
+window:
+  start: "20190101"
+  end: "20241231"
+
+# 单笔等权净期望口径 + 分段实际成本（cutoff 2023-08-28 印花税单边化）
+cost:
+  mode: segmented_roundtrip
+  cutoff: "20230828"
+  round_trip_bps_pre: 25.4    # 佣金5 + 印花税10 + 过户0.4 + 滑点10
+  round_trip_bps_post: 20.4   # 印花税单边 5
+  single_weighting: equal     # 单笔等权，非聚合 PnL、非市值加权
+  entry: t1_bar_open
+  exit: force_14_50_first_bar_close
+
+single_family:
+  net_expectancy_pct:
+    gt: 0.0
+  gross_expectancy_pct:
+    gte: 0.3
+  cost_coverage_multiple:
+    gte: 1.5
+  clustered_t:
+    gte: 2.0
+    cluster_level: trade_date
+    fallback_block_bootstrap_ci_lower:
+      gt: 0.0            # 满足其一即可
+  yearly_net_expectancy_pct:
+    gt: -0.5             # 2019..2024 逐年
+  oos:
+    is_end: "20231231"
+    oos_start: "20240101"
+    same_direction_as_full_period: true
+  extreme_days:
+    same_direction_after_exclusion: true
+    dates:
+      - "2020-02-03"
+      - "2020-02-04"
+      - "2020-02-05"
+      - "2020-02-06"
+      - "2020-02-07"
+      - "2022-04-25"
+      - "2022-04-26"
+      - "2022-04-27"
+      - "2022-04-28"
+      - "2022-04-29"
+      - "2024-02-05"
+      - "2024-02-06"
+  amplitude_tier_check:
+    tier_lt_pct: 2.5        # ATR 低波持仓振幅带
+    must_report_separately: true
+    if_no_alpha_require_attachment_decision: true
+  density:
+    per_stock_daily_avg:
+      gte: 1.0              # 唯一过线判据
+    per_100_stocks_daily_avg:
+      informational_only: true   # 2026-09-28 拍板：仅描述性，不作过线依据
+    single_stock_share_max: 0.10
+    min_shares: 100         # 零股 <100 股跳过、不入统计（2026-09-27 拍板）
+
+m1_gate:
+  min_passing_families: 3
+  merged_six_families:
+    clustered_t_gte: 2.0
+    annual_sharpe_gte: 1.0     # 扣全成本
+  density_pass: true
+  oos_2024_not_negative: true
+  pass: "Phase 2"
+  fail: "archive"
+
+combination_gate:
+  pairwise_correlation_lt: 0.7  # 组合准入，非单族过线
+
+discipline:
+  only_default_params_count: true   # 只认预注册默认参数点
+  sensitivity_scan_is_display_only: true
+  no_post_hoc_threshold_change: true
+
+superseded:
+  - "specs/signal_framework.md §伪造标准：单族 t<1.5 / 单族夏普<0.5 / 密度 0.3与3 / 容量行"
+  - ".qoder/repowiki/.../Project_21 日内做T（做T增强）/概述.md §M1 裁决标准"
+  - "projects/Project_21_中波日内做T/config/falsification_criteria.py（整份，随目录归档）"
+
+changelog:
+  - date: "2026-09-28"
+    by: "诚哥"
+    note: "三项拍板：r3 建议线全采纳 / 每百票日均仅描述性 / F1~F6 首轮清单追认开工"

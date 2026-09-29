@@ -1,0 +1,111 @@
+# Project_21 中波股票池定义标准
+# 基于 2026-09-27 数据体检结果（5806 只有效股票，2009-2026 全周期）
+
+midvol_criteria:
+  # 振幅阈值（日振幅中位数，单位 %）
+  amplitude:
+    min_pct: 2.5      # 下界：剔除低波红利/指数股
+    max_pct: 8.0      # 上界：剔除妖股/ST/次新股极端波动
+    # 统计参考：全市场中位数 3.34%，P10=2.61%，P90=4.27%，P99=5.78%
+    # 选 2.5%-8.0% 覆盖核心中波区间，候选池 3383 只
+
+  # 换手率/流动性阈值
+  liquidity:
+    min_daily_amount_cny: 50_000_000    # 日均成交额 ≥ 0.5 亿（确保做 T 可成交）
+    min_daily_vol_hands: 20_000         # 日均成交量 ≥ 20 万手
+    # 统计参考：成交额中位数 0.62 亿，P10=0.28 亿，P25=0.41 亿
+    # 0.5 亿约为 P15，兼顾池子大小与成交确定性
+
+  # 市值过滤（可选，防微盘股）
+  market_cap:
+    min_circ_mv_cny: 2_000_000_000      # 流通市值 ≥ 20 亿
+    max_circ_mv_cny: 500_000_000_000    # 流通市值 ≤ 5000 亿（剔除超大盘低波）
+
+  # 上市时间过滤
+  listing:
+    min_listing_days: 252               # 上市满 1 年（约 252 个交易日）
+
+  # 排除名单
+  exclusions:
+    - "ST_stocks"
+    - "*ST_stocks"
+    - "delisting_stocks"
+    - "new_stocks_lt_1yr"
+    - "bse_stocks"
+
+  # 复核频率
+  rebalance:
+    frequency: "monthly"                # 月度复核
+    day_of_month: 1                     # 每月 1 号复核
+
+# 候选池统计（基于上述标准）
+pool_stats:
+  total_candidates: 3383
+  by_market:
+    主板: 1892
+    创业板: 1012
+    科创板: 479
+    北交所: 0  # 流动性不足被过滤
+
+# 成本参数（用于后续信号评估）
+cost_model:
+  commission_bps: 2.5              # 佣金 2.5bp（单边）
+  stamp_tax_bps: 5.0               # 印花税 5bp（仅卖出）
+  transfer_fee_bps: 0.2            # 过户费 0.2bp
+  slippage_bps: 5.0                # 滑点 5bp（单边，中波股预估）
+  round_trip_bps: 15.2             # 往返总成本 ≈ 15.2bp
+  # 分段成本（2023-08-28 前印花税双边，后单边）
+  # 评估时按实际时期费率计算
+
+# 评估协议
+evaluation:
+  entry: "t+1_bar_open"            # 入场价：信号触发下一根 1min bar 的 open
+  exit: "force_14_50"              # 强制平仓：14:50 收盘前最后一根 bar close
+  holding_bars_max: 230            # 最大持仓根数（9:30-14:50 约 300 根，留余量）
+  min_shares: 100                  # 最小成交股数（零股跳过）
+  candidate_density_metrics:
+    - "per_stock_daily_avg"        # 每股日均信号数
+    - "per_100_stocks_daily_avg"   # 每百股日均信号数（并列输出）
+
+# 统计显著性标准
+statistical:
+  cluster_robust_t_stat: true      # 按交易日聚类稳健 t-stat
+  min_t_stat: 2.0                  # 最小 t-stat 阈值
+  min_annual_sharpe: 1.0           # 最小年化夏普
+  max_daily_turnover: 0.30         # 单日最大换手率 30%
+
+# F1-F6 信号参数（预注册，严禁扫描/过拟合）
+f1_params:
+  auction_threshold_pct: 2.0
+  volume_ratio_threshold: 1.5
+  gap_confirm: true
+  min_gap_pct: 1.0
+
+f2_params:
+  momentum_window_min: 15
+  reversal_threshold_pct: 1.5
+  volume_surge_ratio: 2.0
+  trend_confirm_bars: 3
+
+f3_params:
+  deviation_threshold_pct: 1.0
+  reentry_cooldown_min: 30
+  min_bars_after_open: 15
+
+f4_params:
+  front_heavy_ratio: 1.5
+  price_volume_corr_threshold: 0.3
+  min_bars: 25
+  back_heavy_threshold: 0.67
+
+f5_params:
+  gap_threshold_pct: 1.5
+  fill_window_min: 60
+  partial_fill_ratio: 0.5
+  min_bars_after_open: 5
+
+f6_params:
+  zscore_threshold: 2.0
+  lookback_bars: 48
+  min_holding_bars: 3
+  use_5min_data: true

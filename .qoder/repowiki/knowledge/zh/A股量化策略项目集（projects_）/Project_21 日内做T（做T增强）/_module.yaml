@@ -1,0 +1,16 @@
+module_path: quant_projects/project_21_intraday_t
+dir_name: Project_21 日内做T（做T增强）
+title: Project_21 日内做T（做T增强）
+scope:
+  - projects/Project_21_日内做T/
+source_files: []
+children: []
+depends_on:
+  - data_layer
+  - factors_lib
+  - backtest_engine
+  - broker_adapter
+related_to:
+  - project_10_value_smallcap_v2
+  - project_16_lightgbm_master
+  - project_18_buy_sell_signals

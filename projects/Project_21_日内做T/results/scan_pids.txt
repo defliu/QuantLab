@@ -1,0 +1,11 @@
+=== launch 2026-09-28 16:51:22 ===
+2019 pid=16084 log=D:\QuantLab\projects\Project_21_日内做T\results\scan_2019.out.log
+2021 pid=6436 log=D:\QuantLab\projects\Project_21_日内做T\results\scan_2021.out.log
+2023 pid=20392 log=D:\QuantLab\projects\Project_21_日内做T\results\scan_2023.out.log
+=== launch 2026-09-28 16:54:27 ===
+2019 pid=5864 log=D:\QuantLab\projects\Project_21_日内做T\results\scan_2019.out.log
+2021 pid=12996 log=D:\QuantLab\projects\Project_21_日内做T\results\scan_2021.out.log
+2023 pid=16296 log=D:\QuantLab\projects\Project_21_日内做T\results\scan_2023.out.log
+=== launch 2026-09-28 20:09:56 ===
+2019 pid=18172 log=D:\QuantLab\projects\Project_21_日内做T\results\scan_2019.out.log
+2020 pid=9104 log=D:\QuantLab\projects\Project_21_日内做T\results\scan_2020.out.log
