@@ -274,10 +274,19 @@ def main():
     if pre["SC_F2"].nunique() <= 1 or pre["SC_F5"].nunique() <= 1 or pre["main_net"].notna().sum() == 0:
         raise SystemExit("!! FAIL-LOUD：SC_F2/SC_F5 恒值或 main_net 全 NaN（F2/F5 主源失效）——已中止落盘，勿用此候选")
 
-    print("[5/5] 红线 + 位置过滤 + Top%d ..." % args.top)
+    print("[5/5] 概率Top10 → 红线 + 位置过滤 + Top%d ..." % args.top)
+    # ---- 作用池对齐回测引擎（T-20260929-005 方案1，2026-09-29 诚哥拍板）----
+    # 引擎 scan_rotate_cost_real：Top100(prob) → Top10(prob) → 红线 → total 排序
+    # （PRE_POOL=100/TOP10=10，L221/L223 + simulate L247）。旧部署序红线直接作用于
+    # Top100（picks 在红线后按 total 取），与引擎成交票重合仅 Jaccard 0.031；0825
+    # 已验证配置反事实（XVAL5 工作包C）：日均超额 +0.1495% → -0.0293%、MDD
+    # -16.3% → -30.8%，6 阈值档全负 → 判定必须改部署端（方案1，约3行）。
+    # 空仓日不落候选 CSV：rebalance_g2.load_g2_selection 缺文件时宁缺毋滥 → 池空
+    # 不买入、到期卖出照常执行，与引擎「无候选不买入」一致。
+    pre = pre.nlargest(10, "prob").copy()
     pre = pre[pre["total_new"] >= args.threshold].copy()
     if len(pre) == 0:
-        print(f"    !! 预选池({args.pool})内无股票通过红线 {args.threshold} → 空仓")
+        print(f"    !! 概率Top10(池{args.pool}→10)内无股票通过红线 {args.threshold} → 空仓（不落候选，rebalance 自然无买入）")
         return
     # ---- 位置过滤（G2-V1.0，2026-09-08）----
     # 【重要修正 2026-09-08】G2 模型(g2_strong_real)口径回测验证：full 过滤有害
