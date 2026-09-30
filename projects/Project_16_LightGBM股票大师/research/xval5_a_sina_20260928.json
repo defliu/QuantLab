@@ -1,0 +1,32 @@
+{
+ "target_date": "2026-09-28",
+ "codes": {
+  "920662.BJ": {
+   "main_net_yuan": -229045.2
+  },
+  "920718.BJ": {
+   "main_net_yuan": 0.0
+  },
+  "920212.BJ": {
+   "main_net_yuan": -1011878.46
+  },
+  "920008.BJ": {
+   "main_net_yuan": -240853.57
+  },
+  "920183.BJ": {
+   "main_net_yuan": -238288.88
+  },
+  "688121.SH": {
+   "main_net_yuan": -2105562.18
+  },
+  "920651.BJ": {
+   "main_net_yuan": 870862.32
+  },
+  "920274.BJ": {
+   "main_net_yuan": 1143051.64
+  },
+  "920694.BJ": {
+   "main_net_yuan": 0.0
+  }
+ }
+}
