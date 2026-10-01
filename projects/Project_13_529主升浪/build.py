@@ -19,6 +19,16 @@ def build():
     with open(SRC, "r", encoding="utf-8") as f:
         code = f.read()
 
+    # 1.5 强制产物首行为 # coding=gbk
+    # 源码如实声明 coding=utf-8（源码文件本身是 UTF-8），但 QMT 产物红线要求
+    # 首行必须是 # coding=gbk。若原样转写，产物首行会变成 utf-8 直接违反红线。
+    lines = code.split("\n")
+    if lines and re.match(r"^#.*coding[:=]", lines[0]):
+        lines[0] = "# coding=gbk"
+    else:
+        lines.insert(0, "# coding=gbk")
+    code = "\n".join(lines)
+
     # 2. 语法检查
     try:
         compile(code, SRC, "exec")
