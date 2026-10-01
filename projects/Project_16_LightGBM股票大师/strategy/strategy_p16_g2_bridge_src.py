@@ -17,6 +17,7 @@ import json
 import os
 import time
 import traceback
+from datetime import datetime
 
 # ============================================================
 # 常量
@@ -51,6 +52,7 @@ STOP_LOSS_PCT = 0.07
 TAKE_PROFIT_PCT = 0.15
 TRAILING_PCT = 0.08
 TRAIL_ACTIVATE_PCT = 0.08   # 追盈激活阈值（2026-09-07 修复，T-20260907-002）：峰值≥成本×(1+阈值)才追踪，防"追盈=追跌"
+PEAK_STALE_HOURS = 24.0     # peak.json 距上次写盘超过此小时数视为 stale，init 跳过恢复（T-20260928-002：防桥宕机多日后拿陈旧 peak 判追盈→追认止损）
 
 # 反查参数
 LOOKUP_RETRIES = 6
@@ -1377,13 +1379,13 @@ def init(C):
                 pass
         if pendings:
             print("[P16G2][INIT] 从心跳恢复pending %d条" % len(pendings))
-    rs = heart.get("risk_sold", [])
-    if rs:
-        _g_risk_sold = set(str(x) for x in rs)
-        print("[P16G2][INIT] 恢复risk_sold %d只" % len(_g_risk_sold))
+        rs = heart.get("risk_sold", [])
+        if rs:
+            _g_risk_sold = set(str(x) for x in rs)
+            print("[P16G2][INIT] 恢复risk_sold %d只" % len(_g_risk_sold))
     # 恢复当日 risk_count（心跳有写、init 忽略 → 重启后 RSK sid 撞号覆盖 pending/fills）
     try:
-        _g_today_risk_count = int(heart.get("risk_count", 0) or 0)
+        _g_today_risk_count = int(heart.get("risk_count", 0) or 0) if heart else 0
         if _g_today_risk_count:
             print("[P16G2][INIT] 恢复risk_count=%d" % _g_today_risk_count)
     except Exception:
@@ -1411,14 +1413,27 @@ def init(C):
     # 防 peak.json 被 0.0 污染（风控静默日写入）后把成本底覆盖回 0 → 追盈历史丢失。
     pk = _read_json(_peak_path())
     if pk and str(pk.get("account_id", "") or "") == ACCOUNT_ID:
-        for code, peak in pk.get("peaks", {}).items():
-            try:
-                if code in _g_positions:
-                    pv = float(peak or 0.0)
-                    if pv > float(_g_positions[code].get("peak", 0.0) or 0.0):
-                        _g_positions[code]["peak"] = pv
-            except Exception:
-                pass
+        # stale 检测（T-20260928-002）：桥宕机多日后重启，跳过陈旧 peak（防追认止损）
+        _pk_age_h = None
+        _pk_updated = pk.get("updated_at", "")
+        try:
+            if _pk_updated:
+                _pk_dt = datetime.strptime(_pk_updated, "%Y-%m-%d %H:%M:%S")
+                _pk_age_h = (datetime.now() - _pk_dt).total_seconds() / 3600.0
+        except Exception:
+            _pk_age_h = None
+        if _pk_age_h is not None and _pk_age_h > PEAK_STALE_HOURS:
+            print("[P16G2][INIT] peak STALE %.1fh ago (>%gh), skip restore to avoid retroactive trailing (T-20260928-002)" % (
+                _pk_age_h, PEAK_STALE_HOURS))
+        else:
+            for code, peak in pk.get("peaks", {}).items():
+                try:
+                    if code in _g_positions:
+                        pv = float(peak or 0.0)
+                        if pv > float(_g_positions[code].get("peak", 0.0) or 0.0):
+                            _g_positions[code]["peak"] = pv
+                except Exception:
+                    pass
     print("[P16G2][BUILD] BUILD_TAG=%s account=%s bridge=%s" % (BUILD_TAG, ACCOUNT_ID, BRIDGE_DIR))
     print("[P16G2][INIT] date=%s last_seq=%d pending=%d positions=%d risk_sold=%d" % (
         _g_today, _g_last_cmd_seq, len(_g_pending), len(_g_positions), len(_g_risk_sold)))

@@ -6,7 +6,10 @@
 
   1. 选股 CSV 存在且非空，SC_F1~F6 列齐全
   2. SC_F2 / SC_F5 唯一值数 < 2 → error（F2 主源失效 / F5 板块源失效，即事故复发形态）
-  3. SC_F1/F3/F4/F6 唯一值数 < 2 → warn（信息坍缩但不致命）
+     ※ 仅当行数 >= MIN_SAMPLE_ROWS(5) 时判定：行数 < 5 时 nunique 无统计意义（1 行必为 1），
+       跳过坍缩判定防假阳性（2026-09-28 候选枯竭 1 行误报 6 条坍缩即此因）
+  3. SC_F1/F3/F4/F6 唯一值数 < 2 → warn（信息坍缩但不致命，同样受最小样本量保护）
+  3b. CSV 行数 < MIN_CAND(5) → warn「候选池枯竭」（红线过严/预选池质量差，区别于评分卡坍缩）
   4. 快照 g2_latest_features.parquet：mf_main_net / ind_pct_ths 缺失或非空率 < 99% → error（主源断源）
   5. 快照新鲜度：trade_date 最大日距今 > 4 自然日 → warn（跨周末/节假日容差）
   6. paper_forward_live.csv：最近 7 自然日有候选记录（防候选链断流）
@@ -40,6 +43,8 @@ SC_COLS = ["SC_F1", "SC_F2", "SC_F3", "SC_F4", "SC_F5", "SC_F6"]
 CRITICAL = {"SC_F2", "SC_F5"}   # 事故复发形态：主源失效/恒值
 RED_LINE = 60.0                 # 评分卡红线（与 deploy_predict_g2 --threshold 默认一致）
 FRESH_DAYS = 4                  # 快照新鲜度容差（自然日，容忍周末+节假日）
+MIN_SAMPLE_ROWS = 5             # 坍缩判定最小样本量：行数低于此值时 nunique 必然 <= 行数，无统计意义
+MIN_CAND = 5                    # 候选枯竭告警阈值：CSV 行数低于此值时视为候选池枯竭
 
 
 def latest_top10_csv():
@@ -98,15 +103,26 @@ def main():
         print("[CHECK] %s 候选 %d 只 · total_new 最高 %.1f · 过红线(>=%.0f) %d 只" %
               (csv_date, len(df), total_max, RED_LINE, n_pass))
         print("[CHECK] SC 列唯一值数: %s" % ", ".join("%s=%d" % (k, v) for k, v in sorted(nunique.items())))
-        for c in CRITICAL:
-            if nunique.get(c, 0) < 2:
-                problems.append(("error", "G2 评分卡坍缩 %s" % c,
-                                 "%s 的 %s 唯一值数=%d（恒值=主源失效，2026-08-17~09-18 死代码事故形态）。" % (
-                                     os.path.basename(csv_path), c, nunique[c])))
-        for c in SC_COLS:
-            if c not in CRITICAL and nunique.get(c, 0) < 2:
-                problems.append(("warn", "G2 评分卡信息坍缩 %s" % c,
-                                 "%s 的 %s 唯一值数=%d（不致命，留意）。" % (os.path.basename(csv_path), c, nunique[c])))
+        if len(df) < MIN_SAMPLE_ROWS:
+            # 行数过少时 nunique 必然 <= 行数（1 行时任何列必为 1），坍缩判定无统计意义。
+            # 跳过 nunique 坍缩检查防假阳性（2026-09-28 单行候选误报 6 条坍缩），仅打印信息行。
+            print("[CHECK][INFO] %s 仅 %d 行（< %d），样本不足，无法判定评分卡坍缩（跳过 nunique 检查）" %
+                  (os.path.basename(csv_path), len(df), MIN_SAMPLE_ROWS))
+        else:
+            for c in CRITICAL:
+                if nunique.get(c, 0) < 2:
+                    problems.append(("error", "G2 评分卡坍缩 %s" % c,
+                                     "%s 的 %s 唯一值数=%d（恒值=主源失效，2026-08-17~09-18 死代码事故形态）。" % (
+                                         os.path.basename(csv_path), c, nunique[c])))
+            for c in SC_COLS:
+                if c not in CRITICAL and nunique.get(c, 0) < 2:
+                    problems.append(("warn", "G2 评分卡信息坍缩 %s" % c,
+                                     "%s 的 %s 唯一值数=%d（不致命，留意）。" % (os.path.basename(csv_path), c, nunique[c])))
+        if len(df) < MIN_CAND:
+            problems.append(("warn", "G2 候选池枯竭",
+                             "%s 仅 %d 行候选（< %d），total_new 最高 %.1f（红线 %.0f）。"
+                             "候选池枯竭/红线过严或预选池质量差——非评分卡坍缩；次日可能空仓，若连续多日需核查预选池与红线阈值。" % (
+                                 os.path.basename(csv_path), len(df), MIN_CAND, total_max, RED_LINE)))
         if n_pass < 1:
             problems.append(("warn", "G2 候选无过红线",
                              "%s 无候选达到红线 %.0f（最高 %.1f）→ 次日可能空仓。若连续多日需核查评分卡口径。" % (

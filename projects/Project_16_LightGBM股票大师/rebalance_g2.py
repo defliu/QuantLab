@@ -18,6 +18,8 @@
 import argparse
 import csv
 import datetime
+import hashlib
+import io
 import json
 import os
 import sys
@@ -263,35 +265,91 @@ def _latest_avail_candidate(date, top_n):
     return path, "运行日候选缺失，回退到最新数据日 %s 的候选" % d
 
 
+def _candidate_meta(date, csv_path, loader):
+    """候选溯源 meta（2026-09-28 候选可审计性修复①，缺陷B）。
+
+    背景：g2 候选命名空间有多个写手（夜跑正品/次日副本/TRAE 09:25 重算/复跑对比），
+    事后文件可能被覆写（r1 误判即由此产生）。本 meta 让每次换仓记录都能回答
+    「当时到底读了哪个文件、内容是什么、是否被事后改动」。
+    loader: exact=运行日精确匹配 / fallback=回退最新数据日 / none=无可用候选。
+    """
+    meta = {
+        "candidate_file": csv_path,        # 实际加载的候选文件路径（None=无候选）
+        "candidate_loader": loader,
+        "candidate_data_date": None,       # 候选文件名日期（数据日口径）
+        "candidate_rows_raw": 0,           # CSV 原始行数（红线过滤前）
+        "candidate_sha256": None,          # 内容哈希（核心：防事后覆写失真）
+        "candidate_asof": None,            # asof 只读留档路径（读取点字节快照）
+    }
+    if csv_path:
+        b = os.path.basename(csv_path)
+        if b[:8].isdigit():
+            meta["candidate_data_date"] = b[:8]
+    return meta
+
+
+def _archive_candidate_asof(date, meta, raw):
+    """asof 只读留档（修复③之 3d 读取侧变体）：把本次实际读取的候选字节写入
+    data/rebalance_g2/candidates_asof/<date>_<sha8>_<原名>。文件名含内容哈希 → 天然幂等，
+    内容不同则共存，绝不覆盖已有留档。失败只打日志，绝不阻断换仓。"""
+    try:
+        adir = os.path.join(G.DATA_DIR, "rebalance_g2", "candidates_asof")
+        os.makedirs(adir, exist_ok=True)
+        sha8 = (meta.get("candidate_sha256") or "nasha")[:8]
+        base = os.path.basename(meta.get("candidate_file") or "candidate.csv")
+        adst = os.path.join(adir, "%s_%s_%s" % (date, sha8, base))
+        if not os.path.exists(adst):
+            with open(adst, "wb") as f:
+                f.write(raw)
+        meta["candidate_asof"] = adst
+    except Exception as e:
+        print("  [asof留档] 失败（不阻断换仓）: %s" % e)
+
+
 def load_g2_selection(date, top_n):
     """读 g2 选股 CSV → 候选池（total>=REDLINE，按 total 降序；不截断，买入侧自行排除持仓取最高）。
 
     先按运行日 <date> 精确匹配；缺失则回退最新数据日候选（见 _latest_avail_candidate）。
     绝不回退 V1.3 的 selection_full.csv（G2/V1.3 隔离红线）。
+    返回 (picks, note, meta)：
+    - meta 为候选溯源（2026-09-28 缺陷B修复①）：单次读盘 + 读取点即时 SHA256 + asof 留档，
+      保证 sha/内容/留档三者同源一致（R2），事后候选被覆写也能复现实盘输入。
     """
     csv_path = os.path.join(G.G2_SELECT_DIR, "%s_g2_top%d.csv" % (date, top_n))
     note = "g2 候选池 %d 只（红线 %.0f）" % (top_n, G.REDLINE)
+    loader = "exact"
     if not os.path.exists(csv_path):
         csv_path, note = _latest_avail_candidate(date, top_n)
+        loader = "fallback"
         if csv_path is None:
-            return [], note
+            return [], note, _candidate_meta(date, None, "none")
+    meta = _candidate_meta(date, csv_path, loader)
     picks = []
-    with open(csv_path, encoding="utf-8-sig") as f:
-        for row in csv.DictReader(f):
-            code = (row.get("ts_code") or "").strip()
-            if not code:
-                continue
-            try:
-                total = float(row.get("total_new", row.get("total", 0) or 0))
-            except ValueError:
-                total = 0.0
-            if total < G.REDLINE:
-                continue
-            picks.append({"code": code, "total": total})
+    try:
+        with open(csv_path, "rb") as f:
+            raw = f.read()
+        meta["candidate_sha256"] = hashlib.sha256(raw).hexdigest()
+        _archive_candidate_asof(date, meta, raw)
+        text = raw.decode("utf-8-sig")
+    except Exception as e:
+        meta["candidate_loader"] = "read_error"
+        return [], "g2 候选读取失败(%s)" % e, meta
+    for row in csv.DictReader(io.StringIO(text)):
+        meta["candidate_rows_raw"] += 1
+        code = (row.get("ts_code") or "").strip()
+        if not code:
+            continue
+        try:
+            total = float(row.get("total_new", row.get("total", 0) or 0))
+        except ValueError:
+            total = 0.0
+        if total < G.REDLINE:
+            continue
+        picks.append({"code": code, "total": total})
     if not picks:
-        return [], "g2 选股无 total>=%.0f 的票（宁缺毋滥）" % G.REDLINE
+        return [], "g2 选股无 total>=%.0f 的票（宁缺毋滥）" % G.REDLINE, meta
     picks.sort(key=lambda p: p["total"], reverse=True)
-    return picks, "g2 候选池 %d 只（红线 %.0f）" % (len(picks), G.REDLINE)
+    return picks, "g2 候选池 %d 只（红线 %.0f）" % (len(picks), G.REDLINE), meta
 
 
 def load_g2_ledger(date):
@@ -352,12 +410,20 @@ def build_plan(date, capital):
     - 卖出：持仓满 HOLD_DAYS 到期 → SELL（不看是否在候选池内；止损/止盈由桥内风控处理）
     - 买入：持仓数 < TOP_N 时，从候选池（Top10）选 total_new 最高、不在持仓、过红线的补足（while len(hold) < TOP）
     返回 (orders, plan_dict)。"""
-    pool, note = load_g2_selection(date, G.SELECT_TOP)   # 候选池（Top10）
+    pool, note, cand_meta = load_g2_selection(date, G.SELECT_TOP)   # 候选池（Top10）+ 溯源 meta
     ledger = load_g2_ledger(date)
     hold_dates = load_hold_dates()   # {code: "YYYYMMDD"} 持仓建仓日
     plan = {
         "date": date, "account_id": G.ACCOUNT_ID, "capital": round(capital, 2),
         "pool": pool, "ledger": ledger, "note": note,
+        # ---- 候选溯源（2026-09-28 缺陷B修复①：事后候选被覆写也能复现实盘输入）----
+        "candidate_file": cand_meta["candidate_file"],
+        "candidate_loader": cand_meta["candidate_loader"],
+        "candidate_data_date": cand_meta["candidate_data_date"],
+        "candidate_rows": len(pool),                # 红线过滤后候选数
+        "candidate_rows_raw": cand_meta["candidate_rows_raw"],
+        "candidate_sha256": cand_meta["candidate_sha256"],
+        "candidate_asof": cand_meta["candidate_asof"],
         "hold_days": G.HOLD_DAYS, "hold_dates": hold_dates,
         "sells": [], "buys": [], "skips": [],
     }
