@@ -1,0 +1,277 @@
+{
+  "thresholds_is": {
+    "CLIMAX_GE2": 60,
+    "CLIMAX_FIRST_BOARD": 200,
+    "RALLY_HEIGHT": 8,
+    "RALLY_GE2": 18,
+    "RALLY_PROMO": 0.276,
+    "RALLY_PROMO_ALT": 0.348,
+    "RALLY_GE2_ALT": 14,
+    "RALLY_HEIGHT_ALT": 6,
+    "EBB_PROMO": 0.185,
+    "EBB_PROMO_STRICT": 0.161,
+    "EBB_SEAL": 0.565,
+    "EBB_RECENT_GE2": 14,
+    "EBB_RECENT_HEIGHT": 7,
+    "IGNITE_GE2": 11,
+    "IGNITE_PROMO": 0.262,
+    "IGNITE_HEIGHT": 6,
+    "IGNITE_PROMO_SOFT": 0.25,
+    "ICE_HEIGHT": 4,
+    "ICE_GE2": 7,
+    "ICE_FIRST_BOARD": 24
+  },
+  "h1": {
+    "IS": -0.01609618809463506,
+    "OOS": -0.063312252621828,
+    "FULL2020+": -0.03622851106159255
+  },
+  "h1_stage_base20_phase_is": {
+    "climax": 0.08239242412829502,
+    "ebb": -0.021155006906375753,
+    "ignite": 0.009894643746691486,
+    "rally": -0.01948466090713388,
+    "repair": -0.00034090771465715257
+  },
+  "h1_stage_base20_phase_prod": {
+    "climax": 0.06956783659458377,
+    "ebb": -0.027747725508956517,
+    "ignite": 0.010520801306722566,
+    "rally": -0.011006001882128446,
+    "repair": -0.0010381502985832133
+  },
+  "h2": {
+    "n_top_days": 69,
+    "n_rest_days": 565,
+    "n_top_nolap": 9,
+    "n_rest_nolap": 32,
+    "mean_top": -0.08154284600645269,
+    "mean_rest": -0.0723706489051161,
+    "diff": 0.009172197101336585,
+    "t": -0.32256606274873645,
+    "p": 0.37561789359628184,
+    "pass": false
+  },
+  "segments_oos": [
+    {
+      "caliber": "phase_is",
+      "phase": "climax",
+      "start": "2024-02-19",
+      "end": "2024-02-20",
+      "len": 2,
+      "minpath20_at_end": 0.02105468186140795,
+      "base20_at_end": 0.1692072900771376
+    },
+    {
+      "caliber": "phase_is",
+      "phase": "ebb",
+      "start": "2024-04-10",
+      "end": "2024-04-11",
+      "len": 2,
+      "minpath20_at_end": -0.1483254292186251,
+      "base20_at_end": -0.011809251763818621
+    },
+    {
+      "caliber": "phase_is",
+      "phase": "climax",
+      "start": "2024-10-08",
+      "end": "2024-10-11",
+      "len": 4,
+      "minpath20_at_end": 0.021461141935381456,
+      "base20_at_end": 0.19607623809802965
+    },
+    {
+      "caliber": "phase_is",
+      "phase": "climax",
+      "start": "2024-10-31",
+      "end": "2024-11-14",
+      "len": 11,
+      "minpath20_at_end": -0.04455577057075055,
+      "base20_at_end": 0.07009096375082173
+    },
+    {
+      "caliber": "phase_is",
+      "phase": "ebb",
+      "start": "2025-03-05",
+      "end": "2025-03-06",
+      "len": 2,
+      "minpath20_at_end": -0.05041358352358405,
+      "base20_at_end": -0.03430383502389967
+    },
+    {
+      "caliber": "phase_is",
+      "phase": "ebb",
+      "start": "2025-09-09",
+      "end": "2025-09-10",
+      "len": 2,
+      "minpath20_at_end": -0.028854360998427142,
+      "base20_at_end": -0.02433645880297084
+    },
+    {
+      "caliber": "phase_is",
+      "phase": "ebb",
+      "start": "2026-02-02",
+      "end": "2026-02-03",
+      "len": 2,
+      "minpath20_at_end": -0.035004514079202464,
+      "base20_at_end": 0.005642907190798598
+    },
+    {
+      "caliber": "phase_is",
+      "phase": "ebb",
+      "start": "2026-03-10",
+      "end": "2026-03-11",
+      "len": 2,
+      "minpath20_at_end": -0.1452740442925904,
+      "base20_at_end": -0.08634951712662253
+    },
+    {
+      "caliber": "phase_is",
+      "phase": "ebb",
+      "start": "2026-04-02",
+      "end": "2026-04-09",
+      "len": 5,
+      "minpath20_at_end": 0.008156521602609879,
+      "base20_at_end": 0.054935429484620074
+    },
+    {
+      "caliber": "phase_is",
+      "phase": "ebb",
+      "start": "2026-04-27",
+      "end": "2026-04-28",
+      "len": 2,
+      "minpath20_at_end": -0.06859295126194292,
+      "base20_at_end": -0.06588599785907635
+    },
+    {
+      "caliber": "phase_is",
+      "phase": "ebb",
+      "start": "2026-06-08",
+      "end": "2026-06-16",
+      "len": 7,
+      "minpath20_at_end": -0.1390625226725747,
+      "base20_at_end": -0.09725961550741458
+    },
+    {
+      "caliber": "phase_is",
+      "phase": "ebb",
+      "start": "2026-06-25",
+      "end": "2026-06-30",
+      "len": 4,
+      "minpath20_at_end": -0.12092721749850374,
+      "base20_at_end": -0.06807713574377325
+    },
+    {
+      "caliber": "phase_is",
+      "phase": "ebb",
+      "start": "2026-07-10",
+      "end": "2026-07-17",
+      "len": 6,
+      "minpath20_at_end": -0.04869693555501137,
+      "base20_at_end": 0.08248353521229707
+    },
+    {
+      "caliber": "phase_is",
+      "phase": "ebb",
+      "start": "2026-08-20",
+      "end": "2026-08-26",
+      "len": 5,
+      "minpath20_at_end": NaN,
+      "base20_at_end": NaN
+    },
+    {
+      "caliber": "phase_prod",
+      "phase": "climax",
+      "start": "2024-10-08",
+      "end": "2024-10-11",
+      "len": 4,
+      "minpath20_at_end": 0.021461141935381456,
+      "base20_at_end": 0.19607623809802965
+    },
+    {
+      "caliber": "phase_prod",
+      "phase": "climax",
+      "start": "2024-10-31",
+      "end": "2024-11-14",
+      "len": 11,
+      "minpath20_at_end": -0.04455577057075055,
+      "base20_at_end": 0.07009096375082173
+    },
+    {
+      "caliber": "phase_prod",
+      "phase": "ebb",
+      "start": "2025-09-09",
+      "end": "2025-09-10",
+      "len": 2,
+      "minpath20_at_end": -0.028854360998427142,
+      "base20_at_end": -0.02433645880297084
+    },
+    {
+      "caliber": "phase_prod",
+      "phase": "ebb",
+      "start": "2026-04-03",
+      "end": "2026-04-08",
+      "len": 3,
+      "minpath20_at_end": -0.01609184934861535,
+      "base20_at_end": 0.052143272410681625
+    },
+    {
+      "caliber": "phase_prod",
+      "phase": "ebb",
+      "start": "2026-06-08",
+      "end": "2026-06-16",
+      "len": 7,
+      "minpath20_at_end": -0.1390625226725747,
+      "base20_at_end": -0.09725961550741458
+    },
+    {
+      "caliber": "phase_prod",
+      "phase": "ebb",
+      "start": "2026-06-25",
+      "end": "2026-06-30",
+      "len": 4,
+      "minpath20_at_end": -0.12092721749850374,
+      "base20_at_end": -0.06807713574377325
+    },
+    {
+      "caliber": "phase_prod",
+      "phase": "ebb",
+      "start": "2026-07-10",
+      "end": "2026-07-16",
+      "len": 5,
+      "minpath20_at_end": -0.09419938947416749,
+      "base20_at_end": 0.038167493344386245
+    },
+    {
+      "caliber": "phase_prod",
+      "phase": "ebb",
+      "start": "2026-08-20",
+      "end": "2026-08-26",
+      "len": 5,
+      "minpath20_at_end": NaN,
+      "base20_at_end": NaN
+    }
+  ],
+  "a2_window": {
+    "phases": [
+      "ignite",
+      "repair",
+      "rally"
+    ],
+    "worst_minpath20": -0.43281962652423933
+  },
+  "meta": {
+    "is_window": [
+      "2020-08-24",
+      "2023-12-31"
+    ],
+    "oos_window": [
+      "2024-01-01",
+      "2026-09-11"
+    ],
+    "n_days_total": 4299,
+    "n_days_oos": 654,
+    "top_decile": 0.9,
+    "sample_gap": 20
+  }
+}

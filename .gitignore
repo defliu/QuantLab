@@ -84,3 +84,13 @@ data/schedules/
 
 # 错误日志
 *.err
+
+# 一次性数据探针 / 临时调试脚本（2026-10-01 补，防累积）
+check_*.py
+scripts/_qk_*.py
+scripts/_qk_*.js
+scripts/_qk_*.ps1
+test_yaml.py
+
+# 外部第三方仓库副本与 DE 运行日志（不入库，本地重建/参考）
+research_external/

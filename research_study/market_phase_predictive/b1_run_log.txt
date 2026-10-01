@@ -1,0 +1,87 @@
+[1] �� astock ���� ...
+    rows=14656796, 2009-01-05 ~ 2026-09-11
+[2] ��ͣ��־ + ���� + above_ma20 ...
+    flagged rows=14648727, took 19s
+[3] 2026-07-27 �ն��Ѵ� live CSV ����
+[4] IS-only �궨(2020-08-24 ~ 2023-12-31, 815 ��):
+    CLIMAX_GE2           = 60 (���� 62)
+    CLIMAX_FIRST_BOARD   = 200 (���� 218)
+    RALLY_HEIGHT         = 8 (���� 8)
+    RALLY_GE2            = 18 (���� 19)
+    RALLY_PROMO          = 0.276 (���� 0.27)
+    RALLY_PROMO_ALT      = 0.348 (���� 0.346)
+    RALLY_GE2_ALT        = 14 (���� 15)
+    RALLY_HEIGHT_ALT     = 6 (���� 6)
+    EBB_PROMO            = 0.185 (���� 0.181)
+    EBB_PROMO_STRICT     = 0.161 (���� 0.157)
+    EBB_SEAL             = 0.565 (���� 0.565)
+    EBB_RECENT_GE2       = 14 (���� 15)
+    EBB_RECENT_HEIGHT    = 7 (���� 7)
+    IGNITE_GE2           = 11 (���� 13)
+    IGNITE_PROMO         = 0.262 (���� 0.257)
+    IGNITE_HEIGHT        = 6 (���� 6)
+    IGNITE_PROMO_SOFT    = 0.25 (���� 0.246)
+    ICE_HEIGHT           = 4 (���� 4)
+    ICE_GE2              = 7 (���� 8)
+    ICE_FIRST_BOARD      = 24 (���� 26)
+[5] ˫�ھ���ǩ ...
+    phase_is   �ֲ�(2020-08-24+): {'repair': 0.7434, 'rally': 0.1191, 'ignite': 0.0878, 'ebb': 0.0381, 'climax': 0.0116}
+    phase_prod �ֲ�(2020-08-24+): {'repair': 0.7495, 'rally': 0.1266, 'ignite': 0.083, 'ebb': 0.0245, 'climax': 0.0102, 'ice': 0.0061}
+[6] �ȶ��ۺϷ� ...
+[7] С�̳� fwd �� minpath ...
+    ���վ����渲�� 2009-01-05 00:00:00 ~ 2026-09-11 00:00:00
+    �ѱ��� D:\QuantLab\research_study\market_phase_predictive\daily_phase_b_route.csv (rows=4299, took 36s)
+
+========== H1 ������ȷ��(������, �� pass/fail) ==========
+  H1 Spearman(heat, base20) IS: -0.0161 (n=815)
+  H1 Spearman(heat, base20) OOS: -0.0633 (n=632)
+  H1 Spearman(heat, base20) FULL2020+: -0.0362 (n=1447)
+  OOS �ֽ׶� base20(phase_is):
+    climax   n=17   mean=+0.0824
+    ebb      n=34   mean=-0.0212
+    ignite   n=67   mean=+0.0099
+    rally    n=66   mean=-0.0195
+    repair   n=448  mean=-0.0003
+  OOS �ֽ׶� base20(phase_prod):
+    climax   n=15   mean=+0.0696
+    ebb      n=21   mean=-0.0277
+    ignite   n=65   mean=+0.0105
+    rally    n=69   mean=-0.0110
+    repair   n=462  mean=-0.0010
+
+========== H2 β������Ԥ��(���о� 1) ==========
+  OOS top decile ����=69(���ص� 9 ��) vs ����=565(���ص� 32 ��)
+  mean(minpath|top)=-0.0815 �� -7.83% | mean(minpath|rest)=-0.0724 �� -6.98%
+  ��(����Ϊ��)=+0.0092 �� 0.92pp | Welch ���� t=-0.323 p=0.3756
+  ��������: p<0.05 �� ��>=0.01 -> FAIL
+  CVaR5%(top) = -0.4145 �� -33.93%
+  CVaR5%(rest) = -0.2513 �� -22.22%
+
+========== �μ��¼�����(���о�) ==========
+  [phase_is] climax  2024-02-19 ~ 2024-02-20 (2 ��) ��ĩ minpath20=+2.13% base20=+18.44%
+  [phase_is] ebb     2024-04-10 ~ 2024-04-11 (2 ��) ��ĩ minpath20=-13.78% base20=-1.17%
+  [phase_is] climax  2024-10-08 ~ 2024-10-11 (4 ��) ��ĩ minpath20=+2.17% base20=+21.66%
+  [phase_is] climax  2024-10-31 ~ 2024-11-14 (11 ��) ��ĩ minpath20=-4.36% base20=+7.26%
+  [phase_is] ebb     2025-03-05 ~ 2025-03-06 (2 ��) ��ĩ minpath20=-4.92% base20=-3.37%
+  [phase_is] ebb     2025-09-09 ~ 2025-09-10 (2 ��) ��ĩ minpath20=-2.84% base20=-2.40%
+  [phase_is] ebb     2026-02-02 ~ 2026-02-03 (2 ��) ��ĩ minpath20=-3.44% base20=+0.57%
+  [phase_is] ebb     2026-03-10 ~ 2026-03-11 (2 ��) ��ĩ minpath20=-13.52% base20=-8.27%
+  [phase_is] ebb     2026-04-02 ~ 2026-04-09 (5 ��) ��ĩ minpath20=+0.82% base20=+5.65%
+  [phase_is] ebb     2026-04-27 ~ 2026-04-28 (2 ��) ��ĩ minpath20=-6.63% base20=-6.38%
+  [phase_is] ebb     2026-06-08 ~ 2026-06-16 (7 ��) ��ĩ minpath20=-12.98% base20=-9.27%
+  [phase_is] ebb     2026-06-25 ~ 2026-06-30 (4 ��) ��ĩ minpath20=-11.39% base20=-6.58%
+  [phase_is] ebb     2026-07-10 ~ 2026-07-17 (6 ��) ��ĩ minpath20=-4.75% base20=+8.60%
+  [phase_is] ebb     2026-08-20 ~ 2026-08-26 (5 ��) ��ĩ minpath20=NA base20=NA
+  [phase_prod] climax  2024-10-08 ~ 2024-10-11 (4 ��) ��ĩ minpath20=+2.17% base20=+21.66%
+  [phase_prod] climax  2024-10-31 ~ 2024-11-14 (11 ��) ��ĩ minpath20=-4.36% base20=+7.26%
+  [phase_prod] ebb     2025-09-09 ~ 2025-09-10 (2 ��) ��ĩ minpath20=-2.84% base20=-2.40%
+  [phase_prod] ebb     2026-04-03 ~ 2026-04-08 (3 ��) ��ĩ minpath20=-1.60% base20=+5.35%
+  [phase_prod] ebb     2026-06-08 ~ 2026-06-16 (7 ��) ��ĩ minpath20=-12.98% base20=-9.27%
+  [phase_prod] ebb     2026-06-25 ~ 2026-06-30 (4 ��) ��ĩ minpath20=-11.39% base20=-6.58%
+  [phase_prod] ebb     2026-07-10 ~ 2026-07-16 (5 ��) ��ĩ minpath20=-8.99% base20=+3.89%
+  [phase_prod] ebb     2026-08-20 ~ 2026-08-26 (5 ��) ��ĩ minpath20=NA base20=NA
+  [�����Լ��] 2024-01-02~02-08 phase_is ����: ignite->repair->rally
+    ���������� minpath20=-35.13% (@2024-01-11) ���� �ô���δ���� ebb/ice ����֪�ھ�����
+
+========== b1 ��� (took 36s) ==========
+H2 �ж�: FAIL | H1(����): IS=-0.0161 OOS=-0.0633
