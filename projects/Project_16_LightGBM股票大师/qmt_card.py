@@ -25,7 +25,7 @@ for _stream in ("stdout", "stderr"):
         pass
 
 import qmt_config as C
-
+import lark_push as LP
 # 信号类型 → header 模板 / 标签 / 主色（P6 邻近色环：red→orange 一支，green/grey 各自单色）
 ACTION_META = {
     "SELL_STOP":        {"template": "red",    "tag": "止损",     "color": "red",    "title": "QMT 盯盘 · 止损信号触发"},
@@ -44,31 +44,14 @@ def code_to_eastmoney_url(code):
 
 
 def _env_for_cli(as_ident):
-    """构造 lark-cli 子进程环境。
+    """构造 lark-cli 子进程环境（2026-09-28 起转发 lark_push.build_env）。
 
-    as_ident="user"：保留宿主注入的 LARKSUITE_CLI_APP_ID / USER_ACCESS_TOKEN（本机唯一可用凭据）。
-    as_ident="bot" ：清理外部注入 + Agent 上下文信号 + 关闭 strict-mode，
-                     让 lark-cli 回退到 ~/.lark-cli/config.json 的 bot 凭据（secret 存系统 keychain）。
-                     服务器部署（无 HERMES_HOME 等变量）同样适用本逻辑。
+    原实现在本文件内，2026-09-28 起与 lark_push.build_env 共用同一份逻辑：
+    按前缀清扫 OPENCLAW*/HERMES*/LARK_CHANNEL 并关闭 strict-mode，
+    让 lark-cli 回退到 ~/.lark-cli/config.json 的 bot 凭据。
+    保留本函数名是因为 qmt_monitor 等调用方仍在引用。
     """
-    env = dict(os.environ)
-    if as_ident == "bot":
-        env.pop("LARKSUITE_CLI_APP_ID", None)
-        env.pop("LARKSUITE_CLI_USER_ACCESS_TOKEN", None)
-        env["LARKSUITE_CLI_STRICT_MODE"] = "off"
-        # Agent 上下文信号：存在时 lark-cli 只认 hermes/openclaw 绑定、忽略本地 config.json；
-        # 清掉后回退到本地 bot 凭据（本机必需；服务器无此变量不受影响）。
-        # 2026-09-23 修（T-20260923-004）：原清单漏了 OPENCLAW_CLI —— 该变量在
-        # 交互会话为空、在 Windows 计划任务 S4U 会话为 "1"，导致 Windows 侧全部推送
-        # 返回 config/not_configured（"openclaw context detected but lark-cli is not bound to it"）。
-        # 故改为按前缀整体清扫，避免再有遗漏。
-        for _k in list(env.keys()):
-            _u = _k.upper()
-            if _u.startswith("OPENCLAW") or _u.startswith("HERMES") or _u == "LARK_CHANNEL":
-                env.pop(_k, None)
-    env["LARKSUITE_CLI_NO_UPDATE_NOTIFIER"] = "1"
-    env["LARKSUITE_CLI_NO_SKILLS_NOTIFIER"] = "1"
-    return env
+    return LP.build_env(as_ident)
 
 
 def src_tag():
@@ -212,39 +195,35 @@ _NO_CHAT = object()  # 哨兵：未传 chat_id（默认回退 LARK_PUSH_CHAT_ID�
 
 
 def send_lark_card(card, uid=None, chat_id=_NO_CHAT, as_ident=None):
-    """通过 lark-cli 推送交互卡片。返回是否成功（失败仅记录，不重试）。
+    """通过 lark-cli 推送交互卡片。返回是否成功。
+
+    2026-09-28：发送实现委托给 lark_push.send_card，本函数只保留
+    「目标解析 + 来源标记 + 兜底归档」。委托原因见 lark_push 模块头注释——
+    卡片出口原先只判 returncode==0、失败不重试、payload 超限无保护，
+    与其余三个出口各写一份实现，修完还会继续漂移。
 
     as_ident 默认取 qmt_config.LARK_PUSH_AS（本机 "bot" / 调试 "user"），也可显式传入。
     uid 默认取 qmt_config.FEISHU_OPEN_ID。
     chat_id 未传（默认）→ 取 LARK_PUSH_CHAT_ID 群发；传具体值 → 该群；传 None → 强制私聊（--user-id）。
     """
-    cli = getattr(C, "LARK_CLI", "") or ""
     uid = uid or (getattr(C, "FEISHU_OPEN_ID", "") or "")
     if chat_id is _NO_CHAT:
         chat_id = getattr(C, "LARK_PUSH_CHAT_ID", "") or ""
     as_ident = as_ident or (getattr(C, "LARK_PUSH_AS", "bot") or "bot")
-    if not cli or (not uid and not chat_id):
-        print("    (未配置 LARK_CLI / FEISHU_OPEN_ID / LARK_PUSH_CHAT_ID，跳过卡片推送)")
+    if chat_id is None:            # 显式 None = 强制私聊
+        chat_id = ""
+    if not uid and not chat_id:
+        print("    (未配置 FEISHU_OPEN_ID / LARK_PUSH_CHAT_ID，跳过卡片推送)")
         return False
     target = ["--chat-id", chat_id] if chat_id else ["--user-id", uid]
     card = apply_src_tag(card)  # 来源标记（LARK_SRC_TAG 未设置时为 no-op）
-    payload = json.dumps(card, ensure_ascii=False)
-    try:
-        r = subprocess.run(
-            [cli, "im", "+messages-send"] + target +
-            ["--msg-type", "interactive", "--content", payload, "--as", as_ident],
-            capture_output=True, text=True, encoding="utf-8", timeout=15,
-            env=_env_for_cli(as_ident),
-        )
-        ok = r.returncode == 0
-        print(f"    卡片推送[{as_ident}] {'群' if chat_id else '私聊'}: {'成功' if ok else '失败'} {(r.stdout or r.stderr).strip()[:160]}")
-        if not ok:
-            _write_feishu_fallback(card, "lark-cli 非零退出: %s" % ((r.stderr or r.stdout).strip()[:160]))
-        return ok
-    except Exception as e:
-        print(f"    !! 卡片推送异常: {e!r}")
-        _write_feishu_fallback(card, "lark-cli 异常: %s" % e)
-        return False
+    title = ((card or {}).get("header", {}).get("title", {}) or {}).get("content", "卡片消息")
+    ok = LP.send_card(card, target=target, as_ident=as_ident, title=title)
+    print("    卡片推送[%s] %s: %s" % (as_ident, "群" if chat_id else "私聊", "成功" if ok else "失败"))
+    if not ok:
+        # 仍归档卡片全文：统一出口只记元数据，这里保留可人工补发的完整内容
+        _write_feishu_fallback(card, "lark_push.send_card 失败（详见 feishu_push_fail_<date>.json）")
+    return ok
 
 
 def _write_feishu_fallback(card, reason):

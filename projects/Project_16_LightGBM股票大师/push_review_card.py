@@ -412,7 +412,31 @@ def main():
     ap.add_argument("--action", default="", help="📌 操作建议：买入:001309/600267|卖出:600028/601988|仓位:正常")
     ap.add_argument("--holdings", default="", help="现持仓：600028:200|601988:200|601398:100（用于换仓对比）")
     ap.add_argument("--no-send", action="store_true", help="只打印卡片 JSON，不发送")
+    ap.add_argument("--summary-file", default=None,
+                    help="从 UTF-8 文件读 --summary（长文本安全通道）")
+    ap.add_argument("--action-file", default=None,
+                    help="从 UTF-8 文件读 --action（长文本安全通道）")
+    ap.add_argument("--holdings-file", default=None,
+                    help="从 UTF-8 文件读 --holdings（长文本安全通道）")
     args = ap.parse_args()
+
+    for attr in ("summary", "action", "holdings"):
+        fpath = getattr(args, attr + "_file")
+        if not fpath:
+            continue
+        if not os.path.exists(fpath):
+            print("[FAIL] --%s-file 不存在: %s" % (attr, fpath))
+            sys.exit(3)
+        try:
+            with open(fpath, encoding="utf-8") as f:
+                txt = f.read()
+        except Exception as e:
+            print("[FAIL] --%s-file 读取失败: %r" % (attr, e))
+            sys.exit(3)
+        if not txt.strip():
+            print("[FAIL] --%s-file 内容为空: %s" % (attr, fpath))
+            sys.exit(3)
+        setattr(args, attr, txt)
 
     if args.estimate:
         stocks = _stocks_estimate(args.date)

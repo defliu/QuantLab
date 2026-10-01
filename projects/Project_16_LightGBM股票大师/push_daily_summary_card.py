@@ -156,14 +156,36 @@ def _build_card(data, date, summary):
     }
 
 
+def _read_summary(args):
+    """取对账摘要，返回 (summary, err)。--summary-file 优先。"""
+    if args.summary_file:
+        if not os.path.exists(args.summary_file):
+            return "", "摘要文件不存在: %s" % args.summary_file
+        try:
+            with open(args.summary_file, encoding="utf-8") as f:
+                txt = f.read()
+        except Exception as e:
+            return "", "摘要文件读取失败: %r" % (e,)
+        if not txt.strip():
+            return "", "摘要文件为空: %s" % args.summary_file
+        return txt, ""
+    return args.summary or "", ""
+
+
 def main():
     ap = argparse.ArgumentParser(description="盘后总览卡片推送")
     ap.add_argument("--date", required=True)
     ap.add_argument("--summary", default="", help="G2 对账摘要，用 | 分隔")
+    ap.add_argument("--summary-file", default=None,
+                    help="从 UTF-8 文件读对账摘要（长文本安全通道）")
     ap.add_argument("--no-send", action="store_true")
     args = ap.parse_args()
+    summary, serr = _read_summary(args)
+    if serr:
+        print("[FAIL] %s" % serr)
+        sys.exit(3)
     data = _load(args.date)
-    card = _build_card(data, args.date, args.summary)
+    card = _build_card(data, args.date, summary)
     if args.no_send:
         print(json.dumps(card, ensure_ascii=False, indent=2))
         return

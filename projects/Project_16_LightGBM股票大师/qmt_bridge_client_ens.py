@@ -12,6 +12,7 @@ import json
 import os
 import sys
 import time
+import lark_push as LP
 
 # ============================================================
 # 桥配置（与 meta.json 保持一致）
@@ -271,43 +272,22 @@ def read_heart(date=None):
     return _read_json(_heart_path(date))
 
 
-def notify_feishu(text):
-    """融合飞书文本通知（私聊，bot 身份 + 清理 hermes/agent 环境变量回退本地 config）。
-    供 rebalance/reconcile 等全自动任务复用；失败仅记录不阻断主流程。"""
-    import subprocess
+def notify_feishu(text, chunk_limit=None):
+    """融合飞书文本通知（私聊，bot 身份）。供 rebalance/reconcile 等全自动任务复用。
 
+    2026-09-28：委托 lark_push.send_text。本出口原先判定口径是对的
+    （returncode==0 且 stdout 含 "ok": true），但缺长文本分片与重试，
+    换仓/对账这类长消息会被命令行长度上限截断 —— 补齐分片后与 G2 出口行为一致。
+    """
     import g2_ens_config as G
-    cli = getattr(G, "LARK_CLI", "")
     uid = getattr(G, "FEISHU_OPEN_ID", "")
-    if not cli or not uid:
-        print("[通知] 未配置 LARK_CLI/FEISHU_OPEN_ID，跳过")
+    if not uid:
+        print("[通知] 未配置 FEISHU_OPEN_ID，跳过")
         return False
-    env = dict(os.environ)
-    env.pop("LARKSUITE_CLI_APP_ID", None)
-    env.pop("LARKSUITE_CLI_USER_ACCESS_TOKEN", None)
-    # 2026-09-23 修（T-20260923-004）：按前缀清扫 openclaw/hermes 上下文信号
-    # （原清单漏 OPENCLAW_CLI，致 S4U 会话推送 config/not_configured 全失败）。
-    for _k in list(env.keys()):
-        _u = _k.upper()
-        if _u.startswith("OPENCLAW") or _u.startswith("HERMES") or _u == "LARK_CHANNEL":
-            env.pop(_k, None)
-    env["LARKSUITE_CLI_STRICT_MODE"] = "off"
-    env["LARKSUITE_CLI_NO_UPDATE_NOTIFIER"] = "1"
-    env["LARKSUITE_CLI_NO_SKILLS_NOTIFIER"] = "1"
-    tag = (os.environ.get("LARK_SRC_TAG") or "").strip()   # 来源标记，未设置则不改动文本
-    if tag and not text.startswith(tag):
-        text = tag + " " + text
-    try:
-        r = subprocess.run(
-            [cli, "im", "+messages-send", "--user-id", uid,
-             "--msg-type", "text", "--text", text, "--as", "bot"],
-            capture_output=True, text=True, encoding="utf-8", timeout=15, env=env)
-        ok = r.returncode == 0 and '"ok": true' in r.stdout
-        print("[通知] 飞书%s: %s" % ("成功" if ok else "失败", (r.stdout or r.stderr).strip()[:120]))
-        return ok
-    except Exception as e:
-        print("[通知] 飞书异常: %s" % e)
-        return False
+    ok = LP.send_text(text, target=["--user-id", uid], as_ident="bot",
+                      chunk_limit=chunk_limit, title="融合通知")
+    print("[通知] 飞书%s" % ("成功" if ok else "失败"))
+    return ok
 
 
 def wait_fill(strategy_order_id, timeout=300, poll=2, date=None):

@@ -24,6 +24,7 @@ import json
 import os
 import sys
 import time
+import lark_push as LP
 
 # ============================================================
 # 桥配置（与 meta.json 保持一致）
@@ -284,9 +285,99 @@ def read_heart(date=None):
     return _read_json(_heart_path(date))
 
 
-def notify_feishu(text):
+def _chunk_text(text, limit):
+    """按行切分长文本，每片不超过 limit 字符（2026-09-28 起转发 lark_push.chunk_text）。
+
+    硬约束仍为: "".join(_chunk_text(text, limit)) == text
+    推送文本必须与抽取器 stdout 逐字一致，多一个或少一个字符都会让"消息完整性"
+    无法事后校验，所以切分必须可逆。该不变量与全部实现细节由 lark_push 统一维护，
+    本文件仅保留转发，避免四个出口各养一份切分逻辑导致行为漂移。
+    """
+    return LP.chunk_text(text, limit)
+
+
+def _chunk_text_legacy(text, limit):
+    """已停用：原实现，保留仅供行为对照与回滚参考（不参与任何调用）。"""
+    """按行切分长文本，每片不超过 limit 字符。
+
+    硬约束: "".join(_chunk_text(text, limit)) == text
+    推送文本必须与抽取器 stdout 逐字一致，多一个或少一个字符都会让"消息完整性"
+    无法事后校验，所以切分必须可逆。
+    实现要点:
+    - 用 find 切出"行内容 + 紧跟其后的换行符"，换行归属于本行，拼接可完整还原;
+    - 末行若本来没有换行不会被凭空补上（早期 split("\\n") + "\\n" 会多出尾换行）;
+    - 单行超长（无换行的长串）按字符硬切，避免死循环;
+    - 空白分片也不丢弃，否则同样破坏可逆性。
+    """
+    if not text or not text.strip():
+        return [text]
+    if limit <= 0:
+        return [text]
+    pieces, i, n = [], 0, len(text)
+    while i < n:
+        j = text.find("\n", i)
+        if j < 0:
+            pieces.append(text[i:])
+            break
+        pieces.append(text[i:j + 1])
+        i = j + 1
+    chunks, cur, size = [], [], 0
+    for p in pieces:
+        if len(p) > limit:
+            if cur:
+                chunks.append("".join(cur))
+                cur, size = [], 0
+            while len(p) > limit:
+                chunks.append(p[:limit])
+                p = p[limit:]
+            if p:
+                cur, size = [p], len(p)
+            continue
+        if cur and size + len(p) > limit:
+            chunks.append("".join(cur))
+            cur, size = [p], len(p)
+        else:
+            cur.append(p)
+            size += len(p)
+    if cur:
+        chunks.append("".join(cur))
+    return chunks
+
+
+def notify_feishu(text, chunk_limit=None, retries=1):
     """G2 飞书文本通知（私聊，bot 身份 + 清理 hermes/agent 环境变量回退本地 config）。
-    供 rebalance/reconcile 等全自动任务复用；失败仅记录不阻断主流程。"""
+    供 rebalance/reconcile/de_report 等全自动任务复用；失败仅记录不阻断主流程，
+    调用方若关心完整性应检查返回值并让任务失败（de_report_daily.ps1 即如此）。
+
+    长消息按 chunk_limit（默认 3500 字符，env LARK_CHUNK_LIMIT 可覆盖，传 0 关闭分片）
+    切分逐片发送，每片带【第 i/n 部分】标记，单片失败重试 retries 次。
+    任一片最终失败即整体返回 False，避免"前几片已发、后几片静默丢失"的半截消息。
+
+    2026-09-28：发送实现委托 lark_push.send_text。签名与返回值语义逐字不变
+    （本函数有 12 处调用方），委托目的是让四个出口共享同一套分片/重试/判定逻辑，
+    并让失败落盘到 feishu_push_fail_<date>.json 供事后审计。
+    """
+    import g2_config as G
+    uid = getattr(G, "FEISHU_OPEN_ID", "")
+    if not uid:
+        print("[通知] 未配置 FEISHU_OPEN_ID，跳过")
+        return False
+    return LP.send_text(
+        text, target=["--user-id", uid], as_ident="bot",
+        chunk_limit=chunk_limit, retries=retries, title="G2 通知",
+    )
+
+
+def _notify_feishu_legacy(text, chunk_limit=None, retries=1):
+    """已停用：原发送实现，保留仅供行为对照与回滚参考（不参与任何调用）。"""
+    """G2 飞书文本通知（私聊，bot 身份 + 清理 hermes/agent 环境变量回退本地 config）。
+    供 rebalance/reconcile/de_report 等全自动任务复用；失败仅记录不阻断主流程，
+    调用方若关心完整性应检查返回值并让任务失败（de_report_daily.ps1 即如此）。
+
+    长消息按 chunk_limit（默认 3500 字符，env LARK_CHUNK_LIMIT 可覆盖，传 0 关闭分片）
+    切分逐片发送，每片带【第 i/n 部分】标记，单片失败重试 retries 次。
+    任一片最终失败即整体返回 False，避免"前几片已发、后几片静默丢失"的半截消息。
+    """
     import subprocess
 
     import g2_config as G
@@ -311,17 +402,52 @@ def notify_feishu(text):
     tag = (os.environ.get("LARK_SRC_TAG") or "").strip()   # 来源标记，未设置则不改动文本
     if tag and not text.startswith(tag):
         text = tag + " " + text
-    try:
-        r = subprocess.run(
+    if chunk_limit is None:
+        try:
+            chunk_limit = int(os.environ.get("LARK_CHUNK_LIMIT") or 3500)
+        except ValueError:
+            chunk_limit = 3500
+    # 片头【第 i/n 部分】要与正文共用同一预算，否则实际发给 CLI 的文本会超出 limit
+    head_budget = 24 if chunk_limit > 120 else 0
+    body_limit = chunk_limit - head_budget
+    parts = _chunk_text(text, body_limit) if chunk_limit and len(text) > chunk_limit else [text]
+
+    def _send_once(t):
+        return subprocess.run(
             [cli, "im", "+messages-send", "--user-id", uid,
-             "--msg-type", "text", "--text", text, "--as", "bot"],
+             "--msg-type", "text", "--text", t, "--as", "bot"],
             capture_output=True, text=True, encoding="utf-8", timeout=15, env=env)
-        ok = r.returncode == 0 and '"ok": true' in r.stdout
-        print("[通知] 飞书%s: %s" % ("成功" if ok else "失败", (r.stdout or r.stderr).strip()[:120]))
+
+    def _send(t):
+        detail = ""
+        for k in range(max(1, retries + 1)):
+            try:
+                r = _send_once(t)
+                detail = (r.stdout or r.stderr).strip()[:120]
+                if r.returncode == 0 and '"ok": true' in r.stdout:
+                    return True, detail
+            except Exception as e:
+                detail = "异常: %s" % e
+            if k < max(0, retries):
+                time.sleep(1.5)
+        return False, detail
+
+    if len(parts) == 1:
+        ok, detail = _send(parts[0])
+        print("[通知] 飞书%s: %s" % ("成功" if ok else "失败", detail))
         return ok
-    except Exception as e:
-        print("[通知] 飞书异常: %s" % e)
-        return False
+
+    total = len(parts)
+    results = []
+    for i, part in enumerate(parts, 1):
+        ok, detail = _send("【第 %d/%d 部分】\n%s" % (i, total, part))
+        results.append(ok)
+        print("[通知] 飞书第%d/%d片%s: %s" % (i, total, "成功" if ok else "失败", detail))
+    all_ok = all(results)
+    if not all_ok:
+        bad = ",".join(str(i + 1) for i, x in enumerate(results) if not x)
+        print("[通知] 飞书分片投递不完整，失败片: %s（共%d片），消息可能残缺" % (bad, total))
+    return all_ok
 
 
 def wait_fill(strategy_order_id, timeout=300, poll=2, date=None):
