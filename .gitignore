@@ -94,3 +94,6 @@ test_yaml.py
 
 # 外部第三方仓库副本与 DE 运行日志（不入库，本地重建/参考）
 research_external/
+
+# 已归档项目的一次性全量扫描入口（不入库）
+run_scanner.py

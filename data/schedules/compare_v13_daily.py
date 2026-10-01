@@ -69,6 +69,47 @@ def _load_csv(path):
     return pd.read_csv(path, encoding="utf-8-sig")
 
 
+def _backup_baseline(path, tag):
+    """F7 修复（T-20260928-002，与 compare_g2_daily 同款）：重放会重写同名路径，
+    先备份原件；返回原件是否存在的布尔值。"""
+    if os.path.exists(path):
+        shutil.copy2(path, path + ".compare_base")
+        _log("[%s] 备份基准 %s -> %s" % (tag, os.path.basename(path),
+                                         os.path.basename(path) + ".compare_base"))
+        return True
+    _log("[%s] 原件不存在（红线空仓等）：%s" % (tag, os.path.basename(path)))
+    return False
+
+
+def _restore_baseline(items, tag):
+    """F7 修复：复跑对比后恢复原件（复跑产物不落盘）；原件本不存在而复跑新建则删除
+    （恢复红线空仓的「无候选」状态）。幂等：重复调用安全。
+    逐条 try/except（2026-09-29 复核补齐，与 compare_g2_daily 同款）：单个文件恢复
+    失败不得中断循环，否则后续文件永久留复跑产物；也不得掩盖 finally 外的业务异常。"""
+    for path, existed in items:
+        try:
+            if existed:
+                shutil.copy2(path + ".compare_base", path)
+                _log("[%s] 恢复原件 %s（复跑产物不落盘）" % (tag, os.path.basename(path)))
+            elif os.path.exists(path):
+                os.remove(path)
+                _log("[%s] 移除复跑产物 %s（原件为红线空仓，恢复无候选状态）" % (tag, os.path.basename(path)))
+        except Exception as e:
+            _log("!! [%s] 恢复 %s 失败（盘上可能留有复跑产物，审计时注意）: %s"
+                 % (tag, os.path.basename(path), e))
+
+
+def _safe_print(text):
+    """重放 stdout 按 utf-8/replace 解码后可能含 \ufffd，在 GBK 控制台 print 会
+    UnicodeEncodeError（2026-09-29 E2E 实测）——降级为可编码字符再打印，绝不让
+    打印崩溃中断「重放→恢复」链路。"""
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        enc = getattr(sys.stdout, "encoding", None) or "utf-8"
+        print(text.encode(enc, "replace").decode(enc))
+
+
 def _snap_latest_day():
     """当前 latest_features.parquet 最新交易日（YYYYMMDD），读失败返回 None。"""
     try:
@@ -152,6 +193,8 @@ def main():
     snap = os.path.join(LIVE_DIR, "snapshot_v13_%s.parquet" % run_day)
     baseline = os.path.join(SELECT_DIR, "%s_model_top10.csv" % run_day)
     base_backup = baseline + ".compare_base"
+    # 复跑（deploy_predict）除 csv 外还会重写同名 md（F7，与 G2 的 selection.md 同款）
+    md_baseline = os.path.join(SELECT_DIR, "%s_selection_dual.md" % run_day)
 
     _log("==== V1.3 每日选股复跑对比 运行日=%s 开始 ====" % run_day)
 
@@ -171,13 +214,20 @@ def main():
             return 2
         _log("[DEGRADE] 留档快照 %s 不存在 → 用当前快照重放，仅健康校验（单源结论，未经留档对比）"
              % os.path.basename(snap))
-        rc, out = _replay(run_day)
-        print(out[-2000:])
-        if rc != 0:
-            _push("V1.3 每日复跑 FAIL", "复跑退出码 %d（降级路径，运行日 %s）" % (rc, run_day), "error", args.no_send)
-            _log("!! 降级复跑退出码 %d" % rc)
-            return 1
-        ok = _health_check(run_day, args.no_send)
+        # F7 修复：降级路径的重放同样会覆写当日候选（csv+md），先备份；
+        # finally 兜底恢复——重放/校验/打印任何一步异常都不留复跑产物在盘上
+        deg_items = [(baseline, _backup_baseline(baseline, "DEGRADE")),
+                     (md_baseline, _backup_baseline(md_baseline, "DEGRADE"))]
+        try:
+            rc, out = _replay(run_day)
+            _safe_print(out[-2000:])
+            if rc != 0:
+                _push("V1.3 每日复跑 FAIL", "复跑退出码 %d（降级路径，运行日 %s）" % (rc, run_day), "error", args.no_send)
+                _log("!! 降级复跑退出码 %d" % rc)
+                return 1
+            ok = _health_check(run_day, args.no_send)
+        finally:
+            _restore_baseline(deg_items, "DEGRADE")
         if not ok:
             _log("!! 降级健康校验不通过（exit=1）")
             return 1
@@ -187,26 +237,28 @@ def main():
         _log("[DEGRADE] 健康校验 PASS（exit=2，warn：留档缺失）")
         return 2
 
-    # ---- 1) 备份基准（复跑会重写同名路径） ----
-    if os.path.exists(baseline):
-        shutil.copy2(baseline, base_backup)
-        _log("[1/4] 备份基准 %s -> %s" % (os.path.basename(baseline), os.path.basename(base_backup)))
-    else:
+    # ---- 1) 备份基准（复跑会重写同名路径，csv+md 两文件） ----
+    items = [(baseline, _backup_baseline(baseline, "1/4")),
+             (md_baseline, _backup_baseline(md_baseline, "1/4"))]
+    if not items[0][1]:
         _log("[1/4] 当日无基准候选文件（红线空仓路径），跳过备份")
 
-    # ---- 2) 重放 ----
-    _log("[2/4] 重放 deploy_predict.py --date %s --model v3 --top-k 10" % run_day)
-    rc, out = _replay(run_day)
-    print(out[-3000:])
-    if rc != 0:
-        _push("V1.3 每日复跑 FAIL", "复跑退出码 %d（运行日 %s）" % (rc, run_day), "error", args.no_send)
-        _log("!! 复跑退出码 %d（exit=1）" % rc)
-        return 1
+    # ---- 2) 重放 + 3) 对比（F7 修复：finally 兜底恢复，任何异常/早退都不留复跑产物） ----
+    try:
+        _log("[2/4] 重放 deploy_predict.py --date %s --model v3 --top-k 10" % run_day)
+        rc, out = _replay(run_day)
+        _safe_print(out[-3000:])
+        if rc != 0:
+            _push("V1.3 每日复跑 FAIL", "复跑退出码 %d（运行日 %s）" % (rc, run_day), "error", args.no_send)
+            _log("!! 复跑退出码 %d（exit=1）" % rc)
+            return 1
 
-    # ---- 3) 读取双方产物对比 ----
-    base = _load_csv(base_backup)   # 原始基准（已备份）
-    rep = _load_csv(baseline)       # 复跑产物（已重写同名路径）
-    sev, msg = _cmp(base, rep)
+        # ---- 3) 读取双方产物对比（原件由 finally 恢复，复跑产物不留在盘上） ----
+        base = _load_csv(base_backup)   # 原始基准（已备份）
+        rep = _load_csv(baseline)       # 复跑产物（已重写同名路径）
+        sev, msg = _cmp(base, rep)
+    finally:
+        _restore_baseline(items, "F7")
     if sev == "pass":
         _log("[4/4] PASS：%s（exit=0）" % msg)
         print("[PASS] %s" % msg)

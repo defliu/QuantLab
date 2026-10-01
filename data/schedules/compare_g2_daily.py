@@ -75,6 +75,64 @@ def _load_csv(path):
     return pd.read_csv(path, encoding="utf-8-sig")
 
 
+_BACKUP_SEEN = {}   # 同进程内已备份路径 → 当时原件是否存在（F7 复核补丁 2026-09-29）
+
+
+def _backup_baseline(path, tag):
+    """复跑前备份原件 → <path>.compare_base；返回备份前原件是否存在。
+    （F7 修复配套，2026-09-28）
+    同进程内同路径只备份一次（2026-09-29 DE 复核补丁）：main 的 G2 臂与 _ens_compare 的
+    ENS 臂会对 G2 主目录同一 csv/md 各备份一次；若 G2 臂恢复失败（文件锁等，per-item
+    try/except 只告警不中断），盘上留的是复跑产物，ENS 臂二次 copy2 会把它当原件固化进
+    .compare_base —— 最后一份好原件被覆盖，污染永久化。首次备份优先（first-wins）杜绝该场景。"""
+    if path in _BACKUP_SEEN:
+        return _BACKUP_SEEN[path]
+    existed = os.path.exists(path)
+    if existed:
+        shutil.copy2(path, path + ".compare_base")
+        _log("[%s] 备份基准 %s -> %s" % (tag, os.path.basename(path), os.path.basename(path) + ".compare_base"))
+    _BACKUP_SEEN[path] = existed
+    return existed
+
+
+def _restore_baseline(items, tag):
+    """F7 修复（2026-09-28，候选可审计性）：复跑会用同名路径重写历史候选，
+    对比完成后必须恢复原件，否则盘上留下的是复跑产物而非夜间正品 → 历史候选
+    不可审计（实证：20260924_g2_top10.csv 于 2026-09-28 16:48 被 --date 补跑覆写，
+    内容由 002617/002569 变为 603272/003029）。
+    items: [(path, 复跑前原件是否存在), ...]
+    - 原件存在过 → 从 .compare_base 恢复
+    - 原件本不存在（红线空仓日）而复跑新建 → 删除复跑产物，保持无候选状态
+    恢复失败只告警不阻断（对比结论已得出），日志标注审计注意。"""
+    for path, existed in items:
+        try:
+            backup = path + ".compare_base"
+            if existed:
+                if os.path.exists(backup):
+                    shutil.copy2(backup, path)
+                    _log("[%s] 恢复原件 %s（复跑产物不落盘）" % (tag, os.path.basename(path)))
+                else:
+                    _log("!! [%s] %s 原件存在过但备份 %s 缺失，无法恢复——盘上是复跑产物，审计时注意"
+                         % (tag, os.path.basename(path), os.path.basename(backup)))
+            else:
+                if os.path.exists(path):
+                    os.remove(path)
+                    _log("[%s] 移除复跑产物 %s（当日原为红线空仓，保持无候选状态）" % (tag, os.path.basename(path)))
+        except Exception as e:
+            _log("!! [%s] 恢复 %s 失败（盘上可能留有复跑产物，审计时注意）: %s" % (tag, os.path.basename(path), e))
+
+
+def _safe_print(text):
+    """重放 stdout 按 utf-8/replace 解码后可能含 \\ufffd，在 GBK 控制台 print 会
+    UnicodeEncodeError（2026-09-29 E2E 实测）——降级为可编码字符再打印，绝不让
+    打印崩溃中断「重放→恢复」链路。"""
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        enc = getattr(sys.stdout, "encoding", None) or "utf-8"
+        print(text.encode(enc, "replace").decode(enc))
+
+
 def _replay(date_str):
     cmd = [PY, DEPLOY, "--date", date_str, "--top", "10"]
     r = subprocess.run(cmd, cwd=P16, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -152,25 +210,35 @@ def _ens_compare(run_day, no_send):
     """融合(ENS)复跑对比（T-20260920-001 扩展）：与 G2 同留档快照，独立重放并分级。
     返回退出码（0=PASS 含新浪兜底一致/记录差异 1=error 2=warn）。"""
     ens_baseline = os.path.join(ENS_SELECT_DIR, "%s_g2_top10.csv" % run_day)
-    ens_backup = ens_baseline + ".compare_base"
+    # F7 补修（2026-09-28 首跑实测发现）：ENS 重放（--ensemble --ens-live）除 g2_ens/ 外
+    # 还会重写 G2 主目录的同名 csv+md（deploy L309/L320 无 ensemble 分支），
+    # 必须一并备份/恢复，否则 ENS 复跑漂移会污染 G2 正品且无恢复。
+    g2_csv_baseline = os.path.join(SELECT_DIR, "%s_g2_top10.csv" % run_day)
+    g2_md_baseline = os.path.join(SELECT_DIR, "%s_g2_selection.md" % run_day)
 
-    if not os.path.exists(ens_baseline):
-        _log("[ENS] 当日无融合基准候选（红线空仓路径），重放确认")
-    else:
-        shutil.copy2(ens_baseline, ens_backup)
-        _log("[ENS] 备份融合基准 %s -> %s" % (os.path.basename(ens_baseline), os.path.basename(ens_backup)))
+    _log("[ENS] 当日无融合基准候选（红线空仓路径），重放确认" if not os.path.exists(ens_baseline)
+         else "[ENS] 备份融合基准")
+    items = [(ens_baseline, _backup_baseline(ens_baseline, "ENS")),
+             (g2_csv_baseline, _backup_baseline(g2_csv_baseline, "ENS")),
+             (g2_md_baseline, _backup_baseline(g2_md_baseline, "ENS"))]
 
     _log("[ENS] 重放 deploy_predict_g2.py --date %s --top 10 --ensemble --ens-live" % run_day)
-    rc, out = _replay_ens(run_day)
-    print(out[-2500:])
-    if rc != 0:
-        _push("G2/ENS 每日复跑 FAIL", "融合复跑退出码 %d（运行日 %s）—— FAIL-LOUD 或运行时异常" % (rc, run_day),
-              "error", no_send)
-        _log("!! 融合复跑退出码 %d（exit=1）" % rc)
-        return 1
+    # F7 修复加固（2026-09-29 复核）：原实现逐 return 内联 _restore_baseline，
+    # 一旦 _replay_ens/_load_csv/print 抛异常（GBK \ufffd 打印崩溃最典型），
+    # 恢复永不执行 → ENS 复跑产物永久留在 G2 主目录（正品被污染）。
+    try:
+        rc, out = _replay_ens(run_day)
+        _safe_print(out[-2500:])
+        if rc != 0:
+            _push("G2/ENS 每日复跑 FAIL", "融合复跑退出码 %d（运行日 %s）—— FAIL-LOUD 或运行时异常" % (rc, run_day),
+                  "error", no_send)
+            _log("!! 融合复跑退出码 %d（exit=1）" % rc)
+            return 1
 
-    base = _load_csv(ens_backup)   # 原始融合基准（已备份）
-    rep = _load_csv(ens_baseline)  # 复跑融合产物（已重写同名路径）
+        base = _load_csv(ens_baseline + ".compare_base")   # 原始融合基准（已备份）
+        rep = _load_csv(ens_baseline)                      # 复跑融合产物（已重写同名路径）
+    finally:
+        _restore_baseline(items, "ENS")   # F7 修复：对比后恢复原件（含 G2 主目录 csv+md）
     sev, msg = _cmp_ens(base, rep)
     if sev == "pass":
         _log("[ENS] PASS：%s（exit=0）" % msg)
@@ -239,7 +307,7 @@ def main():
     run_day = args.date or time.strftime("%Y%m%d")
     snap = os.path.join(LIVE_DIR, "snapshot_g2_%s.parquet" % run_day)
     baseline = os.path.join(SELECT_DIR, "%s_g2_top10.csv" % run_day)
-    base_backup = baseline + ".compare_base"
+    md_baseline = os.path.join(SELECT_DIR, "%s_g2_selection.md" % run_day)   # 复跑同样会重写 md（F7）
     ens_baseline = os.path.join(ENS_SELECT_DIR, "%s_g2_top10.csv" % run_day)
 
     _log("==== G2+ENS 每日选股复跑对比 运行日=%s 开始 ====" % run_day)
@@ -253,13 +321,21 @@ def main():
     if not os.path.exists(snap):
         _log("[DEGRADE] 留档快照 %s 不存在 → 用当前快照重放，仅健康校验（单源结论，未经留档对比）"
              % os.path.basename(snap))
-        rc, out = _replay(run_day)
-        print(out[-2000:])
-        if rc != 0:
-            _push("G2 每日复跑 FAIL", "复跑退出码 %d（降级路径，运行日 %s）" % (rc, run_day), "error", args.no_send)
-            _log("!! 降级复跑退出码 %d" % rc)
-            return 1
-        ok = _health_check(run_day, args.no_send)
+        # F7 修复：降级路径的重放同样会覆写当日候选，先备份、校验后恢复原件
+        deg_items = [(baseline, _backup_baseline(baseline, "DEGRADE")),
+                     (md_baseline, _backup_baseline(md_baseline, "DEGRADE"))]
+        # F7 修复加固（2026-09-29 复核）：原实现逐 return 内联 _restore_baseline，
+        # 异常出口（GBK 打印崩溃/健康校验抛错）会跳过恢复 → 复跑产物留在盘上。
+        try:
+            rc, out = _replay(run_day)
+            _safe_print(out[-2000:])
+            if rc != 0:
+                _push("G2 每日复跑 FAIL", "复跑退出码 %d（降级路径，运行日 %s）" % (rc, run_day), "error", args.no_send)
+                _log("!! 降级复跑退出码 %d" % rc)
+                return 1
+            ok = _health_check(run_day, args.no_send)
+        finally:
+            _restore_baseline(deg_items, "DEGRADE")
         if not ok:
             _log("!! 降级健康校验不通过（exit=1）")
             return 1
@@ -271,25 +347,27 @@ def main():
         return 2
 
     # ---- 1) 备份基准（复跑会重写同名路径） ----
-    if os.path.exists(baseline):
-        shutil.copy2(baseline, base_backup)
-        _log("[1/4] 备份基准 %s -> %s" % (os.path.basename(baseline), os.path.basename(base_backup)))
-    else:
+    base_items = [(baseline, _backup_baseline(baseline, "1/4")),
+                  (md_baseline, _backup_baseline(md_baseline, "1/4"))]
+    if not base_items[0][1]:
         _log("[1/4] 当日无基准候选文件（红线空仓路径），跳过备份")
 
-    # ---- 2) 重放 ----
+    # ---- 2) 重放（F7 修复加固：try/finally 兜底恢复，任何异常/早退都不留复跑产物） ----
     _log("[2/4] 重放 deploy_predict_g2.py --date %s --top 10" % run_day)
-    rc, out = _replay(run_day)
-    print(out[-3000:])
-    if rc != 0:
-        _push("G2 每日复跑 FAIL", "复跑退出码 %d（运行日 %s）—— FAIL-LOUD 或运行时异常" % (rc, run_day),
-              "error", args.no_send)
-        _log("!! 复跑退出码 %d（exit=1）" % rc)
-        return 1
+    try:
+        rc, out = _replay(run_day)
+        _safe_print(out[-3000:])
+        if rc != 0:
+            _push("G2 每日复跑 FAIL", "复跑退出码 %d（运行日 %s）—— FAIL-LOUD 或运行时异常" % (rc, run_day),
+                  "error", args.no_send)
+            _log("!! 复跑退出码 %d（exit=1）" % rc)
+            return 1
 
-    # ---- 3) 读取双方产物对比 ----
-    base = _load_csv(base_backup)   # 原始基准（已备份）
-    rep = _load_csv(baseline)       # 复跑产物（已重写同名路径）
+        # ---- 3) 读取双方产物对比（原件由 finally 恢复，复跑产物不留在盘上） ----
+        base = _load_csv(baseline + ".compare_base")   # 原始基准（已备份）
+        rep = _load_csv(baseline)                      # 复跑产物（已重写同名路径）
+    finally:
+        _restore_baseline(base_items, "F7")
     src = _f2_source(out)
     _log("[3/4] 复跑 F2 主源=%s" % src)
 

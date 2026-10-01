@@ -18,6 +18,7 @@
 """
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 
@@ -32,6 +33,49 @@ def _push(title, body, level, no_send):
     if no_send:
         cmd.append("--no-send")
     subprocess.run(cmd, cwd=P16, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def _backup_baseline(path):
+    """重放前备份原件 → <path>.rerun_base；返回备份前原件是否存在。（F7 修复配套，2026-09-28）"""
+    existed = os.path.exists(path)
+    if existed:
+        shutil.copy2(path, path + ".rerun_base")
+        print("[F7] 备份原件 %s -> %s" % (os.path.basename(path), os.path.basename(path) + ".rerun_base"))
+    return existed
+
+
+def _restore_baseline(items):
+    """F7 修复（2026-09-28，候选可审计性）：重放会用同名路径覆写历史候选（本周六 09:10 定时任务
+    默认重放快照最新交易日），校验完成后必须恢复原件，否则历史候选被回归测试污染、不可审计。
+    - 原件存在过 → 从 .rerun_base 恢复
+    - 原件本不存在（红线空仓日）而重放新建 → 删除重放产物"""
+    for path, existed in items:
+        try:
+            backup = path + ".rerun_base"
+            if existed:
+                if os.path.exists(backup):
+                    shutil.copy2(backup, path)
+                    print("[F7] 恢复原件 %s（重放产物不落盘）" % os.path.basename(path))
+                else:
+                    print("!! [F7] %s 原件存在过但备份 %s 缺失，无法恢复——盘上是重放产物，审计时注意"
+                          % (os.path.basename(path), os.path.basename(backup)))
+            else:
+                if os.path.exists(path):
+                    os.remove(path)
+                    print("[F7] 移除重放产物 %s（当日原为红线空仓，保持无候选状态）" % os.path.basename(path))
+        except Exception as e:
+            print("!! [F7] 恢复 %s 失败（盘上可能留有重放产物，审计时注意）: %s" % (os.path.basename(path), e))
+
+
+def _safe_print(text):
+    """重放 stdout 按 utf-8/replace 解码后可能含 \ufffd，在 GBK 控制台 print 会
+    UnicodeEncodeError（2026-09-29 E2E 实测）——降级为可编码字符再打印，绝不让
+    打印崩溃中断「重放→恢复」链路。"""
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        enc = getattr(sys.stdout, "encoding", None) or "utf-8"
+        print(text.encode(enc, "replace").decode(enc))
 
 
 def _check_csv(path, no_send):
@@ -77,16 +121,7 @@ def main():
         cmd += ["--date", args.date]
     cmd += ["--top", str(args.top)]
 
-    print("== 重放 deploy_predict_g2.py %s ..." % (args.date or "(快照最新日)"))
-    r = subprocess.run(cmd, cwd=P16, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    log = r.stdout.decode("utf-8", "replace")
-    print(log[-3000:])
-    if r.returncode != 0:
-        # FAIL-LOUD 中止（防线D）或运行时异常
-        _push("G2 快照回放回归 FAIL", "重放退出码 %d（%s）" % (r.returncode, (args.date or "快照最新日")), "error", args.no_send)
-        return 1
-
-    # 落盘 CSV 路径（日期缺省时取快照最新交易日）
+    # 日期先于重放解析（F7 修复需要重放前备份原件；原实现重放后才定位产物路径，来不及备份）
     if args.date:
         date = args.date.replace("-", "")
     else:
@@ -95,7 +130,27 @@ def main():
         day = pd.read_parquet(snap)
         date = str(pd.to_datetime(day["trade_date"]).max().date()).replace("-", "")
     csv = os.path.join(P16, "data", "selections", "g2", "%s_g2_top%d.csv" % (date, args.top))
-    return 0 if _check_csv(csv, args.no_send) else 1
+    md = os.path.join(P16, "data", "selections", "g2", "%s_g2_selection.md" % date)
+    base_items = [(csv, _backup_baseline(csv)), (md, _backup_baseline(md))]
+
+    print("== 重放 deploy_predict_g2.py %s ..." % (args.date or "(快照最新日)"))
+    # F7 修复加固（2026-09-29 复核）：原实现逐 return 路径内联 _restore_baseline，
+    # 一旦 _replay/_check_csv 抛异常（典型：GBK 控制台 print 重放 stdout 触发
+    # UnicodeEncodeError），恢复永不执行 → 重放产物留在盘上污染历史候选。
+    # 改为 try/finally 兜底，与 compare_g2_daily.py / compare_v13_daily.py 同款。
+    try:
+        r = subprocess.run(cmd, cwd=P16, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        log = r.stdout.decode("utf-8", "replace")
+        _safe_print(log[-3000:])
+        if r.returncode != 0:
+            # FAIL-LOUD 中止（防线D）或运行时异常
+            _push("G2 快照回放回归 FAIL", "重放退出码 %d（%s）" % (r.returncode, (args.date or "快照最新日")), "error", args.no_send)
+            return 1
+
+        ok = _check_csv(csv, args.no_send)   # 校验基于重放产物，校验完由 finally 恢复原件
+    finally:
+        _restore_baseline(base_items)
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":
