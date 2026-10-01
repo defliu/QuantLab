@@ -110,7 +110,8 @@ def main():
                                          price if price > 0 else None, "clear_all_except_keep")
         print(f"    卖出 {s['code']} {s['vol']} 股 -> {r['note']}")
         guard_note.append(f"{s['code']}:{r['action']}")
-        if r["ok"] and r["traded_vol"] > 0:
+        # T-20260930-001 修复：记账门槛只看实际成交量（ok=False 不代表零成交）
+        if r["traded_vol"] > 0:
             log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), s["code"], "SELL",
                              r["traded_vol"], price, 0.0, r["order_id"]])
     if guard_note:

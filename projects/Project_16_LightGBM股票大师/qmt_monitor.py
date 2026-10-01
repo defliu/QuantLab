@@ -40,6 +40,7 @@ for _stream in ("stdout", "stderr"):
         pass
 
 import qmt_config as C
+import lark_push as LP
 import qmt_card as QC  # 盯盘信号 → 飞书 Card 2.0 交互卡片
 
 # 加载 xtquant（放末尾，避免覆盖本环境的 numpy）
@@ -232,8 +233,10 @@ def _sell(trader, account, code, vol, price):
 
     返回 order_guard 结果 dict：{"ok", "action", "traded_vol", "order_id", "attempts", "note"}。
     action: FILLED 全部成交 / LIMIT_SKIP 涨跌停跳过 / REJECTED 废单 / CANCELED_TIMEOUT 超时未全成。
-    记账规则由调用方执行：仅 ok=True 且 traded_vol>0（已确认成交）才 sold.add + 写成交记录；
-    LIMIT_SKIP/CANCELED_TIMEOUT 等不确认成交的状态绝不写成交记录（T-20260909 防假成交）。
+    记账规则由调用方执行（qmt_monitor.main L429-440 实际口径）：traded_vol>0（有真实成交）即写
+    成交记录；ok=True 才 sold.add（全部成交不再评估，部分成交剩余下轮继续）。
+    0 成交状态（LIMIT_SKIP/REJECTED/超时零成）绝不写成交记录（T-20260909 防假成交）。
+    ok=False 不代表零成交（T-20260930-001 厘清），记账唯一门槛是 traded_vol>0。
     """
     import order_guard
     return order_guard.order_with_guard(trader, account, code, "SELL", vol, price,
@@ -242,32 +245,23 @@ def _sell(trader, account, code, vol, price):
 
 # ---- 飞书推送（lark-cli bot 私聊通道，未配置则跳过）----
 
-def notify_feishu(text):
-    """通过 lark-cli 推送文本。默认目标取 LARK_PUSH_CHAT_ID（群发），否则私聊 FEISHU_OPEN_ID。"""
-    cli = getattr(C, "LARK_CLI", "") or ""
+def notify_feishu(text, chunk_limit=None):
+    """通过 lark-cli 推送文本。默认目标取 LARK_PUSH_CHAT_ID（群发），否则私聊 FEISHU_OPEN_ID。
+
+    2026-09-28：委托 lark_push.send_text。本出口原先既不分片也不重试，
+    且只用 returncode==0 判成功（业务失败会被当成功），是"消息发不全"的直接来源之一。
+    """
     uid = getattr(C, "FEISHU_OPEN_ID", "") or ""
     chat_id = getattr(C, "LARK_PUSH_CHAT_ID", "") or ""
     as_ident = getattr(C, "LARK_PUSH_AS", "bot") or "bot"
-    if not cli or (not uid and not chat_id):
-        print("    (未配置 LARK_CLI/FEISHU_OPEN_ID/LARK_PUSH_CHAT_ID，跳过飞书推送)")
+    if not uid and not chat_id:
+        print("    (未配置 FEISHU_OPEN_ID/LARK_PUSH_CHAT_ID，跳过飞书推送)")
         return False
     target = ["--chat-id", chat_id] if chat_id else ["--user-id", uid]
-    tag = (os.environ.get("LARK_SRC_TAG") or "").strip()   # 来源标记，未设置则不改动文本
-    if tag and not text.startswith(tag):
-        text = tag + " " + text
-    try:
-        import subprocess
-        r = subprocess.run(
-            [cli, "im", "+messages-send"] + target + ["--text", text, "--as", as_ident],
-            capture_output=True, text=True, encoding="utf-8", timeout=15,
-            env=QC._env_for_cli(as_ident),
-        )
-        ok = r.returncode == 0
-        print(f"    飞书推送[{as_ident}] {'群' if chat_id else '私聊'}: {'成功' if ok else '失败'} {(r.stdout or r.stderr).strip()[:120]}")
-        return ok
-    except Exception as e:
-        print(f"    !! 飞书推送异常: {e!r}")
-        return False
+    ok = LP.send_text(text, target=target, as_ident=as_ident, chunk_limit=chunk_limit,
+                      title="盯盘通知")
+    print("    飞书推送[%s] %s: %s" % (as_ident, "群" if chat_id else "私聊", "成功" if ok else "失败"))
+    return ok
 
 
 def push_signals_cards(signals):

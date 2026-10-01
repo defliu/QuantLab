@@ -13,6 +13,11 @@
 返回：
   {"ok": bool, "action": "FILLED"|"LIMIT_SKIP"|"CANCELED_TIMEOUT"|"REJECTED"|"ERROR",
    "traded_vol": int, "order_id": int, "attempts": int, "note": str}
+
+ok 语义（T-20260930-001 厘清）：ok=True 仅见于「有已确认成交」的返回（FILLED / 有成交后放弃重挂）；
+ok=False **不代表零成交**——LIMIT_SKIP/CANCELED_TIMEOUT/ERROR 可能带 traded_vol>0（前几轮重试
+的真实成交）。调用方记账必须以 traded_vol>0 为唯一门槛，禁止 `ok and traded_vol>0` 双重门槛
+（2026-09-30 603237.SH 事故：撤单窗口内全部成交但 ok=False → 记账被跳过 → 账实脱节）。
 """
 import sys
 import time
@@ -193,11 +198,16 @@ def order_with_guard(trader, account, code, side, vol, price=None, remark="order
                     "order_id": oid, "attempts": attempts,
                     "note": f"{code} 委托#{attempts} 全部成交 {total_traded}股 @{px:.2f}"}
         # 部成(55)也必须扣减 remaining，否则按全量重报=双倍建仓
-        if status in (ORDER_JUNK, ORDER_CANCELED, ORDER_PART_CANCEL, ORDER_PART_SUCC, 255):
+        # 活跃态(50/51/52)超时同样必须走撤单分支（T-20260930-001 修复）：原实现落入底部 continue
+        # 直接重挂，而原单仍活跃 → 双重委托风险（卖单重挂因无券被拒耗尽重试；买单重挂=双倍建仓）。
+        if status in (ORDER_JUNK, ORDER_CANCELED, ORDER_PART_CANCEL, ORDER_PART_SUCC, 255,
+                      ORDER_REPORTED, ORDER_REPORTED_CANCEL, ORDER_PARTSUCC_CANCEL):
             if status == ORDER_JUNK:
                 print(f"    !! {code} 委托废单(成交{traded})，重试剩余")
             elif status == 255:
                 print(f"    !  {code} 等待超时(成交{traded}/{order_vol})，撤单后重试剩余")
+            elif status in (ORDER_REPORTED, ORDER_REPORTED_CANCEL, ORDER_PARTSUCC_CANCEL):
+                print(f"    !  {code} 等待超时仍活跃(状态{status}，成交{traded}/{order_vol})，撤单后重试剩余")
             else:
                 print(f"    !  {code} 委托已撤/部撤/部成(成交{traded})，重试剩余")
             if traded > 0:
@@ -212,6 +222,22 @@ def order_with_guard(trader, account, code, side, vol, price=None, remark="order
                 time.sleep(1)
                 continue
             cancel = trader.cancel_order_stock(account, oid)
+            if cancel == 0:
+                # 撤单已受理（T-20260930-001 补强）：回查原单终态，补记撤单处理窗口内的成交，
+                # 防止「撤单受理→重挂」间隙的成交漏记（remaining 虚大 → 重挂过量 = 双倍卖出）。
+                time.sleep(1)
+                r3 = _query_order(trader, account, oid)
+                if r3:
+                    st3, tr3, _v3 = r3
+                    if tr3 > traded:
+                        _d = tr3 - traded
+                        total_traded += _d
+                        remaining = max(0, remaining - _d)
+                        print(f"    !  {code} 撤单处理窗口内补记成交 {_d} 股（累计 {total_traded}）")
+                    if st3 == ORDER_SUCCEEDED or remaining <= 0:
+                        return {"ok": True, "action": "FILLED", "traded_vol": total_traded,
+                                "order_id": oid, "attempts": attempts,
+                                "note": f"{code} 撤单竞争窗口内已成交 {total_traded}股"}
             if cancel != 0:
                 # 撤单失败：确认原单死透(53/54/57)或查不到才允许重挂
                 print(f"    !! {code} 撤单失败(cancel={cancel})，确认原单状态后再重试")
@@ -224,9 +250,18 @@ def order_with_guard(trader, account, code, side, vol, price=None, remark="order
                         break
                     st2, tr2, _v2 = r2
                     if st2 in (ORDER_JUNK, ORDER_CANCELED, ORDER_PART_CANCEL):
-                        if tr2 > 0:
-                            # 补记撤单窗口内部成量
-                            pass
+                        if tr2 > traded:
+                            # 补记撤单窗口内部成量（T-20260930-001 修复：原为 pass，
+                            # 09-30 603237.SH 事故形态——撤单竞争窗口内已成交但
+                            # traded_vol 漏记 → 返回 traded_vol=0 → 记账门槛漏记账本）
+                            _d = tr2 - traded
+                            total_traded += _d
+                            remaining = max(0, remaining - _d)
+                            print(f"    !  {code} 撤单确认窗口内补记成交 {_d} 股（累计 {total_traded}）")
+                            if remaining <= 0:
+                                return {"ok": True, "action": "FILLED", "traded_vol": total_traded,
+                                        "order_id": oid, "attempts": attempts,
+                                        "note": f"{code} 撤单窗口内已全部成交 {total_traded}股"}
                         confirmed_dead = True
                         break
                     if st2 == ORDER_SUCCEEDED:
@@ -238,17 +273,26 @@ def order_with_guard(trader, account, code, side, vol, price=None, remark="order
                 if not confirmed_dead:
                     # 原单仍活跃：本轮不重挂，避免双倍
                     print(f"    !! {code} 原单仍活跃，本轮放弃重挂（已成交 {total_traded}）")
-                    return {"ok": traded > 0, "action": "CANCELED_TIMEOUT" if traded > 0 else "ERROR",
+                    # ok 语义=「有已确认成交」（T-20260930-001：原误用本轮 traded，漏掉前几轮累计）
+                    return {"ok": total_traded > 0,
+                            "action": "CANCELED_TIMEOUT" if total_traded > 0 else "ERROR",
                             "traded_vol": total_traded, "order_id": oid, "attempts": attempts,
-                            "note": f"{code} 撤单失败且原单仍活跃，未重挂（防双倍）"}
+                            "note": f"{code} 撤单失败且原单仍活跃，未重挂（防双倍，已成交 {total_traded}）"}
                 # 死透确认后允许重挂
             print(f"    !  {code} 已撤单，更新价格重试剩余 {remaining} 股")
             time.sleep(2)
             continue
 
-        # 部成未达终态(50/51/52等活跃态) → 继续等（wait 已超时路径上面处理）
-        continue
+        # 未知状态兜底（T-20260930-001 加固）：wait_order_fill 的返回状态已全枚举，正常不可达；
+        # 若真到达（未来新增状态码），绝不盲重挂（原单可能仍活跃 → 双重委托，且 remaining 未扣减
+        # 会超量重挂），直接按实际成交量放弃——记账走 traded_vol 门槛不丢。
+        print(f"    !! {code} 委托状态异常({status})，放弃重挂（已成交 {total_traded}，防双倍）")
+        return {"ok": total_traded > 0, "action": "CANCELED_TIMEOUT" if total_traded > 0 else "ERROR",
+                "traded_vol": total_traded, "order_id": oid, "attempts": attempts,
+                "note": f"{code} 委托状态异常({status})，放弃（已成交 {total_traded}股）"}
 
+    # 重试耗尽：ok=False 但 traded_vol 可能>0（窗口内部分/全部成交）——
+    # 调用方记账必须只看 traded_vol（T-20260930-001），note 已带实际成交量。
     return {"ok": False, "action": "CANCELED_TIMEOUT", "traded_vol": total_traded,
             "order_id": last_order_id, "attempts": attempts,
             "note": f"{code} 重试 {MAX_RETRY} 次仍未全部成交，放弃（已成交 {total_traded}股）"}

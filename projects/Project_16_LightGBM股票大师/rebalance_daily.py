@@ -29,6 +29,8 @@
 """
 import argparse
 import csv
+import hashlib
+import io
 import json
 import os
 import sys
@@ -118,22 +120,68 @@ def _trading_days_between(d0, d1):
     return n
 
 
-def load_selection(csv_path, top_n):
-    """读完整版清单，返回 total>=REDLINE 按 total 降序的前 top_n 只。"""
+def _candidate_meta(date, csv_path, loader):
+    """候选溯源 meta（2026-09-28 候选可审计性修复①+②，缺陷B）。
+
+    V1.3 的 rebalance json 曾有 selection_file/candidates_file 字段（20260901/0902），
+    09-03 起随脚本改版丢失（DE 排查 F5）；本次修回并升级为完整溯源（sha256 + asof 留档）。
+    V1.3 候选为当日早晨生成当日消费（无跨日覆盖），溯源主要防「同日复核重跑/TRAE 任务重写」
+    导致的事后失真。
+    loader: exact=当日清单精确匹配 / none=清单缺失或为空。
+    """
+    return {
+        "candidate_file": csv_path,        # 实际加载的清单文件路径
+        "candidate_loader": loader,
+        "candidate_data_date": date,       # V1.3 清单以运行日命名，数据日=运行日
+        "candidate_rows_raw": 0,           # CSV 原始行数（红线过滤前）
+        "candidate_sha256": None,          # 内容哈希（核心：防事后覆写失真）
+        "candidate_asof": None,            # asof 只读留档路径（读取点字节快照）
+    }
+
+
+def _archive_candidate_asof(date, meta, raw):
+    """asof 只读留档（修复③之 3d 读取侧变体）：把本次实际读取的清单字节写入
+    data/candidates_asof/<date>_<sha8>_<原名>。文件名含内容哈希 → 天然幂等，
+    内容不同则共存，绝不覆盖已有留档。失败只打日志，绝不阻断换仓。"""
+    try:
+        adir = os.path.join(os.path.dirname(C.TRADE_LOG), "candidates_asof")
+        os.makedirs(adir, exist_ok=True)
+        sha8 = (meta.get("candidate_sha256") or "nasha")[:8]
+        base = os.path.basename(meta.get("candidate_file") or "selection_full.csv")
+        adst = os.path.join(adir, "%s_%s_%s" % (date, sha8, base))
+        if not os.path.exists(adst):
+            with open(adst, "wb") as f:
+                f.write(raw)
+        meta["candidate_asof"] = adst
+    except Exception as e:
+        print(f"  [asof留档] 失败（不阻断换仓）: {e}")
+
+
+def load_selection(csv_path, top_n, text=None, meta=None):
+    """读完整版清单，返回 total>=REDLINE 按 total 降序的前 top_n 只。
+    text 参数（2026-09-28 溯源修复）：传入已读取的清单文本做单次读盘解析，
+    保证 sha/内容/asof 留档与实际解析三者同源；缺省时自行读盘（向后兼容）。
+    meta 参数（2026-09-29 DE 复核修正）：可选 dict，回填 candidate_rows_filtered =
+    红线过滤后、top_n 截断前的候选数——修复 candidate_rows 误记 len(target)（截断后）
+    导致口径与规格「过滤后候选数」及 G2/ENS 不一致的缺陷；不影响返回值。"""
+    if text is None:
+        with open(csv_path, encoding="utf-8-sig") as f:
+            text = f.read()
     stocks = []
-    with open(csv_path, encoding="utf-8-sig") as f:
-        for row in csv.DictReader(f):
-            code = (row.get("ts_code") or "").strip()
-            if not code:
-                continue
-            try:
-                total = float(row.get("total", 0) or 0)
-            except ValueError:
-                total = 0.0
-            if total >= REDLINE:
-                stocks.append({"code": code, "name": row.get("name", ""),
-                               "total": total, "prob": float(row.get("model_prob", 0) or 0)})
+    for row in csv.DictReader(io.StringIO(text)):
+        code = (row.get("ts_code") or "").strip()
+        if not code:
+            continue
+        try:
+            total = float(row.get("total", 0) or 0)
+        except ValueError:
+            total = 0.0
+        if total >= REDLINE:
+            stocks.append({"code": code, "name": row.get("name", ""),
+                           "total": total, "prob": float(row.get("model_prob", 0) or 0)})
     stocks.sort(key=lambda s: s["total"], reverse=True)
+    if meta is not None:
+        meta["candidate_rows_filtered"] = len(stocks)   # 过滤后、截断前（2026-09-29 DE 复核修正口径）
     return stocks[:top_n]
 
 
@@ -270,10 +318,25 @@ def main():
     eff_top = args.top if args.top < 2 else TOP_N
 
     sel_path = os.path.join(C.TRADE_LOG.rsplit("qmt_trade_log.csv", 1)[0], "selections", f"{args.date}_selection_full.csv")
+    # ---- 候选溯源（2026-09-28 缺陷B修复①+②）：单次读盘 + 读取点即时 SHA256 + asof 留档 ----
+    # 保证 sha/内容/留档与实际解析三者同源（R2），事后清单被覆写也能复现实盘输入。
+    cand_meta = _candidate_meta(args.date, sel_path, "exact")
     if not os.path.exists(sel_path):
+        cand_meta["candidate_loader"] = "none"
         print(f"!! 找不到当日清单: {sel_path}\n   先运行 review_full 生成完整版清单")
         return
-    target = load_selection(sel_path, eff_top)
+    try:
+        with open(sel_path, "rb") as f:
+            _raw_sel = f.read()
+        cand_meta["candidate_sha256"] = hashlib.sha256(_raw_sel).hexdigest()
+        _archive_candidate_asof(args.date, cand_meta, _raw_sel)
+        _sel_text = _raw_sel.decode("utf-8-sig")
+        cand_meta["candidate_rows_raw"] = sum(1 for _ in csv.DictReader(io.StringIO(_sel_text)))
+    except Exception as e:
+        cand_meta["candidate_loader"] = "read_error"
+        print(f"!! 当日清单读取失败: {e}")
+        return
+    target = load_selection(sel_path, eff_top, text=_sel_text, meta=cand_meta)
     if not target:
         if args.top == 0:
             # T-20260904-003 修复：T=0（沪深300≤-1.5% 大盘破位）→ 清仓信号，
@@ -430,7 +493,16 @@ def main():
                 "strategy_capital": round(capital, 2), "target_value_each": round(target_value, 2),
                 "tier": args.top, "eff_top": eff_top,  # tier=T档位(0/1/2)；eff_top=归一后实际持仓上限
                 "sell": sell_plan, "buy": [o for o in exec_buys if o.get("vol")],
-                "trim": trim_orders, "hold": hold_plan, "locked": locked}
+                "trim": trim_orders, "hold": hold_plan, "locked": locked,
+                # ---- 候选溯源（2026-09-28 修复①+②）----
+                "selection_file": sel_path,             # 修回 09-01/0902 曾有的溯源字段（DE 排查 F5）
+                "candidate_file": cand_meta["candidate_file"],
+                "candidate_loader": cand_meta["candidate_loader"],
+                "candidate_data_date": cand_meta["candidate_data_date"],
+                "candidate_rows": cand_meta["candidate_rows_filtered"],
+                "candidate_rows_raw": cand_meta["candidate_rows_raw"],
+                "candidate_sha256": cand_meta["candidate_sha256"],
+                "candidate_asof": cand_meta["candidate_asof"]}
         out = os.path.join(os.path.dirname(C.TRADE_LOG), f"rebalance_{args.date}.dryrun.json")
         with open(out, "w", encoding="utf-8") as f:
             json.dump(plan, f, ensure_ascii=False, indent=2, default=str)
@@ -458,7 +530,9 @@ def main():
         r = order_guard.order_with_guard(trader, account, s["code"], "SELL", s["vol"], price, remark)
         print(f"    卖出 {s['code']} {s['vol']}股 [{reason}] -> {r['note']}")
         guard_note.append(f"卖{s['code']}:{r['action']}(重试{r.get('attempts',1)}次)")
-        if r["ok"] and r["traded_vol"] > 0:
+        # T-20260930-001 修复：记账门槛只看实际成交量——ok=False 不代表零成交
+        # （LIMIT_SKIP/CANCELED_TIMEOUT 可带前几轮真实成交），原 `ok and traded_vol` 会漏记账本
+        if r["traded_vol"] > 0:
             log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), s["code"], "SELL",
                              r["traded_vol"], price, reason, r["order_id"]])
 
@@ -467,7 +541,9 @@ def main():
         r = order_guard.order_with_guard(trader, account, t["code"], "SELL", t["vol"], t["price"], "planA_trim")
         print(f"    减仓(超配) {t['code']} {t['vol']}股 -> {r['note']}")
         guard_note.append(f"减{t['code']}:{r['action']}(重试{r.get('attempts',1)}次)")
-        if r["ok"] and r["traded_vol"] > 0:
+        # T-20260930-001 修复：记账门槛只看实际成交量——ok=False 不代表零成交
+        # （LIMIT_SKIP/CANCELED_TIMEOUT 可带前几轮真实成交），原 `ok and traded_vol` 会漏记账本
+        if r["traded_vol"] > 0:
             log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), t["code"], "SELL",
                              r["traded_vol"], t["price"], "TRIM_OVR", r["order_id"]])
 
@@ -539,7 +615,9 @@ def main():
         r = order_guard.order_with_guard(trader, account, b["code"], "BUY", vol, b["price"], "planA_new_top")
         print(f"    买入 {b['code']} {vol}股 -> {r['note']}")
         guard_note.append(f"买{b['code']}:{r['action']}(重试{r.get('attempts',1)}次)")
-        if r["ok"] and r["traded_vol"] > 0:
+        # T-20260930-001 修复：记账门槛只看实际成交量——ok=False 不代表零成交
+        # （LIMIT_SKIP/CANCELED_TIMEOUT 可带前几轮真实成交），原 `ok and traded_vol` 会漏记账本
+        if r["traded_vol"] > 0:
             log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), b["code"], "BUY",
                              r["traded_vol"], b["price"], b["total"], r["order_id"]])
 
@@ -563,6 +641,15 @@ def main():
         "sell": sell_plan, "buy": [o for o in exec_buys if o.get("vol")],
         "trim": trim_orders, "hold": hold_plan, "locked": locked,
         "guard_note": guard_note,
+        # ---- 候选溯源（2026-09-28 修复①+②）----
+        "selection_file": sel_path,             # 修回 09-01/0902 曾有的溯源字段（DE 排查 F5）
+        "candidate_file": cand_meta["candidate_file"],
+        "candidate_loader": cand_meta["candidate_loader"],
+        "candidate_data_date": cand_meta["candidate_data_date"],
+        "candidate_rows": cand_meta["candidate_rows_filtered"],
+        "candidate_rows_raw": cand_meta["candidate_rows_raw"],
+        "candidate_sha256": cand_meta["candidate_sha256"],
+        "candidate_asof": cand_meta["candidate_asof"],
     }
     out = os.path.join(os.path.dirname(C.TRADE_LOG), f"rebalance_{args.date}.json")
     with open(out, "w", encoding="utf-8") as f:
