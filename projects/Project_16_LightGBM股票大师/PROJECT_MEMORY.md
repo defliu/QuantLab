@@ -1246,3 +1246,35 @@ ollback_streak.json 计数，连续 3 交易日才触发；方法论第七节同
 **空仓日行为（新口径下的常态，勿当故障）**：Top10 池无过线者 → deploy 早退不写 `<date>_g2_top10.csv` → `rebalance_g2` 回退校验宁缺毋滥（候选数据日须==增量库最新日，否则池空）→ **不买入、到期卖出照常**（`build_plan` 无空池早退，卖出先于买入），与引擎「无候选不买入」一致。副作用：`detect_data_stale` 当日候选缺失告警在这些日子出现属预期（有回退文件即正常）。
 
 **剩余漂移（维持已拍板现状，未随本次对齐）**：TOP_N=3 vs 引擎 2、HOLD_DAYS=15+live_trail vs 引擎 N=10 fixed、大盘 T 档门控 vs 引擎无门控；G2 臂回测结论仍按 XVAL5 报告 §5.4 标注口径差异（红线作用池项已解除）。**首个生效点**：次日 09:25 候选生成。
+
+## 2026-09-30 · V1.3 口径对齐方案B Phase 1 纸面并行落地（T-20260929-006，诚哥拍板「可以，执行吧」）
+
+**起因**：调研定论=V1.3 实盘买的是回测从未验证的变体（池子已验证，但最终买谁由回测中不存在的 F3 新闻分 20% 权重 + T 日盘中 F5 决定，每日置换名单 43.3%，top5 重合仅 2.83/5）。报告 `specs/V13盘中重排裁决与执行架构研究_20260929.md`。诚哥拍板方案 B：删盘中重排、T-1 晚定名单、次日 09:31-09:35 纯脚本执行；先纸面并行 2-4 周，门禁达标才 live-switch。
+
+**Phase 1 交付（当日落地，生产链零改动）**：
+- SPEC：`specs/V13口径对齐方案B落地_SPEC_20260930.md`（口径锚点=prob Top10 池→scorecard_real→红线 58→total Top5；诚实偏差 4 条；Phase 2 门禁：≥15 执行交易日、new−old 日均配对差 ≥ −3bp/日、胜率差 ≤10pp）。
+- `build_v13_final.py`（20:20 任务 `Quant_P16_V13_FinalList_2020`）：F2 新浪主源（与回测 fund_flow_real 同源家族）→ Tushare moneyflow 兜底（万元×1e4）→ 全缺失 fail-loud；F5 = incr 真实 pct_chg（close/preClose−1）× stock_basic.industry 等权（同 build_panel_v3_sc）；F6 = daily_basic（20:05 刷）→ est=None 回退面板；volume_ratio = incr volume / 主库前 5 日 vol 均值（回测用预计算列，现算为诚实偏差）。产物 `<T>_final_list.csv` + `.meta.json`（模型/快照 sha256 + 三源 max_date + f2_source_counts）。
+- `v13_paper_parallel.py`（20:30 任务 `Quant_P16_V13_PaperParallel_2030`）：old 臂=`<T>_selection_full.csv` total≥58 top5；new 臂=D=max(final_list 日<T) 的 redline top5（跨假期自动配对，09-30 → 10-09）；两臂 T 开盘入场/第 5 交易日开盘退出/记 ret_1d；**均不加 PF（信号对比纯度，PF 是执行层正交件）**；停牌/无量 unfillable 剔除；幂等 log（按 exec_date+arm+ts_code 去重）；报告自动展示门禁指标；数据停更 exit 2。
+
+**踩坑与修复（写脚本当天踩掉）**：①est 对齐 bug——先挂列再 sort，否则 est.values 排序后错位；②`pool["score_total"]` 幽灵列——代理总分须另算 `proxy_score_total`；③moneyflow.parquet trade_date 是索引列，`read_parquet(columns=[...])` 取不到 → reset_index 后再取；④**PS 5.1 `*>>` 重定向写文件是 UTF-16LE**（与 Add-Content UTF-8 混成一个文件全乱码），且 python 管道输出编码随宿主上下文漂移——修复=包装 ps1 里 `$env:PYTHONIOENCODING="utf-8"` + `cmd.exe /c "... 1>>log 2>&1"` 原始字节追加（零转码，任何上下文可读）；⑤ps1 含中文路径必带 UTF-8 BOM，编辑后必须复验（edit 工具会保留，但每次都要查）。
+
+**首跑验证（2026-09-30）**：final_list 过线 1/10（002111.SZ total 59.0），F2 新浪 10/10，F6=daily_basic 真实口径（20:05 刷新后生效，名次内分数如实变化），代理分交叉自检 F1/F3/F4 vs model_top10 PASS（重叠 3 只）；纸面 log 首日 old 臂 5 只（entry 已填）+ new 臂 NOFILE 哨兵（首日设计内）；幂等重跑 log 不变。compare_g2_daily（G2=0/ENS=0）与 compare_v13_daily（PASS）当晚双双通过。
+
+**下一步（自动，无需人工）**：每晚 20:20/20:30 累积；10-09 首笔跨国庆配对；≥15 执行交易日（约 10 月下旬）报告出门禁判据 → Phase 2 live-switch 另启拍板（届时 rebalance 加 --final-list 候选源 + 09:32 新任务 + TRAE 09:45 停用，回滚=去掉 --final-list）。方案 C（尾盘 proxy 重排）已挂路线图 P3，仅门禁失败才启动。
+
+## 2026-09-30 · 603237.SH 账实不符对账事件 + TRAE 09:45 对账协议固化（T-20260930-001，诚哥四项拍板）
+
+**事件（09:45 会话，新 step 4 prompt 首跑日）**：live 换仓后只读核查发现 `guard_note` 把 603237.SH 卖单记 `CANCELED_TIMEOUT`，实际全部成交 2800 股。**根因（未修 bug）**：`order_guard.py:251` 重试耗尽返回 `ok=False`（ok 语义=「重试走完且确认全成」≠「有成交」）+ `rebalance_daily.py:533` 记账门槛 `ok and traded_vol>0` → 真实成交漏记 → 持仓虚留 2800 股。现场处置闭环：账本补记（第一笔缺账号戳+日期残缺 → 10:30:10 触发账号戳 fail-safe 备份 `.bak_acct_nostamp_20260930_103010` → 修正后 128 行全带 67014907 戳 verify PASS）+ plan json 顶层追加 `manual_reconciliation` 区块（`.scriptorig` 备份、原字段未删改）+ 40 项 crosscheck 全 PASS + 报告 `data/rebalance_20260930.md`；全程未重下。**待修→已修（当日）**：order_guard/rebalance_daily 记账逻辑已修复（见下节），看板 T-20260930-001 全闭环。
+
+**重要状态订正（两度反转，以 TRAE 回执为准）**：09-29 的 step 4 修改**第一轮从未真正写入任务**——09-30 00:21 落盘的 trae_note_20260929 虽声称「已改为」，但 TRAE 09-30 晚执行回执（§8.1）回读任务 15868a74 发现 message 仍是 09-03 旧版 step 4；09-30 晨 plan json 干净（22 字段全、`candidate_sha256` 非 null、未覆写）属**会话侧自觉遵守**，非 prompt 约束生效。**两轮改动已于 09-30 晚由 TRAE 按「累积」口径一次性写入并回读校验全过**（step 4 只读版 + 4b + 4c 对账协议 + trae_note 异常日必写 + 方案B 产物隔离；cron 未动、Active、执行次数 22 未变、其他任务未碰），回执落 `specs/TRAE任务修改说明_0945开盘实时复核_20260930.md` §八。**教训**：「文档层声称已改」≠「任务侧实际已改」——TRAE 任务类改动必须以**改后回读回执**为完成判据（本次 TRAE 回执做法正确，固化为惯例）；行为级验收待下一交易日按说明 §六清单核对，看板 T-20260928-002 残留⑥已按此订正回写。
+
+**TRAE 协议固化（诚哥四项拍板 2026-09-30）**：新说明 `specs/TRAE任务修改说明_0945开盘实时复核_20260930.md`，在已执行的第一轮基础上增补 3 处——①新增 step 4c「账实不符人工对账协议」= 固化今晨实践（只读核查先行→trae_note 落证据→`.scriptorig` 备份→仅顶层追加 manual_reconciliation 区块→账本补记必须 8 列齐全带戳带完整时间戳→严禁重下→推告警）；②step 4 的 trae_note 从可选改「异常日必写」（账实不符/降级/清单缺失/红线零单/重试超限必写，正常日可不写）；③message 末尾加「方案B 纸面并行产物隔离」条款（`<T>_final_list.*` / `v13_paper_parallel_*` 禁写禁改禁移动，本任务照常只消费 `<T>_selection_full.csv` 系列）。**坑位记录**：账本补记缺账号戳/日期残缺会触发 fail-safe 备份（本次实际发生），4c 第 4 条「8 列齐全 + 完整时间戳」就是防它，不可省略。
+
+## 2026-09-30 · order_guard 撤单窗口成交补记 + 双重委托防护修复（T-20260930-001 待办①，诚哥授权「把改修的都修了」）
+
+**三 bug 同源定性**（603237.SH 事故形态的完整解构）：①`order_guard.py` 死透确认循环内 `pass` 漏记撤单竞争窗口成交；②cancel==0 撤单受理后无回查，「受理→重挂」间隙成交漏记；③活跃态(50/51/52)超时落入底部 continue **盲重挂**（原单仍活=双重委托；且该路径 remaining 未扣减会超量重挂）。三者共同产出「真实成交但 traded_vol=0/ok=False」或「双倍委托」，再叠加消费方 `ok and traded_vol>0` 双重门槛 → 漏记账本。
+
+**修复（最小改动，未动下单/重试核心逻辑与 action 字符串语义）**：`order_guard.py` 6 处——活跃态 50/51/52 加入 L203 撤单分支集合（+对应 print）；死透确认窗口补记 `traded_vol` 累加/remaining 扣减 + remaining≤0 返 FILLED；cancel==0 新增回查补记块；`ok: traded>0` 误用改 `total_traded>0`（原漏前几轮累计）；未知状态兜底从盲 continue 改「按实际成交量放弃」（绝不双重委托）；docstring 厘清 ok 语义=「有已确认成交」。消费方门槛去 `ok` 化：`rebalance_daily.py` 卖/减/买 3 处 + `qmt_clear.py` 1 处改 `traded_vol > 0` 单条件（真实确认成交必入账本）；`qmt_monitor.py` 运行时本已正确（traded_vol>0 记账、ok 只管 sold.add），仅修 docstring。
+
+**验证**：新建回归测试 `research/tests/test_order_guard_backfill.py`（FakeTrader mock 带 cancel_script/query_transitions/auto_fill_from/reject_from 钩子；stub xtquant 防连真客户端；提速 patch `wait_order_fill.__defaults__=(1,)`+POLL_INTERVAL=0.05+sleep 压缩）——S1 事故复现（撤单失败→死透确认窗口全成 2800 必返 FILLED/traded_vol=2800，修复前 ok=False/traded_vol=0）、S2 撤单成功窗口补记+重挂只挂净剩余 1000（防双倍）、S3 耗尽部分成交 traded_vol=1000 不丢、S4 撤单失败原单活跃绝不重挂（placements==1）、S5 记账门槛源码断言（4 文件无 `ok and traded_vol` 残留）——**19/19 PASS**；复跑 `test_monitor_sell.py` 19/19；py_compile 5 文件过。**保留**：4c 对账协议仍为兜底；`versions/V1.4_20260908` 冻结归档不改。**行为级验收**：下个交易日（预计 10-09）按说明 §六核对修复后记账正确性。
+
