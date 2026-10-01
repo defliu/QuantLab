@@ -1,0 +1,1171 @@
+{
+  "date": "20260930",
+  "collected_at": "2026-09-30 09:37:12",
+  "quote_kind": "盘中实时行情(采集时刻晚于09:25，非严格集合竞价快照)",
+  "g2_candidates": [
+    "688155.SH",
+    "002759.SZ",
+    "688612.SH",
+    "600076.SH",
+    "603033.SH",
+    "920237.BJ",
+    "688093.SH",
+    "603021.SH",
+    "603378.SH"
+  ],
+  "g2_top3": [
+    "688155.SH",
+    "002759.SZ",
+    "688612.SH"
+  ],
+  "g2_holdings": [
+    "002510.SZ",
+    "605098.SH",
+    "000607.SZ"
+  ],
+  "m915_candidates": [
+    "600547.SH",
+    "603353.SH",
+    "000949.SZ",
+    "003013.SZ",
+    "600988.SH",
+    "300592.SZ",
+    "603083.SH",
+    "002436.SZ",
+    "002237.SZ",
+    "600345.SH"
+  ],
+  "m915_data_date": "20260928",
+  "f2_primary": "tushare_local_T-1(20260929)",
+  "f2_meta": {
+    "date": "20260929",
+    "rows": 5571,
+    "elapsed_ms": 8832
+  },
+  "stocks": [
+    {
+      "ts_code": "688155.SH",
+      "name": "先惠技术",
+      "last": 53.64,
+      "open": 54.25,
+      "high": 54.49,
+      "low": 53.26,
+      "quote_pct": -1.31,
+      "volume": 486116.0,
+      "amount_wan": 2610.0,
+      "liangbi": null,
+      "turnover": 0.38,
+      "pe_ttm": 16.67,
+      "quote_time": "20260930093651",
+      "f2_tushare": {
+        "main_net_inflow": 2930.85,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": 3958.5,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": -5313702.0,
+        "main_net_ratio_em": -20.29,
+        "source": "eastmoney_curl"
+      },
+      "industry": "锂电池",
+      "industry_pct": 0.03,
+      "news": [
+        {
+          "title": "14家公司重要股东开启增持模式 累计增持3.26亿元（附股）",
+          "date": "2026-09-21"
+        },
+        {
+          "title": "10只科创板股主力资金净流入超亿元",
+          "date": "2026-09-11"
+        },
+        {
+          "title": "先惠技术三高管拟斥最高8000万元增持，上半年营利双增但现金流失血，股价年内最大回撤达55%",
+          "date": "2026-09-11"
+        },
+        {
+          "title": "股价腰斩！这家上市公司急了，董事长等带头最多8000万增持！上半年业绩双增还分红",
+          "date": "2026-09-10"
+        }
+      ],
+      "catalyst_note": "14家公司重要股东开启增持模式 累计增持3.26亿元（附股）(2026-09-21); 10只科创板股主力资金净流入超亿元(2026-09-11); 先惠技术三高管拟斥最高8000万元增持，上半年营利双增但现金流失血，股价年内最大回撤达55%(2026-09-11)",
+      "news_count": 6,
+      "role": "g2_cand",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "002759.SZ",
+      "name": "ST天际",
+      "last": 13.45,
+      "open": 13.55,
+      "high": 13.7,
+      "low": 13.44,
+      "quote_pct": -1.47,
+      "volume": 26507.0,
+      "amount_wan": 3592.0,
+      "liangbi": null,
+      "turnover": 0.53,
+      "pe_ttm": 18.71,
+      "quote_time": "20260930093651",
+      "f2_tushare": {
+        "main_net_inflow": 1918.64,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": -3931.41,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": -235883.0,
+        "main_net_ratio_em": -0.65,
+        "source": "eastmoney_curl"
+      },
+      "industry": "电池化学品",
+      "industry_pct": -0.02,
+      "news": [
+        {
+          "title": "钠离子电池概念涨2.33%，主力资金净流入84股",
+          "date": "2026-09-29"
+        },
+        {
+          "title": "速看，最新筹码集中股找到了（附股）",
+          "date": "2026-09-18"
+        },
+        {
+          "title": "A股中报：850多家归母净利翻倍，最高同比增长了715倍",
+          "date": "2026-08-31"
+        },
+        {
+          "title": "双赛道拉动高景气 电解液产业链迎业绩与涨价双重机遇",
+          "date": "2026-08-24"
+        }
+      ],
+      "catalyst_note": "钠离子电池概念涨2.33%，主力资金净流入84股(2026-09-29); 速看，最新筹码集中股找到了（附股）(2026-09-18); A股中报：850多家归母净利翻倍，最高同比增长了715倍(2026-08-31)",
+      "news_count": 6,
+      "role": "g2_cand",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "688612.SH",
+      "name": "威迈斯",
+      "last": 33.25,
+      "open": 33.5,
+      "high": 33.57,
+      "low": 32.94,
+      "quote_pct": 0.21,
+      "volume": 226393.0,
+      "amount_wan": 753.0,
+      "liangbi": null,
+      "turnover": 0.09,
+      "pe_ttm": 24.33,
+      "quote_time": "20260930093650",
+      "f2_tushare": {
+        "main_net_inflow": 1112.37,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": 1045.52,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": -58123.0,
+        "main_net_ratio_em": -0.76,
+        "source": "eastmoney_curl"
+      },
+      "industry": "汽车电子电气系统",
+      "industry_pct": -0.19,
+      "news": [
+        {
+          "title": "178家公司获机构调研（附名单）",
+          "date": "2026-09-18"
+        },
+        {
+          "title": "33.82亿元主力资金今日抢筹汽车板块",
+          "date": "2026-09-17"
+        },
+        {
+          "title": "190家公司获机构调研（附名单）",
+          "date": "2026-09-17"
+        },
+        {
+          "title": "193家公司获机构调研（附名单）",
+          "date": "2026-09-16"
+        }
+      ],
+      "catalyst_note": "178家公司获机构调研（附名单）(2026-09-18); 33.82亿元主力资金今日抢筹汽车板块(2026-09-17); 190家公司获机构调研（附名单）(2026-09-17)",
+      "news_count": 6,
+      "role": "g2_cand",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "600076.SH",
+      "name": "康欣新材",
+      "last": 2.14,
+      "open": 2.15,
+      "high": 2.16,
+      "low": 2.13,
+      "quote_pct": 0.0,
+      "volume": 30206.0,
+      "amount_wan": 648.0,
+      "liangbi": null,
+      "turnover": 0.22,
+      "pe_ttm": -7.46,
+      "quote_time": "20260930093648",
+      "f2_tushare": {
+        "main_net_inflow": 137.78,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": 463.71,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": 147045.0,
+        "main_net_ratio_em": 2.25,
+        "source": "eastmoney_curl"
+      },
+      "industry": "综合包装",
+      "industry_pct": 0.07,
+      "news": [
+        {
+          "title": "土地流转概念上涨1.65%，6股主力资金净流入超千万元",
+          "date": "2026-09-17"
+        },
+        {
+          "title": "担保风险出清，ST荣科周涨54%；*ST清越跌破面值锁定退市丨透视一周牛熊股",
+          "date": "2026-09-13"
+        },
+        {
+          "title": "从“财务性投资”到“谋求控股权” 园林股份二度出手华澜微|速读公告",
+          "date": "2026-09-11"
+        },
+        {
+          "title": "股东户数降幅榜：13股最新股东户数降逾一成",
+          "date": "2026-09-10"
+        }
+      ],
+      "catalyst_note": "土地流转概念上涨1.65%，6股主力资金净流入超千万元(2026-09-17); 担保风险出清，ST荣科周涨54%；*ST清越跌破面值锁定退市丨透视一周牛熊股(2026-09-13); 从“财务性投资”到“谋求控股权” 园林股份二度出手华澜微|速读公告(2026-09-11)",
+      "news_count": 6,
+      "role": "g2_cand",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "603033.SH",
+      "name": "三维股份",
+      "last": 7.71,
+      "open": 7.64,
+      "high": 7.76,
+      "low": 7.61,
+      "quote_pct": 0.92,
+      "volume": 5596.0,
+      "amount_wan": 430.0,
+      "liangbi": null,
+      "turnover": 0.06,
+      "pe_ttm": -14.59,
+      "quote_time": "20260930093650",
+      "f2_tushare": {
+        "main_net_inflow": 155.01,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": -81.04,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": 221822.0,
+        "main_net_ratio_em": 5.15,
+        "source": "eastmoney_curl"
+      },
+      "industry": "其他橡胶制品",
+      "industry_pct": 0.32,
+      "news": [
+        {
+          "title": "三维股份控股股东叶继跃新增质押1200万股，累计质押近六成持股，公司上半年亏1.86亿元",
+          "date": "2026-09-21"
+        },
+        {
+          "title": "9月18日晚间沪深上市公司重大事项公告最新快递",
+          "date": "2026-09-18"
+        },
+        {
+          "title": "三维股份(603033.SH)：全资子公司广西三维中标黔桂铁路混凝土轨枕项目，金额约1.23亿元",
+          "date": "2026-09-18"
+        },
+        {
+          "title": "三维股份：全资子公司中标1.23亿元混凝土轨枕采购项目",
+          "date": "2026-09-18"
+        }
+      ],
+      "catalyst_note": "三维股份控股股东叶继跃新增质押1200万股，累计质押近六成持股，公司上半年亏1.86亿元(2026-09-21); 9月18日晚间沪深上市公司重大事项公告最新快递(2026-09-18); 三维股份(603033.SH)：全资子公司广西三维中标黔桂铁路混凝土轨枕项目，金额约1.23亿元(2026-09-18)",
+      "news_count": 6,
+      "role": "g2_cand",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "920237.BJ",
+      "name": "力佳科技",
+      "last": 11.24,
+      "open": 11.04,
+      "high": 11.24,
+      "low": 10.96,
+      "quote_pct": 1.72,
+      "volume": 2085.0,
+      "amount_wan": 231.78,
+      "liangbi": null,
+      "turnover": 0.22,
+      "pe_ttm": 38.85,
+      "quote_time": "20260930093648",
+      "f2_tushare": {
+        "main_net_inflow": 68.51,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": 0.0,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": -267506.0,
+        "main_net_ratio_em": -11.5,
+        "source": "eastmoney_curl"
+      },
+      "industry": "锂电池",
+      "industry_pct": 0.03,
+      "news": [
+        {
+          "title": "北交所成交活跃股排行榜",
+          "date": "2026-09-29"
+        },
+        {
+          "title": "北交所成交活跃股排行榜",
+          "date": "2026-09-28"
+        },
+        {
+          "title": "北交所股票全天成交额183.46亿元，41股成交额超亿元",
+          "date": "2026-09-23"
+        },
+        {
+          "title": "北交所股票全天成交额182.97亿元，44股成交额超亿元",
+          "date": "2026-09-22"
+        }
+      ],
+      "catalyst_note": "北交所成交活跃股排行榜(2026-09-29); 北交所成交活跃股排行榜(2026-09-28); 北交所股票全天成交额183.46亿元，41股成交额超亿元(2026-09-23)",
+      "news_count": 6,
+      "role": "g2_cand",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "688093.SH",
+      "name": "世华科技",
+      "last": 22.24,
+      "open": 22.25,
+      "high": 22.46,
+      "low": 22.19,
+      "quote_pct": 0.0,
+      "volume": 100905.0,
+      "amount_wan": 225.0,
+      "liangbi": null,
+      "turnover": 0.04,
+      "pe_ttm": 19.0,
+      "quote_time": "20260930093647",
+      "f2_tushare": {
+        "main_net_inflow": 103.75,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": -197.89,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": -700040.0,
+        "main_net_ratio_em": -31.02,
+        "source": "eastmoney_curl"
+      },
+      "industry": "其他电子Ⅲ",
+      "industry_pct": 0.94,
+      "news": [
+        {
+          "title": "PCB概念下跌3.12%，主力资金净流出161股",
+          "date": "2026-09-24"
+        },
+        {
+          "title": "PCB概念涨1.39%，主力资金净流入116股",
+          "date": "2026-09-23"
+        },
+        {
+          "title": "光刻胶概念上涨1.15%，6股主力资金净流入超3000万元",
+          "date": "2026-09-23"
+        },
+        {
+          "title": "光刻胶概念上涨3.75%，7股主力资金净流入超亿元",
+          "date": "2026-09-16"
+        }
+      ],
+      "catalyst_note": "PCB概念下跌3.12%，主力资金净流出161股(2026-09-24); PCB概念涨1.39%，主力资金净流入116股(2026-09-23); 光刻胶概念上涨1.15%，6股主力资金净流入超3000万元(2026-09-23)",
+      "news_count": 6,
+      "role": "g2_cand",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "603021.SH",
+      "name": "*ST华鹏",
+      "last": 4.9,
+      "open": 4.99,
+      "high": 4.99,
+      "low": 4.86,
+      "quote_pct": -1.01,
+      "volume": 3858.0,
+      "amount_wan": 191.0,
+      "liangbi": null,
+      "turnover": 0.12,
+      "pe_ttm": -6.6,
+      "quote_time": "20260930093650",
+      "f2_tushare": {
+        "main_net_inflow": 105.95,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": -46.27,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": -81683.0,
+        "main_net_ratio_em": -4.29,
+        "source": "eastmoney_curl"
+      },
+      "industry": "其他家居用品",
+      "industry_pct": -0.4,
+      "news": [
+        {
+          "title": "*ST华鹏因借款合同纠纷被起诉 涉2.26亿元借款本金及利息",
+          "date": "2026-09-23"
+        },
+        {
+          "title": "债务诉讼来袭！*ST华鹏遭追讨2.26亿元借款本金及超4600万元利息",
+          "date": "2026-09-23"
+        },
+        {
+          "title": "*ST华鹏因借款合同纠纷被起诉，涉案金额含本金2.26亿元及利息",
+          "date": "2026-09-22"
+        },
+        {
+          "title": "*ST华鹏涉借款合同纠纷，被诉偿还借款本金2.26亿元及利息，子公司承担连带清偿责任",
+          "date": "2026-09-22"
+        }
+      ],
+      "catalyst_note": "*ST华鹏因借款合同纠纷被起诉 涉2.26亿元借款本金及利息(2026-09-23); 债务诉讼来袭！*ST华鹏遭追讨2.26亿元借款本金及超4600万元利息(2026-09-23); *ST华鹏因借款合同纠纷被起诉，涉案金额含本金2.26亿元及利息(2026-09-22)",
+      "news_count": 6,
+      "role": "g2_cand",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "603378.SH",
+      "name": "*ST亚士",
+      "last": 4.69,
+      "open": 4.71,
+      "high": 4.73,
+      "low": 4.67,
+      "quote_pct": 0.0,
+      "volume": 5063.0,
+      "amount_wan": 238.0,
+      "liangbi": null,
+      "turnover": 0.12,
+      "pe_ttm": -1.42,
+      "quote_time": "20260930093650",
+      "f2_tushare": {
+        "main_net_inflow": 436.4,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": 274.02,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": 21482.0,
+        "main_net_ratio_em": 0.9,
+        "source": "eastmoney_curl"
+      },
+      "industry": "涂料",
+      "industry_pct": -3.92,
+      "news": [
+        {
+          "title": "建筑材料行业今日净流出资金24.58亿元，中国巨石等5股净流出资金超亿元",
+          "date": "2026-09-28"
+        },
+        {
+          "title": "建筑材料行业9月24日资金流向日报",
+          "date": "2026-09-24"
+        },
+        {
+          "title": "61股每笔成交量增长超50%",
+          "date": "2026-09-23"
+        },
+        {
+          "title": "*ST亚士龙虎榜：营业部净卖出793.58万元",
+          "date": "2026-09-22"
+        }
+      ],
+      "catalyst_note": "建筑材料行业今日净流出资金24.58亿元，中国巨石等5股净流出资金超亿元(2026-09-28); 建筑材料行业9月24日资金流向日报(2026-09-24); 61股每笔成交量增长超50%(2026-09-23)",
+      "news_count": 6,
+      "role": "g2_cand",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "002510.SZ",
+      "name": "天汽模",
+      "last": 5.68,
+      "open": 5.69,
+      "high": 5.74,
+      "low": 5.66,
+      "quote_pct": 0.0,
+      "volume": 14054.0,
+      "amount_wan": 800.0,
+      "liangbi": null,
+      "turnover": 0.14,
+      "pe_ttm": 107.7,
+      "quote_time": "20260930093651",
+      "f2_tushare": {
+        "main_net_inflow": 794.18,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": 265.46,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": -858354.0,
+        "main_net_ratio_em": -10.59,
+        "source": "eastmoney_curl"
+      },
+      "industry": "汽车零部件",
+      "industry_pct": -0.07,
+      "news": [
+        {
+          "title": "天汽模成立轻量化科技公司",
+          "date": "2026-09-22"
+        },
+        {
+          "title": "4.73亿元主力资金今日撤离汽车板块",
+          "date": "2026-09-18"
+        },
+        {
+          "title": "52股每笔成交量增长超50%",
+          "date": "2026-09-17"
+        },
+        {
+          "title": "33.82亿元主力资金今日抢筹汽车板块",
+          "date": "2026-09-17"
+        }
+      ],
+      "catalyst_note": "天汽模成立轻量化科技公司(2026-09-22); 4.73亿元主力资金今日撤离汽车板块(2026-09-18); 52股每笔成交量增长超50%(2026-09-17)",
+      "news_count": 6,
+      "role": "|g2_hold",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "605098.SH",
+      "name": "行动教育",
+      "last": 52.97,
+      "open": 52.47,
+      "high": 53.02,
+      "low": 52.47,
+      "quote_pct": 0.95,
+      "volume": 658.0,
+      "amount_wan": 348.0,
+      "liangbi": null,
+      "turnover": 0.06,
+      "pe_ttm": 17.54,
+      "quote_time": "20260930093649",
+      "f2_tushare": {
+        "main_net_inflow": 447.44,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": -873.54,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": -37668.0,
+        "main_net_ratio_em": -1.03,
+        "source": "eastmoney_curl"
+      },
+      "industry": "培训教育",
+      "industry_pct": 0.02,
+      "news": [
+        {
+          "title": "社会服务行业9月23日资金流向日报",
+          "date": "2026-09-23"
+        },
+        {
+          "title": "AI赋能冲业绩、净利增30%，行动教育两股东拟合计减持不超271万股，最高或套现约1.5亿元",
+          "date": "2026-09-18"
+        },
+        {
+          "title": "行动教育实控人的一致行动人拟减持不超1.6771%公司股份",
+          "date": "2026-09-17"
+        },
+        {
+          "title": "行动教育：股东上海蓝效拟减持不超0.5954%股份",
+          "date": "2026-09-17"
+        }
+      ],
+      "catalyst_note": "社会服务行业9月23日资金流向日报(2026-09-23); AI赋能冲业绩、净利增30%，行动教育两股东拟合计减持不超271万股，最高或套现约1.5亿元(2026-09-18); 行动教育实控人的一致行动人拟减持不超1.6771%公司股份(2026-09-17)",
+      "news_count": 6,
+      "role": "|g2_hold",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "000607.SZ",
+      "name": "华媒控股",
+      "last": 4.04,
+      "open": 4.03,
+      "high": 4.13,
+      "low": 4.02,
+      "quote_pct": -2.18,
+      "volume": 181372.0,
+      "amount_wan": 7362.0,
+      "liangbi": null,
+      "turnover": 2.05,
+      "pe_ttm": -12.82,
+      "quote_time": "20260930093651",
+      "f2_tushare": {
+        "main_net_inflow": 4341.72,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": 7436.86,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": -4484983.0,
+        "main_net_ratio_em": -6.05,
+        "source": "eastmoney_curl"
+      },
+      "industry": "传媒",
+      "industry_pct": 0.06,
+      "news": [
+        {
+          "title": "传媒行业9月29日资金流向日报",
+          "date": "2026-09-29"
+        },
+        {
+          "title": "快手概念涨3.15%，主力资金净流入这些股",
+          "date": "2026-09-29"
+        },
+        {
+          "title": "知识产权保护概念上涨2.75%，6股主力资金净流入超3000万元",
+          "date": "2026-09-29"
+        },
+        {
+          "title": "涨停股复盘：13股封单超亿元",
+          "date": "2026-09-29"
+        }
+      ],
+      "catalyst_note": "传媒行业9月29日资金流向日报(2026-09-29); 快手概念涨3.15%，主力资金净流入这些股(2026-09-29); 知识产权保护概念上涨2.75%，6股主力资金净流入超3000万元(2026-09-29)",
+      "news_count": 6,
+      "role": "|g2_hold",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "600547.SH",
+      "name": "山东黄金",
+      "last": 26.91,
+      "open": 26.7,
+      "high": 26.94,
+      "low": 26.5,
+      "quote_pct": 1.59,
+      "volume": 121740.0,
+      "amount_wan": 32593.0,
+      "liangbi": null,
+      "turnover": 0.34,
+      "pe_ttm": 22.66,
+      "quote_time": "20260930093651",
+      "f2_tushare": {
+        "main_net_inflow": 9229.14,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": 11212.17,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": 6668057.0,
+        "main_net_ratio_em": 2.02,
+        "source": "eastmoney_curl"
+      },
+      "industry": "有色金属",
+      "industry_pct": -0.09,
+      "news": [
+        {
+          "title": "盘前速递丨9月30日（周三）9月官方PMI今日公布；*ST元道今日进入退市整理期；力勤资源今日上市",
+          "date": "2026-09-30"
+        },
+        {
+          "title": "【中证快报】9月29日中证投资资讯 | 十二部门发文推动多式联运高质量发展",
+          "date": "2026-09-29"
+        },
+        {
+          "title": "利好来了！多家A股公司提议：回购",
+          "date": "2026-09-29"
+        },
+        {
+          "title": "【财闻联播】又一只科技牛股出手，拟回购6亿至12亿元！6连板新华传媒再度提示风险",
+          "date": "2026-09-29"
+        }
+      ],
+      "catalyst_note": "盘前速递丨9月30日（周三）9月官方PMI今日公布；*ST元道今日进入退市整理期；力勤资源今日上市(2026-09-30); 【中证快报】9月29日中证投资资讯 | 十二部门发文推动多式联运高质量发展(2026-09-29); 利好来了！多家A股公司提议：回购(2026-09-29)",
+      "news_count": 6,
+      "role": "|m915",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "603353.SH",
+      "name": "和顺石油",
+      "last": 39.6,
+      "open": 40.55,
+      "high": 40.78,
+      "low": 39.38,
+      "quote_pct": -2.34,
+      "volume": 8203.0,
+      "amount_wan": 3279.0,
+      "liangbi": null,
+      "turnover": 0.48,
+      "pe_ttm": 147.07,
+      "quote_time": "20260930093649",
+      "f2_tushare": {
+        "main_net_inflow": -1686.33,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": -618.76,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": -2936650.0,
+        "main_net_ratio_em": -8.83,
+        "source": "eastmoney_curl"
+      },
+      "industry": "油品石化贸易",
+      "industry_pct": -0.35,
+      "news": [
+        {
+          "title": "石油石化行业资金流出榜：恒逸石化、中国石化等净流出资金居前",
+          "date": "2026-09-29"
+        },
+        {
+          "title": "石油石化行业9月28日资金流向日报",
+          "date": "2026-09-28"
+        },
+        {
+          "title": "155.56亿主力资金净流入，存储芯片概念涨3.43%",
+          "date": "2026-09-18"
+        },
+        {
+          "title": "涨停股复盘：11股封单超亿元",
+          "date": "2026-09-18"
+        }
+      ],
+      "catalyst_note": "石油石化行业资金流出榜：恒逸石化、中国石化等净流出资金居前(2026-09-29); 石油石化行业9月28日资金流向日报(2026-09-28); 155.56亿主力资金净流入，存储芯片概念涨3.43%(2026-09-18)",
+      "news_count": 6,
+      "role": "|m915",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "000949.SZ",
+      "name": "新乡化纤",
+      "last": 6.39,
+      "open": 6.44,
+      "high": 6.44,
+      "low": 6.35,
+      "quote_pct": -0.31,
+      "volume": 16011.0,
+      "amount_wan": 1025.0,
+      "liangbi": null,
+      "turnover": 0.1,
+      "pe_ttm": 22.07,
+      "quote_time": "20260930093651",
+      "f2_tushare": {
+        "main_net_inflow": -1875.3,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": -2584.76,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": -1065133.0,
+        "main_net_ratio_em": -10.35,
+        "source": "eastmoney_curl"
+      },
+      "industry": "粘胶",
+      "industry_pct": -0.39,
+      "news": [
+        {
+          "title": "超强厄尔尼诺或扰动全球农产品供给，农业ETF天弘(512620)标的指数昨日收涨0.23%，近5日净流入超4900万元",
+          "date": "2026-09-30"
+        },
+        {
+          "title": "逆市爆发！粮食ETF集体大涨",
+          "date": "2026-09-17"
+        },
+        {
+          "title": "化学纤维概念盘中走弱，氨纶价格自2026年初低位回升趋势明确| 异动情报",
+          "date": "2026-09-11"
+        },
+        {
+          "title": "新乡化纤13亿元定增遭问询 新增产能消化与前募氨纶未达效益受关注",
+          "date": "2026-09-10"
+        }
+      ],
+      "catalyst_note": "超强厄尔尼诺或扰动全球农产品供给，农业ETF天弘(512620)标的指数昨日收涨0.23%，近5日净流入超4900万元(2026-09-30); 逆市爆发！粮食ETF集体大涨(2026-09-17); 化学纤维概念盘中走弱，氨纶价格自2026年初低位回升趋势明确| 异动情报(2026-09-11)",
+      "news_count": 6,
+      "role": "|m915",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "003013.SZ",
+      "name": "地铁设计",
+      "last": 15.61,
+      "open": 15.91,
+      "high": 15.96,
+      "low": 15.44,
+      "quote_pct": -2.44,
+      "volume": 15441.0,
+      "amount_wan": 2413.0,
+      "liangbi": null,
+      "turnover": 0.37,
+      "pe_ttm": 19.26,
+      "quote_time": "20260930093651",
+      "f2_tushare": {
+        "main_net_inflow": 760.55,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": 637.98,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": 449099.0,
+        "main_net_ratio_em": 1.85,
+        "source": "eastmoney_curl"
+      },
+      "industry": "工程咨询服务Ⅲ",
+      "industry_pct": -0.95,
+      "news": [
+        {
+          "title": "股东户数降幅榜：12股最新股东户数降逾一成",
+          "date": "2026-09-29"
+        },
+        {
+          "title": "今日253只个股突破半年线",
+          "date": "2026-09-29"
+        },
+        {
+          "title": "筹码新动向：319股筹码趋向集中",
+          "date": "2026-09-28"
+        },
+        {
+          "title": "12股最新股东户数降逾一成",
+          "date": "2026-09-24"
+        }
+      ],
+      "catalyst_note": "股东户数降幅榜：12股最新股东户数降逾一成(2026-09-29); 今日253只个股突破半年线(2026-09-29); 筹码新动向：319股筹码趋向集中(2026-09-28)",
+      "news_count": 6,
+      "role": "|m915",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "600988.SH",
+      "name": "赤峰黄金",
+      "last": 38.94,
+      "open": 38.58,
+      "high": 38.97,
+      "low": 38.25,
+      "quote_pct": 1.3,
+      "volume": 42094.0,
+      "amount_wan": 16281.0,
+      "liangbi": null,
+      "turnover": 0.25,
+      "pe_ttm": 19.96,
+      "quote_time": "20260930093650",
+      "f2_tushare": {
+        "main_net_inflow": -6806.82,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": 6345.43,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": 5093681.0,
+        "main_net_ratio_em": 3.1,
+        "source": "eastmoney_curl"
+      },
+      "industry": "有色金属",
+      "industry_pct": -0.09,
+      "news": [
+        {
+          "title": "8.96亿元资金今日流入有色金属股",
+          "date": "2026-09-29"
+        },
+        {
+          "title": "紫金矿业签署补充协议 延长赤峰黄金股份转让交割及H股定增时限",
+          "date": "2026-09-28"
+        },
+        {
+          "title": "赤峰黄金：控制权变更交割期限延长至11月30日",
+          "date": "2026-09-28"
+        },
+        {
+          "title": "有色金属行业资金流出榜：山东黄金、云南锗业等净流出资金居前",
+          "date": "2026-09-28"
+        }
+      ],
+      "catalyst_note": "8.96亿元资金今日流入有色金属股(2026-09-29); 紫金矿业签署补充协议 延长赤峰黄金股份转让交割及H股定增时限(2026-09-28); 赤峰黄金：控制权变更交割期限延长至11月30日(2026-09-28)",
+      "news_count": 6,
+      "role": "|m915",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "300592.SZ",
+      "name": "华凯易佰",
+      "last": 19.03,
+      "open": 19.3,
+      "high": 19.34,
+      "low": 18.95,
+      "quote_pct": -1.4,
+      "volume": 6670.0,
+      "amount_wan": 1274.0,
+      "liangbi": null,
+      "turnover": 0.19,
+      "pe_ttm": 27.08,
+      "quote_time": "20260930093648",
+      "f2_tushare": {
+        "main_net_inflow": 394.08,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": 750.99,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": -1419627.0,
+        "main_net_ratio_em": -10.5,
+        "source": "eastmoney_curl"
+      },
+      "industry": "跨境电商",
+      "industry_pct": -0.89,
+      "news": [
+        {
+          "title": "华凯易佰：股东芒励多质押8.76%持股",
+          "date": "2026-09-28"
+        },
+        {
+          "title": "商贸零售行业资金流出榜：小商品城等7股净流出资金超3000万元",
+          "date": "2026-09-23"
+        },
+        {
+          "title": "华凯易佰：周新华、罗晔已合计减持398万股，持股降至6.85%",
+          "date": "2026-09-21"
+        },
+        {
+          "title": "商贸零售行业今日跌2.97%，主力资金净流出10.69亿元",
+          "date": "2026-09-15"
+        }
+      ],
+      "catalyst_note": "华凯易佰：股东芒励多质押8.76%持股(2026-09-28); 商贸零售行业资金流出榜：小商品城等7股净流出资金超3000万元(2026-09-23); 华凯易佰：周新华、罗晔已合计减持398万股，持股降至6.85%(2026-09-21)",
+      "news_count": 6,
+      "role": "|m915",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "603083.SH",
+      "name": "剑桥科技",
+      "last": 207.37,
+      "open": 205.0,
+      "high": 208.5,
+      "low": 201.19,
+      "quote_pct": 3.12,
+      "volume": 38817.0,
+      "amount_wan": 80061.0,
+      "liangbi": null,
+      "turnover": 1.41,
+      "pe_ttm": 162.36,
+      "quote_time": "20260930093649",
+      "f2_tushare": {
+        "main_net_inflow": 23240.87,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": 6523.43,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": 149801820.0,
+        "main_net_ratio_em": 18.37,
+        "source": "eastmoney_curl"
+      },
+      "industry": "通信设备",
+      "industry_pct": 0.34,
+      "news": [
+        {
+          "title": "深沪北百元股数量达218只，科创板股票占47.71%",
+          "date": "2026-09-29"
+        },
+        {
+          "title": "F5G概念下跌6.65%，主力资金净流出34股",
+          "date": "2026-09-28"
+        },
+        {
+          "title": "百元股数量达216只，一日减少17只",
+          "date": "2026-09-28"
+        },
+        {
+          "title": "共封装光学(CPO)概念下跌6.56%，主力资金净流出189股",
+          "date": "2026-09-28"
+        }
+      ],
+      "catalyst_note": "深沪北百元股数量达218只，科创板股票占47.71%(2026-09-29); F5G概念下跌6.65%，主力资金净流出34股(2026-09-28); 百元股数量达216只，一日减少17只(2026-09-28)",
+      "news_count": 6,
+      "role": "|m915",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "002436.SZ",
+      "name": "兴森科技",
+      "last": 41.62,
+      "open": 42.22,
+      "high": 42.48,
+      "low": 41.46,
+      "quote_pct": -1.37,
+      "volume": 111434.0,
+      "amount_wan": 46642.0,
+      "liangbi": null,
+      "turnover": 0.73,
+      "pe_ttm": 326.56,
+      "quote_time": "20260930093651",
+      "f2_tushare": {
+        "main_net_inflow": 32676.22,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": 2202.63,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": -14313753.0,
+        "main_net_ratio_em": -3.03,
+        "source": "eastmoney_curl"
+      },
+      "industry": "元件",
+      "industry_pct": -0.95,
+      "news": [
+        {
+          "title": "主力动向：9月29日特大单净流入108.25亿元",
+          "date": "2026-09-29"
+        },
+        {
+          "title": "电子行业资金流入榜：C鸿富诚等26股净流入资金超亿元",
+          "date": "2026-09-29"
+        },
+        {
+          "title": "封装基板站上AI算力风口，三星电机斥资6.78万亿韩元扩产",
+          "date": "2026-09-29"
+        },
+        {
+          "title": "共封装光学(CPO)概念下跌6.56%，主力资金净流出189股",
+          "date": "2026-09-28"
+        }
+      ],
+      "catalyst_note": "主力动向：9月29日特大单净流入108.25亿元(2026-09-29); 电子行业资金流入榜：C鸿富诚等26股净流入资金超亿元(2026-09-29); 封装基板站上AI算力风口，三星电机斥资6.78万亿韩元扩产(2026-09-29)",
+      "news_count": 6,
+      "role": "|m915",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "002237.SZ",
+      "name": "恒邦股份",
+      "last": 12.35,
+      "open": 12.4,
+      "high": 12.4,
+      "low": 12.3,
+      "quote_pct": 0.0,
+      "volume": 15353.0,
+      "amount_wan": 1897.0,
+      "liangbi": null,
+      "turnover": 0.13,
+      "pe_ttm": 17.77,
+      "quote_time": "20260930093651",
+      "f2_tushare": {
+        "main_net_inflow": 1563.5,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": -316.02,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": 2131673.0,
+        "main_net_ratio_em": 10.99,
+        "source": "eastmoney_curl"
+      },
+      "industry": "有色金属",
+      "industry_pct": -0.09,
+      "news": [
+        {
+          "title": "恒邦股份：恒邦集团拟减持公司不超1%股份",
+          "date": "2026-09-22"
+        },
+        {
+          "title": "9月22日晚间沪深上市公司重大事项公告最新快递",
+          "date": "2026-09-22"
+        },
+        {
+          "title": "金属铅概念下跌2.31%，主力资金净流出30股",
+          "date": "2026-09-17"
+        },
+        {
+          "title": "黄金概念下跌1.87%，主力资金净流出66股",
+          "date": "2026-09-17"
+        }
+      ],
+      "catalyst_note": "恒邦股份：恒邦集团拟减持公司不超1%股份(2026-09-22); 9月22日晚间沪深上市公司重大事项公告最新快递(2026-09-22); 金属铅概念下跌2.31%，主力资金净流出30股(2026-09-17)",
+      "news_count": 6,
+      "role": "|m915",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    },
+    {
+      "ts_code": "600345.SH",
+      "name": "长江通信",
+      "last": 47.49,
+      "open": 47.4,
+      "high": 47.87,
+      "low": 47.18,
+      "quote_pct": 0.91,
+      "volume": 6066.0,
+      "amount_wan": 2884.0,
+      "liangbi": null,
+      "turnover": 0.29,
+      "pe_ttm": 23.34,
+      "quote_time": "20260930093650",
+      "f2_tushare": {
+        "main_net_inflow": 368.97,
+        "main_net_inflow_date": "20260929",
+        "net_mf_amount": 971.42,
+        "source": "tushare_local_parquet"
+      },
+      "f2_eastmoney": {
+        "main_net_inflow_em": 3595918.0,
+        "main_net_ratio_em": 12.26,
+        "source": "eastmoney_curl"
+      },
+      "industry": "其他通信设备",
+      "industry_pct": 0.09,
+      "news": [
+        {
+          "title": "光纤概念下跌5.80%，33股主力资金净流出超亿元",
+          "date": "2026-09-28"
+        },
+        {
+          "title": "长江通信17.20%股份无偿划转进展：与烽火科技、芯珂技术签订协议书并获中国新科集团批复",
+          "date": "2026-09-23"
+        },
+        {
+          "title": "通信行业资金流入榜：光迅科技、永鼎股份等净流入资金居前",
+          "date": "2026-09-16"
+        },
+        {
+          "title": "光纤概念涨3.68%，主力资金净流入67股",
+          "date": "2026-09-16"
+        }
+      ],
+      "catalyst_note": "光纤概念下跌5.80%，33股主力资金净流出超亿元(2026-09-28); 长江通信17.20%股份无偿划转进展：与烽火科技、芯珂技术签订协议书并获中国新科集团批复(2026-09-23); 通信行业资金流入榜：光迅科技、永鼎股份等净流入资金居前(2026-09-16)",
+      "news_count": 6,
+      "role": "|m915",
+      "source": "tencent+eastmoney_curl+tushare_local"
+    }
+  ],
+  "errors": [
+    "em_ext 688155.SH: Remote end closed connection without response",
+    "em_ext 002759.SZ: Remote end closed connection without response",
+    "em_ext 688612.SH: Remote end closed connection without response",
+    "em_ext 600076.SH: Remote end closed connection without response",
+    "em_ext 603033.SH: Remote end closed connection without response",
+    "em_ext 920237.BJ: Remote end closed connection without response",
+    "em_ext 688093.SH: Remote end closed connection without response",
+    "em_ext 603021.SH: Remote end closed connection without response",
+    "em_ext 603378.SH: Remote end closed connection without response",
+    "em_ext 002510.SZ: Remote end closed connection without response",
+    "em_ext 605098.SH: Remote end closed connection without response",
+    "em_ext 000607.SZ: Remote end closed connection without response",
+    "em_ext 600547.SH: Remote end closed connection without response",
+    "em_ext 603353.SH: Remote end closed connection without response",
+    "em_ext 000949.SZ: Remote end closed connection without response",
+    "em_ext 003013.SZ: Remote end closed connection without response",
+    "em_ext 600988.SH: Remote end closed connection without response",
+    "em_ext 300592.SZ: Remote end closed connection without response",
+    "em_ext 603083.SH: Remote end closed connection without response",
+    "em_ext 002436.SZ: Remote end closed connection without response",
+    "em_ext 002237.SZ: Remote end closed connection without response",
+    "em_ext 600345.SH: Remote end closed connection without response"
+  ]
+}

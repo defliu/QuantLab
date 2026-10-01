@@ -1,0 +1,54 @@
+{
+  "trade_log_rows_total": 121,
+  "today_trade_log_rows": 0,
+  "today_trade_log_detail": [],
+  "strategy_codes_ever_bought": [
+    "000737.SZ",
+    "000960.SZ",
+    "001309.SZ",
+    "001378.SZ",
+    "002190.SZ",
+    "002237.SZ",
+    "002912.SZ",
+    "003005.SZ",
+    "300413.SZ",
+    "300456.SZ",
+    "300684.SZ",
+    "300916.SZ",
+    "600267.SH",
+    "601058.SH",
+    "601579.SH",
+    "601865.SH",
+    "601999.SH",
+    "603049.SH",
+    "603237.SH"
+  ],
+  "position_source": "QMT",
+  "positions_raw_qmt_count": 2,
+  "hold_days_threshold": 5,
+  "positions": [
+    {
+      "code": "603049.SH",
+      "vol": 900,
+      "sellable": 900,
+      "cost": 44.47645555555555,
+      "last_buy": "2026-09-16",
+      "held_trading_days": 9,
+      "mature": true
+    },
+    {
+      "code": "603237.SH",
+      "vol": 2800,
+      "sellable": 2800,
+      "cost": 14.612124999999999,
+      "last_buy": "2026-09-17",
+      "held_trading_days": 8,
+      "mature": true
+    }
+  ],
+  "mature_count": 2,
+  "immature_count": 0,
+  "order_query_connect": 0,
+  "today_rebalance_orders": [],
+  "today_rebalance_order_count": 0
+}

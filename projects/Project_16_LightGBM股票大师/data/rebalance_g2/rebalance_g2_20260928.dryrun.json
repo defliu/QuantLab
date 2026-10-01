@@ -1,0 +1,80 @@
+{
+  "date": "20260928",
+  "account_id": "70180771",
+  "capital": 95993.55,
+  "pool": [
+    {
+      "code": "603272.SH",
+      "total": 65.5
+    },
+    {
+      "code": "003029.SZ",
+      "total": 62.5
+    },
+    {
+      "code": "000610.SZ",
+      "total": 61.5
+    },
+    {
+      "code": "688093.SH",
+      "total": 61.5
+    },
+    {
+      "code": "600691.SH",
+      "total": 61.5
+    },
+    {
+      "code": "600180.SH",
+      "total": 61.5
+    },
+    {
+      "code": "603377.SH",
+      "total": 60.5
+    }
+  ],
+  "ledger": {
+    "002510.SZ": {
+      "vol": 5300,
+      "cost": 5.835,
+      "src": "cfg"
+    },
+    "605098.SH": {
+      "vol": 500,
+      "cost": 54.8899,
+      "src": "cfg"
+    }
+  },
+  "note": "g2 候选池 7 只（红线 60）",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\g2\\20260928_g2_top10.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20260928",
+  "candidate_rows": 7,
+  "candidate_rows_raw": 7,
+  "candidate_sha256": "5f4a8bc8abd2985f17c62e64fcba3ea84444152bfa4147fd364d0533814dbc8e",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\rebalance_g2\\candidates_asof\\20260928_5f4a8bc8_20260928_g2_top10.csv",
+  "hold_days": 15,
+  "hold_dates": {
+    "002510.SZ": "20260922",
+    "300475.SZ": "20260904",
+    "605098.SH": "20260916"
+  },
+  "sells": [],
+  "buys": [],
+  "skips": [
+    {
+      "code": "002510.SZ",
+      "vol": 5300,
+      "reason": "持有未满15日(20260922起,已3日,日历OK)"
+    },
+    {
+      "code": "605098.SH",
+      "vol": 500,
+      "reason": "持有未满15日(20260916起,已7日,日历OK)"
+    }
+  ],
+  "hs300_pct": -2.2162,
+  "tier": 0,
+  "deploy_pct": 0.0,
+  "written": false,
+  "orders": []
+}

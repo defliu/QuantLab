@@ -1,0 +1,79 @@
+{
+  "date": "20260929",
+  "executed_live": false,
+  "live_invoked": true,
+  "no_order_reason": "redline_empty_target_early_return",
+  "executed_at": "",
+  "tier": 2,
+  "eff_top": 5,
+  "market_tier": {
+    "hs300_pct": -0.1861,
+    "tier": 2,
+    "note": "正常（满仓）",
+    "source": "tencent_qt.gtimg.cn",
+    "script": "market_tier.py --json"
+  },
+  "redline": 58.0,
+  "candidates_evaluated": 10,
+  "candidates_over_redline": 0,
+  "max_score": 56.0,
+  "max_score_code": "600988.SH",
+  "max_score_name": "赤峰黄金",
+  "target": [],
+  "strategy_capital": 89247.77,
+  "target_value_each": 0,
+  "sell": [],
+  "buy": [],
+  "trim": [],
+  "hold": [],
+  "locked": [],
+  "guard_note": [
+    "live 命令已按流程调用一次，脚本在读持仓前 return，未连接 miniQMT、未构造任何委托",
+    "只读反查：今日 traework_rebalance 委托 0 笔；成交记录今日新增 0 行",
+    "到期卖出未执行：脚本 early return 发生在成熟度判定之前（缺陷，非本次可自行处置）"
+  ],
+  "orders_submitted": 0,
+  "order_ids": [],
+  "position_source": "QMT",
+  "positions_at_run": [
+    {
+      "code": "603049.SH",
+      "vol": 900,
+      "sellable": 900,
+      "cost": 44.47645555555555,
+      "last_buy": "2026-09-16",
+      "held_trading_days": 9,
+      "mature": true
+    },
+    {
+      "code": "603237.SH",
+      "vol": 2800,
+      "sellable": 2800,
+      "cost": 14.612124999999999,
+      "last_buy": "2026-09-17",
+      "held_trading_days": 8,
+      "mature": true
+    }
+  ],
+  "mature_not_sold": [
+    {
+      "code": "603049.SH",
+      "vol": 900,
+      "sellable": 900,
+      "last_buy": "2026-09-16",
+      "held_trading_days": 9
+    },
+    {
+      "code": "603237.SH",
+      "vol": 2800,
+      "sellable": 2800,
+      "last_buy": "2026-09-17",
+      "held_trading_days": 8
+    }
+  ],
+  "hold_days_threshold": 5,
+  "data_date": "20260928",
+  "f2_primary_source": "tushare_T-1_local(moneyflow.parquet)",
+  "selection_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20260929_selection_full.csv",
+  "note": "当日清单过红线(>58)的票为 0，本日不换仓（宁缺毋滥）。T=2 满仓档但无合格标的，故 0 买 0 卖。遗留：2 只策略持仓已满 HOLD_DAYS=5 且不在今日清单内，按到期制本应卖出，但被 early return 抑制，需人工确认处置。"
+}

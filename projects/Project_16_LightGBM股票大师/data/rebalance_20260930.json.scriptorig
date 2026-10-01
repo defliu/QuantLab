@@ -1,0 +1,122 @@
+{
+  "date": "20260930",
+  "executed_live": true,
+  "executed_at": "2026-09-30 10:13:54",
+  "tier": 2,
+  "eff_top": 5,
+  "target": [
+    {
+      "code": "000920.SZ",
+      "name": "沃顿科技",
+      "total": 63.0,
+      "prob": 0.543
+    },
+    {
+      "code": "603882.SH",
+      "name": "金域医学",
+      "total": 63.0,
+      "prob": 0.5306
+    },
+    {
+      "code": "600547.SH",
+      "name": "山东黄金",
+      "total": 62.5,
+      "prob": 0.584
+    },
+    {
+      "code": "000155.SZ",
+      "name": "川能动力",
+      "total": 62.5,
+      "prob": 0.5765
+    },
+    {
+      "code": "300531.SZ",
+      "name": "优博讯",
+      "total": 61.0,
+      "prob": 0.5468
+    }
+  ],
+  "strategy_capital": 88578.77,
+  "target_value_each": 16829.97,
+  "sell": [
+    {
+      "code": "603049.SH",
+      "cost": 44.47645555555555,
+      "vol": 900,
+      "reason": "MATURE"
+    },
+    {
+      "code": "603237.SH",
+      "cost": 14.612124999999999,
+      "vol": 2800,
+      "reason": "MATURE"
+    }
+  ],
+  "buy": [
+    {
+      "code": "000920.SZ",
+      "vol": 1300,
+      "held_vol": 0,
+      "held_value": 0.0,
+      "price": 12.63,
+      "total": 63.0,
+      "action": "新晋"
+    },
+    {
+      "code": "603882.SH",
+      "vol": 500,
+      "held_vol": 0,
+      "held_value": 0.0,
+      "price": 29.21,
+      "total": 63.0,
+      "action": "新晋"
+    },
+    {
+      "code": "600547.SH",
+      "vol": 600,
+      "held_vol": 0,
+      "held_value": 0.0,
+      "price": 26.87,
+      "total": 62.5,
+      "action": "新晋"
+    },
+    {
+      "code": "000155.SZ",
+      "vol": 1500,
+      "held_vol": 0,
+      "held_value": 0.0,
+      "price": 10.88,
+      "total": 62.5,
+      "action": "新晋"
+    },
+    {
+      "code": "300531.SZ",
+      "vol": 1100,
+      "held_vol": 0,
+      "held_value": 0.0,
+      "price": 15.22,
+      "total": 61.0,
+      "action": "新晋"
+    }
+  ],
+  "trim": [],
+  "hold": [],
+  "locked": [],
+  "guard_note": [
+    "卖603049.SH:FILLED(重试1次)",
+    "卖603237.SH:CANCELED_TIMEOUT(重试10次)",
+    "买000920.SZ:FILLED(重试1次)",
+    "买603882.SH:FILLED(重试1次)",
+    "买600547.SH:FILLED(重试1次)",
+    "买000155.SZ:FILLED(重试3次)",
+    "买300531.SZ:FILLED(重试1次)"
+  ],
+  "selection_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20260930_selection_full.csv",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20260930_selection_full.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20260930",
+  "candidate_rows": 7,
+  "candidate_rows_raw": 10,
+  "candidate_sha256": "dfb9e96c8b0ea2ed5d47aa56060231c72e98457744446b2f119b2475949272bc",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\candidates_asof\\20260930_dfb9e96c_20260930_selection_full.csv"
+}

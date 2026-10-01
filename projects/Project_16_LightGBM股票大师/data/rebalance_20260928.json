@@ -1,0 +1,1 @@
+{"date": "20260928", "executed_live": true, "executed_at": "2026-09-28 09:45:00", "tier": 1, "eff_top": 5, "target": [], "strategy_capital": 89068.77, "target_value_each": 0, "sell": [], "buy": [], "trim": [], "hold": [], "locked": [], "guard_note": [], "note": "当日清单过红线(>58)的票为 0，本日不换仓（宁缺毋滥）。F2主源=Tushare T-1滞后>2天，F2/F3/F5数据缺失导致评分不足。"}

@@ -1,0 +1,108 @@
+{
+  "date": "20260930",
+  "account_id": "70180771",
+  "capital": 97758.5,
+  "pool": [
+    {
+      "code": "688612.SH",
+      "total": 64.0
+    },
+    {
+      "code": "920237.BJ",
+      "total": 62.5
+    },
+    {
+      "code": "688639.SH",
+      "total": 61.5
+    },
+    {
+      "code": "603378.SH",
+      "total": 60.5
+    },
+    {
+      "code": "002790.SZ",
+      "total": 60.5
+    },
+    {
+      "code": "603021.SH",
+      "total": 60.5
+    },
+    {
+      "code": "002181.SZ",
+      "total": 60.5
+    }
+  ],
+  "ledger": {
+    "000610.SZ": {
+      "vol": 2400,
+      "cost": 7.4383,
+      "src": "cfg"
+    },
+    "002841.SZ": {
+      "vol": 400,
+      "cost": 43.7394,
+      "src": "cfg"
+    },
+    "600691.SH": {
+      "vol": 6700,
+      "cost": 2.693,
+      "src": "cfg"
+    },
+    "688450.SH": {
+      "vol": 500,
+      "cost": 33.4354,
+      "src": "cfg"
+    },
+    "688651.SH": {
+      "vol": 700,
+      "cost": 24.9086,
+      "src": "cfg"
+    }
+  },
+  "note": "融合候选池 7 只（红线 60）",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\g2_ens\\20260930_g2_top10.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20260930",
+  "candidate_rows": 7,
+  "candidate_rows_raw": 7,
+  "candidate_sha256": "c15ec9d4b5336983b66f08754a6c3095cff49b0600180d9deca08f87f85d1934",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\rebalance_g2_ens\\candidates_asof\\20260930_c15ec9d4_20260930_g2_top10.csv",
+  "hold_days": 10,
+  "hold_dates": {
+    "688450.SH": "20260922",
+    "688651.SH": "20260922",
+    "000610.SZ": "20260928",
+    "600691.SH": "20260928",
+    "002841.SZ": "20260929"
+  },
+  "sells": [],
+  "buys": [],
+  "skips": [
+    {
+      "code": "000610.SZ",
+      "vol": 2400,
+      "reason": "持有未满10日(20260928起,已2日,日历OK)"
+    },
+    {
+      "code": "002841.SZ",
+      "vol": 400,
+      "reason": "持有未满10日(20260929起,已1日,日历OK)"
+    },
+    {
+      "code": "600691.SH",
+      "vol": 6700,
+      "reason": "持有未满10日(20260928起,已2日,日历OK)"
+    },
+    {
+      "code": "688450.SH",
+      "vol": 500,
+      "reason": "持有未满10日(20260922起,已5日,日历OK)"
+    },
+    {
+      "code": "688651.SH",
+      "vol": 700,
+      "reason": "持有未满10日(20260922起,已5日,日历OK)"
+    }
+  ],
+  "orders": []
+}

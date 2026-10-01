@@ -1,0 +1,98 @@
+{
+  "date": "20260930",
+  "account_id": "70180771",
+  "capital": 97819.37,
+  "pool": [
+    {
+      "code": "688155.SH",
+      "total": 74.5
+    },
+    {
+      "code": "002759.SZ",
+      "total": 72.5
+    },
+    {
+      "code": "688612.SH",
+      "total": 64.0
+    },
+    {
+      "code": "600076.SH",
+      "total": 63.5
+    },
+    {
+      "code": "603033.SH",
+      "total": 63.5
+    },
+    {
+      "code": "920237.BJ",
+      "total": 62.5
+    },
+    {
+      "code": "688093.SH",
+      "total": 61.5
+    },
+    {
+      "code": "603021.SH",
+      "total": 60.5
+    },
+    {
+      "code": "603378.SH",
+      "total": 60.5
+    }
+  ],
+  "ledger": {
+    "000607.SZ": {
+      "vol": 7700,
+      "cost": 3.9034,
+      "src": "cfg"
+    },
+    "002510.SZ": {
+      "vol": 5300,
+      "cost": 5.835,
+      "src": "cfg"
+    },
+    "605098.SH": {
+      "vol": 500,
+      "cost": 54.8899,
+      "src": "cfg"
+    }
+  },
+  "note": "g2 候选池 9 只（红线 60）",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\g2\\20260930_g2_top10.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20260930",
+  "candidate_rows": 9,
+  "candidate_rows_raw": 9,
+  "candidate_sha256": "abb89159de7576ab7d10cf051e3828f445053a96a7b411900709668766eeb0a9",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\rebalance_g2\\candidates_asof\\20260930_abb89159_20260930_g2_top10.csv",
+  "hold_days": 15,
+  "hold_dates": {
+    "002510.SZ": "20260922",
+    "605098.SH": "20260916",
+    "000607.SZ": "20260929"
+  },
+  "sells": [],
+  "buys": [],
+  "skips": [
+    {
+      "code": "000607.SZ",
+      "vol": 7700,
+      "reason": "持有未满15日(20260929起,已1日,日历OK)"
+    },
+    {
+      "code": "002510.SZ",
+      "vol": 5300,
+      "reason": "持有未满15日(20260922起,已5日,日历OK)"
+    },
+    {
+      "code": "605098.SH",
+      "vol": 500,
+      "reason": "持有未满15日(20260916起,已9日,日历OK)"
+    }
+  ],
+  "hs300_pct": 0.1767,
+  "tier": 2,
+  "deploy_pct": 0.95,
+  "written": false,
+  "orders": []
+}

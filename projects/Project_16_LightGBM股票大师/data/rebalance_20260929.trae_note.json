@@ -1,0 +1,63 @@
+{
+  "_note_type": "trae_note",
+  "_schema": "v1 (2026-09-29 随开盘复核任务 15868a74 step 4 改造新增)",
+  "_purpose": "本文件是会话级备注，与 plan json（rebalance_<date>.json）并存互不影响。按新 prompt：agent 严禁写入 plan json，备注一律写这里。",
+  "date": "2026-09-29",
+  "strategy": "Project_16 V1.3（账号 67014907）",
+  "market_tier": {
+    "tier": 2,
+    "eff_top": 5,
+    "hs300_pct": -0.19,
+    "source": "market_tier.py（确定性脚本）"
+  },
+  "execution_summary": {
+    "executed_live": false,
+    "live_invoked": true,
+    "no_order_reason": "redline_empty_target_early_return",
+    "redline_score": 58,
+    "orders_submitted": 0,
+    "orders_filled": 0,
+    "capital_pool_untouched": 89247.77,
+    "capital_note": "未使用账户全量资金；账号 67014907"
+  },
+  "buy_block_reason": {
+    "summary": "10 只候选总评分均 < 58 红线，最高 600988.SH 赤峰黄金 56.0 分（差 2.0 分）",
+    "top3": [
+      {"rank": 1, "code": "600988.SH", "name": "赤峰黄金", "total": 56.0, "F2": 5, "F3": 5, "F5": 2},
+      {"rank": 2, "code": "003013.SZ", "name": "地铁设计", "total": 52.0, "F2": 2, "F3": 3, "F5": 2},
+      {"rank": 3, "code": "600345.SH", "name": "长江通信", "total": 50.5, "F2": 2, "F3": 5, "F5": 2}
+    ],
+    "f5_degradation": "F5 板块交叉验证当次不可用（悟道盘中受限），10 只候选均带此警示标记"
+  },
+
+  "_P0_SELL_RISK_BLOCKED": {
+    "severity": "P0",
+    "title": "买入拦截 early return 短路了到期卖出 —— 卖出风控被抑制",
+    "detail": "rebalance_daily.py 中买入侧的拦截 return 发生在成熟度判定之前，导致无候选达标时到期卖出分支根本走不到。",
+    "affected_positions": [
+      {"code": "603049.SH", "vol": 900, "sellable": 900, "last_buy": "2026-09-16", "held_trading_days": 9, "mature": true, "expected_reason": "MATURE", "actually_sold": false},
+      {"code": "603237.SH", "vol": 2800, "sellable": 2800, "last_buy": "2026-09-17", "held_trading_days": 8, "mature": true, "expected_reason": "MATURE", "actually_sold": false}
+    ],
+    "why_p0": "违反 AGENTS.md 红线『卖出风控优先级高于买入优化』与『不得绕过风控底线』：HOLD_DAYS=5 到期票被无限期滞留，且每多拖一天风险敞口累积。",
+    "status": "OPEN — 待人工决策 + 待修 rebalance_daily.py 判定顺序",
+    "evidence": "data/_summary_20260929.txt L12-15；data/readonly_audit_20260929.json（mature_count=2, today_rebalance_order_count=0）"
+  },
+
+  "_KNOWN_CORRUPTION": {
+    "affected_file": "data/rebalance_20260929.json",
+    "corrupted_at": "2026-09-29 10:10:05",
+    "corrupted_by": "TRAE agent 会话收尾（按旧 prompt step4『保存换仓结果到 .md/.json』自行补写）",
+    "symptom": "缺 7 个 candidate_* 溯源字段；含全项目无脚本会写的键 live_invoked / positions_at_run / f2_primary_source",
+    "grep_proof": "rebalance_daily.py L626-651 的 plan dict 不含 live_invoked/positions_at_run/f2_primary_source；全项目 *.py 零命中",
+    "backup_invalid": "data/rebalance_20260929.de_bak.json 与 plan json 内容完全相同（identical=True），备份发生在污染之后，不构成干净副本 —— 09-29 无可恢复的 plan 版本",
+    "audit_bottom_line": "候选审计底线已由 data/candidates_asof/<date>_<sha8>_selection_full.csv 留档兜住；plan 级字段缺失记录在案",
+    "action_taken": "按 TRAE任务修改说明 §三-2 要求，不修复、不改写当日 json，保持现状；仅本文件留痕",
+    "mitigation": "任务 15868a74 step 4 已改为『只读，禁止写』+ step 4b 溯源字段核验（缺失推 warn 告警）"
+  },
+
+  "source_attribution": {
+    "F2_primary": "Tushare T-1 本地 parquet（D:/astock/moneyflow/moneyflow.parquet，刷新至 2026-09-28，零 skew）",
+    "selection_file": "data/selections/20260929_selection_full.csv",
+    "alert_card_pushed": "2026-09-29 10:12"
+  }
+}
