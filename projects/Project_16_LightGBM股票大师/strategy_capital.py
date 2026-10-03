@@ -49,6 +49,14 @@ def calc_realized():
     买入按含费成本入账（成交额 + 买入手续费），卖出按净回笼（成交额 - 卖出手续费），
     已实现 = Σ 卖出净回笼 - Σ 配对买入含费成本。结算口径统一用实盘费率（qmt_config）。
     排除 EXCLUDE_CODES（超买/手工标的）。
+
+    零价 SELL（price=0，成交价未回填）语义（T-20261002-001 项2 修复）：
+      - **消耗** FIFO 成本层：成交是真实的，持仓必须扣减。历史实现整条 continue，
+        导致后续有价 SELL 错配更早那批买入成本，把 A 批成本记到 B 批卖出上；
+        且与同文件 _fifo_positions_from_log()（浮盈成本，已正确消耗）口径相反，
+        导致「已实现」与「浮盈」用了两套成本基准，资金池失真。
+      - **不计算**该笔已实现盈亏：成交价未知，若照算会把整批成本一次性写成巨额亏损。
+      - 下游须把这类记录落 qmt_pending_fills.jsonl 待回补（见 order_guard）。
     """
     q = defaultdict(deque)  # code -> deque[(vol, cost_per_share含费)]
     realized = 0.0
@@ -67,14 +75,15 @@ def calc_realized():
             amt = price * vol
             q[code].append((vol, (amt + _buy_fee(amt, code)) / vol))
         elif side == "SELL":
-            if price <= 0:  # 市价清仓记录价格可能为 0，跳过避免污染盈亏
-                continue
             sell_vol = vol
             while sell_vol > 0 and q[code]:
                 v, cost_per = q[code][0]
                 take = min(v, sell_vol)
-                sell_amt = price * take
-                realized += (sell_amt - _sell_fee(sell_amt, code)) - cost_per * take
+                # price=0 成交价未回填：不算该笔盈亏，但必须扣减 FIFO 成本层
+                # （与 reconcile_trades.derive_positions / _fifo_positions_from_log 同口径）
+                if price > 0:
+                    sell_amt = price * take
+                    realized += (sell_amt - _sell_fee(sell_amt, code)) - cost_per * take
                 sell_vol -= take
                 q[code][0] = (v - take, cost_per)
                 if q[code][0][0] <= 0:

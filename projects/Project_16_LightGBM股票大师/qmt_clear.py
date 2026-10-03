@@ -94,6 +94,7 @@ def main():
     import order_guard
     log_rows = []
     guard_note = []
+    unresolved = []   # T-20261002-001：成交价未能确认的记录（需人工补价，禁止静默）
     for s in to_sell:
         price = 0.0
         try:
@@ -112,10 +113,25 @@ def main():
         guard_note.append(f"{s['code']}:{r['action']}")
         # T-20260930-001 修复：记账门槛只看实际成交量（ok=False 不代表零成交）
         if r["traded_vol"] > 0:
+            # T-20261002-001 修复：记账价用**真实成交均价**（order_guard 从成交明细回填），
+            # 取不到才回退本轮参考价。历史根因：本行原写局部 price，取价失败即写 0.0，
+            # 63 条零价 SELL 直接让 FIFO 已实现盈亏永久缺口。
+            fill_px, px_src = order_guard.resolve_fill_price(r, price, s["code"])
             log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), s["code"], "SELL",
-                             r["traded_vol"], price, 0.0, r["order_id"]])
+                             r["traded_vol"], fill_px, 0.0, r["order_id"]])
+            # T-20261002-001：只有「非真实成交均价」才算异常需留痕。
+            # fill_avg 是权威口径，不该混进异常列表造成噪声。
+            if px_src != "fill_avg":
+                order_guard.record_pending_fill(
+                    s["code"], "SELL", r["traded_vol"], r["order_id"], price,
+                    note=f"qmt_clear:{px_src}", order_ids=r.get("order_ids"))
+                unresolved.append(f"{s['code']}({r['traded_vol']}股/{px_src})")
     if guard_note:
         print("  [委托守护] " + " | ".join(guard_note))
+    if unresolved:
+        print("  [!! 成交价未确认] 以下记录已成交但成交价非真实成交均价"
+              "（已落待补价队列 data/qmt_pending_fills.jsonl，需人工核对成交回报后补价；"
+              "0 价仅作待补标记，不得据此结算盈亏）：" + " | ".join(unresolved))
 
     print("[4/4] 记录清仓委托 ...")
     if log_rows:

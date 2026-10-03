@@ -13,6 +13,7 @@
 import argparse
 import json
 import os
+import re
 import sys
 import time
 
@@ -24,7 +25,25 @@ import data_config as DC
 import g2_config as G
 from qmt_bridge_client import read_heart, read_positions
 
-EXPECTED_BUILD_TAG = "20260902-161814"
+def _read_local_build_tag():
+    """从本地 build 产物读 BUILD_TAG（唯一权威期望值）。
+
+    历史缺陷：此处曾硬编码 "20260902-161814"，每次 G2 桥重建（build.py 自动盖时间戳）
+    都会让盘前核对永久误报「未切换新版」，把人工核对信号变成噪声。改为动态读取后
+    「本地构建版本 = QMT 实际运行版本」的比对仍然成立，且不再随重建漂移。
+    读不到（产物缺失/被删）时返回 None，由 check_heartbeat 显式告警而非静默通过。
+    """
+    build_py = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            "build", "strategy_p16_g2_bridge.py")
+    if not os.path.exists(build_py):
+        return None
+    try:
+        # build 产物是 GBK 编码单文件（QMT 红线），不能按 utf-8 读
+        raw = open(build_py, "rb").read().decode("gbk", errors="ignore")
+    except Exception:
+        return None
+    m = re.search(r'BUILD_TAG\s*=\s*["\']([^"\']+)["\']', raw)
+    return m.group(1) if m else None
 
 INCR_PATH = os.path.join(DC.LIVE_DIR, "incremental_daily.parquet")
 SNAP_PATH = os.path.join(DC.LIVE_DIR, "g2_latest_features.parquet")
@@ -60,10 +79,15 @@ def check_heartbeat(date):
     if not heart:
         print("  !! 心跳文件缺失/为空，桥可能未运行")
         return False
+    expected = _read_local_build_tag()
+    if not expected:
+        print("  !! 无法读取本地 G2 build 产物 BUILD_TAG（build/strategy_p16_g2_bridge.py 缺失或未含 tag）")
+        print("     无法核对部署版本，请先构建 G2 桥产物")
+        return False
     bt = heart.get("build_tag", "")
-    ok = (bt == EXPECTED_BUILD_TAG)
+    ok = (bt == expected)
     print("  心跳文件=%s  date=%s last_heartbeat=%s" % (fname, heart.get("date", ""), heart.get("last_heartbeat", "")))
-    print("  build_tag=%s  期望=%s  %s" % (bt, EXPECTED_BUILD_TAG, "OK" if ok else "!! 未切换新版，P0 修复未生效"))
+    print("  build_tag=%s  期望=%s  %s" % (bt, expected, "OK" if ok else "!! 未切换新版，P0 修复未生效"))
     print("  pending=%d last_cmd_seq=%d" % (heart.get("pending_count", 0), heart.get("last_cmd_seq_processed", 0)))
     return ok
 
@@ -189,8 +213,12 @@ def main():
     check_overshoot(date)
     r4 = check_data_freshness(date)
     print("=" * 60)
-    print("结论: %s" % ("ALL-CHECKED" if (r1 and r2 and r4) else "存在未就绪项，处理后再 rebalance --live"))
-    return 0
+    all_ok = bool(r1 and r2 and r4)
+    print("结论: %s" % ("ALL-CHECKED" if all_ok else "存在未就绪项，处理后再 rebalance --live"))
+    # T-20261003-001 修复（DE 审计 P2）：退出码对齐检查结果。原先恒 return 0，
+    # 依赖退出码判断的调度层/人工无法感知「存在未就绪项」。0=就绪，1=存在未就绪项。
+    # check_overshoot 为超额持仓提醒（advisory），不阻断，维持原 r1/r2/r4 判定口径。
+    return 0 if all_ok else 1
 
 
 if __name__ == "__main__":

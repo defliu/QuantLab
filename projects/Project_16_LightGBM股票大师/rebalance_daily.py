@@ -25,7 +25,8 @@
   python rebalance_daily.py --date 20260821    # 指定日期
   python rebalance_daily.py --live             # 真实换仓（先卖后买，慎用）
 输出：
-  data/rebalance_<date>.md / .json（换仓计划或执行结果）
+  data/rebalance_<date>.json          （--live 真实换仓执行结果，含 executed_live 幂等标记）
+  data/rebalance_<date>.dryrun.json   （dry-run 计划，防覆盖当日 live 执行记录）
 """
 import argparse
 import csv
@@ -299,6 +300,21 @@ def _buy(trader, account, code, vol, price):
                               "traework_rebalance", "planA_new_top")
 
 
+def _mark_unresolved_price(guard, result, fill_px, px_src, ref_price, side, code, sink):
+    """成交价留痕判定（T-20261002-001），本文件三处下单点共用。
+
+    只有「记账价不是真实成交均价」（px_src != "fill_avg"）才算异常：落待补价队列 + 进告警列表。
+    成交是既成事实，成交量照记；成交价缺失则 0 仅为待补标记，下游不得据此结算盈亏。
+    """
+    if px_src == "fill_avg":
+        return
+    guard.record_pending_fill(code, side, int(result.get("traded_vol", 0) or 0),
+                              result.get("order_id", 0), ref_price,
+                              note=f"rebalance_daily:{px_src}",
+                              order_ids=result.get("order_ids"))
+    sink.append(f"{code}({result.get('traded_vol', 0)}股/{px_src}@{fill_px})")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default=today_str(), help="清单日期 YYYYMMDD（默认今天）")
@@ -321,30 +337,50 @@ def main():
     # ---- 候选溯源（2026-09-28 缺陷B修复①+②）：单次读盘 + 读取点即时 SHA256 + asof 留档 ----
     # 保证 sha/内容/留档与实际解析三者同源（R2），事后清单被覆写也能复现实盘输入。
     cand_meta = _candidate_meta(args.date, sel_path, "exact")
+    _sel_text = None
     if not os.path.exists(sel_path):
         cand_meta["candidate_loader"] = "none"
         print(f"!! 找不到当日清单: {sel_path}\n   先运行 review_full 生成完整版清单")
-        return
-    try:
-        with open(sel_path, "rb") as f:
-            _raw_sel = f.read()
-        cand_meta["candidate_sha256"] = hashlib.sha256(_raw_sel).hexdigest()
-        _archive_candidate_asof(args.date, cand_meta, _raw_sel)
-        _sel_text = _raw_sel.decode("utf-8-sig")
-        cand_meta["candidate_rows_raw"] = sum(1 for _ in csv.DictReader(io.StringIO(_sel_text)))
-    except Exception as e:
-        cand_meta["candidate_loader"] = "read_error"
-        print(f"!! 当日清单读取失败: {e}")
-        return
-    target = load_selection(sel_path, eff_top, text=_sel_text, meta=cand_meta)
+    else:
+        try:
+            with open(sel_path, "rb") as f:
+                _raw_sel = f.read()
+            cand_meta["candidate_sha256"] = hashlib.sha256(_raw_sel).hexdigest()
+            _archive_candidate_asof(args.date, cand_meta, _raw_sel)
+            _sel_text = _raw_sel.decode("utf-8-sig")
+            cand_meta["candidate_rows_raw"] = sum(1 for _ in csv.DictReader(io.StringIO(_sel_text)))
+        except Exception as e:
+            cand_meta["candidate_loader"] = "read_error"
+            _sel_text = None
+            print(f"!! 当日清单读取失败: {e}")
+    if _sel_text is None:
+        # T-20261003-001 修复（DE 审计 P1）：清单缺失/读取失败不再整段 return。
+        # 旧写法的 early return 压在「持仓读取→成熟度→sell_plan」之上，MATURE/T0
+        # 卖出被整体抑制，违反 AGENTS 硬红线「卖出风控优先级高于买入优化」——与
+        # T-20261002-001（红线空仓只禁买）同语义：无清单 → target 空 → 下方
+        # `if not target:` 走 buy_allowed=False（T≥1 不买）或 T=0 清仓分支，卖出照常。
+        cand_meta["candidate_rows_filtered"] = 0   # load_selection 未跑，防 plan 落盘 KeyError
+        target = []
+    else:
+        target = load_selection(sel_path, eff_top, text=_sel_text, meta=cand_meta)
+    # T-20261002-001 修复（AGENTS 硬红线「卖出风控优先级高于买入优化」）：
+    # 买入拦截（红线空仓）只应禁止【买入】，绝不能短路【卖出】。
+    # 旧写法在此直接 return → 无候选达标时 sell_plan 永不生成，到期持仓被无限期滞留。
+    # 实测事故 2026-09-29：10 只候选全未过 58 红线 → 买入侧 return →
+    #   603049.SH（超期 9 日）、603237.SH（超期 8 日）本应按 MATURE 卖出却零委托。
+    # 正确语义：buy_allowed=False 时继续往下走持仓/成熟度判定，卖出照常执行，
+    #   仅把买入条数压到 0（见下方 buy_allowed 闸门）。
+    buy_allowed = True
     if not target:
         if args.top == 0:
             # T-20260904-003 修复：T=0（沪深300≤-1.5% 大盘破位）→ 清仓信号，
             # 全部策略持仓卖出 + 0 条买入（原逻辑 target 空直接 return → 破位日不清仓）。
             print("!! T=0 大盘破位：清仓信号，全部策略持仓卖出（T-20260904-003 修复）")
         else:
-            print(f"!! 当日清单过红线(>{REDLINE:.0f})的票为 0，本日不换仓（宁缺毋滥）")
-            return
+            # T-20261002-001：不再 return，改置 buy_allowed=False，卖出通道保留。
+            buy_allowed = False
+            print(f"!! 当日清单过红线(>{REDLINE:.0f})的票为 0：本日【不买入】（宁缺毋滥），"
+                  f"但卖出风控照常执行（T-20261002-001）")
 
     # 策略持仓定义：只认成交记录里 BUY 过的代码（账户历史持仓不归本脚本管，由清仓任务负责）
     strategy_codes = set()
@@ -458,6 +494,14 @@ def main():
     _new_buys.sort(key=lambda b: -(b.get("total") or 0))
     exec_buys = _topups + _new_buys[:slots]
 
+    # ---- T-20261002-001 修复：买入拦截闸（红线空仓只禁买，不禁卖）----
+    # 与下方降级闸同语义范式：把买入条数压到 0，卖出通道（sell_plan / trim_orders）完全不动。
+    # 放在 slots 计算【之后】，确保 new_buys/trims 已算完再压，避免污染 n_after_sell 语义。
+    if not buy_allowed:
+        exec_buys = []
+        print("    !! [T-20261002-001] 买入拦截（红线空仓）：本日不买入，"
+              "但到期/调出卖出照常执行 —— 卖出风控优先级高于买入优化")
+
     # ---- 纸面自动降级闸（2026-09-13 立，T-20260913-001 P1-8）：冻结时只卖不买 ----
     frozen = False
     try:
@@ -518,6 +562,7 @@ def main():
     print(f"  [LIVE] 账户可用资金 {cash:,.2f} | 策略资金池 {capital:,.0f} 元 | 每只目标市值 ≈ {target_value:,.0f} 元")
     log_rows = []
     guard_note = []  # 委托守护结果汇总
+    unresolved = []  # T-20261002-001：已成交但成交价未确认的记录（需人工补价）
 
     # 1) 卖出到期/调出持仓（委托守护：未成撤单重试，涨跌停跳过）
     for s in sell_plan:
@@ -533,8 +578,12 @@ def main():
         # T-20260930-001 修复：记账门槛只看实际成交量——ok=False 不代表零成交
         # （LIMIT_SKIP/CANCELED_TIMEOUT 可带前几轮真实成交），原 `ok and traded_vol` 会漏记账本
         if r["traded_vol"] > 0:
+            # T-20261002-001：记账价优先真实成交均价，回退参考价（禁止用 0 记账）
+            fill_px, px_src = order_guard.resolve_fill_price(r, price, s["code"])
             log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), s["code"], "SELL",
-                             r["traded_vol"], price, reason, r["order_id"]])
+                             r["traded_vol"], fill_px, reason, r["order_id"]])
+            _mark_unresolved_price(order_guard, r, fill_px, px_src, price,
+                                   "SELL", s["code"], unresolved)
 
     # 2) 减仓超配 target（先卖，回笼资金；委托守护）
     for t in trim_orders:
@@ -544,8 +593,12 @@ def main():
         # T-20260930-001 修复：记账门槛只看实际成交量——ok=False 不代表零成交
         # （LIMIT_SKIP/CANCELED_TIMEOUT 可带前几轮真实成交），原 `ok and traded_vol` 会漏记账本
         if r["traded_vol"] > 0:
+            # T-20261002-001：记账价优先真实成交均价，回退参考价（禁止用 0 记账）
+            fill_px, px_src = order_guard.resolve_fill_price(r, t["price"], t["code"])
             log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), t["code"], "SELL",
-                             r["traded_vol"], t["price"], "TRIM_OVR", r["order_id"]])
+                             r["traded_vol"], fill_px, "TRIM_OVR", r["order_id"]])
+            _mark_unresolved_price(order_guard, r, fill_px, px_src, t["price"],
+                                   "SELL", t["code"], unresolved)
 
     # ---- P0 资金池硬校验（2026-08-27 补强）：买入预算一律以策略资金池为硬上限 ----
     # 教训：8/24 bug1 用账户全量可用资金(asset.cash)买入 300684 939万，远超 10 万资金池。
@@ -618,11 +671,19 @@ def main():
         # T-20260930-001 修复：记账门槛只看实际成交量——ok=False 不代表零成交
         # （LIMIT_SKIP/CANCELED_TIMEOUT 可带前几轮真实成交），原 `ok and traded_vol` 会漏记账本
         if r["traded_vol"] > 0:
+            # T-20261002-001：记账价优先真实成交均价，回退参考价（禁止用 0 记账）
+            fill_px, px_src = order_guard.resolve_fill_price(r, b["price"], b["code"])
             log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), b["code"], "BUY",
-                             r["traded_vol"], b["price"], b["total"], r["order_id"]])
+                             r["traded_vol"], fill_px, b["total"], r["order_id"]])
+            _mark_unresolved_price(order_guard, r, fill_px, px_src, b["price"],
+                                   "BUY", b["code"], unresolved)
 
     if guard_note:
         print("  [委托守护] " + " | ".join(guard_note))
+    if unresolved:
+        print("  [!! 成交价未确认] 以下记录已成交但成交价非真实成交均价"
+              "（已落待补价队列 data/qmt_pending_fills.jsonl，需人工核对成交回报后补价；"
+              "0 价仅作待补标记，不得据此结算盈亏）：" + " | ".join(unresolved))
 
     if log_rows and C.TRADE_LOG:
         C.append_trade_rows(log_rows)

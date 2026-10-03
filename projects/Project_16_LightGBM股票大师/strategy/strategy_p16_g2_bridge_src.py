@@ -58,6 +58,14 @@ PEAK_STALE_HOURS = 24.0     # peak.json 距上次写盘超过此小时数视为 
 LOOKUP_RETRIES = 6
 LOOKUP_INTERVAL = 0.25
 
+# 成交均价/跳空/滑点保护（2026-10-02 第3项，与 V1.3 同口径）
+# deal 明细查询：QMT 约 100ms 分配 order_id 延迟 → 短轮询等成交落库
+DEAL_QUERY_RETRIES = 2
+DEAL_QUERY_INTERVAL = 0.2
+DEAL_QUERY_MAX_ERR = 3      # 连续异常达此数 → 判定 deal 接口永久不可用，不再重试
+MAX_ADVERSE_SLIPPAGE_PCT = 0.03   # 不利滑点告警阈值（卖出低于参考价 3%）
+MAX_GAP_TOLERANCE_PCT = 0.02      # 跳空破位容忍阈值（现价低于止损线 2% 以上）
+
 # 持仓/资产刷新间隔(秒)
 POSITION_REFRESH_INTERVAL = 10
 
@@ -78,6 +86,12 @@ _g_risk_sold = set()
 _g_last_cfg_load = 0.0   # 孤儿自校准节流（cost=0 持仓重读当日成本表的时间戳，T-20260908）
 _g_cfg_fallback_logged = False   # 成本表回退提示只打一次（T-20260910）
 _g_diag_printed = False
+
+# deal 明细接口三态可用性 + 当日滑点/跳空告警计数（2026-10-02 第3项）
+_g_deal_ok = None          # None=尚未探测 / True=可用 / False=永久不可用
+_g_deal_err_count = 0      # 连续异常次数，达 DEAL_QUERY_MAX_ERR 熔断
+_g_deal_no_oid = False     # 「deal 无委托号」告警只打一次
+_g_slippage_alert_count = 0
 
 
 # ============================================================
@@ -354,6 +368,259 @@ def _extract_deal_volume(matched, fallback_vol=0):
     return 0
 
 
+def _deal_oid(d):
+    """从成交明细对象提取委托号；返回 (值, 是否该对象具备委托号字段)。"""
+    for attr in ("m_nOrderID", "m_strOrderSysID", "m_strOrderID", "m_strOrderRef", "m_nOrderRef", "m_strSysid"):
+        try:
+            v = getattr(d, attr, "")
+        except Exception:
+            continue
+        if v not in (None, "", 0):
+            return str(v), True
+    return "", False
+
+
+def _query_deals(C, code, oids):
+    """查询本次守护委托的真实成交明细，返回 [(委托号, 量, 价)]（查不到返回空列表）。
+    大 QMT get_trade_detail_data(acct,'stock','deal') 返回成交对象；字段名随版本变化，多字段兜底。
+    过滤硬条件：标的代码一致 AND 委托号 ∈ 本次 oids（remark 只作候选优先信号，绝不硬过滤）。
+    可用性探测语义（三态，T-20261002）：
+      · 接口不存在            → _g_deal_ok=False（永久降级）
+      · 调用抛异常连续 DEAL_QUERY_MAX_ERR 次 → _g_deal_ok=False（单次异常视为抖动，不永久降级）
+      · 返回空列表            → 仅「尚未落库」，保留重试资格
+      · 当日 deal 全无委托号   → 无法把成交归属到本次委托（可能混入同标的其它单的历史成交），
+        必须返回 [] 拒绝使用，而不是放行同标的全部记录 —— 宁可降级到 order_obj，也不用错误均价记账。
+    """
+    global _g_deal_ok, _g_deal_err_count, _g_deal_no_oid
+    if _g_deal_ok is False:
+        return []
+    f_get = globals().get("get_trade_detail_data")
+    if f_get is None:
+        f_get = getattr(C, "get_trade_detail_data", None)
+    if f_get is None:
+        _g_deal_ok = False
+        print("[P16G2][DEAL-API-UNAVAIL] 无 get_trade_detail_data，成交价降级为订单对象价")
+        return []
+    try:
+        deals = f_get(ACCOUNT_ID, "stock", "deal")
+    except Exception as e:
+        _g_deal_err_count += 1
+        if _g_deal_err_count >= DEAL_QUERY_MAX_ERR:
+            _g_deal_ok = False
+        print("[P16G2][DEAL-API-ERR] get_trade_detail_data 抛异常(%d/%d): %s%s" % (
+            _g_deal_err_count, DEAL_QUERY_MAX_ERR, e,
+            "，成交价降级为订单对象价" if _g_deal_ok is False else "，本次按无明细处理"))
+        return []
+    _g_deal_err_count = 0
+    if not deals:
+        return []
+    _g_deal_ok = True
+    target = _norm_code(code)
+    rows = []
+    any_oid = False
+    for d in deals:
+        try:
+            d_code = _norm_code(getattr(d, "m_strInstrumentID", "") or getattr(d, "m_strStockCode", ""))
+            # 无标的字段 = 无法确认是本标的成交 → 拒绝（不能因为"代码缺失"就放行，那会混入其它股票）
+            if not d_code or d_code != target:
+                continue
+            d_oid, has_oid = _deal_oid(d)
+            if has_oid:
+                any_oid = True
+            d_vol = 0
+            for attr in ("m_nVolume", "m_nDealVolume", "m_nTradedVolume", "m_nVolumeTraded"):
+                v = getattr(d, attr, 0) or 0
+                if int(v) > 0:
+                    d_vol = int(v)
+                    break
+            d_px = 0.0
+            for attr in ("m_dAvgPrice", "m_dPrice"):
+                v = float(getattr(d, attr, 0) or 0)
+                if v > 0:
+                    d_px = v
+                    break
+            if d_vol <= 0 or d_px <= 0:
+                continue
+            rows.append((d_oid, has_oid, d_vol, d_px))
+        except Exception:
+            continue
+    if not rows:
+        return []
+    # 两遍决策：先扫全量确认「本次明细里是否存在带委托号的记录」，再决定是否启用委托号过滤，
+    # 避免遍历顺序决定结果（否则前面几条无委托号的脏成交会先被放行）。
+    if not any_oid:
+        # 全无委托号 → 无法归属本次委托，拒绝使用（fail-safe：宁可降级，也不用可能混入历史成交的均价记账）
+        if not _g_deal_no_oid:
+            _g_deal_no_oid = True
+            print("[P16G2][DEAL-NO-OID] 成交明细无任何委托号字段，无法归属本次委托，"
+                  "成交均价降级为订单对象价（不猜测归属）")
+        return []
+    if not oids:
+        return []
+    return [(r[0], r[2], r[3]) for r in rows if r[1] and r[0] in oids]
+
+
+def _resolve_fill_avg(C, code, oids, expect_vol):
+    """真实成交加权均价：Σ(量×价)/Σ量。命中成交量必须覆盖 expect_vol，否则返回 0（降级）。
+    oids 必须累计本次守护期间**全部**成功委托号（多轮重挂/撤单重报），否则部分成交会漏算。
+    deal 明细有写入延迟，最多重试 DEAL_QUERY_RETRIES 次。"""
+    if expect_vol <= 0 or not oids:
+        return 0.0
+    for attempt in range(DEAL_QUERY_RETRIES):
+        deals = _query_deals(C, code, oids)
+        tot_v = 0
+        tot_amt = 0.0
+        for _oid, dv, dp in deals:
+            tot_v += dv
+            tot_amt += dv * dp
+        if tot_v >= expect_vol and tot_amt > 0:
+            return tot_amt / tot_v
+        if attempt + 1 < DEAL_QUERY_RETRIES:
+            time.sleep(DEAL_QUERY_INTERVAL)
+    return 0.0
+
+
+def _order_obj_price(matched):
+    """从订单对象取价格（多字段兜底）。注意：m_dPrice 语义未实测（可能是委托价而非成交均价），
+    因此这里的取值只作为 deal 明细不可用时的次级降级，且会在 fills 里标注 px_source。"""
+    if matched is None:
+        return 0.0
+    for attr in ("m_dAvgPrice", "m_dPrice"):
+        try:
+            v = float(getattr(matched, attr, 0) or 0)
+            if v > 0:
+                return v
+        except Exception:
+            continue
+    return 0.0
+
+
+def _adverse_slippage(action, ref_price, fill_price):
+    """不利滑点：卖出看"卖低了"、买入看"买高了"，统一返回正数百分比。
+    参考价缺失或非正时返回 0（无基准不臆造滑点）。"""
+    if ref_price <= 0 or fill_price <= 0:
+        return 0.0
+    if action == "SELL":
+        return (ref_price - fill_price) / ref_price
+    return (fill_price - ref_price) / ref_price
+
+
+def _resolve_px(C, code, action, oids, expect_vol, matched, ref_price):
+    """统一成交价协议：fill_avg(真实成交均价) → order_obj(订单对象价) → ref_price(触发/最新价)。
+    返回 (price, px_source, adverse_slip)。price 恒 > 0 时才可被 fills 消费方记账。"""
+    avg = _resolve_fill_avg(C, code, oids, expect_vol)
+    if avg > 0:
+        return avg, "fill_avg", _adverse_slippage(action, ref_price, avg)
+    opx = _order_obj_price(matched)
+    if opx > 0:
+        return opx, "order_obj", _adverse_slippage(action, ref_price, opx)
+    if ref_price > 0:
+        return ref_price, "ref_price", 0.0
+    return 0.0, "unresolved", 0.0
+
+
+def _gap_pct(cost_price, trigger_price):
+    """跳空幅度：触发时现价已跌破成本止损线的幅度（正数 = 跳空破位）。
+    跳空说明「按 -7% 应该成交但实际开盘就在线下」，此时市价止损的实际亏损会超过 7%，
+    需单独留痕以便事后区分「止损失效」与「跳空超额亏损」。"""
+    if cost_price <= 0 or trigger_price <= 0:
+        return 0.0
+    line = cost_price * (1.0 - STOP_LOSS_PCT)
+    if trigger_price >= line:
+        return 0.0
+    return (line - trigger_price) / cost_price
+
+
+def _slippage_alert(sid, code, action, px_source, ref_price, fill_price, adverse, gap=0.0):
+    """不利滑点 / 跳空破位告警：**只告警留痕，绝不拦单**（卖出风控优先级高于一切优化）。
+    返回可写入 fills 的告警文本（空串=正常）。
+    注意 %-格式化与 * 的优先级：必须写成 "%s" % (adverse * 100)，写成 "%s" % adverse * 100
+    会先格式化再重复 100 次（T-20261002 修复）。"""
+    global _g_slippage_alert_count
+    notes = []
+    if adverse > MAX_ADVERSE_SLIPPAGE_PCT:
+        notes.append("不利滑点%.2f%%>阈值%.0f%%" % (
+            adverse * 100, MAX_ADVERSE_SLIPPAGE_PCT * 100))
+    if gap > MAX_GAP_TOLERANCE_PCT:
+        notes.append("跳空破位%.2f%%>容忍%.0f%%" % (
+            gap * 100, MAX_GAP_TOLERANCE_PCT * 100))
+    if not notes:
+        return ""
+    _g_slippage_alert_count += 1
+    print("[P16G2][SLIPPAGE-ALERT] %s %s %s px_source=%s ref=%.3f fill=%.3f adverse=%.2f%% gap=%.2f%% | %s" % (
+        sid, code, action, px_source, ref_price, fill_price, adverse * 100, gap * 100, "; ".join(notes)))
+    tail = " adverse_slippage=%.2f%%" % (adverse * 100) if adverse > MAX_ADVERSE_SLIPPAGE_PCT else ""
+    if gap > MAX_GAP_TOLERANCE_PCT:
+        tail += " gap_exceeded=%.2f%%" % (gap * 100)
+    return tail
+
+
+def _refresh_last_price(C, code, fallback=0.0):
+    """重试前刷新最新价：避免用陈旧触发价重挂。取不到行情才退回 fallback（fail-safe 不阻断重试）。"""
+    try:
+        tick = C.get_full_tick([code])
+        if tick:
+            t = tick.get(code)
+            if t:
+                p = float(t.get("lastPrice", 0) or 0)
+                if p > 0:
+                    return p
+    except Exception:
+        pass
+    return fallback
+
+
+def _acc_order_id(info, oid):
+    """把委托号累计进 pending.order_ids（多轮重挂/撤单重报都要留痕）。
+    真实成交均价查询必须拿全部委托号，否则中途重挂前的部分成交会被漏算，
+    导致「明细量<已确认量」误判降级、或者用残缺明细冒充真实均价。"""
+    if not oid:
+        return
+    oid = str(oid)
+    ids = info.setdefault("order_ids", [])
+    if oid not in ids:
+        ids.append(oid)
+
+
+def _write_fill(C, date, sid, info, code, action, vol, status, sysid, reason,
+                matched=None, extra=None):
+    """统一写 fills 收尾记录（成交价协议 + 跳空/滑点留痕的唯一出口）。
+    价源优先级：deal明细真实均价(fill_avg) → 订单对象价(order_obj) → 触发/参考价(ref_price)。
+    参考价=触发时现价（_resolve_px 传入 info['trigger_price']），滑点基准必须用它而非委托价，
+    否则市价单的「委托价=触发价」会把真实跳空亏损算成 0 滑点（掩盖问题）。
+    返回写入记录的 dict（调用方可继续打日志）。"""
+    ref_price = float(info.get("trigger_price", 0) or info.get("price", 0) or 0)
+    oids = list(info.get("order_ids", []))
+    oid_now = info.get("order_id", "")
+    if oid_now and str(oid_now) not in oids:
+        oids.append(str(oid_now))
+    price, px_source, adverse = _resolve_px(
+        C, code, action, oids, vol, matched, ref_price)
+    gap = _gap_pct(float(info.get("cost_price", 0) or 0), float(info.get("trigger_price", 0) or 0))
+    alert = _slippage_alert(sid, code, action, px_source, ref_price, price, adverse, gap)
+    rec = {
+        "strategy_order_id": sid,
+        "code": info.get("bridge_code", code),
+        "action": action,
+        "vol": vol,
+        "price": price,
+        "status": status,
+        "sysid": sysid,
+        "reason": (reason or "") + alert,
+        "ts": _now_str(),
+        "px_source": px_source,
+        "trigger_price": ref_price,
+        "adverse_slippage": round(adverse, 6),
+        "gap_pct": round(gap, 6),
+        "order_ids": oids,
+        "retry": info.get("retry", 0),
+    }
+    if extra:
+        rec.update(extra)
+    _add_or_update_fill(date, rec)
+    return rec
+
+
 def _lookup_order(C, code, vol, action, sid="", active_only=True):
     """短轮询反查订单（对齐ATR战备模板）。
     全局函数优先、小写'stock'、m_strOrderID优先、量容差相对化(0.10)。
@@ -516,9 +783,14 @@ def _execute_order(C, order, date):
         "cur_vol": vol,
         "filled_so_far": 0,
         "price": price,
+        # 滑点基准=下单时参考价（T-20261002）；指令单无持仓成本锚，cost_price=0 表示不参与跳空判定
+        "trigger_price": price,
+        "cost_price": 0.0,
+        "last_price": price,
         "time": time.time(),
         "retry": 0,
         "order_id": oid or "",
+        "order_ids": [oid] if oid else [],
         "sysid": sysid,
         "status": "PENDING",
     }
@@ -550,6 +822,10 @@ def _process_cancels(C, cancel_data, date):
         _oid, m = _lookup_order(C, code, cur_vol, action, sid=sid, active_only=False)
         if m is not None:
             oid = _extract_order_id(m) or oid
+            # 首反查才拿到委托号时必须立即累计，否则 _write_fill 的 deal 查询会遗漏该笔明细
+            _acc_order_id(info, oid)
+            if not info.get("order_id"):
+                info["order_id"] = oid
             deal_vol = _extract_deal_volume(m, fallback_vol=cur_vol)
             st_now = int(getattr(m, "m_nOrderStatus", 0) or 0)
             # 补录 sysid（柜台合同号，cancel() 需要；_execute_order 若未捕获这里兜底）
@@ -558,17 +834,10 @@ def _process_cancels(C, cancel_data, date):
                 info["sysid"] = _sid_now
             if deal_vol >= cur_vol or st_now == 56:
                 total_deal = filled_so_far + deal_vol
-                _add_or_update_fill(date, {
-                    "strategy_order_id": sid,
-                    "code": info.get("bridge_code", code),
-                    "action": action,
-                    "vol": total_deal,
-                    "price": info.get("price", 0),
-                    "status": "FILLED",
-                    "sysid": info.get("sysid", ""),
-                    "reason": info.get("risk_reason", "filled before cancel"),
-                    "ts": _now_str(),
-                })
+                _write_fill(C, date, sid, info, code, action, total_deal, "FILLED",
+                            info.get("sysid", ""),
+                            info.get("risk_reason", "filled before cancel"),
+                            matched=m)
                 _g_pending.pop(sid, None)
                 print("[P16G2][CANCEL-TOO-LATE] %s 已全部成交 deal=%d" % (sid, total_deal))
                 continue
@@ -624,17 +893,10 @@ def _handle_rejected_retry(C, date, sid, info, now, deal_vol):
     if filled_now > 0:
         total_deal = info.get("filled_so_far", 0) + filled_now
         print("[P16G2][FILLED] %s %s 原单已全成交 deal=%d" % (sid, code, total_deal))
-        _add_or_update_fill(date, {
-            "strategy_order_id": sid,
-            "code": info.get("bridge_code", code),
-            "action": action,
-            "vol": total_deal,
-            "price": info.get("price", 0),
-            "status": "FILLED",
-            "sysid": info.get("sysid", ""),
-            "reason": info.get("risk_reason", "filled, original still active"),
-            "ts": _now_str(),
-        })
+        _write_fill(C, date, sid, info, code, action, total_deal, "FILLED",
+                    info.get("sysid", ""),
+                    info.get("risk_reason", "filled, original still active"),
+                    matched=m2)
         _g_pending.pop(sid, None)
         _g_today_fill_count += 1
         return
@@ -648,17 +910,9 @@ def _handle_rejected_retry(C, date, sid, info, now, deal_vol):
     info["filled_so_far"] = filled_so_far
     if retry >= MAX_RETRY:
         print("[P16G2][ABANDON] %s %s 废单retry=%d filled=%d" % (sid, code, retry, filled_so_far))
-        _add_or_update_fill(date, {
-            "strategy_order_id": sid,
-            "code": info.get("bridge_code", code),
-            "action": action,
-            "vol": filled_so_far,
-            "price": info.get("price", 0),
-            "status": "ABANDONED",
-            "sysid": info.get("sysid", ""),
-            "reason": info.get("risk_reason", "rejected status=57, retry exhausted"),
-            "ts": _now_str(),
-        })
+        _write_fill(C, date, sid, info, code, action, filled_so_far, "ABANDONED",
+                    info.get("sysid", ""),
+                    info.get("risk_reason", "rejected status=57, retry exhausted"))
         _g_pending.pop(sid, None)
         _g_today_abandon_count += 1
         return
@@ -666,12 +920,17 @@ def _handle_rejected_retry(C, date, sid, info, now, deal_vol):
     if remaining <= 0:
         _g_pending.pop(sid, None)
         return
-    ret = _do_passorder(C, action, code, remaining, info.get("price", 0))
-    print("[P16G2][REJECTED-RETRY-%d] %s %s %d股 ret=%s" % (retry + 1, sid, code, remaining, ret))
+    # 重试前刷新最新价：市价单用陈旧触发价虽不影响成交价，但会让滑点基准失真、且限价兜底场景会挂错价
+    retry_px = _refresh_last_price(C, code, float(info.get("price", 0) or 0))
+    info["last_price"] = retry_px
+    ret = _do_passorder(C, action, code, remaining, retry_px)
+    print("[P16G2][REJECTED-RETRY-%d] %s %s %d股 px=%.3f ret=%s" % (
+        retry + 1, sid, code, remaining, retry_px, ret))
     oid3, m3 = _lookup_order(C, code, remaining, action, sid=sid)
     sysid3 = ""
     if m3:
         sysid3 = str(getattr(m3, "m_strSysid", "") or "")
+    _acc_order_id(info, oid3 or _extract_order_id(m3))
     info["time"] = now
     info["retry"] = retry + 1
     info["cur_vol"] = remaining
@@ -695,6 +954,10 @@ def _handle_timeout_retry(C, date, sid, info, now):
         _oid0, _m0 = _lookup_order(C, code, cur_vol, action, sid=sid, active_only=False)
         if _m0 is not None:
             oid = _extract_order_id(_m0) or _oid0 or ""
+            # 首反查才拿到委托号时必须立即累计，否则后续 _write_fill 的 deal 查询会遗漏该笔明细
+            _acc_order_id(info, oid)
+            if not info.get("order_id"):
+                info["order_id"] = oid
     print("[P16G2][TIMEOUT] %s %s elapsed>%ds retry=%d cur_vol=%d filled=%d" % (
         sid, code, PENDING_TIMEOUT, retry, cur_vol, filled_so_far))
     if oid:
@@ -722,17 +985,10 @@ def _handle_timeout_retry(C, date, sid, info, now):
     if filled_before_cancel > 0:
         total_deal = filled_so_far + filled_before_cancel
         print("[P16G2][FILLED] %s %s 撤前已全成交 deal=%d" % (sid, code, total_deal))
-        _add_or_update_fill(date, {
-            "strategy_order_id": sid,
-            "code": info.get("bridge_code", code),
-            "action": action,
-            "vol": total_deal,
-            "price": info.get("price", 0),
-            "status": "FILLED",
-            "sysid": info.get("sysid", ""),
-            "reason": info.get("risk_reason", "filled before cancel"),
-            "ts": _now_str(),
-        })
+        _write_fill(C, date, sid, info, code, action, total_deal, "FILLED",
+                    info.get("sysid", ""),
+                    info.get("risk_reason", "filled before cancel"),
+                    matched=m2)
         _g_pending.pop(sid, None)
         _g_today_fill_count += 1
         return
@@ -743,17 +999,9 @@ def _handle_timeout_retry(C, date, sid, info, now):
         return
     if retry >= MAX_RETRY:
         print("[P16G2][ABANDON] %s %s 超时retry=%d filled=%d" % (sid, code, retry, filled_so_far))
-        _add_or_update_fill(date, {
-            "strategy_order_id": sid,
-            "code": info.get("bridge_code", code),
-            "action": action,
-            "vol": filled_so_far,
-            "price": info.get("price", 0),
-            "status": "ABANDONED",
-            "sysid": info.get("sysid", ""),
-            "reason": info.get("risk_reason", "timeout, retry exhausted"),
-            "ts": _now_str(),
-        })
+        _write_fill(C, date, sid, info, code, action, filled_so_far, "ABANDONED",
+                    info.get("sysid", ""),
+                    info.get("risk_reason", "timeout, retry exhausted"))
         _g_pending.pop(sid, None)
         _g_today_abandon_count += 1
         return
@@ -761,12 +1009,16 @@ def _handle_timeout_retry(C, date, sid, info, now):
     if remaining <= 0:
         _g_pending.pop(sid, None)
         return
-    ret = _do_passorder(C, action, code, remaining, info.get("price", 0))
-    print("[P16G2][RETRY-%d] %s %s %d股 ret=%s" % (retry + 1, sid, code, remaining, ret))
+    retry_px = _refresh_last_price(C, code, float(info.get("price", 0) or 0))
+    info["last_price"] = retry_px
+    ret = _do_passorder(C, action, code, remaining, retry_px)
+    print("[P16G2][RETRY-%d] %s %s %d股 px=%.3f ret=%s" % (
+        retry + 1, sid, code, remaining, retry_px, ret))
     oid3, m3 = _lookup_order(C, code, remaining, action, sid=sid)
     sysid3 = ""
     if m3:
         sysid3 = str(getattr(m3, "m_strSysid", "") or "")
+    _acc_order_id(info, oid3 or _extract_order_id(m3))
     info["time"] = now
     info["retry"] = retry + 1
     info["cur_vol"] = remaining
@@ -786,6 +1038,8 @@ def _handle_cancel_confirm(C, date, sid, info, now):
     filled_so_far = info.get("filled_so_far", 0)
     _oid, m = _lookup_order(C, code, cur_vol, action, sid=sid, active_only=False)
     if m is not None:
+        # 首反查才拿到委托号时必须立即累计，否则 _write_fill 的 deal 查询会遗漏该笔明细
+        _acc_order_id(info, _extract_order_id(m) or _oid or "")
         st = int(getattr(m, "m_nOrderStatus", 0) or 0)
         dv = _extract_deal_volume(m, fallback_vol=cur_vol)
         # 补录 sysid（m_strOrderSysID 柜台合同号，官方 cancel() 撤单用）
@@ -794,35 +1048,26 @@ def _handle_cancel_confirm(C, date, sid, info, now):
             info["sysid"] = _sid_now
         if dv >= cur_vol or st == 56:
             total_deal = filled_so_far + dv
-            _add_or_update_fill(date, {
-                "strategy_order_id": sid, "code": info.get("bridge_code", code), "action": action,
-                "vol": total_deal, "price": info.get("price", 0), "status": "FILLED",
-                "sysid": info.get("sysid", ""),
-                "reason": info.get("risk_reason", "filled while canceling"),
-                "ts": _now_str(),
-            })
+            _write_fill(C, date, sid, info, code, action, total_deal, "FILLED",
+                        info.get("sysid", ""),
+                        info.get("risk_reason", "filled while canceling"),
+                        matched=m)
             _g_pending.pop(sid, None)
             _g_today_fill_count += 1
             print("[P16G2][CANCEL-CONFIRM-FILLED] %s %s deal=%d" % (sid, code, total_deal))
             return
         if st in (53, 54):
-            _add_or_update_fill(date, {
-                "strategy_order_id": sid, "code": info.get("bridge_code", code), "action": action,
-                "vol": filled_so_far + dv, "price": info.get("price", 0), "status": "CANCELED",
-                "sysid": info.get("sysid", ""),
-                "reason": info.get("risk_reason", "cancel confirmed"),
-                "ts": _now_str(),
-            })
+            _write_fill(C, date, sid, info, code, action, filled_so_far + dv, "CANCELED",
+                        info.get("sysid", ""),
+                        info.get("risk_reason", "cancel confirmed"),
+                        matched=m)
             _g_pending.pop(sid, None)
             print("[P16G2][CANCEL-CONFIRMED] %s %s status=%d" % (sid, code, st))
             return
         if st == 57:
-            _add_or_update_fill(date, {
-                "strategy_order_id": sid, "code": info.get("bridge_code", code), "action": action,
-                "vol": filled_so_far + dv, "price": info.get("price", 0), "status": "REJECTED",
-                "sysid": info.get("sysid", ""),
-                "reason": "cancel rejected status=%d" % st, "ts": _now_str(),
-            })
+            _write_fill(C, date, sid, info, code, action, filled_so_far + dv, "REJECTED",
+                        info.get("sysid", ""), "cancel rejected status=%d" % st,
+                        matched=m)
             _g_pending.pop(sid, None)
             print("[P16G2][CANCEL-REJECTED] %s %s status=%d" % (sid, code, st))
             return
@@ -837,13 +1082,9 @@ def _handle_cancel_confirm(C, date, sid, info, now):
         return
     # m is None：查不到订单（可能已撤/已成交/列表过期）→ UNCONFIRMED，外部以 positions 兜底
     print("[P16G2][CANCEL-UNKNOWN] %s %s 撤单后订单查不到，状态未知，写UNCONFIRMED（外部以positions兜底）" % (sid, code))
-    _add_or_update_fill(date, {
-        "strategy_order_id": sid, "code": info.get("bridge_code", code), "action": action,
-        "vol": filled_so_far, "price": info.get("price", 0), "status": "UNCONFIRMED",
-        "sysid": info.get("sysid", ""),
-        "reason": "cancel state unknown (may be canceled or filled), rely on positions",
-        "ts": _now_str(),
-    })
+    _write_fill(C, date, sid, info, code, action, filled_so_far, "UNCONFIRMED",
+                info.get("sysid", ""),
+                "cancel state unknown (may be canceled or filled), rely on positions")
     _g_pending.pop(sid, None)
 
 
@@ -863,7 +1104,6 @@ def _check_pending_orders(C, date):
         vol = info.get("vol", 0)
         cur_vol = info.get("cur_vol", vol)
         filled_so_far = info.get("filled_so_far", 0)
-        price = info.get("price", 0)
 
         # 撤单确认态：只确认终态（已成→FILLED / 已撤→CANCELED / 废单→REJECTED / 超时强制），不走重试/超时路径
         if info.get("cancel_requested"):
@@ -886,27 +1126,19 @@ def _check_pending_orders(C, date):
             info["sysid"] = sysid
         # 回填 order_id：首次反查（_execute_order 内）可能因缓存延迟未抓到，状态机内持续补齐，
         # 否则撤单/超时重报拿不到真实委托号（2026-09-01 P0：撤单空ID→真单变孤儿）
-        if not info.get("order_id"):
-            oid_bk = _extract_order_id(matched)
-            if oid_bk:
+        # 同时累计进 order_ids（多轮委托全部留痕，供真实成交均价查询覆盖所有轮次成交）
+        oid_bk = _extract_order_id(matched)
+        if oid_bk:
+            _acc_order_id(info, oid_bk)
+            if not info.get("order_id"):
                 info["order_id"] = oid_bk
         total_deal = filled_so_far + deal_vol
 
         # 1a) 成交量硬事实优先：已成交 >= 目标量 → FILLED
         if total_deal >= vol:
-            fill_price = float(getattr(matched, "m_dPrice", 0) or getattr(matched, "m_dAvgPrice", 0) or price)
             print("[P16G2][FILLED] %s %s deal=%d" % (sid, code, total_deal))
-            _add_or_update_fill(date, {
-                "strategy_order_id": sid,
-                "code": info.get("bridge_code", code),
-                "action": action,
-                "vol": total_deal,
-                "price": fill_price,
-                "status": "FILLED",
-                "sysid": sysid,
-                "reason": info.get("risk_reason", "deal confirmed"),
-                "ts": _now_str(),
-            })
+            _write_fill(C, date, sid, info, code, action, total_deal, "FILLED",
+                        sysid, info.get("risk_reason", "deal confirmed"), matched=matched)
             _g_pending.pop(sid, None)
             _g_today_fill_count += 1
             continue
@@ -921,35 +1153,19 @@ def _check_pending_orders(C, date):
         # 1c) 撤类终态(53,54) → CANCELED 收尾（vol=total_deal，防漏计最后成交）
         if status in CANCEL_STATUS:
             print("[P16G2][CANCELED-FROM-QMT] %s %s status=%d deal=%d" % (sid, code, status, total_deal))
-            _add_or_update_fill(date, {
-                "strategy_order_id": sid,
-                "code": info.get("bridge_code", code),
-                "action": action,
-                "vol": total_deal,
-                "price": price,
-                "status": "CANCELED",
-                "sysid": sysid,
-                "reason": info.get("risk_reason", "canceled by QMT, status=%d" % status),
-                "ts": _now_str(),
-            })
+            _write_fill(C, date, sid, info, code, action, total_deal, "CANCELED",
+                        sysid,
+                        info.get("risk_reason", "canceled by QMT, status=%d" % status),
+                        matched=matched)
             _g_pending.pop(sid, None)
             continue
         # 1d) 有成交未满 → PARTIAL_FILLED 进度回写（filled_so_far不变，deal_vol是累计值）
         # 注意：部成也必须走超时判断（否则停滞单永不撤/永不重报，挂到日终被 NEW-DAY 清掉）
         if deal_vol > 0:
-            fill_price = float(getattr(matched, "m_dPrice", 0) or getattr(matched, "m_dAvgPrice", 0) or price)
             print("[P16G2][PARTIAL] %s %s deal=%d/%d" % (sid, code, total_deal, vol))
-            _add_or_update_fill(date, {
-                "strategy_order_id": sid,
-                "code": info.get("bridge_code", code),
-                "action": action,
-                "vol": total_deal,
-                "price": fill_price,
-                "status": "PARTIAL_FILLED",
-                "sysid": sysid,
-                "reason": info.get("risk_reason", "partial deal, waiting more"),
-                "ts": _now_str(),
-            })
+            _write_fill(C, date, sid, info, code, action, total_deal, "PARTIAL_FILLED",
+                        sysid, info.get("risk_reason", "partial deal, waiting more"),
+                        matched=matched)
             # 部成后若停滞超过 PENDING_TIMEOUT，同样走超时撤剩余/重报
             elapsed = now - info.get("time", now)
             if elapsed > PENDING_TIMEOUT:
@@ -1126,9 +1342,16 @@ def _check_risk_signals(C, date):
             "cur_vol": can_use,
             "filled_so_far": 0,
             "price": last,
+            # 滑点/跳空基线（T-20261002）：trigger_price=触发时现价（滑点基准，市价单委托价=触发价，
+            # 用委托价会把真实跳空亏损算成 0 滑点从而掩盖问题）；cost_price=含费成本（跳空基准）。
+            # 注意：止损/止盈/追盈三种触发都要留 cost_price，否则跳空幅度无法计算。
+            "trigger_price": last,
+            "cost_price": cost,
+            "last_price": last,
             "time": now,
             "retry": 0,
             "order_id": "",
+            "order_ids": [],
             "sysid": "",
             "status": "PENDING",
             "risk_reason": action,
@@ -1252,9 +1475,17 @@ def _write_heartbeat(date, cmd_seq):
             "time": info.get("time", time.time()),
             "retry": info.get("retry", 0),
             "order_id": info.get("order_id", ""),
+            "order_ids": info.get("order_ids", []),
             "sysid": info.get("sysid", ""),
             "status": info.get("status", "PENDING"),
             "cancel_requested": info.get("cancel_requested", False),
+            "cancel_retry": info.get("cancel_retry", 0),
+            # 滑点/跳空基线必须持久化（T-20261002）：重启后若丢失，_write_fill 会拿不到
+            # trigger_price/cost_price → 滑点恒算 0、跳空无法归因，等于把保护静默关掉。
+            "trigger_price": info.get("trigger_price", info.get("price", 0)),
+            "cost_price": info.get("cost_price", 0.0),
+            "last_price": info.get("last_price", info.get("price", 0)),
+            "risk_reason": info.get("risk_reason", ""),
         })
     data = {
         "account_id": ACCOUNT_ID,
@@ -1266,6 +1497,7 @@ def _write_heartbeat(date, cmd_seq):
         "pending": pendings,
         "risk_sold": sorted(_g_risk_sold),
         "risk_count": _g_today_risk_count,
+        "slippage_alert_count": _g_slippage_alert_count,
     }
     _atomic_write_json(_heart_path(date), data)
     _write_peak()
@@ -1358,7 +1590,7 @@ def _process_cancel_cmd(C, date):
 # ============================================================
 def init(C):
     """策略初始化。首部set_account确保主推推送；从心跳恢复seq/pending/risk_sold；读外部成本表与peak。"""
-    global _g_last_cmd_seq, _g_today, _g_risk_sold, _g_today_risk_count
+    global _g_last_cmd_seq, _g_today, _g_risk_sold, _g_today_risk_count, _g_slippage_alert_count
     try:
         C.set_account(ACCOUNT_ID)
     except Exception:
@@ -1390,6 +1622,11 @@ def init(C):
             print("[P16G2][INIT] 恢复risk_count=%d" % _g_today_risk_count)
     except Exception:
         _g_today_risk_count = 0
+    # 恢复当日滑点/跳空告警计数（重启后继续累加当日，不清零否则日内重启会丢告警留痕）
+    try:
+        _g_slippage_alert_count = int(heart.get("slippage_alert_count", 0) or 0) if heart else 0
+    except Exception:
+        _g_slippage_alert_count = 0
     # 读外部成本表（外部每日写 cmd/positions_cfg_<date>.json，FIFO 含费成本；缺失回退最近表）
     cfg = _load_positions_cfg(_g_today)
     if cfg and str(cfg.get("account_id", "") or "") == ACCOUNT_ID:
@@ -1441,18 +1678,21 @@ def init(C):
 
 def handlebar(C):
     """每分钟触发：读指令→下单→反查→pending→快照→心跳。"""
-    global _g_last_cmd_seq, _g_today, _g_last_position_refresh, _g_last_asset_refresh
+    global _g_last_cmd_seq, _g_today, _g_last_position_refresh, _g_last_asset_refresh, _g_slippage_alert_count
 
     # 日期切换重置
     today = _today_str()
     if today != _g_today:
+        if _g_slippage_alert_count:
+            print("[P16G2][SLIPPAGE-DAY-SUMMARY] 前一交易日不利滑点/跳空超限 %d 次" % _g_slippage_alert_count)
         _g_today = today
         _g_last_cmd_seq = 0
         _g_last_position_refresh = 0.0
         _g_last_asset_refresh = 0.0
         _g_pending.clear()
         _g_risk_sold.clear()
-        print("[P16G2][NEW-DAY] date=%s pending清空 risk_sold清空" % today)
+        _g_slippage_alert_count = 0   # 告警计数按交易日重置（否则跨日累加，日终无法归因到具体某天）
+        print("[P16G2][NEW-DAY] date=%s pending清空 risk_sold清空 slippage_alert清零" % today)
 
     # 交易时段判断：09:30-11:30 或 13:00-15:00
     try:

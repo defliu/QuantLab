@@ -12,19 +12,42 @@
 
 返回：
   {"ok": bool, "action": "FILLED"|"LIMIT_SKIP"|"CANCELED_TIMEOUT"|"REJECTED"|"ERROR",
-   "traded_vol": int, "order_id": int, "attempts": int, "note": str}
+   "traded_vol": int, "order_id": int, "attempts": int, "note": str,
+   "avg_price": float|None, "order_ids": list[int]}
 
 ok 语义（T-20260930-001 厘清）：ok=True 仅见于「有已确认成交」的返回（FILLED / 有成交后放弃重挂）；
 ok=False **不代表零成交**——LIMIT_SKIP/CANCELED_TIMEOUT/ERROR 可能带 traded_vol>0（前几轮重试
 的真实成交）。调用方记账必须以 traded_vol>0 为唯一门槛，禁止 `ok and traded_vol>0` 双重门槛
 （2026-09-30 603237.SH 事故：撤单窗口内全部成交但 ok=False → 记账被跳过 → 账实脱节）。
+
+avg_price（T-20261002-001 新增）：真实成交均价 = Σ(成交明细 traded_volume×traded_price)/Σ成交量，
+按本次守护期间**全部**委托 order_id 汇总（多轮重挂 + 撤单窗口部分成交都要计入），故为加权均价；
+成交明细同时按 (order_id, stock_code) 双重过滤（query_stock_trades 返回全账户当日明细，
+只按单号过滤会被同号异标的脏明细污染均价）。
+成交明细不可用（接口异常 / 非交易时段阻塞 / 明细未同步 / 明细量不足）时返回 None，
+**调用方必须用 resolve_fill_price() 决定记账价**：
+  - 真实均价 → "fill_avg"（权威口径，正常路径不再告警）
+  - 无均价但有参考价 → "ref_price"（近似值，须落待补价队列核对）
+  - 两者皆无 → "unresolved"，price=0.0 仅作**显式待补标记**，此时必须
+    record_pending_fill() 落 JSONL 队列并告警，下游不得把该 0 当真实成交价结算盈亏。
+即：除已落待补队列的 unresolved 标记外，**禁止静默把 0 写进成交记录**（0 价 SELL 会让 FIFO
+已实现盈亏永久缺口，并污染持仓成本推导）。
 """
+import json
+import os
 import sys
 import time
 
 import qmt_config as C
 
 sys.path.append(C.XTPACK)
+
+# 「已成交但成交价未确认」的待补价队列（T-20261002-001）。
+# 成交是既成事实、成交量必须入账，但成交价缺失不能静默写 0（0 价 SELL 会让 FIFO 已实现
+# 盈亏永久缺口并污染持仓成本推导）。故：照常写成交行（price=0 作为待补标记）+ 落本队列，
+# 供后续用 query_stock_trades 回补真实成交均价。
+PENDING_FILL_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                 "data", "qmt_pending_fills.jsonl")
 
 
 # 订单状态（xtconstant）
@@ -48,6 +71,11 @@ POLL_INTERVAL = 3          # 轮询间隔（秒）
 #   ③ 总时长 10 分钟 < 红线 15 分钟，属保守侧：红线语义是"不得早于约 15 分钟放弃"，并非要求等满。
 # 不取 MAX_RETRY=15（=15 分钟满格）：多笔串行时整轮换仓最坏 10 只 × 15 分钟会溢出当日交易时段。
 MAX_RETRY = 10             # 最大撤单重试次数（总窗口 ≈ 60s×10 = 10 分钟）
+
+# 成交均价回填的短轮询（T-20261002-001）：成交明细常晚于委托状态同步，
+# 少量重试可显著提高拿到真实均价的成功率；总耗时 ≈ (3-1)×1s，远小于下单守护窗口。
+_AVGPRICE_RETRIES = 3
+_AVGPRICE_RETRY_INTERVAL = 1
 
 
 def get_limit_prices(code):
@@ -124,6 +152,203 @@ def _query_order(trader, account, order_id):
     return None
 
 
+def _norm_code(v):
+    """把股票代码规范成 '600000.SH' 形态，用于成交明细按标的过滤。
+
+    miniQMT 的 stock_code 常见 '600000.SH'，但不同版本/接口可能给 'SH600000'
+    或纯 '600000'。统一成「6 位数字 + .SH/.SZ/.BJ」再比较，避免纯格式差异把
+    本人成交明细误判成「其它股票」而丢弃（那会让均价恒不可用 → 全量退化到参考价）。
+    """
+    s = str(v or "").strip().upper()
+    if not s:
+        return ""
+    if "." in s:
+        head, tail = s.split(".", 1)
+        head = head.strip()
+        tail = tail.strip()
+        if tail in ("SH", "SZ", "BJ") and head:
+            return "%s.%s" % (head, tail)
+        return s
+    if len(s) > 6 and s[:2] in ("SH", "SZ", "BJ"):
+        return "%s.%s" % (s[2:], s[:2])
+    return s
+
+
+def _query_trade_stats(trader, account, code, oids):
+    """按 (order_id, stock_code) 双重条件汇总成交明细。返回 (成交量, 成交金额) 或 None。
+
+    成交明细对象字段（MINIQMT_GUIDE §6.3 / scripts/readonly_check_20260930.py 实证）：
+      order_id, stock_code, traded_volume, traded_price, traded_time
+
+    **必须同时校验 stock_code（T-20261002-001 A5 修复）**：query_stock_trades 返回的是
+    **全账户当日全部成交明细**，不是本次下单的成交。只按 order_id 过滤，一旦委托号被复用、
+    或明细里混入同号不同标的的脏数据，就会把他票的成交价计入加权均价 → 账本盈亏直接写错，
+    且事后从 CSV 完全无法区分（真实缺陷实测：2800股×15.30 混入 1000股×88.88 → 均价 34.663，
+    是正确值 15.30 的 2.3 倍）。
+
+    stock_code 缺失/无法规范化时**一律剔除**（不「缺失即信任」）：宁可返回 None 让调用方走
+    「参考价兜底 + 显式告警 + 待补队列」这条已审计的受控降级路径，也不写入可能错误的均价。
+    漏记均价可事后回补；错记均价无法事后甄别。
+
+    注意（QMT避坑指南）：query_stock_trades 非交易时段会长时间阻塞，故只在 order_with_guard
+    内部（即必然处于下单等待窗口）调用；任何异常都降级为 None，绝不抛出打断守护流程。
+    """
+    if not oids:
+        return None
+    target = _norm_code(code)
+    try:
+        trades = trader.query_stock_trades(account)
+    except Exception as e:
+        print(f"    !! {code} 查询成交明细异常（真实成交均价不可用）: {e!r}")
+        return None
+    if not trades:
+        return None
+    want = set()
+    for o in oids:
+        try:
+            want.add(int(o))
+        except (TypeError, ValueError):
+            continue
+    if not want or not target:
+        return None
+    total_vol = 0
+    total_amt = 0.0
+    dropped = 0
+    for t in trades:
+        try:
+            oid = int(getattr(t, "order_id", -1))
+        except (TypeError, ValueError):
+            continue
+        if oid not in want:
+            continue
+        # 标的二次校验：同号不同票的脏明细必须剔除，否则加权均价被污染
+        if _norm_code(getattr(t, "stock_code", "")) != target:
+            dropped += 1
+            continue
+        try:
+            tvol = int(getattr(t, "traded_volume", 0) or 0)
+            tpx = float(getattr(t, "traded_price", 0) or 0)
+        except (TypeError, ValueError):
+            continue
+        if tvol <= 0 or tpx <= 0:
+            continue
+        total_vol += tvol
+        total_amt += tvol * tpx
+    if dropped:
+        print(f"    !  {code} 剔除 {dropped} 条同号但非本标的的成交明细"
+              f"（防脏明细污染成交均价）")
+    if total_vol <= 0:
+        return None
+    return total_vol, total_amt
+
+
+def _resolve_avg_price(trader, account, code, oids, traded_vol):
+    """真实成交加权均价。不可用/不完整一律返回 None（由调用方走 resolve_fill_price 兜底）。
+
+    「不完整」= 成交明细汇总量 < 已确认成交量。**严禁**把部分明细的均价当成全部成交的真实均价
+    写进成交记录——那会把「部分成交的真实价」冒充「全部成交的真实价」，账面价与实际不符且
+    无法事后从 CSV 区分。此时降级为 None，让调用方按参考价入账并落待补价队列。
+    成交明细常晚于委托状态同步，故短轮询重试几次再放弃（重试总耗时 ≤ 约 3s，不拖交易窗口）。
+    """
+    if traded_vol <= 0:
+        return None
+
+    for attempt in range(_AVGPRICE_RETRIES):
+        stats = _query_trade_stats(trader, account, code, oids)
+        if stats:
+            vol, amt = stats
+            if vol >= traded_vol:
+                return round(amt / vol, 3)
+            print(f"    !  {code} 成交明细 {vol}股 < 已确认成交量 {traded_vol}股"
+                  f"（明细未同步，第 {attempt + 1}/{_AVGPRICE_RETRIES} 次）")
+        else:
+            print(f"    !  {code} 无可用成交明细（第 {attempt + 1}/{_AVGPRICE_RETRIES} 次）")
+        if attempt + 1 < _AVGPRICE_RETRIES:
+            time.sleep(_AVGPRICE_RETRY_INTERVAL)
+
+    print(f"    !! {code} 真实成交均价不可用（明细缺失或不完整），"
+          f"调用方须用参考价兜底并落待补价队列")
+    return None
+
+
+def record_pending_fill(code, side, vol, order_id, ref_price, note="", order_ids=None):
+    """登记「已成交但成交价未确认」的待补价记录（JSONL 追加，T-20261002-001）。
+
+    成交是既成事实、成交量必须入账（否则账实脱节）；但成交价未知不能编。故：
+      - 成交行照写（price 用调用方参考价，或 0 作待补标记），
+      - 同时把代码/方向/数量落盘，后续可用 query_stock_trades 回补真实均价。
+
+    order_ids（T-20261002-001 补强）：多轮重挂时成交量分散在**多个** order_id 上，
+    只留最后一个（last_order_id）会让回补按单号查询时漏掉前几轮成交 → 补出的均价偏小。
+    故额外落 order_ids 全量列表（去重、升序），order_id 字段保留为最后一笔（兼容旧读取）。
+
+    返回落盘条数；失败返回 0（不抛异常，绝不因记账辅助动作打断交易流程）。
+    """
+    ids = []
+    for o in (order_ids or []):
+        try:
+            o = int(o)
+        except (TypeError, ValueError):
+            continue
+        if o > 0 and o not in ids:
+            ids.append(o)
+    ids.sort()
+    rec = {
+        "time": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "account_id": getattr(C, "ACCOUNT_ID", ""),
+        "code": code,
+        "side": side,
+        "vol": int(vol or 0),
+        "order_id": int(order_id or 0),
+        "order_ids": ids,
+        "ref_price": round(float(ref_price or 0.0), 3),
+        "note": note,
+    }
+    try:
+        os.makedirs(os.path.dirname(PENDING_FILL_FILE), exist_ok=True)
+        with open(PENDING_FILL_FILE, "a", encoding="utf-8") as f:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+        return 1
+    except Exception as e:
+        print(f"    !! {code} 待补价记录落盘失败（人工补价时需一并核对）: {e!r}")
+        return 0
+
+
+def resolve_fill_price(result, ref_price=0.0, code=""):
+    """从 order_guard 结果取记账成交价：真实成交均价优先，参考价兜底。
+
+    返回 (price, source)，source ∈ {"fill_avg", "ref_price", "unresolved"}：
+      - "fill_avg"   : 用真实成交均价（权威记账口径）
+      - "ref_price"  : 无真实均价，按调用方参考价记（近似值，需人工核对成交回报）
+      - "unresolved" : 两者皆无 → price=0.0，**调用方必须**调 record_pending_fill() 落待补价
+                       队列并显著告警；0 价只是待补标记，不得被下游当作真实成交价参与盈亏结算
+
+    存在的意义：让「委托守护已成交但拿不到成交明细」这条路径有唯一、显式、可告警的口径，
+    杜绝各调用方各写一套（历史根因：qmt_clear.py 用自己的局部 price 写日志，取价失败即写 0，
+    产生 63 条 0 价 SELL 记录）。
+    """
+    ap = (result or {}).get("avg_price")
+    try:
+        ap = float(ap) if ap is not None else 0.0
+    except (TypeError, ValueError):
+        ap = 0.0
+    if ap > 0:
+        return round(ap, 3), "fill_avg"
+    try:
+        rp = float(ref_price or 0.0)
+    except (TypeError, ValueError):
+        rp = 0.0
+    if rp > 0:
+        if code:
+            print(f"    !! {code} 无真实成交均价，按参考价 {rp:.3f} 记账"
+                  f"（明细缺失，实际成交价可能偏离）")
+        return round(rp, 3), "ref_price"
+    if code:
+        print(f"    !! {code} 成交价完全无法确认（无真实均价且无参考价）"
+              f"→ 记 0 作待补标记，严禁据此结算盈亏")
+    return 0.0, "unresolved"
+
+
 def wait_order_fill(trader, account, order_id, timeout=WAIT_SECONDS):
     """等待委托成交，单次最多 timeout 秒。返回 (final_status, traded_vol, order_vol)。
 
@@ -155,8 +380,13 @@ def wait_order_fill(trader, account, order_id, timeout=WAIT_SECONDS):
     return 255, 0, 0  # 超时且始终查不到
 
 
-def order_with_guard(trader, account, code, side, vol, price=None, remark="order_guard"):
-    """委托守护：下单→轮询→未全成撤单重试→直到成交或涨跌停跳过。"""
+def _order_with_guard_core(trader, account, code, side, vol, price=None,
+                           remark="order_guard", oid_out=None):
+    """委托守护核心：下单→轮询→未全成撤单重试→直到成交或涨跌停跳过。
+
+    oid_out：可选 list，收集本轮全部成功委托的 order_id（供外层回填真实成交均价）。
+    核心层只管成交量语义，不查成交明细（保持 12 处 return 分支零改动）。
+    """
     attempts = 0
     total_traded = 0
     remaining = vol
@@ -188,6 +418,8 @@ def order_with_guard(trader, account, code, side, vol, price=None, remark="order
         if oid is None or oid <= 0:
             print(f"    !! {code} 委托失败(order_stock 返回 {oid})，{note or ''}")
             continue  # 重试
+        if oid_out is not None:
+            oid_out.append(oid)
 
         print(f"    委托#{attempts} {code} {side} {remaining}股 @{px:.2f} -> order={oid}（等待成交最多{WAIT_SECONDS}s）")
         status, traded, order_vol = wait_order_fill(trader, account, oid)
@@ -296,3 +528,23 @@ def order_with_guard(trader, account, code, side, vol, price=None, remark="order
     return {"ok": False, "action": "CANCELED_TIMEOUT", "traded_vol": total_traded,
             "order_id": last_order_id, "attempts": attempts,
             "note": f"{code} 重试 {MAX_RETRY} 次仍未全部成交，放弃（已成交 {total_traded}股）"}
+
+
+def order_with_guard(trader, account, code, side, vol, price=None, remark="order_guard"):
+    """委托守护公开入口 = 核心委托逻辑 + 真实成交均价回填（T-20261002-001）。
+
+    返回 dict 在核心字段（ok/action/traded_vol/order_id/attempts/note）之外**恒含**：
+      - avg_price : 真实成交均价（加权，来自 query_stock_trades 成交明细）
+                    零成交时为 None（符合语义：无成交谈价格）；
+                    有成交但明细不可用时为 None，由调用方 resolve_fill_price() 兜底并告警
+      - order_ids : 本次守护期间**全部**成功委托号（多轮重挂 + 撤单窗口补记都可能在多个单号上
+                    成交）。供 record_pending_fill() 落盘，回补时按全量单号查成交明细，
+                    只留最后一个单号会漏掉前几轮成交导致补出的均价偏小。
+    核心逻辑与既有语义（撤单补记 / 防双倍 / 涨跌停跳过 / ok 语义）完全不变。
+    """
+    oids = []
+    res = _order_with_guard_core(trader, account, code, side, vol, price, remark, oids)
+    traded = int(res.get("traded_vol", 0) or 0)
+    res["avg_price"] = _resolve_avg_price(trader, account, code, oids, traded) if traded > 0 else None
+    res["order_ids"] = list(oids)
+    return res

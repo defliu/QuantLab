@@ -231,16 +231,32 @@ def _connect_trader():
 def _sell(trader, account, code, vol, price):
     """通过 miniQMT 卖出持仓，接入 order_guard 委托守护。
 
-    返回 order_guard 结果 dict：{"ok", "action", "traded_vol", "order_id", "attempts", "note"}。
+    返回 order_guard 结果 dict：{"ok", "action", "traded_vol", "order_id", "attempts",
+    "note", "avg_price", "fill_price", "px_source"}。
     action: FILLED 全部成交 / LIMIT_SKIP 涨跌停跳过 / REJECTED 废单 / CANCELED_TIMEOUT 超时未全成。
     记账规则由调用方执行（qmt_monitor.main L429-440 实际口径）：traded_vol>0（有真实成交）即写
     成交记录；ok=True 才 sold.add（全部成交不再评估，部分成交剩余下轮继续）。
     0 成交状态（LIMIT_SKIP/REJECTED/超时零成）绝不写成交记录（T-20260909 防假成交）。
     ok=False 不代表零成交（T-20260930-001 厘清），记账唯一门槛是 traded_vol>0。
+
+    T-20261002-001：在此处（order_guard 已 import 的作用域内）解析记账成交价并回传，
+    避免调用方拿不到 order_guard 模块引用；止损卖出用真实成交均价而非触发时现价。
     """
     import order_guard
-    return order_guard.order_with_guard(trader, account, code, "SELL", vol, price,
-                                        remark="auto_sell_signal")
+    r = order_guard.order_with_guard(trader, account, code, "SELL", vol, price,
+                                     remark="auto_sell_signal")
+    if r.get("traded_vol", 0) > 0:
+        r["fill_price"], r["px_source"] = order_guard.resolve_fill_price(r, price, code)
+        # T-20261002-001：记账价非真实成交均价 → 在此（持有 order_guard 引用处）落待补价队列。
+        # 必须在 _sell 内做：主流程拿不到 order_guard 模块引用，放主流程会 NameError。
+        if r["px_source"] != "fill_avg":
+            order_guard.record_pending_fill(code, "SELL", r["traded_vol"],
+                                           r.get("order_id", 0), price,
+                                           note="qmt_monitor:%s" % r["px_source"],
+                                           order_ids=r.get("order_ids"))
+    else:
+        r["fill_price"], r["px_source"] = 0.0, "unresolved"
+    return r
 
 
 # ---- 飞书推送（lark-cli bot 私聊通道，未配置则跳过）----
@@ -436,8 +452,19 @@ def main():
                             sig["auto_sold"] = True
                             sig["order_id"] = r["order_id"]
                             sig["traded_vol"] = r["traded_vol"]
+                            # T-20261002-001：止损卖出是亏损主来源，记账价必须用真实成交均价。
+                            # 原写 last（触发时现价），限价/市价/跳空成交价与之可显著偏离
+                            # （300413.SZ 止损即 -15.43% 远超 -7%），用现价记账会低估亏损。
+                            # _sell 内已解析 fill_price/px_source（order_guard 作用域内）。
+                            fill_px = r.get("fill_price", 0.0)
+                            px_src = r.get("px_source", "unresolved")
+                            sig["fill_price"] = fill_px
                             C.append_trade_rows([[sig["time"], code, "SELL",
-                                                  r["traded_vol"], last, action, r["order_id"]]])
+                                                  r["traded_vol"], fill_px, action, r["order_id"]]])
+                            if px_src != "fill_avg":
+                                print(f"      [!! 成交价未确认] {code} 按 {px_src} 记 {fill_px:.3f}"
+                                      f"（已落待补价队列，需人工核对成交回报；"
+                                      f"0 价仅作待补标记，不得据此结算盈亏）")
                             if r["ok"]:
                                 sold.add(code)
                         else:

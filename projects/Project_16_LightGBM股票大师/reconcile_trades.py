@@ -10,8 +10,10 @@
 
 输出：
   - 本地推导持仓（BUY - SELL 净额） vs QMT 实际持仓，逐代码 PASS/FAIL
-  - 已实现盈亏（FIFO，实盘费率；跳过 price=0 的市价清仓记录）
+  - 已实现盈亏（FIFO，实盘费率）：零价 SELL 仍扣减 FIFO 持仓成本，但该笔不计盈亏
+    （成交价未回填，照算会把整批成本写成巨额亏损；口径与 strategy_capital.calc_realized 一致）
   - 当前持仓浮盈（以 QMT 持仓现价为主，xtdata 兜底）
+  - 异常明细：逐笔列出零价卖出的 时间/委托号/量/被扣减的 FIFO 成本，便于事后回补
 """
 import argparse
 import csv
@@ -116,35 +118,100 @@ def query_qmt_positions():
 
 
 def detect_anomalies(rows):
-    """检测成交记录异常（仅针对日志内买过的策略代码，忽略接管前遗留旧仓的清理卖出）：
-    - 卖出量 > 买入量（未成交单误记 / 重复记录 / 漏记买入）
-    - 策略持仓的 SELL 记录 price<=0（市价清仓未回填成交价，盈亏会失真）
-    返回异常列表 [(code, 描述)]。
+    """检测成交记录异常，返回异常列表 [(code, 描述)]。覆盖：
+
+    1) 卖出量 > 买入量（未成交单误记 / 重复记录 / 漏记买入）
+    2) 策略持仓的 price<=0 卖出（成交价未回填）：**逐笔**给出 时间 / 委托号 / 成交量 /
+       被该笔扣减的 FIFO 成本 / 是否有待补回填记录，便于事后按笔回补。
+
+    零价 SELL 的语义（T-20261002-001 项2）：成交真实 → 必须扣减 FIFO 持仓；
+    成交价未知 → 该笔不计已实现盈亏，故盈亏口径「缺」这一笔，属可回补的账务缺口。
+    修复前只给代码级汇总（「N 只出现 price=0 卖出」），无法定位到笔、也无法回补。
     """
     bought, sold = defaultdict(int), defaultdict(int)
-    price0_strategy = []
-    for r in rows:
+    price0_detail = []          # 策略持仓的零价卖出逐笔明细
+    legacy_price0 = set()       # 接管前遗留旧仓的零价卖出（非策略口径，仅统计）
+    fifo = defaultdict(deque)   # code -> deque[(vol, cost_per含费)]，用于报被消耗的成本
+
+    for r in sorted(rows, key=lambda x: x.get("time", "")):
         code = r.get("code", "")
         if not code:
             continue
         try:
             vol = int(float(r["vol"]))
-        except (TypeError, ValueError):
+            price = float(r["price"])
+        except (TypeError, ValueError, KeyError):
             continue
         side = r.get("side", "")
+        if code in EXCLUDE_CODES:
+            continue
         if side == "BUY":
             bought[code] += vol
+            if price > 0:
+                amt = price * vol
+                fifo[code].append((vol, (amt + buy_fee(amt, code)) / vol))
         elif side == "SELL":
             sold[code] += vol
-            if float(r.get("price", 0) or 0) <= 0 and bought.get(code, 0) > 0:
-                price0_strategy.append(code)
+            if bought.get(code, 0) <= 0:
+                if price <= 0:
+                    legacy_price0.add(code)
+                continue
+            # 每一笔 SELL 都要推进 FIFO（无论有无成交价），否则后续零价笔
+            # 报出的「被消耗成本」会错配到更早的批次层
+            sv, cost_sum = vol, 0.0
+            probe = deque(fifo[code])
+            while sv > 0 and probe:
+                v, cp = probe[0]
+                take = min(v, sv)
+                cost_sum += cp * take
+                sv -= take
+                probe[0] = (v - take, cp)
+                if probe[0][0] <= 0:
+                    probe.popleft()
+            paired = vol - sv
+            fifo[code] = probe
+            if price <= 0:
+                price0_detail.append({
+                    "time": r.get("time", ""),
+                    "code": code,
+                    "vol": vol,
+                    "order_id": r.get("order_id", 0),
+                    "paired_vol": paired,
+                    "cost": (cost_sum / paired) if paired > 0 else 0.0,
+                    "cost_amt": cost_sum,
+                    "score": r.get("score", ""),
+                })
+
     issues = []
     for code in sorted(set(bought.keys())):  # 只查策略买过的代码
         b, s = bought.get(code, 0), sold.get(code, 0)
         if s > b:
             issues.append((code, f"卖出量 {s} > 买入量 {b}（疑似未成交单误记/重复记录）"))
-    if price0_strategy:
-        issues.append(("汇总", f"策略持仓 {len(set(price0_strategy))} 只出现 price=0 卖出（未回填成交价，盈亏失真）"))
+
+    if price0_detail:
+        issues.append(("汇总", "策略持仓零价卖出 {n} 笔 / {v} 股，"
+                                "涉及 {c} 只；均已扣减 FIFO 成本层但未计盈亏，"
+                                "须按下方逐笔记录回补成交价后重算".format(
+                                    n=len(price0_detail),
+                                    v=sum(d["vol"] for d in price0_detail),
+                                    c=len(set(d["code"] for d in price0_detail)))))
+
+    for d in price0_detail:
+        issues.append((
+            d["code"],
+            "零价卖出待回补成交价：{t} | 委托号 {oid} | {v} 股（已扣减 FIFO {pv} 股"
+            "@含费成本 {c:.4f}，合计 {ca:,.2f} 元）| 该笔未计入已实现盈亏，"
+            "回填后需重算 | 原因：{note}".format(
+                t=d["time"] or "?", oid=d["order_id"] or "?",
+                v=d["vol"], pv=d["paired_vol"], c=d["cost"], ca=d["cost_amt"],
+                note=d["score"] or "未标注（多为成交明细未回填 avg_price）",
+            ),
+        ))
+
+    if legacy_price0:
+        issues.append(("汇总", "接管前遗留旧仓零价卖出 {n} 只（非策略口径，"
+                                "不计入已实现盈亏，供人工核对）".format(
+                                    n=len(legacy_price0))))
     return issues
 
 

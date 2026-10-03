@@ -22,7 +22,7 @@ from datetime import datetime
 # ============================================================
 # ³£Á¿
 # ============================================================
-BUILD_TAG = "20260928-113106"
+BUILD_TAG = "20261002-193332"
 
 BRIDGE_DIR = "D:/QMT_POOL/g2_bridge"
 CMD_DIR = os.path.join(BRIDGE_DIR, "cmd")
@@ -58,6 +58,14 @@ PEAK_STALE_HOURS = 24.0     # peak.json ¾àÉÏ´ÎĞ´ÅÌ³¬¹ı´ËĞ¡Ê±ÊıÊÓÎª stale£¬init Ì
 LOOKUP_RETRIES = 6
 LOOKUP_INTERVAL = 0.25
 
+# ³É½»¾ù¼Û/Ìø¿Õ/»¬µã±£»¤£¨2026-10-02 µÚ3Ïî£¬Óë V1.3 Í¬¿Ú¾¶£©
+# deal Ã÷Ï¸²éÑ¯£ºQMT Ô¼ 100ms ·ÖÅä order_id ÑÓ³Ù ¡ú ¶ÌÂÖÑ¯µÈ³É½»Âä¿â
+DEAL_QUERY_RETRIES = 2
+DEAL_QUERY_INTERVAL = 0.2
+DEAL_QUERY_MAX_ERR = 3      # Á¬ĞøÒì³£´ï´ËÊı ¡ú ÅĞ¶¨ deal ½Ó¿ÚÓÀ¾Ã²»¿ÉÓÃ£¬²»ÔÙÖØÊÔ
+MAX_ADVERSE_SLIPPAGE_PCT = 0.03   # ²»Àû»¬µã¸æ¾¯ãĞÖµ£¨Âô³öµÍÓÚ²Î¿¼¼Û 3%£©
+MAX_GAP_TOLERANCE_PCT = 0.02      # Ìø¿ÕÆÆÎ»ÈİÈÌãĞÖµ£¨ÏÖ¼ÛµÍÓÚÖ¹ËğÏß 2% ÒÔÉÏ£©
+
 # ³Ö²Ö/×Ê²úË¢ĞÂ¼ä¸ô(Ãë)
 POSITION_REFRESH_INTERVAL = 10
 
@@ -78,6 +86,12 @@ _g_risk_sold = set()
 _g_last_cfg_load = 0.0   # ¹Â¶ù×ÔĞ£×¼½ÚÁ÷£¨cost=0 ³Ö²ÖÖØ¶Áµ±ÈÕ³É±¾±íµÄÊ±¼ä´Á£¬T-20260908£©
 _g_cfg_fallback_logged = False   # ³É±¾±í»ØÍËÌáÊ¾Ö»´òÒ»´Î£¨T-20260910£©
 _g_diag_printed = False
+
+# deal Ã÷Ï¸½Ó¿ÚÈıÌ¬¿ÉÓÃĞÔ + µ±ÈÕ»¬µã/Ìø¿Õ¸æ¾¯¼ÆÊı£¨2026-10-02 µÚ3Ïî£©
+_g_deal_ok = None          # None=ÉĞÎ´Ì½²â / True=¿ÉÓÃ / False=ÓÀ¾Ã²»¿ÉÓÃ
+_g_deal_err_count = 0      # Á¬ĞøÒì³£´ÎÊı£¬´ï DEAL_QUERY_MAX_ERR ÈÛ¶Ï
+_g_deal_no_oid = False     # ¡¸deal ÎŞÎ¯ÍĞºÅ¡¹¸æ¾¯Ö»´òÒ»´Î
+_g_slippage_alert_count = 0
 
 
 # ============================================================
@@ -354,6 +368,259 @@ def _extract_deal_volume(matched, fallback_vol=0):
     return 0
 
 
+def _deal_oid(d):
+    """´Ó³É½»Ã÷Ï¸¶ÔÏóÌáÈ¡Î¯ÍĞºÅ£»·µ»Ø (Öµ, ÊÇ·ñ¸Ã¶ÔÏó¾ß±¸Î¯ÍĞºÅ×Ö¶Î)¡£"""
+    for attr in ("m_nOrderID", "m_strOrderSysID", "m_strOrderID", "m_strOrderRef", "m_nOrderRef", "m_strSysid"):
+        try:
+            v = getattr(d, attr, "")
+        except Exception:
+            continue
+        if v not in (None, "", 0):
+            return str(v), True
+    return "", False
+
+
+def _query_deals(C, code, oids):
+    """²éÑ¯±¾´ÎÊØ»¤Î¯ÍĞµÄÕæÊµ³É½»Ã÷Ï¸£¬·µ»Ø [(Î¯ÍĞºÅ, Á¿, ¼Û)]£¨²é²»µ½·µ»Ø¿ÕÁĞ±í£©¡£
+    ´ó QMT get_trade_detail_data(acct,'stock','deal') ·µ»Ø³É½»¶ÔÏó£»×Ö¶ÎÃûËæ°æ±¾±ä»¯£¬¶à×Ö¶Î¶µµ×¡£
+    ¹ıÂËÓ²Ìõ¼ş£º±êµÄ´úÂëÒ»ÖÂ AND Î¯ÍĞºÅ ¡Ê ±¾´Î oids£¨remark Ö»×÷ºòÑ¡ÓÅÏÈĞÅºÅ£¬¾ø²»Ó²¹ıÂË£©¡£
+    ¿ÉÓÃĞÔÌ½²âÓïÒå£¨ÈıÌ¬£¬T-20261002£©£º
+      ¡¤ ½Ó¿Ú²»´æÔÚ            ¡ú _g_deal_ok=False£¨ÓÀ¾Ã½µ¼¶£©
+      ¡¤ µ÷ÓÃÅ×Òì³£Á¬Ğø DEAL_QUERY_MAX_ERR ´Î ¡ú _g_deal_ok=False£¨µ¥´ÎÒì³£ÊÓÎª¶¶¶¯£¬²»ÓÀ¾Ã½µ¼¶£©
+      ¡¤ ·µ»Ø¿ÕÁĞ±í            ¡ú ½ö¡¸ÉĞÎ´Âä¿â¡¹£¬±£ÁôÖØÊÔ×Ê¸ñ
+      ¡¤ µ±ÈÕ deal È«ÎŞÎ¯ÍĞºÅ   ¡ú ÎŞ·¨°Ñ³É½»¹éÊôµ½±¾´ÎÎ¯ÍĞ£¨¿ÉÄÜ»ìÈëÍ¬±êµÄÆäËüµ¥µÄÀúÊ·³É½»£©£¬
+        ±ØĞë·µ»Ø [] ¾Ü¾øÊ¹ÓÃ£¬¶ø²»ÊÇ·ÅĞĞÍ¬±êµÄÈ«²¿¼ÇÂ¼ ¡ª¡ª Äş¿É½µ¼¶µ½ order_obj£¬Ò²²»ÓÃ´íÎó¾ù¼Û¼ÇÕË¡£
+    """
+    global _g_deal_ok, _g_deal_err_count, _g_deal_no_oid
+    if _g_deal_ok is False:
+        return []
+    f_get = globals().get("get_trade_detail_data")
+    if f_get is None:
+        f_get = getattr(C, "get_trade_detail_data", None)
+    if f_get is None:
+        _g_deal_ok = False
+        print("[P16G2][DEAL-API-UNAVAIL] ÎŞ get_trade_detail_data£¬³É½»¼Û½µ¼¶Îª¶©µ¥¶ÔÏó¼Û")
+        return []
+    try:
+        deals = f_get(ACCOUNT_ID, "stock", "deal")
+    except Exception as e:
+        _g_deal_err_count += 1
+        if _g_deal_err_count >= DEAL_QUERY_MAX_ERR:
+            _g_deal_ok = False
+        print("[P16G2][DEAL-API-ERR] get_trade_detail_data Å×Òì³£(%d/%d): %s%s" % (
+            _g_deal_err_count, DEAL_QUERY_MAX_ERR, e,
+            "£¬³É½»¼Û½µ¼¶Îª¶©µ¥¶ÔÏó¼Û" if _g_deal_ok is False else "£¬±¾´Î°´ÎŞÃ÷Ï¸´¦Àí"))
+        return []
+    _g_deal_err_count = 0
+    if not deals:
+        return []
+    _g_deal_ok = True
+    target = _norm_code(code)
+    rows = []
+    any_oid = False
+    for d in deals:
+        try:
+            d_code = _norm_code(getattr(d, "m_strInstrumentID", "") or getattr(d, "m_strStockCode", ""))
+            # ÎŞ±êµÄ×Ö¶Î = ÎŞ·¨È·ÈÏÊÇ±¾±êµÄ³É½» ¡ú ¾Ü¾ø£¨²»ÄÜÒòÎª"´úÂëÈ±Ê§"¾Í·ÅĞĞ£¬ÄÇ»á»ìÈëÆäËü¹ÉÆ±£©
+            if not d_code or d_code != target:
+                continue
+            d_oid, has_oid = _deal_oid(d)
+            if has_oid:
+                any_oid = True
+            d_vol = 0
+            for attr in ("m_nVolume", "m_nDealVolume", "m_nTradedVolume", "m_nVolumeTraded"):
+                v = getattr(d, attr, 0) or 0
+                if int(v) > 0:
+                    d_vol = int(v)
+                    break
+            d_px = 0.0
+            for attr in ("m_dAvgPrice", "m_dPrice"):
+                v = float(getattr(d, attr, 0) or 0)
+                if v > 0:
+                    d_px = v
+                    break
+            if d_vol <= 0 or d_px <= 0:
+                continue
+            rows.append((d_oid, has_oid, d_vol, d_px))
+        except Exception:
+            continue
+    if not rows:
+        return []
+    # Á½±é¾ö²ß£ºÏÈÉ¨È«Á¿È·ÈÏ¡¸±¾´ÎÃ÷Ï¸ÀïÊÇ·ñ´æÔÚ´øÎ¯ÍĞºÅµÄ¼ÇÂ¼¡¹£¬ÔÙ¾ö¶¨ÊÇ·ñÆôÓÃÎ¯ÍĞºÅ¹ıÂË£¬
+    # ±ÜÃâ±éÀúË³Ğò¾ö¶¨½á¹û£¨·ñÔòÇ°Ãæ¼¸ÌõÎŞÎ¯ÍĞºÅµÄÔà³É½»»áÏÈ±»·ÅĞĞ£©¡£
+    if not any_oid:
+        # È«ÎŞÎ¯ÍĞºÅ ¡ú ÎŞ·¨¹éÊô±¾´ÎÎ¯ÍĞ£¬¾Ü¾øÊ¹ÓÃ£¨fail-safe£ºÄş¿É½µ¼¶£¬Ò²²»ÓÃ¿ÉÄÜ»ìÈëÀúÊ·³É½»µÄ¾ù¼Û¼ÇÕË£©
+        if not _g_deal_no_oid:
+            _g_deal_no_oid = True
+            print("[P16G2][DEAL-NO-OID] ³É½»Ã÷Ï¸ÎŞÈÎºÎÎ¯ÍĞºÅ×Ö¶Î£¬ÎŞ·¨¹éÊô±¾´ÎÎ¯ÍĞ£¬"
+                  "³É½»¾ù¼Û½µ¼¶Îª¶©µ¥¶ÔÏó¼Û£¨²»²Â²â¹éÊô£©")
+        return []
+    if not oids:
+        return []
+    return [(r[0], r[2], r[3]) for r in rows if r[1] and r[0] in oids]
+
+
+def _resolve_fill_avg(C, code, oids, expect_vol):
+    """ÕæÊµ³É½»¼ÓÈ¨¾ù¼Û£º¦²(Á¿¡Á¼Û)/¦²Á¿¡£ÃüÖĞ³É½»Á¿±ØĞë¸²¸Ç expect_vol£¬·ñÔò·µ»Ø 0£¨½µ¼¶£©¡£
+    oids ±ØĞëÀÛ¼Æ±¾´ÎÊØ»¤ÆÚ¼ä**È«²¿**³É¹¦Î¯ÍĞºÅ£¨¶àÂÖÖØ¹Ò/³·µ¥ÖØ±¨£©£¬·ñÔò²¿·Ö³É½»»áÂ©Ëã¡£
+    deal Ã÷Ï¸ÓĞĞ´ÈëÑÓ³Ù£¬×î¶àÖØÊÔ DEAL_QUERY_RETRIES ´Î¡£"""
+    if expect_vol <= 0 or not oids:
+        return 0.0
+    for attempt in range(DEAL_QUERY_RETRIES):
+        deals = _query_deals(C, code, oids)
+        tot_v = 0
+        tot_amt = 0.0
+        for _oid, dv, dp in deals:
+            tot_v += dv
+            tot_amt += dv * dp
+        if tot_v >= expect_vol and tot_amt > 0:
+            return tot_amt / tot_v
+        if attempt + 1 < DEAL_QUERY_RETRIES:
+            time.sleep(DEAL_QUERY_INTERVAL)
+    return 0.0
+
+
+def _order_obj_price(matched):
+    """´Ó¶©µ¥¶ÔÏóÈ¡¼Û¸ñ£¨¶à×Ö¶Î¶µµ×£©¡£×¢Òâ£ºm_dPrice ÓïÒåÎ´Êµ²â£¨¿ÉÄÜÊÇÎ¯ÍĞ¼Û¶ø·Ç³É½»¾ù¼Û£©£¬
+    Òò´ËÕâÀïµÄÈ¡ÖµÖ»×÷Îª deal Ã÷Ï¸²»¿ÉÓÃÊ±µÄ´Î¼¶½µ¼¶£¬ÇÒ»áÔÚ fills Àï±ê×¢ px_source¡£"""
+    if matched is None:
+        return 0.0
+    for attr in ("m_dAvgPrice", "m_dPrice"):
+        try:
+            v = float(getattr(matched, attr, 0) or 0)
+            if v > 0:
+                return v
+        except Exception:
+            continue
+    return 0.0
+
+
+def _adverse_slippage(action, ref_price, fill_price):
+    """²»Àû»¬µã£ºÂô³ö¿´"ÂôµÍÁË"¡¢ÂòÈë¿´"Âò¸ßÁË"£¬Í³Ò»·µ»ØÕıÊı°Ù·Ö±È¡£
+    ²Î¿¼¼ÛÈ±Ê§»ò·ÇÕıÊ±·µ»Ø 0£¨ÎŞ»ù×¼²»ÒÜÔì»¬µã£©¡£"""
+    if ref_price <= 0 or fill_price <= 0:
+        return 0.0
+    if action == "SELL":
+        return (ref_price - fill_price) / ref_price
+    return (fill_price - ref_price) / ref_price
+
+
+def _resolve_px(C, code, action, oids, expect_vol, matched, ref_price):
+    """Í³Ò»³É½»¼ÛĞ­Òé£ºfill_avg(ÕæÊµ³É½»¾ù¼Û) ¡ú order_obj(¶©µ¥¶ÔÏó¼Û) ¡ú ref_price(´¥·¢/×îĞÂ¼Û)¡£
+    ·µ»Ø (price, px_source, adverse_slip)¡£price ºã > 0 Ê±²Å¿É±» fills Ïû·Ñ·½¼ÇÕË¡£"""
+    avg = _resolve_fill_avg(C, code, oids, expect_vol)
+    if avg > 0:
+        return avg, "fill_avg", _adverse_slippage(action, ref_price, avg)
+    opx = _order_obj_price(matched)
+    if opx > 0:
+        return opx, "order_obj", _adverse_slippage(action, ref_price, opx)
+    if ref_price > 0:
+        return ref_price, "ref_price", 0.0
+    return 0.0, "unresolved", 0.0
+
+
+def _gap_pct(cost_price, trigger_price):
+    """Ìø¿Õ·ù¶È£º´¥·¢Ê±ÏÖ¼ÛÒÑµøÆÆ³É±¾Ö¹ËğÏßµÄ·ù¶È£¨ÕıÊı = Ìø¿ÕÆÆÎ»£©¡£
+    Ìø¿ÕËµÃ÷¡¸°´ -7% Ó¦¸Ã³É½»µ«Êµ¼Ê¿ªÅÌ¾ÍÔÚÏßÏÂ¡¹£¬´ËÊ±ÊĞ¼ÛÖ¹ËğµÄÊµ¼Ê¿÷Ëğ»á³¬¹ı 7%£¬
+    Ğèµ¥¶ÀÁôºÛÒÔ±ãÊÂºóÇø·Ö¡¸Ö¹ËğÊ§Ğ§¡¹Óë¡¸Ìø¿Õ³¬¶î¿÷Ëğ¡¹¡£"""
+    if cost_price <= 0 or trigger_price <= 0:
+        return 0.0
+    line = cost_price * (1.0 - STOP_LOSS_PCT)
+    if trigger_price >= line:
+        return 0.0
+    return (line - trigger_price) / cost_price
+
+
+def _slippage_alert(sid, code, action, px_source, ref_price, fill_price, adverse, gap=0.0):
+    """²»Àû»¬µã / Ìø¿ÕÆÆÎ»¸æ¾¯£º**Ö»¸æ¾¯ÁôºÛ£¬¾ø²»À¹µ¥**£¨Âô³ö·ç¿ØÓÅÏÈ¼¶¸ßÓÚÒ»ÇĞÓÅ»¯£©¡£
+    ·µ»Ø¿ÉĞ´Èë fills µÄ¸æ¾¯ÎÄ±¾£¨¿Õ´®=Õı³££©¡£
+    ×¢Òâ %-¸ñÊ½»¯Óë * µÄÓÅÏÈ¼¶£º±ØĞëĞ´³É "%s" % (adverse * 100)£¬Ğ´³É "%s" % adverse * 100
+    »áÏÈ¸ñÊ½»¯ÔÙÖØ¸´ 100 ´Î£¨T-20261002 ĞŞ¸´£©¡£"""
+    global _g_slippage_alert_count
+    notes = []
+    if adverse > MAX_ADVERSE_SLIPPAGE_PCT:
+        notes.append("²»Àû»¬µã%.2f%%>ãĞÖµ%.0f%%" % (
+            adverse * 100, MAX_ADVERSE_SLIPPAGE_PCT * 100))
+    if gap > MAX_GAP_TOLERANCE_PCT:
+        notes.append("Ìø¿ÕÆÆÎ»%.2f%%>ÈİÈÌ%.0f%%" % (
+            gap * 100, MAX_GAP_TOLERANCE_PCT * 100))
+    if not notes:
+        return ""
+    _g_slippage_alert_count += 1
+    print("[P16G2][SLIPPAGE-ALERT] %s %s %s px_source=%s ref=%.3f fill=%.3f adverse=%.2f%% gap=%.2f%% | %s" % (
+        sid, code, action, px_source, ref_price, fill_price, adverse * 100, gap * 100, "; ".join(notes)))
+    tail = " adverse_slippage=%.2f%%" % (adverse * 100) if adverse > MAX_ADVERSE_SLIPPAGE_PCT else ""
+    if gap > MAX_GAP_TOLERANCE_PCT:
+        tail += " gap_exceeded=%.2f%%" % (gap * 100)
+    return tail
+
+
+def _refresh_last_price(C, code, fallback=0.0):
+    """ÖØÊÔÇ°Ë¢ĞÂ×îĞÂ¼Û£º±ÜÃâÓÃ³Â¾É´¥·¢¼ÛÖØ¹Ò¡£È¡²»µ½ĞĞÇé²ÅÍË»Ø fallback£¨fail-safe ²»×è¶ÏÖØÊÔ£©¡£"""
+    try:
+        tick = C.get_full_tick([code])
+        if tick:
+            t = tick.get(code)
+            if t:
+                p = float(t.get("lastPrice", 0) or 0)
+                if p > 0:
+                    return p
+    except Exception:
+        pass
+    return fallback
+
+
+def _acc_order_id(info, oid):
+    """°ÑÎ¯ÍĞºÅÀÛ¼Æ½ø pending.order_ids£¨¶àÂÖÖØ¹Ò/³·µ¥ÖØ±¨¶¼ÒªÁôºÛ£©¡£
+    ÕæÊµ³É½»¾ù¼Û²éÑ¯±ØĞëÄÃÈ«²¿Î¯ÍĞºÅ£¬·ñÔòÖĞÍ¾ÖØ¹ÒÇ°µÄ²¿·Ö³É½»»á±»Â©Ëã£¬
+    µ¼ÖÂ¡¸Ã÷Ï¸Á¿<ÒÑÈ·ÈÏÁ¿¡¹ÎóÅĞ½µ¼¶¡¢»òÕßÓÃ²ĞÈ±Ã÷Ï¸Ã°³äÕæÊµ¾ù¼Û¡£"""
+    if not oid:
+        return
+    oid = str(oid)
+    ids = info.setdefault("order_ids", [])
+    if oid not in ids:
+        ids.append(oid)
+
+
+def _write_fill(C, date, sid, info, code, action, vol, status, sysid, reason,
+                matched=None, extra=None):
+    """Í³Ò»Ğ´ fills ÊÕÎ²¼ÇÂ¼£¨³É½»¼ÛĞ­Òé + Ìø¿Õ/»¬µãÁôºÛµÄÎ¨Ò»³ö¿Ú£©¡£
+    ¼ÛÔ´ÓÅÏÈ¼¶£ºdealÃ÷Ï¸ÕæÊµ¾ù¼Û(fill_avg) ¡ú ¶©µ¥¶ÔÏó¼Û(order_obj) ¡ú ´¥·¢/²Î¿¼¼Û(ref_price)¡£
+    ²Î¿¼¼Û=´¥·¢Ê±ÏÖ¼Û£¨_resolve_px ´«Èë info['trigger_price']£©£¬»¬µã»ù×¼±ØĞëÓÃËü¶ø·ÇÎ¯ÍĞ¼Û£¬
+    ·ñÔòÊĞ¼Ûµ¥µÄ¡¸Î¯ÍĞ¼Û=´¥·¢¼Û¡¹»á°ÑÕæÊµÌø¿Õ¿÷ËğËã³É 0 »¬µã£¨ÑÚ¸ÇÎÊÌâ£©¡£
+    ·µ»ØĞ´Èë¼ÇÂ¼µÄ dict£¨µ÷ÓÃ·½¿É¼ÌĞø´òÈÕÖ¾£©¡£"""
+    ref_price = float(info.get("trigger_price", 0) or info.get("price", 0) or 0)
+    oids = list(info.get("order_ids", []))
+    oid_now = info.get("order_id", "")
+    if oid_now and str(oid_now) not in oids:
+        oids.append(str(oid_now))
+    price, px_source, adverse = _resolve_px(
+        C, code, action, oids, vol, matched, ref_price)
+    gap = _gap_pct(float(info.get("cost_price", 0) or 0), float(info.get("trigger_price", 0) or 0))
+    alert = _slippage_alert(sid, code, action, px_source, ref_price, price, adverse, gap)
+    rec = {
+        "strategy_order_id": sid,
+        "code": info.get("bridge_code", code),
+        "action": action,
+        "vol": vol,
+        "price": price,
+        "status": status,
+        "sysid": sysid,
+        "reason": (reason or "") + alert,
+        "ts": _now_str(),
+        "px_source": px_source,
+        "trigger_price": ref_price,
+        "adverse_slippage": round(adverse, 6),
+        "gap_pct": round(gap, 6),
+        "order_ids": oids,
+        "retry": info.get("retry", 0),
+    }
+    if extra:
+        rec.update(extra)
+    _add_or_update_fill(date, rec)
+    return rec
+
+
 def _lookup_order(C, code, vol, action, sid="", active_only=True):
     """¶ÌÂÖÑ¯·´²é¶©µ¥£¨¶ÔÆëATRÕ½±¸Ä£°å£©¡£
     È«¾Öº¯ÊıÓÅÏÈ¡¢Ğ¡Ğ´'stock'¡¢m_strOrderIDÓÅÏÈ¡¢Á¿Èİ²îÏà¶Ô»¯(0.10)¡£
@@ -516,9 +783,14 @@ def _execute_order(C, order, date):
         "cur_vol": vol,
         "filled_so_far": 0,
         "price": price,
+        # »¬µã»ù×¼=ÏÂµ¥Ê±²Î¿¼¼Û£¨T-20261002£©£»Ö¸Áîµ¥ÎŞ³Ö²Ö³É±¾Ãª£¬cost_price=0 ±íÊ¾²»²ÎÓëÌø¿ÕÅĞ¶¨
+        "trigger_price": price,
+        "cost_price": 0.0,
+        "last_price": price,
         "time": time.time(),
         "retry": 0,
         "order_id": oid or "",
+        "order_ids": [oid] if oid else [],
         "sysid": sysid,
         "status": "PENDING",
     }
@@ -550,6 +822,10 @@ def _process_cancels(C, cancel_data, date):
         _oid, m = _lookup_order(C, code, cur_vol, action, sid=sid, active_only=False)
         if m is not None:
             oid = _extract_order_id(m) or oid
+            # Ê×·´²é²ÅÄÃµ½Î¯ÍĞºÅÊ±±ØĞëÁ¢¼´ÀÛ¼Æ£¬·ñÔò _write_fill µÄ deal ²éÑ¯»áÒÅÂ©¸Ã±ÊÃ÷Ï¸
+            _acc_order_id(info, oid)
+            if not info.get("order_id"):
+                info["order_id"] = oid
             deal_vol = _extract_deal_volume(m, fallback_vol=cur_vol)
             st_now = int(getattr(m, "m_nOrderStatus", 0) or 0)
             # ²¹Â¼ sysid£¨¹ñÌ¨ºÏÍ¬ºÅ£¬cancel() ĞèÒª£»_execute_order ÈôÎ´²¶»ñÕâÀï¶µµ×£©
@@ -558,17 +834,10 @@ def _process_cancels(C, cancel_data, date):
                 info["sysid"] = _sid_now
             if deal_vol >= cur_vol or st_now == 56:
                 total_deal = filled_so_far + deal_vol
-                _add_or_update_fill(date, {
-                    "strategy_order_id": sid,
-                    "code": info.get("bridge_code", code),
-                    "action": action,
-                    "vol": total_deal,
-                    "price": info.get("price", 0),
-                    "status": "FILLED",
-                    "sysid": info.get("sysid", ""),
-                    "reason": info.get("risk_reason", "filled before cancel"),
-                    "ts": _now_str(),
-                })
+                _write_fill(C, date, sid, info, code, action, total_deal, "FILLED",
+                            info.get("sysid", ""),
+                            info.get("risk_reason", "filled before cancel"),
+                            matched=m)
                 _g_pending.pop(sid, None)
                 print("[P16G2][CANCEL-TOO-LATE] %s ÒÑÈ«²¿³É½» deal=%d" % (sid, total_deal))
                 continue
@@ -624,17 +893,10 @@ def _handle_rejected_retry(C, date, sid, info, now, deal_vol):
     if filled_now > 0:
         total_deal = info.get("filled_so_far", 0) + filled_now
         print("[P16G2][FILLED] %s %s Ô­µ¥ÒÑÈ«³É½» deal=%d" % (sid, code, total_deal))
-        _add_or_update_fill(date, {
-            "strategy_order_id": sid,
-            "code": info.get("bridge_code", code),
-            "action": action,
-            "vol": total_deal,
-            "price": info.get("price", 0),
-            "status": "FILLED",
-            "sysid": info.get("sysid", ""),
-            "reason": info.get("risk_reason", "filled, original still active"),
-            "ts": _now_str(),
-        })
+        _write_fill(C, date, sid, info, code, action, total_deal, "FILLED",
+                    info.get("sysid", ""),
+                    info.get("risk_reason", "filled, original still active"),
+                    matched=m2)
         _g_pending.pop(sid, None)
         _g_today_fill_count += 1
         return
@@ -648,17 +910,9 @@ def _handle_rejected_retry(C, date, sid, info, now, deal_vol):
     info["filled_so_far"] = filled_so_far
     if retry >= MAX_RETRY:
         print("[P16G2][ABANDON] %s %s ·Ïµ¥retry=%d filled=%d" % (sid, code, retry, filled_so_far))
-        _add_or_update_fill(date, {
-            "strategy_order_id": sid,
-            "code": info.get("bridge_code", code),
-            "action": action,
-            "vol": filled_so_far,
-            "price": info.get("price", 0),
-            "status": "ABANDONED",
-            "sysid": info.get("sysid", ""),
-            "reason": info.get("risk_reason", "rejected status=57, retry exhausted"),
-            "ts": _now_str(),
-        })
+        _write_fill(C, date, sid, info, code, action, filled_so_far, "ABANDONED",
+                    info.get("sysid", ""),
+                    info.get("risk_reason", "rejected status=57, retry exhausted"))
         _g_pending.pop(sid, None)
         _g_today_abandon_count += 1
         return
@@ -666,12 +920,17 @@ def _handle_rejected_retry(C, date, sid, info, now, deal_vol):
     if remaining <= 0:
         _g_pending.pop(sid, None)
         return
-    ret = _do_passorder(C, action, code, remaining, info.get("price", 0))
-    print("[P16G2][REJECTED-RETRY-%d] %s %s %d¹É ret=%s" % (retry + 1, sid, code, remaining, ret))
+    # ÖØÊÔÇ°Ë¢ĞÂ×îĞÂ¼Û£ºÊĞ¼Ûµ¥ÓÃ³Â¾É´¥·¢¼ÛËä²»Ó°Ïì³É½»¼Û£¬µ«»áÈÃ»¬µã»ù×¼Ê§Õæ¡¢ÇÒÏŞ¼Û¶µµ×³¡¾°»á¹Ò´í¼Û
+    retry_px = _refresh_last_price(C, code, float(info.get("price", 0) or 0))
+    info["last_price"] = retry_px
+    ret = _do_passorder(C, action, code, remaining, retry_px)
+    print("[P16G2][REJECTED-RETRY-%d] %s %s %d¹É px=%.3f ret=%s" % (
+        retry + 1, sid, code, remaining, retry_px, ret))
     oid3, m3 = _lookup_order(C, code, remaining, action, sid=sid)
     sysid3 = ""
     if m3:
         sysid3 = str(getattr(m3, "m_strSysid", "") or "")
+    _acc_order_id(info, oid3 or _extract_order_id(m3))
     info["time"] = now
     info["retry"] = retry + 1
     info["cur_vol"] = remaining
@@ -695,6 +954,10 @@ def _handle_timeout_retry(C, date, sid, info, now):
         _oid0, _m0 = _lookup_order(C, code, cur_vol, action, sid=sid, active_only=False)
         if _m0 is not None:
             oid = _extract_order_id(_m0) or _oid0 or ""
+            # Ê×·´²é²ÅÄÃµ½Î¯ÍĞºÅÊ±±ØĞëÁ¢¼´ÀÛ¼Æ£¬·ñÔòºóĞø _write_fill µÄ deal ²éÑ¯»áÒÅÂ©¸Ã±ÊÃ÷Ï¸
+            _acc_order_id(info, oid)
+            if not info.get("order_id"):
+                info["order_id"] = oid
     print("[P16G2][TIMEOUT] %s %s elapsed>%ds retry=%d cur_vol=%d filled=%d" % (
         sid, code, PENDING_TIMEOUT, retry, cur_vol, filled_so_far))
     if oid:
@@ -722,17 +985,10 @@ def _handle_timeout_retry(C, date, sid, info, now):
     if filled_before_cancel > 0:
         total_deal = filled_so_far + filled_before_cancel
         print("[P16G2][FILLED] %s %s ³·Ç°ÒÑÈ«³É½» deal=%d" % (sid, code, total_deal))
-        _add_or_update_fill(date, {
-            "strategy_order_id": sid,
-            "code": info.get("bridge_code", code),
-            "action": action,
-            "vol": total_deal,
-            "price": info.get("price", 0),
-            "status": "FILLED",
-            "sysid": info.get("sysid", ""),
-            "reason": info.get("risk_reason", "filled before cancel"),
-            "ts": _now_str(),
-        })
+        _write_fill(C, date, sid, info, code, action, total_deal, "FILLED",
+                    info.get("sysid", ""),
+                    info.get("risk_reason", "filled before cancel"),
+                    matched=m2)
         _g_pending.pop(sid, None)
         _g_today_fill_count += 1
         return
@@ -743,17 +999,9 @@ def _handle_timeout_retry(C, date, sid, info, now):
         return
     if retry >= MAX_RETRY:
         print("[P16G2][ABANDON] %s %s ³¬Ê±retry=%d filled=%d" % (sid, code, retry, filled_so_far))
-        _add_or_update_fill(date, {
-            "strategy_order_id": sid,
-            "code": info.get("bridge_code", code),
-            "action": action,
-            "vol": filled_so_far,
-            "price": info.get("price", 0),
-            "status": "ABANDONED",
-            "sysid": info.get("sysid", ""),
-            "reason": info.get("risk_reason", "timeout, retry exhausted"),
-            "ts": _now_str(),
-        })
+        _write_fill(C, date, sid, info, code, action, filled_so_far, "ABANDONED",
+                    info.get("sysid", ""),
+                    info.get("risk_reason", "timeout, retry exhausted"))
         _g_pending.pop(sid, None)
         _g_today_abandon_count += 1
         return
@@ -761,12 +1009,16 @@ def _handle_timeout_retry(C, date, sid, info, now):
     if remaining <= 0:
         _g_pending.pop(sid, None)
         return
-    ret = _do_passorder(C, action, code, remaining, info.get("price", 0))
-    print("[P16G2][RETRY-%d] %s %s %d¹É ret=%s" % (retry + 1, sid, code, remaining, ret))
+    retry_px = _refresh_last_price(C, code, float(info.get("price", 0) or 0))
+    info["last_price"] = retry_px
+    ret = _do_passorder(C, action, code, remaining, retry_px)
+    print("[P16G2][RETRY-%d] %s %s %d¹É px=%.3f ret=%s" % (
+        retry + 1, sid, code, remaining, retry_px, ret))
     oid3, m3 = _lookup_order(C, code, remaining, action, sid=sid)
     sysid3 = ""
     if m3:
         sysid3 = str(getattr(m3, "m_strSysid", "") or "")
+    _acc_order_id(info, oid3 or _extract_order_id(m3))
     info["time"] = now
     info["retry"] = retry + 1
     info["cur_vol"] = remaining
@@ -786,6 +1038,8 @@ def _handle_cancel_confirm(C, date, sid, info, now):
     filled_so_far = info.get("filled_so_far", 0)
     _oid, m = _lookup_order(C, code, cur_vol, action, sid=sid, active_only=False)
     if m is not None:
+        # Ê×·´²é²ÅÄÃµ½Î¯ÍĞºÅÊ±±ØĞëÁ¢¼´ÀÛ¼Æ£¬·ñÔò _write_fill µÄ deal ²éÑ¯»áÒÅÂ©¸Ã±ÊÃ÷Ï¸
+        _acc_order_id(info, _extract_order_id(m) or _oid or "")
         st = int(getattr(m, "m_nOrderStatus", 0) or 0)
         dv = _extract_deal_volume(m, fallback_vol=cur_vol)
         # ²¹Â¼ sysid£¨m_strOrderSysID ¹ñÌ¨ºÏÍ¬ºÅ£¬¹Ù·½ cancel() ³·µ¥ÓÃ£©
@@ -794,35 +1048,26 @@ def _handle_cancel_confirm(C, date, sid, info, now):
             info["sysid"] = _sid_now
         if dv >= cur_vol or st == 56:
             total_deal = filled_so_far + dv
-            _add_or_update_fill(date, {
-                "strategy_order_id": sid, "code": info.get("bridge_code", code), "action": action,
-                "vol": total_deal, "price": info.get("price", 0), "status": "FILLED",
-                "sysid": info.get("sysid", ""),
-                "reason": info.get("risk_reason", "filled while canceling"),
-                "ts": _now_str(),
-            })
+            _write_fill(C, date, sid, info, code, action, total_deal, "FILLED",
+                        info.get("sysid", ""),
+                        info.get("risk_reason", "filled while canceling"),
+                        matched=m)
             _g_pending.pop(sid, None)
             _g_today_fill_count += 1
             print("[P16G2][CANCEL-CONFIRM-FILLED] %s %s deal=%d" % (sid, code, total_deal))
             return
         if st in (53, 54):
-            _add_or_update_fill(date, {
-                "strategy_order_id": sid, "code": info.get("bridge_code", code), "action": action,
-                "vol": filled_so_far + dv, "price": info.get("price", 0), "status": "CANCELED",
-                "sysid": info.get("sysid", ""),
-                "reason": info.get("risk_reason", "cancel confirmed"),
-                "ts": _now_str(),
-            })
+            _write_fill(C, date, sid, info, code, action, filled_so_far + dv, "CANCELED",
+                        info.get("sysid", ""),
+                        info.get("risk_reason", "cancel confirmed"),
+                        matched=m)
             _g_pending.pop(sid, None)
             print("[P16G2][CANCEL-CONFIRMED] %s %s status=%d" % (sid, code, st))
             return
         if st == 57:
-            _add_or_update_fill(date, {
-                "strategy_order_id": sid, "code": info.get("bridge_code", code), "action": action,
-                "vol": filled_so_far + dv, "price": info.get("price", 0), "status": "REJECTED",
-                "sysid": info.get("sysid", ""),
-                "reason": "cancel rejected status=%d" % st, "ts": _now_str(),
-            })
+            _write_fill(C, date, sid, info, code, action, filled_so_far + dv, "REJECTED",
+                        info.get("sysid", ""), "cancel rejected status=%d" % st,
+                        matched=m)
             _g_pending.pop(sid, None)
             print("[P16G2][CANCEL-REJECTED] %s %s status=%d" % (sid, code, st))
             return
@@ -837,13 +1082,9 @@ def _handle_cancel_confirm(C, date, sid, info, now):
         return
     # m is None£º²é²»µ½¶©µ¥£¨¿ÉÄÜÒÑ³·/ÒÑ³É½»/ÁĞ±í¹ıÆÚ£©¡ú UNCONFIRMED£¬Íâ²¿ÒÔ positions ¶µµ×
     print("[P16G2][CANCEL-UNKNOWN] %s %s ³·µ¥ºó¶©µ¥²é²»µ½£¬×´Ì¬Î´Öª£¬Ğ´UNCONFIRMED£¨Íâ²¿ÒÔpositions¶µµ×£©" % (sid, code))
-    _add_or_update_fill(date, {
-        "strategy_order_id": sid, "code": info.get("bridge_code", code), "action": action,
-        "vol": filled_so_far, "price": info.get("price", 0), "status": "UNCONFIRMED",
-        "sysid": info.get("sysid", ""),
-        "reason": "cancel state unknown (may be canceled or filled), rely on positions",
-        "ts": _now_str(),
-    })
+    _write_fill(C, date, sid, info, code, action, filled_so_far, "UNCONFIRMED",
+                info.get("sysid", ""),
+                "cancel state unknown (may be canceled or filled), rely on positions")
     _g_pending.pop(sid, None)
 
 
@@ -863,7 +1104,6 @@ def _check_pending_orders(C, date):
         vol = info.get("vol", 0)
         cur_vol = info.get("cur_vol", vol)
         filled_so_far = info.get("filled_so_far", 0)
-        price = info.get("price", 0)
 
         # ³·µ¥È·ÈÏÌ¬£ºÖ»È·ÈÏÖÕÌ¬£¨ÒÑ³É¡úFILLED / ÒÑ³·¡úCANCELED / ·Ïµ¥¡úREJECTED / ³¬Ê±Ç¿ÖÆ£©£¬²»×ßÖØÊÔ/³¬Ê±Â·¾¶
         if info.get("cancel_requested"):
@@ -886,27 +1126,19 @@ def _check_pending_orders(C, date):
             info["sysid"] = sysid
         # »ØÌî order_id£ºÊ×´Î·´²é£¨_execute_order ÄÚ£©¿ÉÄÜÒò»º´æÑÓ³ÙÎ´×¥µ½£¬×´Ì¬»úÄÚ³ÖĞø²¹Æë£¬
         # ·ñÔò³·µ¥/³¬Ê±ÖØ±¨ÄÃ²»µ½ÕæÊµÎ¯ÍĞºÅ£¨2026-09-01 P0£º³·µ¥¿ÕID¡úÕæµ¥±ä¹Â¶ù£©
-        if not info.get("order_id"):
-            oid_bk = _extract_order_id(matched)
-            if oid_bk:
+        # Í¬Ê±ÀÛ¼Æ½ø order_ids£¨¶àÂÖÎ¯ÍĞÈ«²¿ÁôºÛ£¬¹©ÕæÊµ³É½»¾ù¼Û²éÑ¯¸²¸ÇËùÓĞÂÖ´Î³É½»£©
+        oid_bk = _extract_order_id(matched)
+        if oid_bk:
+            _acc_order_id(info, oid_bk)
+            if not info.get("order_id"):
                 info["order_id"] = oid_bk
         total_deal = filled_so_far + deal_vol
 
         # 1a) ³É½»Á¿Ó²ÊÂÊµÓÅÏÈ£ºÒÑ³É½» >= Ä¿±êÁ¿ ¡ú FILLED
         if total_deal >= vol:
-            fill_price = float(getattr(matched, "m_dPrice", 0) or getattr(matched, "m_dAvgPrice", 0) or price)
             print("[P16G2][FILLED] %s %s deal=%d" % (sid, code, total_deal))
-            _add_or_update_fill(date, {
-                "strategy_order_id": sid,
-                "code": info.get("bridge_code", code),
-                "action": action,
-                "vol": total_deal,
-                "price": fill_price,
-                "status": "FILLED",
-                "sysid": sysid,
-                "reason": info.get("risk_reason", "deal confirmed"),
-                "ts": _now_str(),
-            })
+            _write_fill(C, date, sid, info, code, action, total_deal, "FILLED",
+                        sysid, info.get("risk_reason", "deal confirmed"), matched=matched)
             _g_pending.pop(sid, None)
             _g_today_fill_count += 1
             continue
@@ -921,35 +1153,19 @@ def _check_pending_orders(C, date):
         # 1c) ³·ÀàÖÕÌ¬(53,54) ¡ú CANCELED ÊÕÎ²£¨vol=total_deal£¬·ÀÂ©¼Æ×îºó³É½»£©
         if status in CANCEL_STATUS:
             print("[P16G2][CANCELED-FROM-QMT] %s %s status=%d deal=%d" % (sid, code, status, total_deal))
-            _add_or_update_fill(date, {
-                "strategy_order_id": sid,
-                "code": info.get("bridge_code", code),
-                "action": action,
-                "vol": total_deal,
-                "price": price,
-                "status": "CANCELED",
-                "sysid": sysid,
-                "reason": info.get("risk_reason", "canceled by QMT, status=%d" % status),
-                "ts": _now_str(),
-            })
+            _write_fill(C, date, sid, info, code, action, total_deal, "CANCELED",
+                        sysid,
+                        info.get("risk_reason", "canceled by QMT, status=%d" % status),
+                        matched=matched)
             _g_pending.pop(sid, None)
             continue
         # 1d) ÓĞ³É½»Î´Âú ¡ú PARTIAL_FILLED ½ø¶È»ØĞ´£¨filled_so_far²»±ä£¬deal_volÊÇÀÛ¼ÆÖµ£©
         # ×¢Òâ£º²¿³ÉÒ²±ØĞë×ß³¬Ê±ÅĞ¶Ï£¨·ñÔòÍ£ÖÍµ¥ÓÀ²»³·/ÓÀ²»ÖØ±¨£¬¹Òµ½ÈÕÖÕ±» NEW-DAY Çåµô£©
         if deal_vol > 0:
-            fill_price = float(getattr(matched, "m_dPrice", 0) or getattr(matched, "m_dAvgPrice", 0) or price)
             print("[P16G2][PARTIAL] %s %s deal=%d/%d" % (sid, code, total_deal, vol))
-            _add_or_update_fill(date, {
-                "strategy_order_id": sid,
-                "code": info.get("bridge_code", code),
-                "action": action,
-                "vol": total_deal,
-                "price": fill_price,
-                "status": "PARTIAL_FILLED",
-                "sysid": sysid,
-                "reason": info.get("risk_reason", "partial deal, waiting more"),
-                "ts": _now_str(),
-            })
+            _write_fill(C, date, sid, info, code, action, total_deal, "PARTIAL_FILLED",
+                        sysid, info.get("risk_reason", "partial deal, waiting more"),
+                        matched=matched)
             # ²¿³ÉºóÈôÍ£ÖÍ³¬¹ı PENDING_TIMEOUT£¬Í¬Ñù×ß³¬Ê±³·Ê£Óà/ÖØ±¨
             elapsed = now - info.get("time", now)
             if elapsed > PENDING_TIMEOUT:
@@ -1126,9 +1342,16 @@ def _check_risk_signals(C, date):
             "cur_vol": can_use,
             "filled_so_far": 0,
             "price": last,
+            # »¬µã/Ìø¿Õ»ùÏß£¨T-20261002£©£ºtrigger_price=´¥·¢Ê±ÏÖ¼Û£¨»¬µã»ù×¼£¬ÊĞ¼Ûµ¥Î¯ÍĞ¼Û=´¥·¢¼Û£¬
+            # ÓÃÎ¯ÍĞ¼Û»á°ÑÕæÊµÌø¿Õ¿÷ËğËã³É 0 »¬µã´Ó¶øÑÚ¸ÇÎÊÌâ£©£»cost_price=º¬·Ñ³É±¾£¨Ìø¿Õ»ù×¼£©¡£
+            # ×¢Òâ£ºÖ¹Ëğ/Ö¹Ó¯/×·Ó¯ÈıÖÖ´¥·¢¶¼ÒªÁô cost_price£¬·ñÔòÌø¿Õ·ù¶ÈÎŞ·¨¼ÆËã¡£
+            "trigger_price": last,
+            "cost_price": cost,
+            "last_price": last,
             "time": now,
             "retry": 0,
             "order_id": "",
+            "order_ids": [],
             "sysid": "",
             "status": "PENDING",
             "risk_reason": action,
@@ -1252,9 +1475,17 @@ def _write_heartbeat(date, cmd_seq):
             "time": info.get("time", time.time()),
             "retry": info.get("retry", 0),
             "order_id": info.get("order_id", ""),
+            "order_ids": info.get("order_ids", []),
             "sysid": info.get("sysid", ""),
             "status": info.get("status", "PENDING"),
             "cancel_requested": info.get("cancel_requested", False),
+            "cancel_retry": info.get("cancel_retry", 0),
+            # »¬µã/Ìø¿Õ»ùÏß±ØĞë³Ö¾Ã»¯£¨T-20261002£©£ºÖØÆôºóÈô¶ªÊ§£¬_write_fill »áÄÃ²»µ½
+            # trigger_price/cost_price ¡ú »¬µãºãËã 0¡¢Ìø¿ÕÎŞ·¨¹éÒò£¬µÈÓÚ°Ñ±£»¤¾²Ä¬¹Øµô¡£
+            "trigger_price": info.get("trigger_price", info.get("price", 0)),
+            "cost_price": info.get("cost_price", 0.0),
+            "last_price": info.get("last_price", info.get("price", 0)),
+            "risk_reason": info.get("risk_reason", ""),
         })
     data = {
         "account_id": ACCOUNT_ID,
@@ -1266,6 +1497,7 @@ def _write_heartbeat(date, cmd_seq):
         "pending": pendings,
         "risk_sold": sorted(_g_risk_sold),
         "risk_count": _g_today_risk_count,
+        "slippage_alert_count": _g_slippage_alert_count,
     }
     _atomic_write_json(_heart_path(date), data)
     _write_peak()
@@ -1358,7 +1590,7 @@ def _process_cancel_cmd(C, date):
 # ============================================================
 def init(C):
     """²ßÂÔ³õÊ¼»¯¡£Ê×²¿set_accountÈ·±£Ö÷ÍÆÍÆËÍ£»´ÓĞÄÌø»Ö¸´seq/pending/risk_sold£»¶ÁÍâ²¿³É±¾±íÓëpeak¡£"""
-    global _g_last_cmd_seq, _g_today, _g_risk_sold, _g_today_risk_count
+    global _g_last_cmd_seq, _g_today, _g_risk_sold, _g_today_risk_count, _g_slippage_alert_count
     try:
         C.set_account(ACCOUNT_ID)
     except Exception:
@@ -1390,6 +1622,11 @@ def init(C):
             print("[P16G2][INIT] »Ö¸´risk_count=%d" % _g_today_risk_count)
     except Exception:
         _g_today_risk_count = 0
+    # »Ö¸´µ±ÈÕ»¬µã/Ìø¿Õ¸æ¾¯¼ÆÊı£¨ÖØÆôºó¼ÌĞøÀÛ¼Óµ±ÈÕ£¬²»ÇåÁã·ñÔòÈÕÄÚÖØÆô»á¶ª¸æ¾¯ÁôºÛ£©
+    try:
+        _g_slippage_alert_count = int(heart.get("slippage_alert_count", 0) or 0) if heart else 0
+    except Exception:
+        _g_slippage_alert_count = 0
     # ¶ÁÍâ²¿³É±¾±í£¨Íâ²¿Ã¿ÈÕĞ´ cmd/positions_cfg_<date>.json£¬FIFO º¬·Ñ³É±¾£»È±Ê§»ØÍË×î½ü±í£©
     cfg = _load_positions_cfg(_g_today)
     if cfg and str(cfg.get("account_id", "") or "") == ACCOUNT_ID:
@@ -1441,18 +1678,21 @@ def init(C):
 
 def handlebar(C):
     """Ã¿·ÖÖÓ´¥·¢£º¶ÁÖ¸Áî¡úÏÂµ¥¡ú·´²é¡úpending¡ú¿ìÕÕ¡úĞÄÌø¡£"""
-    global _g_last_cmd_seq, _g_today, _g_last_position_refresh, _g_last_asset_refresh
+    global _g_last_cmd_seq, _g_today, _g_last_position_refresh, _g_last_asset_refresh, _g_slippage_alert_count
 
     # ÈÕÆÚÇĞ»»ÖØÖÃ
     today = _today_str()
     if today != _g_today:
+        if _g_slippage_alert_count:
+            print("[P16G2][SLIPPAGE-DAY-SUMMARY] Ç°Ò»½»Ò×ÈÕ²»Àû»¬µã/Ìø¿Õ³¬ÏŞ %d ´Î" % _g_slippage_alert_count)
         _g_today = today
         _g_last_cmd_seq = 0
         _g_last_position_refresh = 0.0
         _g_last_asset_refresh = 0.0
         _g_pending.clear()
         _g_risk_sold.clear()
-        print("[P16G2][NEW-DAY] date=%s pendingÇå¿Õ risk_soldÇå¿Õ" % today)
+        _g_slippage_alert_count = 0   # ¸æ¾¯¼ÆÊı°´½»Ò×ÈÕÖØÖÃ£¨·ñÔò¿çÈÕÀÛ¼Ó£¬ÈÕÖÕÎŞ·¨¹éÒòµ½¾ßÌåÄ³Ìì£©
+        print("[P16G2][NEW-DAY] date=%s pendingÇå¿Õ risk_soldÇå¿Õ slippage_alertÇåÁã" % today)
 
     # ½»Ò×Ê±¶ÎÅĞ¶Ï£º09:30-11:30 »ò 13:00-15:00
     try:

@@ -1,6 +1,21 @@
 # coding: utf-8
 """一次性 G2 纠错执行（2026-09-04，诚哥拍板）：卖过期数据误选的 600262/300964 → 买最新数据重算的 300475/001266。
 
+[已废弃 2026-10-02] 本脚本是 2026-09-04 的一次性人工纠错工具（当时 TOP_N=2、SELL_HINTS 钉死
+600262.SH/300964.SZ），已完成历史使命。实测确认：包装脚本 g2_correction_20260904.ps1 未注册 schtasks，
+全库无任何现行调度调用方，数据/schedules 亦无残留注册。
+危险点（--live 会真实写大 QMT 桥，不是"跑一下就中止"）：
+  ① 候选口径已腐化——现行 g2_config.SELECT_TOP=10，产物是 _g2_top10.csv；本脚本仍按 --top 2
+     找 _g2_top2.csv，而 data/selections/g2/ 下留有 25 个历史 top2 文件（最新 20260922）。
+     deploy_predict_g2 第 317 行按 args.top 拼名，故重跑成功时反而会**新产出一份 top2**；
+     若重跑异常但 rc=0，第 121 行 sorted(...)[-1] 会静默取到 20260922 这份一个月前的陈旧候选。
+  ② SELL_HINTS 守卫不构成保护——_known_volumes() 读不到桥持仓时回退硬编码 6400/1000 股，
+     卖单照常生成；卖的是 2026-09 的历史票号，与当前 G2 账本无关。
+  ③ 会覆写 g2_hold_dates（以 R.load_g2_ledger 为 active 基集），污染现行 G2 账本。
+现行换仓唯一入口 = rebalance_g2.py（09:50 TRAE 任务 30344e79）/ rebalance_ens.py（09:52 任务 051bc2d9），
+候选口径与卖出优先级均已按 T-20261002-001/003 修正，勿用本脚本替代。
+保留原因：T-20260903-007 事故与纠错执行的完整证据链（含 dry-run 记录与决策依据），勿删除、勿调用。
+
 背景：600262/300964 系 09-01 候选（当时 moneyflow 缺 11 天，模型 mf_* 特征过期）在 09-02 按 T-1 设计买入；
       最新数据（moneyflow 已刷至 09-02）重算后两者掉出 G2 top2，正确 top2 = 300475 + 001266。
 本脚本在交易日 09:35 后用**实时行情**执行：先卖后买，写大QMT 桥 cmd/orders_<date>.json（70180771）。
@@ -72,6 +87,17 @@ def main():
     ap.add_argument("--top2-csv", default=None)
     ap.add_argument("--min-open", default="0935", help="实时行情最早时间 HHMM")
     args = ap.parse_args()
+
+    if os.environ.get("G2_CORRECTION_EXEC_ALLOW") != "1":
+        print("[ABORT-fail-closed] 本脚本已于 2026-10-02 废弃，运行时已禁用。")
+        print("  原因：①按 --top 2 找 _g2_top2.csv，而现行 SELECT_TOP=10（产物 _g2_top10.csv）；")
+        print("        目录内 25 个历史 top2 文件，重跑异常但 rc=0 时会静默消费 20260922 陈旧候选；")
+        print("        ②_known_volumes() 读不到持仓时回退硬编码 6400/1000 股，SELL_HINTS 守卫不构成保护；")
+        print("        ③会覆写 g2_hold_dates 污染现行 G2 账本。")
+        print("  现行换仓入口：rebalance_g2.py / rebalance_ens.py（TRAE 任务 30344e79 / 051bc2d9）。")
+        print("  仅在复现 T-20260903-007 事故证据时，设 G2_CORRECTION_EXEC_ALLOW=1 方可运行。")
+        return 2
+
     date = R.today_str()
     now = datetime.datetime.now()
 
