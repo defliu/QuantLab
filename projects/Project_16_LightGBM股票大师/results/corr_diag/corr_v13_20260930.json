@@ -1,0 +1,610 @@
+{
+  "batch_date": "20260930",
+  "codes": [
+    "000155.SZ",
+    "000920.SZ",
+    "001378.SZ",
+    "002237.SZ",
+    "003026.SZ",
+    "300531.SZ",
+    "600547.SH",
+    "603083.SH",
+    "603162.SH",
+    "603882.SH"
+  ],
+  "generated_at": "20261002",
+  "io": {
+    "batch_date": "20260930",
+    "errors": [],
+    "io_status": "OK",
+    "kind": "v13",
+    "n_rows": 10,
+    "path": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20260930_selection_full.csv",
+    "signal_date": "20260929",
+    "style_members_date": "20260731"
+  },
+  "io_reasons": [],
+  "kind": "v13",
+  "n_candidates": 10,
+  "overall": "WARN",
+  "reasons": [
+    "[date] 行内 trade_date=20260929 与文件批次日期=20260930 不一致（按上一交易日快照处理）",
+    "[date] 行情数据滞后：本地行情末日=20260911 早于批次相关日=20260930，收益窗口与相关性基于 20260911 及之前数据计算",
+    "[style] 风格成分快照 20260731 滞后批次日 20260929 共 60 天（上限 45），风格归属可信度下降",
+    "[style] 风格基准唯一覆盖率 10.0%（1/10 只命中）低于下限 50.0%，风格诊断对该批次代表性不足"
+  ],
+  "schema_version": "corr_diag_report/v1",
+  "section_status": {
+    "correlation": "OK",
+    "date": "WARN",
+    "index": "OK",
+    "industry": "OK",
+    "style": "WARN"
+  },
+  "sections": {
+    "correlation": {
+      "clusters": [],
+      "largest_cluster": 0,
+      "max_corr": 0.5989,
+      "mean_corr": 0.1835,
+      "n_clusters": 0,
+      "n_input": 10,
+      "n_passed": 10,
+      "n_rejected": 0,
+      "pairs": [
+        {
+          "a": "002237.SZ",
+          "b": "600547.SH",
+          "corr": 0.5989,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "003026.SZ",
+          "b": "603083.SH",
+          "corr": 0.5708,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "002237.SZ",
+          "b": "003026.SZ",
+          "corr": 0.4513,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "000155.SZ",
+          "b": "002237.SZ",
+          "corr": 0.4185,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "600547.SH",
+          "b": "603882.SH",
+          "corr": 0.3758,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "000155.SZ",
+          "b": "600547.SH",
+          "corr": 0.344,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "001378.SZ",
+          "b": "603882.SH",
+          "corr": 0.3418,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "000155.SZ",
+          "b": "603162.SH",
+          "corr": 0.3355,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "002237.SZ",
+          "b": "603882.SH",
+          "corr": 0.3354,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "600547.SH",
+          "b": "603162.SH",
+          "corr": 0.3258,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "603162.SH",
+          "b": "603882.SH",
+          "corr": 0.3243,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "000155.SZ",
+          "b": "300531.SZ",
+          "corr": 0.3149,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "002237.SZ",
+          "b": "300531.SZ",
+          "corr": 0.3113,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "002237.SZ",
+          "b": "603083.SH",
+          "corr": 0.3024,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "002237.SZ",
+          "b": "603162.SH",
+          "corr": 0.2833,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "003026.SZ",
+          "b": "300531.SZ",
+          "corr": 0.2704,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "000155.SZ",
+          "b": "001378.SZ",
+          "corr": 0.2658,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "300531.SZ",
+          "b": "603083.SH",
+          "corr": 0.2459,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "000920.SZ",
+          "b": "003026.SZ",
+          "corr": 0.2449,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "000155.SZ",
+          "b": "603882.SH",
+          "corr": 0.22,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "001378.SZ",
+          "b": "603083.SH",
+          "corr": 0.2158,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "001378.SZ",
+          "b": "603162.SH",
+          "corr": 0.2118,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "000155.SZ",
+          "b": "603083.SH",
+          "corr": 0.1995,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "000920.SZ",
+          "b": "001378.SZ",
+          "corr": 0.1715,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "000920.SZ",
+          "b": "603083.SH",
+          "corr": 0.1697,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "300531.SZ",
+          "b": "600547.SH",
+          "corr": 0.1676,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "001378.SZ",
+          "b": "600547.SH",
+          "corr": 0.1667,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "000920.SZ",
+          "b": "002237.SZ",
+          "corr": 0.1608,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "001378.SZ",
+          "b": "300531.SZ",
+          "corr": 0.1236,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "001378.SZ",
+          "b": "002237.SZ",
+          "corr": 0.1023,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "001378.SZ",
+          "b": "003026.SZ",
+          "corr": 0.0695,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "000920.SZ",
+          "b": "603882.SH",
+          "corr": 0.0665,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "300531.SZ",
+          "b": "603882.SH",
+          "corr": 0.0597,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "603083.SH",
+          "b": "603882.SH",
+          "corr": 0.0543,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "300531.SZ",
+          "b": "603162.SH",
+          "corr": 0.0542,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "000920.SZ",
+          "b": "603162.SH",
+          "corr": 0.0392,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "603083.SH",
+          "b": "603162.SH",
+          "corr": 0.0307,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "003026.SZ",
+          "b": "600547.SH",
+          "corr": -0.0034,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "000155.SZ",
+          "b": "000920.SZ",
+          "corr": -0.0178,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "000155.SZ",
+          "b": "003026.SZ",
+          "corr": -0.0274,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "003026.SZ",
+          "b": "603162.SH",
+          "corr": -0.0406,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "000920.SZ",
+          "b": "600547.SH",
+          "corr": -0.0932,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "600547.SH",
+          "b": "603083.SH",
+          "corr": -0.0933,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "003026.SZ",
+          "b": "603882.SH",
+          "corr": -0.1149,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "000920.SZ",
+          "b": "300531.SZ",
+          "corr": -0.2977,
+          "high": false,
+          "n": 60,
+          "note": ""
+        }
+      ],
+      "quality": [
+        {
+          "code": "000155.SZ",
+          "n": 60,
+          "passed": true,
+          "reason": "",
+          "std": 0.025756,
+          "zero_ratio": 0.0333
+        },
+        {
+          "code": "000920.SZ",
+          "n": 60,
+          "passed": true,
+          "reason": "",
+          "std": 0.043241,
+          "zero_ratio": 0.0
+        },
+        {
+          "code": "001378.SZ",
+          "n": 60,
+          "passed": true,
+          "reason": "",
+          "std": 0.035005,
+          "zero_ratio": 0.0
+        },
+        {
+          "code": "002237.SZ",
+          "n": 60,
+          "passed": true,
+          "reason": "",
+          "std": 0.033068,
+          "zero_ratio": 0.0
+        },
+        {
+          "code": "003026.SZ",
+          "n": 60,
+          "passed": true,
+          "reason": "",
+          "std": 0.042905,
+          "zero_ratio": 0.0
+        },
+        {
+          "code": "300531.SZ",
+          "n": 60,
+          "passed": true,
+          "reason": "",
+          "std": 0.02944,
+          "zero_ratio": 0.0
+        },
+        {
+          "code": "600547.SH",
+          "n": 60,
+          "passed": true,
+          "reason": "",
+          "std": 0.036465,
+          "zero_ratio": 0.0
+        },
+        {
+          "code": "603083.SH",
+          "n": 60,
+          "passed": true,
+          "reason": "",
+          "std": 0.058214,
+          "zero_ratio": 0.0
+        },
+        {
+          "code": "603162.SH",
+          "n": 60,
+          "passed": true,
+          "reason": "",
+          "std": 0.043336,
+          "zero_ratio": 0.0167
+        },
+        {
+          "code": "603882.SH",
+          "n": 60,
+          "passed": true,
+          "reason": "",
+          "std": 0.030428,
+          "zero_ratio": 0.0
+        }
+      ],
+      "reasons": [],
+      "status": "OK",
+      "window": 60
+    },
+    "date": {
+      "file_date": "20260930",
+      "market_last_date": "20260911",
+      "reasons": [
+        "行内 trade_date=20260929 与文件批次日期=20260930 不一致（按上一交易日快照处理）",
+        "行情数据滞后：本地行情末日=20260911 早于批次相关日=20260930，收益窗口与相关性基于 20260911 及之前数据计算"
+      ],
+      "row_trade_date": "20260929",
+      "row_trade_dates_all": [
+        "20260929"
+      ],
+      "signal_date": "20260929",
+      "stale": true,
+      "status": "WARN",
+      "today": "20261002"
+    },
+    "index": {
+      "coverage": {
+        "000300.SH": {
+          "n": 1,
+          "name": "沪深300",
+          "ratio": 0.1
+        },
+        "000852.SH": {
+          "n": 3,
+          "name": "中证1000",
+          "ratio": 0.3
+        },
+        "000905.SH": {
+          "n": 1,
+          "name": "中证500",
+          "ratio": 0.1
+        }
+      },
+      "n_indexes": 3,
+      "reasons": [],
+      "status": "OK",
+      "top1_index": "000852.SH",
+      "top1_index_name": "中证1000",
+      "top1_ratio": 0.3
+    },
+    "industry": {
+      "distribution": {
+        "交通运输": 1,
+        "公用事业": 1,
+        "医药生物": 1,
+        "基础化工": 2,
+        "有色金属": 2,
+        "电子": 1,
+        "计算机": 1,
+        "通信": 1
+      },
+      "hhi": 0.14,
+      "missing_codes": [],
+      "missing_ratio": 0.0,
+      "n_industries": 8,
+      "n_mapped": 10,
+      "n_missing": 0,
+      "reasons": [],
+      "status": "OK",
+      "top1_industry": "基础化工",
+      "top1_ratio": 0.2
+    },
+    "style": {
+      "bucket_counts": {
+        "000918.CSI|300成长": 1,
+        "399372.SZ|大盘成长": 1
+      },
+      "bucket_top1": "000918.CSI|300成长",
+      "bucket_top1_ratio": 0.1,
+      "n_buckets": 2,
+      "n_in_any_style": 1,
+      "n_no_style": 9,
+      "no_style_codes": [
+        "000155.SZ",
+        "000920.SZ",
+        "001378.SZ",
+        "002237.SZ",
+        "003026.SZ",
+        "300531.SZ",
+        "603083.SH",
+        "603162.SH",
+        "603882.SH"
+      ],
+      "reasons": [
+        "风格成分快照 20260731 滞后批次日 20260929 共 60 天（上限 45），风格归属可信度下降",
+        "风格基准唯一覆盖率 10.0%（1/10 只命中）低于下限 50.0%，风格诊断对该批次代表性不足"
+      ],
+      "status": "WARN"
+    }
+  },
+  "thresholds": {
+    "corr_cluster_min": 3,
+    "corr_max_zero_ratio": 0.5,
+    "corr_min_obs": 30,
+    "corr_min_std": 1e-09,
+    "corr_pair": 0.7,
+    "corr_window": 60,
+    "index_top1_ratio": 0.5,
+    "industry_hhi": 0.25,
+    "industry_miss_ratio": 0.2,
+    "industry_top1_ratio": 0.4,
+    "min_candidates": 5,
+    "style_effective_buckets": 1,
+    "style_member_max_stale_days": 45,
+    "style_min_coverage": 0.5,
+    "style_top1_ratio": 0.6
+  }
+}

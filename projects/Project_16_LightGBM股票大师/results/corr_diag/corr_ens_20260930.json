@@ -1,0 +1,372 @@
+{
+  "batch_date": "20260930",
+  "codes": [
+    "002181.SZ",
+    "002790.SZ",
+    "603021.SH",
+    "603378.SH",
+    "688612.SH",
+    "688639.SH",
+    "920237.BJ"
+  ],
+  "generated_at": "20261002",
+  "io": {
+    "batch_date": "20260930",
+    "errors": [],
+    "io_status": "OK",
+    "kind": "ens",
+    "n_rows": 7,
+    "path": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\g2_ens\\20260930_g2_top10.csv",
+    "signal_date": "20260930",
+    "style_members_date": "20260731"
+  },
+  "io_reasons": [],
+  "kind": "ens",
+  "n_candidates": 7,
+  "overall": "WARN",
+  "reasons": [
+    "[date] 行情数据滞后：本地行情末日=20260911 早于批次相关日=20260930，收益窗口与相关性基于 20260911 及之前数据计算",
+    "[style] 风格成分快照 20260731 滞后批次日 20260930 共 61 天（上限 45），风格归属可信度下降",
+    "[style] 候选未命中任何风格基准（6/6 个风格基准数据可用，候选可能落在基准覆盖之外或存在风格漂移）"
+  ],
+  "schema_version": "corr_diag_report/v1",
+  "section_status": {
+    "correlation": "OK",
+    "date": "WARN",
+    "index": "OK",
+    "industry": "OK",
+    "style": "SKIP"
+  },
+  "sections": {
+    "correlation": {
+      "clusters": [],
+      "largest_cluster": 0,
+      "max_corr": 0.4754,
+      "mean_corr": 0.1858,
+      "n_clusters": 0,
+      "n_input": 7,
+      "n_passed": 7,
+      "n_rejected": 0,
+      "pairs": [
+        {
+          "a": "002181.SZ",
+          "b": "920237.BJ",
+          "corr": 0.4754,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "688612.SH",
+          "b": "920237.BJ",
+          "corr": 0.3995,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "002181.SZ",
+          "b": "688612.SH",
+          "corr": 0.3476,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "002181.SZ",
+          "b": "688639.SH",
+          "corr": 0.3444,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "688612.SH",
+          "b": "688639.SH",
+          "corr": 0.2915,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "002181.SZ",
+          "b": "002790.SZ",
+          "corr": 0.2603,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "603021.SH",
+          "b": "603378.SH",
+          "corr": 0.2339,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "688639.SH",
+          "b": "920237.BJ",
+          "corr": 0.2283,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "603021.SH",
+          "b": "920237.BJ",
+          "corr": 0.2223,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "002181.SZ",
+          "b": "603021.SH",
+          "corr": 0.2106,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "002790.SZ",
+          "b": "920237.BJ",
+          "corr": 0.2053,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "002790.SZ",
+          "b": "688639.SH",
+          "corr": 0.1713,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "002790.SZ",
+          "b": "688612.SH",
+          "corr": 0.1661,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "002790.SZ",
+          "b": "603378.SH",
+          "corr": 0.1651,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "603378.SH",
+          "b": "688612.SH",
+          "corr": 0.1261,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "603021.SH",
+          "b": "688639.SH",
+          "corr": 0.1115,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "603378.SH",
+          "b": "920237.BJ",
+          "corr": 0.1011,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "002790.SZ",
+          "b": "603021.SH",
+          "corr": 0.0615,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "002181.SZ",
+          "b": "603378.SH",
+          "corr": -0.0358,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "603021.SH",
+          "b": "688612.SH",
+          "corr": -0.0713,
+          "high": false,
+          "n": 60,
+          "note": ""
+        },
+        {
+          "a": "603378.SH",
+          "b": "688639.SH",
+          "corr": -0.114,
+          "high": false,
+          "n": 60,
+          "note": ""
+        }
+      ],
+      "quality": [
+        {
+          "code": "002181.SZ",
+          "n": 60,
+          "passed": true,
+          "reason": "",
+          "std": 0.037307,
+          "zero_ratio": 0.0333
+        },
+        {
+          "code": "002790.SZ",
+          "n": 60,
+          "passed": true,
+          "reason": "",
+          "std": 0.031469,
+          "zero_ratio": 0.0667
+        },
+        {
+          "code": "603021.SH",
+          "n": 60,
+          "passed": true,
+          "reason": "",
+          "std": 0.037229,
+          "zero_ratio": 0.05
+        },
+        {
+          "code": "603378.SH",
+          "n": 60,
+          "passed": true,
+          "reason": "",
+          "std": 0.043762,
+          "zero_ratio": 0.0
+        },
+        {
+          "code": "688612.SH",
+          "n": 60,
+          "passed": true,
+          "reason": "",
+          "std": 0.035464,
+          "zero_ratio": 0.0167
+        },
+        {
+          "code": "688639.SH",
+          "n": 60,
+          "passed": true,
+          "reason": "",
+          "std": 0.041337,
+          "zero_ratio": 0.0167
+        },
+        {
+          "code": "920237.BJ",
+          "n": 60,
+          "passed": true,
+          "reason": "",
+          "std": 0.027326,
+          "zero_ratio": 0.0
+        }
+      ],
+      "reasons": [],
+      "status": "OK",
+      "window": 60
+    },
+    "date": {
+      "file_date": "20260930",
+      "market_last_date": "20260911",
+      "reasons": [
+        "行情数据滞后：本地行情末日=20260911 早于批次相关日=20260930，收益窗口与相关性基于 20260911 及之前数据计算"
+      ],
+      "row_trade_date": "20260930",
+      "row_trade_dates_all": [
+        "20260930"
+      ],
+      "signal_date": "20260930",
+      "stale": true,
+      "status": "WARN",
+      "today": "20261002"
+    },
+    "index": {
+      "coverage": {
+        "000852.SH": {
+          "n": 3,
+          "name": "中证1000",
+          "ratio": 0.4286
+        }
+      },
+      "n_indexes": 1,
+      "reasons": [],
+      "status": "OK",
+      "top1_index": "000852.SH",
+      "top1_index_name": "中证1000",
+      "top1_ratio": 0.4286
+    },
+    "industry": {
+      "distribution": {
+        "传媒": 1,
+        "基础化工": 1,
+        "建筑材料": 1,
+        "汽车": 1,
+        "电力设备": 1,
+        "轻工制造": 2
+      },
+      "hhi": 0.1837,
+      "missing_codes": [],
+      "missing_ratio": 0.0,
+      "n_industries": 6,
+      "n_mapped": 7,
+      "n_missing": 0,
+      "reasons": [],
+      "status": "OK",
+      "top1_industry": "轻工制造",
+      "top1_ratio": 0.2857142857142857
+    },
+    "style": {
+      "bucket_counts": {},
+      "bucket_top1": null,
+      "bucket_top1_ratio": null,
+      "n_buckets": 0,
+      "n_in_any_style": 0,
+      "n_no_style": 7,
+      "no_style_codes": [
+        "002181.SZ",
+        "002790.SZ",
+        "603021.SH",
+        "603378.SH",
+        "688612.SH",
+        "688639.SH",
+        "920237.BJ"
+      ],
+      "reasons": [
+        "风格成分快照 20260731 滞后批次日 20260930 共 61 天（上限 45），风格归属可信度下降",
+        "候选未命中任何风格基准（6/6 个风格基准数据可用，候选可能落在基准覆盖之外或存在风格漂移）"
+      ],
+      "status": "SKIP"
+    }
+  },
+  "thresholds": {
+    "corr_cluster_min": 3,
+    "corr_max_zero_ratio": 0.5,
+    "corr_min_obs": 30,
+    "corr_min_std": 1e-09,
+    "corr_pair": 0.7,
+    "corr_window": 60,
+    "index_top1_ratio": 0.5,
+    "industry_hhi": 0.25,
+    "industry_miss_ratio": 0.2,
+    "industry_top1_ratio": 0.4,
+    "min_candidates": 5,
+    "style_effective_buckets": 1,
+    "style_member_max_stale_days": 45,
+    "style_min_coverage": 0.5,
+    "style_top1_ratio": 0.6
+  }
+}
