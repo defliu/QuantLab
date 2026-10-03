@@ -30,6 +30,14 @@ FORBIDDEN = [
     (r"\bmatch\b *\w", "match/case"),
     (r"\bf[\"']", "f-string"),
 ]
+# MOCK / 测试残留（生产版红线：不得混入 mock 或测试代码；T-20261003-003 与 build_p16_v13_risk.py 对齐）
+FORBIDDEN_TEXT = [
+    ("MOCK", "MOCK 残留"),
+    ("mock", "mock 残留"),
+    ("pytest", "pytest 残留"),
+    ("unittest", "unittest 残留"),
+    ("assert ", "assert 残留"),
+]
 
 
 def build():
@@ -59,11 +67,21 @@ def build():
             if re.search(pat, line):
                 raise SystemExit("[PY36-REJECT] 第%d行 含 %s: %s" % (i, desc, line.strip()))
 
-    # 3. 替换 BUILD_TAG
+    # 2.5 MOCK / 测试残留扫描（AGENTS：生产版不得混入 mock 或测试代码；T-20261003-003 与 v13 构建脚本对齐）
+    for i, line in enumerate(src_lines, 1):
+        for token, desc in FORBIDDEN_TEXT:
+            if token in line:
+                raise SystemExit("[MOCK-REJECT] 第%d行 含 %s: %s" % (i, desc, line.strip()))
+
+    # 3. 替换 BUILD_TAG（T-20261003-003 加固：源码赋值必须恰为 1 处；原 count=1 弱校验会静默漏替第二处）
     tag = time.strftime("%Y%m%d-%H%M%S")
-    new_src = re.sub(r'BUILD_TAG\s*=\s*"\d{8}-?\d{0,6}"', 'BUILD_TAG = "%s"' % tag, src, count=1)
-    if "BUILD_TAG = \"%s\"" % tag not in new_src:
-        raise SystemExit("BUILD_TAG 替换失败")
+    _assign = re.compile(r'BUILD_TAG\s*=\s*"\d{8}-?\d{0,6}"')
+    _n_assign = len(_assign.findall(src))
+    if _n_assign != 1:
+        raise SystemExit("[BUILD_TAG-REJECT] 源码 BUILD_TAG 赋值应恰为 1 处，实测 %d 处" % _n_assign)
+    new_src = _assign.sub('BUILD_TAG = "%s"' % tag, src, count=1)
+    if len(_assign.findall(new_src)) != 1 or 'BUILD_TAG = "%s"' % tag not in new_src:
+        raise SystemExit("[BUILD_TAG-REJECT] BUILD_TAG 替换失败或替换后校验不通过")
 
     # 4. 首行编码声明统一替换为 gbk（源码可能是 # coding=utf-8）
     new_src = re.sub(r'^# coding[ \t]*=[ \t]*[\w-]+', '# coding=gbk',
@@ -71,9 +89,15 @@ def build():
     if not new_src.lstrip().startswith("# coding=gbk"):
         raise SystemExit("产物首行必须是 # coding=gbk")
 
-    # 5. GBK 写出
+    # 5. GBK 写出（T-20261003-003 加固：写后回读复核，防截断/未刷新/编码异常）
     with open(OUT, "w", encoding="gbk") as f:
         f.write(new_src)
+    with open(OUT, "r", encoding="gbk") as f:
+        _back = f.read()
+    if (not _back.lstrip().startswith("# coding=gbk")
+            or 'BUILD_TAG = "%s"' % tag not in _back
+            or len(_back.split("\n")) != len(src.split("\n"))):
+        raise SystemExit("[BUILD_TAG-REJECT] 产物写后复核失败（首行/BUILD_TAG/行数）")
     size = os.path.getsize(OUT)
     print("生成: %s (%d bytes) BUILD_TAG=%s" % (OUT, size, tag))
     return tag
