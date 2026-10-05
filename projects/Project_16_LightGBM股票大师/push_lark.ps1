@@ -1,3 +1,11 @@
+﻿# [已废弃 2026-10-02] 本脚本全库无调用方，且硬编码 lark 插件版本目录 1.0.4 已不存在（插件已升 1.0.5），执行必然失败。
+# 请改用项目统一包装器（自动多候选探测 + glob 兜底，不随插件升级腐化）：
+#   python lark_push.py --file <txt> --user-id ou_bd13444d8ea53c28249c669f43f3eeff --as bot
+#   自检：python lark_push.py --check
+# lark-cli 稳定出口：C:\Users\Administrator\bin\lark-cli.exe（禁止硬编码 ...\lark\1.0.x\... 版本目录）
+# open_id 唯一事实源 = qmt_config.py 的 FEISHU_OPEN_ID（ou_bd134...）；旧值 ou_76de... 已废弃。
+# 保留原因：历史推送身份验证记录（bot 身份 + 环境变量剥离的实证样本），勿直接调用。
+
 Remove-Item Env:\LARKSUITE_CLI_APP_ID -ErrorAction SilentlyContinue
 Remove-Item Env:\LARKSUITE_CLI_USER_ACCESS_TOKEN -ErrorAction SilentlyContinue
 $env:LARKSUITE_CLI_STRICT_MODE="off"

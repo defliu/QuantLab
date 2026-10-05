@@ -202,9 +202,9 @@ schtasks /Create /TN "quant_weekly_retrain" /TR "cmd /c cd /d D:\quant_server\ap
 | TDX 复核为空 | 盘前无实时数据/无新闻 | 9:30 后复核；如实标注"无数据"不编造 |
 | 定时任务没执行 | 计划任务未配置对/客户端离线 | 检查 schtasks 状态 + 客户端在线 |
 | 交易失败 | 账号/资金/非交易时段 | 检查 qmt_config ACCOUNT_ID、可用资金、交易时段 |
-| 飞书推送失败/发错人 | 环境变量/身份处理不当 | 按 WORKFLOW_DEPLOY.md 第十一节：移除 `LARKSUITE_CLI_APP_ID`/`LARKSUITE_CLI_USER_ACCESS_TOKEN`、设 `LARKSUITE_CLI_STRICT_MODE=off`，bot 身份发 `ou_76deaecde50e10576f8fdc8ba954a7b0` |
+| 飞书推送失败/发错人 | 环境变量/身份处理不当 | 按 WORKFLOW_DEPLOY.md 第十一节：移除 `LARKSUITE_CLI_APP_ID`/`LARKSUITE_CLI_USER_ACCESS_TOKEN`、设 `LARKSUITE_CLI_STRICT_MODE=off`，bot 身份发 `ou_bd13444d8ea53c28249c669f43f3eeff`（唯一事实源见 `qmt_config.py` 的 `FEISHU_OPEN_ID`；旧值 `ou_76de...` 已废弃） |
 
-> **飞书推送迁移提示**：服务器上飞书推送依赖 `lark-cli`（`C:\Users\Administrator\.trae-cn\plugins\...\lark\...\bin\lark-cli.exe`）及其 `~/.lark-cli` 配置。迁移到服务器时需一并安装 lark-cli、重建登录态，并将 `qmt_config.py` 的 `LARK_CLI` / `FEISHU_OPEN_ID` 指向服务器环境。推送规则与排障详见 WORKFLOW_DEPLOY.md 第十一节。
+> **飞书推送迁移提示**：服务器上飞书推送依赖 `lark-cli` 及其 `~/.lark-cli` 配置。**lark-cli 必须用稳定出口 `C:\Users\Administrator\bin\lark-cli.exe`，不要沿用 `~/.trae-cn/plugins/.../lark/<版本>/bin/` 这类插件版本目录**（插件升级后版本目录即失效，2026-10-02 前项目内已因 1.0.4 硬编码踩过一次）。项目内日常推送统一走包装器 `python lark_push.py`（`--check` 自检），由它解析真实路径，调用方无需关心版本。迁移到服务器时需一并安装 lark-cli、重建登录态，并将 `qmt_config.py` 的 `LARK_CLI` / `FEISHU_OPEN_ID` 指向服务器环境。推送规则与排障详见 WORKFLOW_DEPLOY.md 第十一节。
 
 ## 六、安全与备份
 

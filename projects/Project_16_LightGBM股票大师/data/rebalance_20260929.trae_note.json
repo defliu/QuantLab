@@ -39,8 +39,22 @@
       {"code": "603237.SH", "vol": 2800, "sellable": 2800, "last_buy": "2026-09-17", "held_trading_days": 8, "mature": true, "expected_reason": "MATURE", "actually_sold": false}
     ],
     "why_p0": "违反 AGENTS.md 红线『卖出风控优先级高于买入优化』与『不得绕过风控底线』：HOLD_DAYS=5 到期票被无限期滞留，且每多拖一天风险敞口累积。",
-    "status": "OPEN — 待人工决策 + 待修 rebalance_daily.py 判定顺序",
-    "evidence": "data/_summary_20260929.txt L12-15；data/readonly_audit_20260929.json（mature_count=2, today_rebalance_order_count=0）"
+    "status": "CLOSED — 已于 2026-10-02 修复（T-20261002-001，诚哥拍板方案 C=改代码+处理两只票）",
+    "evidence": "data/_summary_20260929.txt L12-15；data/readonly_audit_20260929.json（mature_count=2, today_rebalance_order_count=0）",
+    "fix": {
+      "ticket": "T-20261002-001",
+      "decided_by": "诚哥（方案 C：修代码 + 处理两只持仓）",
+      "fixed_at": "2026-10-02",
+      "root_cause": "买入侧拦截的裸 early return 位于【持仓读取 / 成熟度计算 / sell_plan 生成】之前 → 无候选达标时到期卖出分支不可达。",
+      "code_change": "以 buy_allowed 闸门替换裸 return：buy_allowed=False 时继续读取持仓、计算成熟度、生成 sell_plan/trim_orders，仅在 slots 计算之后把 exec_buys 压到 0。T=0（--top 0）清仓语义保持不变。",
+      "tests": "新增 research/tests/test_rebalance_sell_priority.py 18/18 PASS；关联 research/tests/test_order_guard_backfill.py 19/19 PASS；py_compile OK。",
+      "positions_resolved": [
+        {"code": "603049.SH", "vol": 900, "actually_sold": true, "sold_at": "2026-09-30 10:08:06", "price": 43.89, "reason": "MATURE"},
+        {"code": "603237.SH", "vol": 2800, "actually_sold": true, "sold_at": "2026-09-30 10:09:31", "price": 15.2418, "reason": "MATURE", "note": "guard_note=CANCELED_TIMEOUT(重试10次) 但实际全成交 2800 股，已在 rebalance_20260930.json 的 manual_reconciliation 区块留痕；严禁重下。"}
+      ],
+      "trade_log_proof": "data/qmt_trade_log.csv：2026-09-30 10:08:06 603049.SH SELL 900 43.89 MATURE；2026-09-30 10:09:31 603237.SH SELL 2800 15.2418 MATURE",
+      "no_reorder_rule": "两只票已平仓，严禁再次提交任何卖单。"
+    }
   },
 
   "_KNOWN_CORRUPTION": {
@@ -52,7 +66,50 @@
     "backup_invalid": "data/rebalance_20260929.de_bak.json 与 plan json 内容完全相同（identical=True），备份发生在污染之后，不构成干净副本 —— 09-29 无可恢复的 plan 版本",
     "audit_bottom_line": "候选审计底线已由 data/candidates_asof/<date>_<sha8>_selection_full.csv 留档兜住；plan 级字段缺失记录在案",
     "action_taken": "按 TRAE任务修改说明 §三-2 要求，不修复、不改写当日 json，保持现状；仅本文件留痕",
-    "mitigation": "任务 15868a74 step 4 已改为『只读，禁止写』+ step 4b 溯源字段核验（缺失推 warn 告警）"
+    "mitigation": "任务 15868a74 step 4 已改为『只读，禁止写』+ step 4b 溯源字段核验（缺失推 warn 告警）",
+    "prompt_live_verification": {
+      "verified_at": "2026-10-02（Schedule get 现场回读，非依据文档口径）",
+      "confirmed_effective": [
+        "step 4 已改为只读、禁止写 rebalance json",
+        "step 4b candidate_sha256 溯源字段核验",
+        "step 4c 账实不符人工对账协议（6 步，含 .scriptorig 备份 + manual_reconciliation 区块 + 账本 8 列补记 + 严禁重下）",
+        "会话级备注一律写 data/rebalance_<date>.trae_note.json 的分流规则",
+        "方案 B 纸面并行产物隔离段"
+      ],
+      "fixed_at": "2026-10-02 第 8 次 Schedule update 成功落地（Schedule get 独立回读验收全通过）",
+      "resolved_items": [
+        {
+          "item": "step 4 末尾 zero-target 旧句「属脚本已知行为（红线空仓/候选缺失时脚本在写文件之前早退）」",
+          "resolution": "已删除。step 4 改为带 step 4c 白名单前置例外的只读规则；新增 step 4a『plan json 缺失时的只读诊断顺序』，显式声明『红线空仓/候选缺失导致脚本早退』不再是合法缺失理由，并给出 stdout/退出码 → xtquant 连接 → 候选文件 → T 值与 --top 的只读排查顺序，严禁补写 plan json / executed_live / 任何 candidate_* 字段，严禁重跑 --live。"
+        },
+        {
+          "item": "step 5 硬编码 lark-cli 路径 ...\\lark\\1.0.4\\bin\\lark-cli.exe",
+          "resolution": "已改为 python lark_push.py --file <txt> --user-id <open_id> --as bot 统一出口，可先跑 lark_push.py --check 自检；仅在脚本本身不可用时才回退裸 lark-cli，且必须用 --check 打印的真实路径。原 1.0.4 路径仅保留在『该目录已不存在』的说明性文字中，不再作为可执行路径。"
+        },
+        {
+          "item": "step 3 缺卖出优先级红线",
+          "resolution": "已在 step 3 末尾补入：买入被拦截（红线空仓）时卖出照常执行，agent 绝不可因『今日无候选』而在层面跳过或中止卖出。"
+        }
+      ],
+      "verification_20261002_get": {
+        "method": "Schedule get 独立回读（不采信 update 回执）",
+        "zero_target_stale_sentence_gone": true,
+        "lark_1_0_4_hardcoded_exec_path_gone": true,
+        "step_4a_present": true,
+        "lark_push_py_present": true,
+        "step_3_sell_priority_redline_present": true,
+        "step_4_4c_whitelist_exception_present": true,
+        "step_4b_4c_schemeB_degrade_clause_intact": true,
+        "cron_unchanged": "45 9 * * MON,TUE,WED,THU,FRI",
+        "status_active": true,
+        "executions_unchanged": 24,
+        "next_run": "2026-10-05T01:46:00+00:00"
+      },
+      "update_attempts": "累计 8 次。前 7 次（09-29 三次 + 10-02 第 4/5/6/7 次）失败点完全相同：Schedule update 的用户确认弹窗 10 分钟无人确认即整体跳过，每次失败后立即 Schedule get 回读，prompt 逐字未变、不存在部分写入。第 8 次先向用户确认在场守着弹窗再发起，当场成功。",
+      "blocking_mechanism": "Schedule update 需用户在确认弹窗内显式确认，超时即整体跳过、不做部分写入。失败时先 Schedule get 回读确认真未写入，再判断是文案问题还是弹窗无人确认——本例 7 次均为后者。",
+      "lesson": "发起需确认弹窗的工具动作前，先问用户是否在场守着弹窗，不要在无人值守时连发多次空耗；用户只需点确认，无需手工粘贴 prompt（QMT 客户端粘贴才是用户手工动作）。",
+      "impact_assessment": "step 5 旧路径曾仅导致飞书推送失败（prompt 已规定『推送失败仅记录，绝不阻塞主流程』），不影响下单；step 4 旧文案风险为异常漏报，不致重复下单（『禁止重复下单』与 4c 严禁重下条款仍在）。两处现已全部订正为新事实口径。"
+    }
   },
 
   "source_attribution": {

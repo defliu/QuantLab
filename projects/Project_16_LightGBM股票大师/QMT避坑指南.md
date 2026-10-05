@@ -1,6 +1,7 @@
 # QMT / miniQMT 避坑指南（Project16 实战踩坑记录）
 
-> 更新：2026-08-22 ｜ 目的：跨会话持久记忆所有交易链路踩过的坑，任何会话接手必读。
+> 更新：2026-10-02（最近）｜ 目的：跨会话持久记忆所有交易链路踩过的坑，任何会话接手必读。
+> 历史更新：2026-08-22｜ 最近一次修订：T-20261002-003 —— 订正飞书 open_id 漂移（`ou_76dea...` → `ou_bd134...`）、bot appId 漂移（`cli_aa0f...` → `cli_aade2524ddbd9bd6`，已实读 `~/.lark-cli/config.json` 核实）、lark-cli 版本目录硬编码改为稳定出口 `C:\Users\Administrator\bin\lark-cli.exe` + 统一包装器 `lark_push.py`。
 > 关联知识库：《QMT孤儿持仓与撤单不拉黑》《QMT委托买卖防坑指南》《QMT_passorder异步与反查订单号》
 
 ---
@@ -55,9 +56,11 @@
 
 ## 四、飞书推送（lark-cli bot 通道）
 
-- **通道**：`lark-cli im +messages-send --user-id ou_76deaecde50e10576f8fdc8ba954a7b0 --text "..." --as bot`（lark-cli 路径 `C:\Users\Administrator\.trae-cn\plugins\trae-remote-official\lark\1.0.5\bin\lark-cli.exe`）。
-- **必须处理环境变量**：调用前移除 `LARKSUITE_CLI_APP_ID` 和 `LARKSUITE_CLI_USER_ACCESS_TOKEN`，并设 `LARKSUITE_CLI_STRICT_MODE=off`。原因：外部注入的 app 只有 user token、无 bot 凭据，且 strict-mode=user 会挡 bot；移除后 lark-cli 回退 config.json 的 Trae app（cli_aa0fbe282c399cef，有 bot 凭据）。
-- **不要用 user 身份**发 `ou_76de...` → 报 `open_id cross app`。
+- **通道**：`lark-cli im +messages-send --user-id ou_bd13444d8ea53c28249c669f43f3eeff --text "..." --as bot`（bot `cli_aade...` 下刘诚的 open_id，2026-08-29 实测可私聊）。**open_id 以代码为准**：现行为 `qmt_config.py` / `g2_config.py` / `g2_ens_config.py` 的 `FEISHU_OPEN_ID = ou_bd13444d8ea53c28249c669f43f3eeff`；`ou_76dea...` 是**已废弃旧值**（见 `部署核对清单_新机.md`），文档残留该值属漂移，勿照抄。
+- **lark-cli 路径（禁止硬编码插件版本目录）**：统一稳定出口 `C:\Users\Administrator\bin\lark-cli.exe`。**首选项目统一包装器 `lark_push.py`**（自带多候选探测 + glob 兜底 + 分片 + 严格成功判定），而非直接调 CLI。自检：`python lark_push.py --check`。
+  - 历史教训（2026-09-23 实测）：文档写 `...\lark\1.0.4\...` 而插件实际已升 `1.0.5`，路径不存在 → 模型只能「记录失败」，用户收到「任务跑了但没消息」。插件每次升级都会重演，故此处只给稳定出口与包装器，不写 `1.0.x`。
+- **必须处理环境变量**：调用前移除 `LARKSUITE_CLI_APP_ID` 和 `LARKSUITE_CLI_USER_ACCESS_TOKEN`，并设 `LARKSUITE_CLI_STRICT_MODE=off`。原因：外部注入的 app 只有 user token、无 bot 凭据，且 strict-mode=user 会挡 bot；移除后 lark-cli 回退 `~/.lark-cli/config.json` 里注册的 bot 应用 **`cli_aade2524ddbd9bd6`**（2026-10-02 实读：这是本机唯一注册的应用，secret 在系统 keychain）。**本文档此前写的 `cli_aa0fbe282c399cef` 属漂移——该 appId 不在本机 config.json 里。**
+- **不要用 user 身份**发 `ou_bd134...` → 报 `open_id cross app`（open_id 是应用维度的，只在生成它的那个应用下有效）。
 - **优先级与容错**：推送永远在所有主步骤之后执行；失败仅记录，绝不影响主流程（脚本层 try-except）。
 
 ---

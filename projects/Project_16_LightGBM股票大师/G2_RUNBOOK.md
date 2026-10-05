@@ -24,7 +24,7 @@ reconcile_g2.py ──读──> D:/QMT_POOL/g2_bridge/state/*（对账）
 | 账号   | `qmt_config.ACCOUNT_ID=67014907`                                  | `g2_config.ACCOUNT_ID=70180771`                              | 引用错号=废单                  |
 | 执行   | `rebalance_daily.py` → `qmt_trader.py`                            | `rebalance_g2.py` → 桥 `cmd/orders_*.json`                    | G2 绝不调用 qmt\_trader      |
 | 资金池  | `data/strategy_capital.json`（67014907 戳）                          | `D:/QMT_POOL/g2_bridge/g2_strategy_capital.json`（70180771 戳） | G2 绝不读 V1.3 资金池          |
-| 候选   | `data/selections/<date>_selection_full.csv` / `D_model_top10.csv` | `data/selections/g2/<date>_g2_top2.csv`                      | 不混候选文件                   |
+| 候选   | `data/selections/<date>_selection_full.csv` / `D_model_top10.csv` | `data/selections/g2/<date>_g2_top10.csv`                      | 不混候选文件                   |
 | 持仓归属 | QMT 实时全量（单策略）                                                     | 只认 G2 账本（positions\_cfg + fills FIFO）                        | G2 绝不纳管/卖出他人持仓           |
 | 配置   | `qmt_config.py`                                                   | `g2_config.py`                                               | G2 绝不 import qmt\_config |
 | 对账   | `reconcile_trades.py`                                             | `reconcile_g2.py`                                            | 独立报告目录                   |
