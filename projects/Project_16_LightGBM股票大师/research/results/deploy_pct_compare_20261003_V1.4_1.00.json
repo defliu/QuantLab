@@ -1,0 +1,28 @@
+{
+  "meta": {
+    "generated": "2026-10-03 21:10",
+    "levels": [
+      "1.00"
+    ],
+    "note": "BT_DEPLOY_PCT 对照，其余配置=jq_metrics 官方口径；单源结论（仅 astock），相对对照可用，绝对值定稿需备用源交叉验证"
+  },
+  "strategies": {
+    "V1.4": {
+      "tag": "fixed/N10/红线58/TOP2+lite",
+      "levels": {
+        "1.00": {
+          "total_return": 2.5016665493620858,
+          "annual_return": 0.844202545530798,
+          "volatility": 0.34842526670837237,
+          "max_drawdown": -0.16435222095723068,
+          "sharpe": 1.8727006697151656,
+          "calmar": 5.1365447975934835,
+          "win_rate": 0.6060606060606061,
+          "n_trades": 99,
+          "excess_annual": 0.4094086177082295,
+          "n_skip_exec": 67
+        }
+      }
+    }
+  }
+}

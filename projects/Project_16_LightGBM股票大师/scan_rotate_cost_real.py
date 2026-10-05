@@ -392,7 +392,8 @@ def simulate(dates, per_day, N, slip, open_map, exec_ok=True):
                     break
             best = cand.nlargest(1, "total_new").index[0]
             n = TOP - len(hold)
-            budget = cash * 0.95 / n
+            # 部署比例可配（T-20261003-005 三档对照）：默认 0.95 = 官方口径（与实盘 RESERVE_CASH_PCT 对齐）
+            budget = cash * float(os.environ.get("BT_DEPLOY_PCT", "0.95")) / n
             fee = buy_fee(budget, best, slip)
             invest = budget - fee
             if invest <= 0:
