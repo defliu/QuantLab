@@ -1,0 +1,31 @@
+# Project_22 RPS 强势股每日监控配置
+# 定位：监控与研究辅助工具（排序/观察/跟踪），非交易策略，不产生任何下单语义输出。
+
+windows: [20, 60, 120]
+
+pool:
+  min_listed_days: 252
+  # amount 列单位为【千元】（Tushare 口径；2026-10-04 对 D:/astock 实测核实：
+  # 2026-09-24 全市场最大成交额 16,868,776 千元 ≈ 168.7 亿元，若按"元"解释则最大仅
+  # 1687 万元，明显不合理）。SPEC 原文值 50000000 按"元"假设会过滤掉全部股票，
+  # 故按注释意图"5000 万元"取 50000 千元。此偏差已在任务回报中注明。
+  min_amount: 50000
+  circ_mv_min_wan: 200000   # 20亿（circ_mv 列为万元单位）
+  circ_mv_max_wan: 50000000 # 5000亿（万元单位）
+  exclude_st: true
+
+top_n_report: 50            # rps_rank_daily_*.csv 保留 Top N 明细，全部池另存 rps_rank_full_*.csv
+
+gate:
+  min_cover_ratio: 0.80
+  max_missing_ratio: 0.02
+  min_unique_ratio: 0.30
+
+enrich:
+  enable_zt_pool: true      # 网络失败降级（astock_kit 失败返回 []），不阻断
+  enable_ths_reason: true   # 网络失败降级（同上），不阻断
+
+defect:
+  nan_ratio_threshold: 0.5   # listed_days NaN 比例超此值判为主库缺陷日（2026-10-04 业主拍板）
+  manifest: defects_manifest.csv
+  action: skip_with_manifest  # 已拍板：跳过+留痕；禁止改为 continue/silent

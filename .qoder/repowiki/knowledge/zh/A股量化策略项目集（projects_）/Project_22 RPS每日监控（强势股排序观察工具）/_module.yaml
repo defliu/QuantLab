@@ -1,0 +1,15 @@
+module_path: quant_projects/project_22_rps_daily_monitor
+dir_name: Project_22 RPS每日监控（强势股排序观察工具）
+title: Project_22 RPS每日监控（强势股排序观察工具）
+scope:
+  - projects/Project_22_RPS每日监控/
+source_files:
+  - research/rps_daily.py
+  - scripts/run_rps_daily.ps1
+  - config/rps_monitor.yaml
+children: []
+depends_on:
+  - data_layer
+related_to:
+  - project_12_rps_momentum
+  - project_16_lightgbm_lark_push
