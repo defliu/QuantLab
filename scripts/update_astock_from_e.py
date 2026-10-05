@@ -18,8 +18,11 @@ D:/astock（唯一权威数据源）。
    index_weight / Updatedata。
 
 用法：
-  python update_astock_from_e.py            # dry-run（默认）：只打印合并计划，不写任何文件
-  python update_astock_from_e.py --apply    # 备份 + 合并 + 写回 + 验证 + 生成报告
+  python update_astock_from_e.py                          # dry-run（默认，nested 布局）：只打印合并计划
+  python update_astock_from_e.py --apply                  # 备份 + 合并 + 写回 + 验证 + 生成报告
+  python update_astock_from_e.py --e-layout flat          # 2026-10-01 网盘下载的扁平结构 dry-run
+  python update_astock_from_e.py --e-layout flat --apply  # 扁平结构真实升级
+  python update_astock_from_e.py --run-tag 20261001       # 换本轮备份标识（避免复用旧 .bak_20260913）
 """
 import sys
 import os
@@ -39,12 +42,22 @@ except Exception:
 BAK_SUFFIX = '.bak_20260913'
 REPORT_PATH = r'D:\QuantLab\scripts\update_astock_verify_20260913.md'
 
+# 2026-10-01：新一轮升级用独立 run tag（--run-tag 20261001），避免撞上上一轮已存在的
+# .bak_20260913 备份触发「备份已存在，拒绝再次备份」门禁，造成 daily 已替换而后续表全部中止的半升级状态。
+BAK_TAG = '20260913'
+
+# 2026-10-01：用户自网盘下载的扁平结构（E:\temp\行情数据\*.parquet + 个股行情全量\stock_daily_full.parquet），
+# 与 2026-09-14 首次升级时的离线包层级结构不同，故新增 --e-layout flat 走扁平映射。
+# 扁平布局下各表文件名与 D 盘同名（basic 源文件仍为 stock_basic_data.parquet）。
+E_FLAT_ROOT = r'E:\temp\行情数据'
+E_FLAT_FULL_DIR = os.path.join(E_FLAT_ROOT, '个股行情全量')
+
 E_BASE = r'E:\temp\行情数据\1.2parquet格式股票数据'
-E_DAILY_DIR = os.path.join(E_BASE, r'1.parquet格式个股行情数据\行情数据更新至2026.9.11')
-E_FIN_DIR = os.path.join(E_BASE, r'财务数据parquet格式（已清洗去重）\财务数据更新至2026.9.11')
-E_LHB_BOARD_DIR = os.path.join(E_BASE, r'parquet格式打板专题数据\打板专题数据更新至2026.9.11')
-E_RESEARCH_DIR = os.path.join(E_BASE, r'parquet格式特色数据\特色数据更新至2026.9.11')
-E_MONEYFLOW_DIR = os.path.join(E_BASE, r'parquet格式资金流向数据\资金流向数据更新至2026.9.11')
+E_DAILY_DIR = os.path.join(E_BASE, r'1.parquet格式个股行情数据\行情数据更新至2026.9.18')
+E_FIN_DIR = os.path.join(E_BASE, r'财务数据parquet格式（已清洗去重）\财务数据更新至2026.9.18')
+E_LHB_BOARD_DIR = os.path.join(E_BASE, r'parquet格式打板专题数据\打板专题数据更新至2026.9.18')
+E_RESEARCH_DIR = os.path.join(E_BASE, r'parquet格式特色数据\特色数据更新至2026.9.18')
+E_MONEYFLOW_DIR = os.path.join(E_BASE, r'parquet格式资金流向数据\资金流向数据更新至2026.9.18')
 
 D_BASE = r'D:\astock'
 
@@ -69,14 +82,32 @@ FIN_DATE_COL = {
 FIN_DATE_COL_DEFAULT = 'ann_date'
 
 
-def build_table_specs():
+def build_table_specs(layout='nested'):
+    """layout='nested'：2026-09-14 离线包层级结构（默认，行为不变）。
+    layout='flat'：2026-10-01 用户自网盘下载的扁平结构，各表平铺在 E 盘根目录，
+    daily 额外从 个股行情全量\stock_daily_full.parquet 取全量版做替换迁移
+    （E 根目录的 stock_daily.parquet 是增量，制度规定不得混入主库）。"""
+    if layout == 'flat':
+        e_fin = e_lhb_board = e_research = e_moneyflow = E_FLAT_ROOT
+        e_daily = E_FLAT_FULL_DIR          # 全量版所在子目录
+        e_daily_fname = 'stock_daily_full.parquet'
+        e_basic = E_FLAT_ROOT              # basic 源在根目录，不在「个股行情全量」子目录
+    else:
+        e_daily = E_DAILY_DIR
+        e_daily_fname = 'stock_daily.parquet'
+        e_basic = E_DAILY_DIR
+        e_fin = E_FIN_DIR
+        e_lhb_board = E_LHB_BOARD_DIR
+        e_research = E_RESEARCH_DIR
+        e_moneyflow = E_MONEYFLOW_DIR
     specs = []
-    # 1. daily —— 主行情：规定（2026-09-14 立）「主行情若有到最新日期的全量版，则备份现有后全量替换迁移，不合并；
-    #            若只有增量则增量文件放增量目录不合并进主库（防口径污染）」。当前 E 为 2009-01-05~09-11 全量版 → replace=True
+    # 1. daily —— 主行情：2026-09-14 制度「主行情若有到最新日期的全量版，则不备份、直接全量替换迁移（原子替换），
+    #            不做主键合并；若只有增量则增量文件放增量目录不合并进主库（防口径污染）」。
+    #            当前 E 全量版 14,679,286 行 / 2009-01-05~2026-09-24 → replace=True
     specs.append(dict(
         name='daily/stock_daily',
         d_path=os.path.join(D_BASE, 'daily', 'stock_daily.parquet'),
-        e_path=os.path.join(E_DAILY_DIR, 'stock_daily.parquet'),
+        e_path=os.path.join(e_daily, e_daily_fname),
         keys=['trade_date', 'ts_code'],
         date_col='trade_date',
         indexed=True,
@@ -87,7 +118,7 @@ def build_table_specs():
         specs.append(dict(
             name='finance/' + t,
             d_path=os.path.join(D_BASE, 'finance', t + '.parquet'),
-            e_path=os.path.join(E_FIN_DIR, t + '.parquet'),
+            e_path=os.path.join(e_fin, t + '.parquet'),
             keys=FIN_KEYS[t],
             date_col=FIN_DATE_COL.get(t, FIN_DATE_COL_DEFAULT),
             indexed=False,
@@ -96,7 +127,7 @@ def build_table_specs():
     specs.append(dict(
         name='lhb/top_list',
         d_path=os.path.join(D_BASE, 'lhb', 'top_list.parquet'),
-        e_path=os.path.join(E_LHB_BOARD_DIR, 'top_list.parquet'),
+        e_path=os.path.join(e_lhb_board, 'top_list.parquet'),
         keys=['trade_date', 'ts_code'],
         date_col='trade_date',
         indexed=True,
@@ -105,7 +136,7 @@ def build_table_specs():
     specs.append(dict(
         name='research/report_rc_daily',
         d_path=os.path.join(D_BASE, 'research', 'report_rc_daily.parquet'),
-        e_path=os.path.join(E_RESEARCH_DIR, 'report_rc_daily.parquet'),
+        e_path=os.path.join(e_research, 'report_rc_daily.parquet'),
         keys=['ts_code', 'report_date', 'org_name', 'author_name', 'report_title'],
         date_col='report_date',
         indexed=True,
@@ -114,7 +145,7 @@ def build_table_specs():
     specs.append(dict(
         name='board/ths_daily',
         d_path=os.path.join(D_BASE, 'board', 'ths_daily.parquet'),
-        e_path=os.path.join(E_LHB_BOARD_DIR, 'ths_daily.parquet'),
+        e_path=os.path.join(e_lhb_board, 'ths_daily.parquet'),
         keys=['trade_date', 'ts_code'],
         date_col='trade_date',
         indexed=True,
@@ -123,7 +154,7 @@ def build_table_specs():
     specs.append(dict(
         name='board_fundflow/moneyflow_ind_ths',
         d_path=os.path.join(D_BASE, 'board_fundflow', 'moneyflow_ind_ths.parquet'),
-        e_path=os.path.join(E_MONEYFLOW_DIR, 'moneyflow_ind_ths.parquet'),
+        e_path=os.path.join(e_moneyflow, 'moneyflow_ind_ths.parquet'),
         keys=['trade_date', 'ts_code'],
         date_col='trade_date',
         indexed=True,
@@ -132,7 +163,7 @@ def build_table_specs():
     specs.append(dict(
         name='basic/stock_basic',
         d_path=os.path.join(D_BASE, 'basic', 'stock_basic.parquet'),
-        e_path=os.path.join(E_DAILY_DIR, 'stock_basic_data.parquet'),
+        e_path=os.path.join(e_basic, 'stock_basic_data.parquet'),
         keys=['ts_code'],
         date_col='list_date',
         indexed=False,
@@ -449,7 +480,7 @@ def process_table(spec, apply_mode):
     return st
 
 
-def write_report(results, apply_mode, aborted_msg):
+def write_report(results, apply_mode, aborted_msg, e_layout='nested'):
     now = time.strftime('%Y-%m-%d %H:%M:%S')
     lines = []
     lines.append('# D:/astock 数据更新验证报告（E 盘离线资产合并）')
@@ -457,7 +488,9 @@ def write_report(results, apply_mode, aborted_msg):
     lines.append('- 执行时间：%s' % now)
     lines.append('- 执行模式：%s' % ('APPLY（备份+合并+写回+验证）' if apply_mode else 'DRY-RUN（仅计划，未写任何数据文件）'))
     lines.append('- 脚本：`D:\\QuantLab\\scripts\\update_astock_from_e.py`')
-    lines.append('- E 源：`E:\\temp\\行情数据\\1.2parquet格式股票数据\\`（各子目录「更新至2026.9.11」）')
+    lines.append('- E 源：`%s`' % (E_FLAT_ROOT if e_layout == 'flat' else E_BASE)
+                 + ('（扁平布局：各表平铺根目录，daily 全量版取 `个股行情全量\\stock_daily_full.parquet`）'
+                    if e_layout == 'flat' else '（各子目录「更新至2026.9.18」）'))
     lines.append('- D 目标：`D:\\astock\\`（唯一权威数据源，AGENTS 硬规则）')
     lines.append('- 备份后缀：`%s`（与原文件同目录）' % BAK_SUFFIX)
     lines.append('- 合并规则：按主键去重，D 独有行保留 + E 全量行，冲突键以 E 为准（E 较新）；只增不删。')
@@ -533,6 +566,10 @@ def write_report(results, apply_mode, aborted_msg):
     lines.append('3. **research 主键**：按任务指定的 5 列（ts_code+report_date+org_name+author_name+report_title），'
                  'index 中的 quarter 列不参与去重。')
     lines.append('4. **未触及**：northbound / cb / etf / min_* / index / chip / auction / benchmark / index_weight / Updatedata 均未改动。')
+    if e_layout == 'flat':
+        lines.append('5. **增量日线未混入**：E 盘根目录的 `stock_daily.parquet` 是增量版（22,246 行 / 2026-09-21~09-24），'
+                     '按制度「只有增量则不合并进主库（防口径污染）」**未参与本次升级**；'
+                     'daily 主库仅用 `个股行情全量\\stock_daily_full.parquet`（14,679,286 行 / 2009-01-05~2026-09-24）全量替换。')
     lines.append('')
     lines.append('## 遗留')
     lines.append('')
@@ -550,15 +587,59 @@ def write_report(results, apply_mode, aborted_msg):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Merge newer E:/temp data into D:/astock (backup first, additive only)')
+    parser = argparse.ArgumentParser(
+        description='Merge newer E:/temp data into D:/astock '
+                    '(daily: full replace; others: backup + primary-key merge)'
+    )
     parser.add_argument('--apply', action='store_true', help='真正执行（默认 dry-run 只打印计划）')
+    parser.add_argument('--e-layout', choices=['nested', 'flat'], default='nested',
+                        help='E 盘源布局：nested=2026-09-14 离线包层级结构（默认）；'
+                             'flat=2026-10-01 网盘下载扁平结构（根目录平铺 + 个股行情全量\\stock_daily_full.parquet）')
+    parser.add_argument('--run-tag', default=None,
+                        help='本轮备份标识（YYYYMMDD），决定 .bak_<tag> 后缀与报告文件名；'
+                             '不传则用默认 20260913。若该 tag 的备份已存在会被门禁拒绝，需换新 tag。')
     args = parser.parse_args()
     apply_mode = bool(args.apply)
 
+    global BAK_TAG, BAK_SUFFIX, REPORT_PATH
+    if args.run_tag:
+        tag = ''.join(ch for ch in args.run_tag if ch.isdigit())
+        if not tag:
+            raise SystemExit('--run-tag 需为数字日期，如 20261001')
+        BAK_TAG = tag
+        BAK_SUFFIX = '.bak_%s' % BAK_TAG
+        REPORT_PATH = r'D:\QuantLab\scripts\update_astock_verify_%s.md' % BAK_TAG
+
     print('pandas %s / pyarrow %s' % (pd.__version__, __import__('pyarrow').__version__))
+    print('E 布局: %s' % args.e_layout)
+    print('备份标识: %s（后缀 %s）' % (BAK_TAG, BAK_SUFFIX))
     print('模式: %s' % ('APPLY' if apply_mode else 'DRY-RUN（默认，不写任何文件）'))
 
-    specs = build_table_specs()
+    specs = build_table_specs(args.e_layout)
+
+    # APPLY 前置门禁：一次性检查全部 14 张表的「源文件存在 + 备份名不冲突」。
+    # 原因：脚本按 daily -> finance -> ... 顺序处理且遇错即停，若中途才发现某个备份已存在，
+    # 会出现「daily 已原子替换、后续表全部未动」的半升级状态。故必须在动手前全量预检。
+    if apply_mode:
+        conflicts = []
+        for spec in specs:
+            if not os.path.isfile(spec['d_path']):
+                conflicts.append('D 目标缺失: %s' % spec['d_path'])
+            if not os.path.isfile(spec['e_path']):
+                conflicts.append('E 源缺失: %s' % spec['e_path'])
+            if spec.get('replace'):
+                continue
+            bak = spec['d_path'] + BAK_SUFFIX
+            if os.path.exists(bak):
+                conflicts.append('备份已存在(需换 --run-tag): %s' % bak)
+        if conflicts:
+            print('')
+            print('!! [PRECHECK FAIL] APPLY 前置检查未通过，未写任何文件：')
+            for c in conflicts:
+                print('   - %s' % c)
+            sys.exit(2)
+        print('前置检查通过：14 张表源/目标齐备，备份名无冲突（%s）' % BAK_SUFFIX)
+
     results = []
     aborted_msg = None
     for spec in specs:
@@ -590,7 +671,7 @@ def main():
     print('汇总:')
     for st in results:
         print('  %-42s %s' % (st['name'], st['status']))
-    write_report(results, apply_mode, aborted_msg)
+    write_report(results, apply_mode, aborted_msg, args.e_layout)
     if aborted_msg:
         sys.exit(1)
     print('')

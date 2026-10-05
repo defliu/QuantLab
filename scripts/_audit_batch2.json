@@ -1,0 +1,139 @@
+{
+  "missing_e": [],
+  "missing_d": [],
+  "critical": [
+    [
+      "q_gsprofit_margin",
+      0.09665081968183675,
+      82.3466135120713
+    ],
+    [
+      "q_netprofit_margin",
+      0.10168317476481141,
+      83.85965605739341
+    ],
+    [
+      "q_sales_qoq",
+      0.09043438104992688,
+      82.72692108970685
+    ],
+    [
+      "q_netprofit_qoq",
+      0.09073040193716068,
+      83.0496319740702
+    ],
+    [
+      "q_dtprofit_to_profit",
+      0.042182976430816956,
+      62.97379632792847
+    ],
+    [
+      "dtprofit_to_profit",
+      0.21387509102642283,
+      76.20183688277662
+    ],
+    [
+      "ocf_to_profit",
+      0.25087770193064823,
+      77.61690858218964
+    ],
+    [
+      "ocf_to_or",
+      0.2960208872338032,
+      93.2479170607617
+    ]
+  ],
+  "q2": {
+    "balancesheet": {
+      "rows": 445365,
+      "update_flag": true,
+      "f_ann_date": true,
+      "dup_rows": 104579,
+      "dup_pct": 23.48,
+      "keys": [
+        "ts_code",
+        "end_date",
+        "report_type"
+      ]
+    },
+    "cashflow": {
+      "rows": 387698,
+      "update_flag": true,
+      "f_ann_date": true,
+      "dup_rows": 75699,
+      "dup_pct": 19.53,
+      "keys": [
+        "ts_code",
+        "end_date",
+        "report_type"
+      ]
+    },
+    "dividend": {
+      "rows": 169333,
+      "update_flag": false,
+      "f_ann_date": false,
+      "dup_rows": 70139,
+      "dup_pct": 41.42,
+      "keys": [
+        "ts_code",
+        "end_date"
+      ]
+    },
+    "express": {
+      "rows": 29598,
+      "update_flag": true,
+      "f_ann_date": false,
+      "dup_rows": 14,
+      "dup_pct": 0.05,
+      "keys": [
+        "ts_code",
+        "end_date"
+      ]
+    },
+    "fina_indicator": {
+      "rows": 675628,
+      "update_flag": true,
+      "f_ann_date": false,
+      "dup_rows": 299631,
+      "dup_pct": 44.35,
+      "keys": [
+        "ts_code",
+        "end_date"
+      ]
+    },
+    "forecast": {
+      "rows": 149106,
+      "update_flag": true,
+      "f_ann_date": false,
+      "dup_rows": 29399,
+      "dup_pct": 19.72,
+      "keys": [
+        "ts_code",
+        "end_date"
+      ]
+    },
+    "income": {
+      "rows": 419276,
+      "update_flag": true,
+      "f_ann_date": true,
+      "dup_rows": 70100,
+      "dup_pct": 16.72,
+      "keys": [
+        "ts_code",
+        "end_date",
+        "report_type"
+      ]
+    },
+    "share_change_event": {
+      "rows": 53892,
+      "update_flag": false,
+      "f_ann_date": false,
+      "dup_rows": 1,
+      "dup_pct": 0.0,
+      "keys": [
+        "ts_code",
+        "change_date"
+      ]
+    }
+  }
+}

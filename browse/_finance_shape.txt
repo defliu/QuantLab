@@ -1,0 +1,141 @@
+====================================================================================================
+D-SIDE PRODUCTION  D:\astock\finance
+====================================================================================================
+
+--- balancesheet  (111.2MiB, rows=319515, cols=158, rowgroups=1)
+    codes=6404
+    end_date     2005-03-31 00:00:00 .. 2026-06-30 00:00:00   na=16663  rawlen=[8, 17]
+    ann_date     2005-04-06 00:00:00 .. 2026-08-21 00:00:00   na=16663  rawlen=[8, 17]
+    f_ann_date   2005-04-06 00:00:00 .. 2026-08-21 00:00:00   na=16663  rawlen=[8, 17]
+    f_ann>ann  = 5691
+    ann<end    = 0  (rate 0.0000%)
+    report_type= {'1': 319515}
+
+--- cashflow  (90.1MiB, rows=316738, cols=97, rowgroups=1)
+    codes=6313
+    end_date     2005-03-31 00:00:00 .. 2026-06-30 00:00:00   na=16813  rawlen=[8, 17]
+    ann_date     2005-04-30 00:00:00 .. 2026-08-21 00:00:00   na=16813  rawlen=[8, 17]
+    f_ann_date   2005-04-30 00:00:00 .. 2026-08-21 00:00:00   na=16813  rawlen=[8, 17]
+    f_ann>ann  = 3214
+    ann<end    = 0  (rate 0.0000%)
+    report_type= {'1': 316738}
+
+--- dividend  (1.3MiB, rows=169067, cols=14, rowgroups=1)
+    codes=5789
+    end_date     1990-12-31 00:00:00 .. 2026-07-23 00:00:00   na=1054  rawlen=[8, 17]
+    ann_date     1994-01-01 00:00:00 .. 2026-08-21 00:00:00   na=3705  rawlen=None
+    ann<end    = 211  (rate 0.1248%)
+
+--- express  (2.0MiB, rows=29506, cols=17, rowgroups=1)
+    codes=4602
+    end_date     2005-03-31 00:00:00 .. 2026-06-30 00:00:00   na=5  rawlen=[8, 17]
+    ann_date     2005-04-19 00:00:00 .. 2026-07-29 00:00:00   na=5  rawlen=[8, 17]
+    ann<end    = 3  (rate 0.0102%)
+
+--- fina_indicator  (270.8MiB, rows=354187, cols=167, rowgroups=1)
+    codes=7156
+    end_date     2005-03-31 00:00:00 .. 2026-06-30 00:00:00   na=17058  rawlen=[8, 17]
+    ann_date     2005-04-06 00:00:00 .. 2026-08-21 00:00:00   na=17062  rawlen=[8, 17]
+    ann<end    = 0  (rate 0.0000%)
+
+--- forecast  (19.2MiB, rows=122540, cols=13, rowgroups=1)
+    codes=5905
+    end_date     2005-03-31 00:00:00 .. 2026-06-30 00:00:00   na=34  rawlen=[8]
+    ann_date     2005-03-03 00:00:00 .. 2026-07-29 00:00:00   na=34  rawlen=[8]
+    ann<end    = 43038  (rate 35.1216%)
+
+--- income  (70.6MiB, rows=329557, cols=94, rowgroups=1)
+    codes=6406
+    end_date     2005-03-31 00:00:00 .. 2026-06-30 00:00:00   na=16846  rawlen=[8, 17]
+    ann_date     2005-04-06 00:00:00 .. 2026-08-21 00:00:00   na=16846  rawlen=[8, 17]
+    f_ann_date   2005-04-06 00:00:00 .. 2026-08-21 00:00:00   na=16846  rawlen=[8, 17]
+    f_ann>ann  = 5721
+    ann<end    = 0  (rate 0.0000%)
+    report_type= {'1': 329557}
+
+--- share_change_event  (1.8MiB, rows=53892, cols=9, rowgroups=1)
+    codes=5061
+    change_date  2009-01-06 00:00:00 .. 2026-08-21 00:00:00   na=68  rawlen=[8]
+
+====================================================================================================
+E-SIDE DELIVERY  E:\temp\行情数据
+====================================================================================================
+
+--- balancesheet  (136.6MiB, rows=445365, cols=159, rowgroups=1)
+    codes=6567
+    end_date     1990-06-30 00:00:00 .. 2026-06-30 00:00:00   na=0  rawlen=[8]
+    ann_date     1990-12-31 00:00:00 .. 2026-09-10 00:00:00   na=0  rawlen=[8]
+    f_ann_date   1990-12-31 00:00:00 .. 2026-09-10 00:00:00   na=0  rawlen=[8]
+    f_ann>ann  = 8119
+    ann<end    = 1  (rate 0.0002%)
+    report_type= {'1': 445365}
+
+--- cashflow  (105.4MiB, rows=387698, cols=98, rowgroups=1)
+    codes=6527
+    end_date     1998-12-31 00:00:00 .. 2026-06-30 00:00:00   na=0  rawlen=[8]
+    ann_date     1999-01-30 00:00:00 .. 2026-09-10 00:00:00   na=0  rawlen=[8]
+    f_ann_date   1999-01-30 00:00:00 .. 2026-09-10 00:00:00   na=0  rawlen=[8]
+    f_ann>ann  = 4430
+    ann<end    = 0  (rate 0.0000%)
+    report_type= {'1': 387698}
+
+--- dividend  (1.3MiB, rows=169333, cols=14, rowgroups=1)
+    codes=5793
+    end_date     1990-12-31 00:00:00 .. 2026-08-10 00:00:00   na=97  rawlen=[8]
+    ann_date     1994-01-01 00:00:00 .. 2026-09-10 00:00:00   na=2749  rawlen=None
+    ann<end    = 211  (rate 0.1246%)
+
+--- express  (2.2MiB, rows=29598, cols=18, rowgroups=1)
+    codes=4613
+    end_date     2004-12-31 00:00:00 .. 2026-06-30 00:00:00   na=0  rawlen=[8]
+    ann_date     2005-01-08 00:00:00 .. 2026-08-25 00:00:00   na=0  rawlen=[8]
+    ann<end    = 3  (rate 0.0101%)
+
+--- fina_indicator  (281.5MiB, rows=675628, cols=168, rowgroups=1)
+    codes=7318
+    end_date     1990-06-30 00:00:00 .. 2026-06-30 00:00:00   na=0  rawlen=[8]
+    ann_date     1990-12-31 00:00:00 .. 2026-09-10 00:00:00   na=32  rawlen=[8]
+    ann<end    = 1  (rate 0.0001%)
+
+--- forecast  (29.1MiB, rows=149106, cols=14, rowgroups=1)
+    codes=5952
+    end_date     1998-12-31 00:00:00 .. 2026-09-30 00:00:00   na=0  rawlen=[8]
+    ann_date     1999-01-08 00:00:00 .. 2026-08-24 00:00:00   na=0  rawlen=[8]
+    ann<end    = 47343  (rate 31.7512%)
+
+--- income  (78.0MiB, rows=419276, cols=95, rowgroups=1)
+    codes=6568
+    end_date     1990-12-31 00:00:00 .. 2026-06-30 00:00:00   na=0  rawlen=[8]
+    ann_date     1995-01-05 00:00:00 .. 2026-09-10 00:00:00   na=0  rawlen=[8]
+    f_ann_date   1995-01-05 00:00:00 .. 2026-09-10 00:00:00   na=0  rawlen=[8]
+    f_ann>ann  = 7216
+    ann<end    = 1  (rate 0.0002%)
+    report_type= {'1': 419276}
+
+--- share_change_event  (1.8MiB, rows=53892, cols=9, rowgroups=1)
+    codes=5061
+    change_date  2009-01-06 00:00:00 .. 2026-08-21 00:00:00   na=68  rawlen=[8]
+
+====================================================================================================
+D vs E  SIDE-BY-SIDE DELTA
+====================================================================================================
+TABLE                        D_rows       E_rows        DELTA    D_codes    E_codes    D_ann_max    E_ann_max
+----------------------------------------------------------------------------------------------------
+balancesheet                 319515       445365      +125850       6404       6567   2026-08-21   2026-09-10
+cashflow                     316738       387698       +70960       6313       6527   2026-08-21   2026-09-10
+dividend                     169067       169333         +266       5789       5793   2026-08-21   2026-09-10
+express                       29506        29598          +92       4602       4613   2026-07-29   2026-08-25
+fina_indicator               354187       675628      +321441       7156       7318   2026-08-21   2026-09-10
+forecast                     122540       149106       +26566       5905       5952   2026-07-29   2026-08-24
+income                       329557       419276       +89719       6406       6568   2026-08-21   2026-09-10
+share_change_event            53892        53892           +0       5061       5061         None         None
+
+column-set identical?
+  balancesheet           DIFF  D_only=[]  E_only=['__index_level_0__']
+  cashflow               DIFF  D_only=[]  E_only=['__index_level_0__']
+  dividend               SAME  D_only=[]  E_only=[]
+  express                DIFF  D_only=[]  E_only=['__index_level_0__']
+  fina_indicator         DIFF  D_only=[]  E_only=['__index_level_0__']
+  forecast               DIFF  D_only=[]  E_only=['__index_level_0__']
+  income                 DIFF  D_only=[]  E_only=['__index_level_0__']
+  share_change_event     SAME  D_only=[]  E_only=[]

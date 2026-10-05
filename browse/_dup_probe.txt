@@ -1,0 +1,91 @@
+========================================================================================================
+PART 1  (N)-SUFFIXED FILES  -- supplier duplicate delivery
+========================================================================================================
+total files=167458   (N)-suffixed=8286   bytes=12.07GiB
+by ext: {'.json': 1, '.parquet': 8283, '.txt': 2}
+
+DIR                                                               DUPN        SIZE
+--------------------------------------------------------------------------------------------------------
+1.parquet格式数据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_1min           2761     9.84GiB
+1.parquet格式数据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min          2755     1.26GiB
+1.parquet格式数据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_60min          2754    478.3MiB
+1.parquet格式数据/parquet格式ETF数据/2026.7.31后缺5-60min的9.30那根分钟线补充包，后       5      2.1MiB
+1.2parquet格式股票数据/财务数据parquet格式（已清洗去重）/财务数据更新至2026.7.31               4    472.3MiB
+1.2parquet格式股票数据/1.parquet格式个股行情数据/2026.7.31后缺5-60min的9.30那根分钟       4      6.7MiB
+1.parquet格式数据/parquet格式指数数据/指数数据更新至2026.9.30                         1     24.8MiB
+1.parquet格式数据/parquet格式ETF数据/ETF数据更新至2026.9.30                       1      99575B
+每日A股日线行情数据parquet（日更）                                                1       1612B
+
+========================================================================================================
+PART 2  SAME (dir, code) APPEARING >1 TIME  -- real collision check
+========================================================================================================
+(dir,code) keys=152189   with>1 file=8269
+
+DIR                                                          CODES   FILES   SAME_SZ DIFF_SZ
+--------------------------------------------------------------------------------------------------------
+1.parquet格式数据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_1min       2760    5520      2760       0
+1.parquet格式数据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min      2755    5510      2755       0
+1.parquet格式数据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_60min      2754    5508      2754       0
+
+--- samples: same (dir,code) ---
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150002  n=2  IDENTICAL_SIZE  150002.SZ(1).parquet(7691B), 150002.SZ.parquet(7691B)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150003  n=2  IDENTICAL_SIZE  150003.SZ(1).parquet(7798B), 150003.SZ.parquet(7798B)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150006  n=2  IDENTICAL_SIZE  150006.SZ(1).parquet(7382B), 150006.SZ.parquet(7382B)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150007  n=2  IDENTICAL_SIZE  150007.SZ(1).parquet(7947B), 150007.SZ.parquet(7947B)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150008  n=2  IDENTICAL_SIZE  150008.SZ(1).parquet(956851B), 150008.SZ.parquet(956851B)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150009  n=2  IDENTICAL_SIZE  150009.SZ(1).parquet(981095B), 150009.SZ.parquet(981095B)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150012  n=2  IDENTICAL_SIZE  150012.SZ(1).parquet(983110B), 150012.SZ.parquet(983110B)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150013  n=2  IDENTICAL_SIZE  150013.SZ(1).parquet(1.1MiB), 150013.SZ.parquet(1.1MiB)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150016  n=2  IDENTICAL_SIZE  150016.SZ(1).parquet(846245B), 150016.SZ.parquet(846245B)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150017  n=2  IDENTICAL_SIZE  150017.SZ(1).parquet(1023433B), 150017.SZ.parquet(1023433B)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150018  n=2  IDENTICAL_SIZE  150018.SZ(1).parquet(1.2MiB), 150018.SZ.parquet(1.2MiB)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150019  n=2  IDENTICAL_SIZE  150019.SZ(1).parquet(1.4MiB), 150019.SZ.parquet(1.4MiB)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150020  n=2  IDENTICAL_SIZE  150020.SZ(1).parquet(532794B), 150020.SZ.parquet(532794B)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150021  n=2  IDENTICAL_SIZE  150021.SZ(1).parquet(671956B), 150021.SZ.parquet(671956B)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150022  n=2  IDENTICAL_SIZE  150022.SZ(1).parquet(1.1MiB), 150022.SZ.parquet(1.1MiB)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150023  n=2  IDENTICAL_SIZE  150023.SZ(1).parquet(1.3MiB), 150023.SZ.parquet(1.3MiB)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150027  n=2  IDENTICAL_SIZE  150027.SZ(1).parquet(471972B), 150027.SZ.parquet(471972B)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150028  n=2  IDENTICAL_SIZE  150028.SZ(1).parquet(893153B), 150028.SZ.parquet(893153B)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150029  n=2  IDENTICAL_SIZE  150029.SZ(1).parquet(1.1MiB), 150029.SZ.parquet(1.1MiB)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150030  n=2  IDENTICAL_SIZE  150030.SZ(1).parquet(821737B), 150030.SZ.parquet(821737B)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150031  n=2  IDENTICAL_SIZE  150031.SZ(1).parquet(1.0MiB), 150031.SZ.parquet(1.0MiB)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150032  n=2  IDENTICAL_SIZE  150032.SZ(1).parquet(644740B), 150032.SZ.parquet(644740B)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150033  n=2  IDENTICAL_SIZE  150033.SZ(1).parquet(767483B), 150033.SZ.parquet(767483B)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150034  n=2  IDENTICAL_SIZE  150034.SZ(1).parquet(436142B), 150034.SZ.parquet(436142B)
+  据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min 150035  n=2  IDENTICAL_SIZE  150035.SZ(1).parquet(557368B), 150035.SZ.parquet(557368B)
+
+--- samples: SIZE_DIFF only (real content divergence) ---
+
+========================================================================================================
+PART 3  PER-SECURITY DIR: files vs codes  (only dirs with files > codes)
+========================================================================================================
+DIR                                                          FILES   CODES    DUPN        SIZE
+--------------------------------------------------------------------------------------------------------
+1.parquet格式数据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_1min       5520    2760    2760    19.69GiB
+1.parquet格式数据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_15min      5510    2755    2755     2.52GiB
+1.parquet格式数据/parquet格式ETF数据/ETF数据更新至2026.9.30/etf_60min      5508    2754    2754    956.6MiB
+
+========================================================================================================
+PART 4  NON-6DIGIT-CODE PER-SECURITY FILES  (intl index / future misclassified)
+========================================================================================================
+distinct non-6digit stems=17  total files=59
+
+STEM                           N  DIRS
+--------------------------------------------------------------------------------------------------------
+income                        11  2parquet格式股票数据/财务数据parquet格式（已清洗去重）/财务数据更新至2026.7.31
+SPTSX                          3  quet格式数据/parquet格式指数数据/指数数据更新至2026.9.11/index_global
+SPX                            3  quet格式数据/parquet格式指数数据/指数数据更新至2026.9.11/index_global
+TWII                           3  quet格式数据/parquet格式指数数据/指数数据更新至2026.9.11/index_global
+RUT                            3  quet格式数据/parquet格式指数数据/指数数据更新至2026.9.11/index_global
+SENSEX                         3  quet格式数据/parquet格式指数数据/指数数据更新至2026.9.11/index_global
+RTS                            3  quet格式数据/parquet格式指数数据/指数数据更新至2026.9.11/index_global
+IXIC                           3  quet格式数据/parquet格式指数数据/指数数据更新至2026.9.11/index_global
+HSI                            3  quet格式数据/parquet格式指数数据/指数数据更新至2026.9.11/index_global
+HKAH                           3  quet格式数据/parquet格式指数数据/指数数据更新至2026.9.11/index_global
+FTSE                           3  quet格式数据/parquet格式指数数据/指数数据更新至2026.9.11/index_global
+HKTECH                         3  quet格式数据/parquet格式指数数据/指数数据更新至2026.9.11/index_global
+HSHKCI                         3  quet格式数据/parquet格式指数数据/指数数据更新至2026.9.11/index_global
+GDAXI                          3  quet格式数据/parquet格式指数数据/指数数据更新至2026.9.11/index_global
+FCHI                           3  quet格式数据/parquet格式指数数据/指数数据更新至2026.9.11/index_global
+DJI                            3  quet格式数据/parquet格式指数数据/指数数据更新至2026.9.11/index_global
+CKLSE                          3  quet格式数据/parquet格式指数数据/指数数据更新至2026.9.11/index_global

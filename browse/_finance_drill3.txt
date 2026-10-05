@@ -1,0 +1,101 @@
+####################################################################################################
+# DRILL 3 - is E = D + same-announcement flag variants?
+####################################################################################################
+
+====================================================================================================
+fina_indicator
+====================================================================================================
+  rows: D=354187  E=675628   ratio=1.908
+  FULL_KEY distinct: D=338259  E=376704
+  ANNOUNCEMENT-KEY distinct: D=338259  E=376704
+  D rows with an EXACT twin in E (same FULL_KEY + values): 354187 / 354187 = 100.00%
+  E rows byte-identical to some D row: 595844 / 675628 = 88.19%
+  D update_flag: {'0': 204344, '1': 148955, 'NA': 888}
+  E update_flag: {'1': 373974, '0': 300945, 'NA': 709}
+  [D] announcement-keys with >1 row: 14346 (rows involved 30274)
+  [E] announcement-keys with >1 row: 298567 (rows involved 597491)
+      E multi-row flags: {'1': 299243, '0': 297540, 'NA': 708}
+
+====================================================================================================
+balancesheet
+====================================================================================================
+  rows: D=319515  E=445365   ratio=1.394
+  FULL_KEY distinct: D=303988  E=341780
+  ANNOUNCEMENT-KEY distinct: D=303988  E=341780
+  D rows with an EXACT twin in E (same FULL_KEY + values): 319515 / 319515 = 100.00%
+  E rows byte-identical to some D row: 403290 / 445365 = 90.55%
+  D update_flag: {'0': 190976, '1': 128539}
+  E update_flag: {'0': 307505, '1': 137860}
+  [D] announcement-keys with >1 row: 13982 (rows involved 29509)
+  [E] announcement-keys with >1 row: 103564 (rows involved 207149)
+      E multi-row flags: {'1': 103593, '0': 103556}
+
+====================================================================================================
+income
+====================================================================================================
+  rows: D=329557  E=419276   ratio=1.272
+  FULL_KEY distinct: D=313810  E=350038
+  ANNOUNCEMENT-KEY distinct: D=313810  E=350038
+  D rows with an EXACT twin in E (same FULL_KEY + values): 329557 / 329557 = 100.00%
+  E rows byte-identical to some D row: 379234 / 419276 = 90.45%
+  D update_flag: {'0': 181165, '1': 148392}
+  E update_flag: {'0': 254441, '1': 164835}
+  [D] announcement-keys with >1 row: 14185 (rows involved 29932)
+  [E] announcement-keys with >1 row: 69187 (rows involved 138425)
+      E multi-row flags: {'1': 69452, '0': 68973}
+
+====================================================================================================
+cashflow
+====================================================================================================
+  rows: D=316738  E=387698   ratio=1.224
+  FULL_KEY distinct: D=301885  E=312730
+  ANNOUNCEMENT-KEY distinct: D=301885  E=312730
+  D rows with an EXACT twin in E (same FULL_KEY + values): 316738 / 316738 = 100.00%
+  E rows byte-identical to some D row: 371133 / 387698 = 95.73%
+  D update_flag: {'0': 176388, '1': 140350}
+  E update_flag: {'0': 221549, '1': 166149}
+  [D] announcement-keys with >1 row: 13611 (rows involved 28464)
+  [E] announcement-keys with >1 row: 74935 (rows involved 149903)
+      E multi-row flags: {'1': 75013, '0': 74890}
+
+====================================================================================================
+forecast
+====================================================================================================
+  rows: D=122540  E=149106   ratio=1.217
+  FULL_KEY distinct: D=122527  E=127910
+  ANNOUNCEMENT-KEY distinct: D=122527  E=127897
+  D rows with an EXACT twin in E (same FULL_KEY + values): 122540 / 122540 = 100.00%
+  E rows byte-identical to some D row: 143172 / 149106 = 96.02%
+  D update_flag: {'1': 74481, '0': 48059}
+  E update_flag: {'1': 89061, '0': 60045}
+  [D] announcement-keys with >1 row: 13 (rows involved 26)
+  [E] announcement-keys with >1 row: 21209 (rows involved 42418)
+      E multi-row flags: {'1': 21209, '0': 21209}
+
+====================================================================================================
+dividend
+====================================================================================================
+  rows: D=169067  E=169333   ratio=1.002
+  FULL_KEY distinct: D=168857  E=168954
+  ANNOUNCEMENT-KEY distinct: D=104639  E=104734
+  D rows with an EXACT twin in E (same FULL_KEY + values): 169067 / 169067 = 100.00%
+  E rows byte-identical to some D row: 169212 / 169333 = 99.93%
+  [D] announcement-keys with >1 row: 39322 (rows involved 103750)
+  [E] announcement-keys with >1 row: 39324 (rows involved 103923)
+
+====================================================================================================
+express
+====================================================================================================
+  rows: D=29506  E=29598   ratio=1.003
+  FULL_KEY distinct: D=29503  E=29598
+  ANNOUNCEMENT-KEY distinct: D=29503  E=29598
+  D rows with an EXACT twin in E (same FULL_KEY + values): 29506 / 29506 = 100.00%
+  E rows byte-identical to some D row: 29501 / 29598 = 99.67%
+  D update_flag: {'0': 29506}
+  E update_flag: {'0': 29597, '1': 1}
+  [D] announcement-keys with >1 row: 3 (rows involved 6)
+  [E] announcement-keys with >1 row: 0 (rows involved 0)
+
+####################################################################################################
+# DONE
+####################################################################################################

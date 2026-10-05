@@ -1,0 +1,101 @@
+================================================================================================
+SUPPLIER SHARE STRUCTURE  (recursive, live crawl cache)
+================================================================================================
+
+### S1 1.parquet格式数据   tag=c3a2365f2cac
+  TOTAL files=83836    141.74GiB  unfinished_dirs=53
+
+  1.parquet格式数据                                n=83836   141.74GiB  *53
+    | 2026.7.31后缺5-60min的9.30那根分钟线补充包，后续主库更新后修复这个问 n=12        10.5MiB
+    | A股全部上市公司主营业务数据                               n=1          6.2MiB
+    | parquet格式ETF历史持仓数据                           n=5872     155.0MiB
+    | parquet格式ETF数据                               n=63171    72.74GiB
+    | parquet格式可转债日度数据                             n=29       183.6MiB
+    | parquet格式指数数据                                n=10331    57.06GiB  *3
+    | parquet格式集合竞价tick数据                          n=300       5.65GiB
+    | parquet（个股分钟线缺失修补数据（7.27-8.7））               n=5        854.4KiB
+    | 可转债全K线数据parquet格式~~~~~~~~                    n=79        4.06GiB  *4
+    | 增量数据                                         n=99       435.1MiB  *27
+    | 数据使用说明                                       n=2          4.3MiB
+    | 股东数据parquet（20260615更新 月更）                   n=4         70.6MiB
+    | 融资融券                                         n=3931      1.39GiB  *19
+
+### S2 1.2parquet格式股票数据   tag=f1732d2e8e2a
+  TOTAL files=83616    371.14GiB  unfinished_dirs=4
+
+  1.2parquet格式股票数据                             n=83616   371.14GiB  *4
+    | 1.parquet格式个股行情数据                            n=70233   341.53GiB
+    | parquet格式打板专题数据                              n=29        1.20GiB
+    | parquet格式特色数据                                n=13        2.51GiB
+    | parquet格式行业概念板块                              n=8        13.50GiB
+    | parquet格式资金流向数据                              n=29        5.37GiB
+    | 北向资金                                         n=5         56.7MiB
+    | 指数权重数据                                       n=2072      64.8MiB  *2
+    | 筹码分布数据                                       n=11142    640.6MiB  *2
+    | 财务数据parquet格式（已清洗去重）                         n=85        6.29GiB
+
+### S3 每日A股日线行情(日更)   tag=ce4b5b27f15e
+  TOTAL files=6        5.65GiB    unfinished_dirs=0
+
+  每日A股日线行情数据parquet（日更）                        n=6         5.65GiB
+
+================================================================================================
+PENDING DIRECTORIES (not yet crawled)
+================================================================================================
+  c3a2365f  1.parquet格式数据/parquet格式指数数据/指数数据更新至2026.9.11/index_daily
+  c3a2365f  1.parquet格式数据/parquet格式指数数据/指数数据更新至2026.9.18/index_daily
+  c3a2365f  1.parquet格式数据/parquet格式指数数据/指数数据更新至2026.9.30/index_daily
+  c3a2365f  1.parquet格式数据/可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式/2025/旧数据
+  c3a2365f  1.parquet格式数据/可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式/2025/每日数据
+  c3a2365f  1.parquet格式数据/可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式/2026/每日数据
+  c3a2365f  1.parquet格式数据/可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式/日k/2026
+  c3a2365f  1.parquet格式数据/增量数据/4.7-4.10/指数数据/index_daily
+  c3a2365f  1.parquet格式数据/增量数据/4.7-4.10/股票数据/打板专题数据
+  c3a2365f  1.parquet格式数据/增量数据/4.7-4.10/股票数据/特色数据
+  c3a2365f  1.parquet格式数据/增量数据/4.7-4.10/股票数据/行情数据
+  c3a2365f  1.parquet格式数据/增量数据/4.7-4.10/股票数据/资金流向数据
+  c3a2365f  1.parquet格式数据/增量数据/6.1-6.5/指数数据/index_daily
+  c3a2365f  1.parquet格式数据/增量数据/6.1-6.5/指数数据/index_global
+  c3a2365f  1.parquet格式数据/增量数据/6.1-6.5/股票数据/打板专题数据
+  c3a2365f  1.parquet格式数据/增量数据/6.1-6.5/股票数据/特色数据
+  c3a2365f  1.parquet格式数据/增量数据/6.1-6.5/股票数据/行情数据
+  c3a2365f  1.parquet格式数据/增量数据/6.1-6.5/股票数据/资金流向数据
+  c3a2365f  1.parquet格式数据/增量数据/6.22-6.26/股票数据/打板专题数据
+  c3a2365f  1.parquet格式数据/增量数据/6.22-6.26/股票数据/特色数据
+  c3a2365f  1.parquet格式数据/增量数据/6.22-6.26/股票数据/资金流向数据
+  c3a2365f  1.parquet格式数据/增量数据/6.29-7.3/指数数据/index_daily
+  c3a2365f  1.parquet格式数据/增量数据/6.29-7.3/指数数据/index_global
+  c3a2365f  1.parquet格式数据/增量数据/6.29-7.3/股票数据/打板专题数据
+  c3a2365f  1.parquet格式数据/增量数据/6.29-7.3/股票数据/特色数据
+  c3a2365f  1.parquet格式数据/增量数据/6.29-7.3/股票数据/行情数据
+  c3a2365f  1.parquet格式数据/增量数据/6.29-7.3/股票数据/资金流向数据
+  c3a2365f  1.parquet格式数据/增量数据/6.8-6.12/指数数据/index_daily
+  c3a2365f  1.parquet格式数据/增量数据/6.8-6.12/指数数据/index_global
+  c3a2365f  1.parquet格式数据/增量数据/6.8-6.12/股票数据/打板专题数据
+  c3a2365f  1.parquet格式数据/增量数据/6.8-6.12/股票数据/特色数据
+  c3a2365f  1.parquet格式数据/增量数据/6.8-6.12/股票数据/行情数据
+  c3a2365f  1.parquet格式数据/增量数据/6.8-6.12/股票数据/资金流向数据
+  c3a2365f  1.parquet格式数据/增量数据/Data/增量数据/6.29-7.3
+  c3a2365f  1.parquet格式数据/融资融券/更新到0627/parquet/融资融券明细
+  c3a2365f  1.parquet格式数据/融资融券/更新到0627/parquet/融资融券明细_2010
+  c3a2365f  1.parquet格式数据/融资融券/更新到0627/parquet/融资融券明细_2011
+  c3a2365f  1.parquet格式数据/融资融券/更新到0627/parquet/融资融券明细_2012
+  c3a2365f  1.parquet格式数据/融资融券/更新到0627/parquet/融资融券明细_2013
+  c3a2365f  1.parquet格式数据/融资融券/更新到0627/parquet/融资融券明细_2014
+  c3a2365f  1.parquet格式数据/融资融券/更新到0627/parquet/融资融券明细_2015
+  c3a2365f  1.parquet格式数据/融资融券/更新到0627/parquet/融资融券明细_2016
+  c3a2365f  1.parquet格式数据/融资融券/更新到0627/parquet/融资融券明细_2017
+  c3a2365f  1.parquet格式数据/融资融券/更新到0627/parquet/融资融券明细_2018
+  c3a2365f  1.parquet格式数据/融资融券/更新到0627/parquet/融资融券明细_2019
+  c3a2365f  1.parquet格式数据/融资融券/更新到0627/parquet/融资融券明细_2020
+  c3a2365f  1.parquet格式数据/融资融券/更新到0627/parquet/融资融券明细_2021
+  c3a2365f  1.parquet格式数据/融资融券/更新到0627/parquet/融资融券明细_2022
+  c3a2365f  1.parquet格式数据/融资融券/更新到0627/parquet/融资融券明细_2023
+  c3a2365f  1.parquet格式数据/融资融券/更新到0627/parquet/融资融券明细_2024
+  c3a2365f  1.parquet格式数据/融资融券/更新到0627/parquet/融资融券明细_2025
+  c3a2365f  1.parquet格式数据/融资融券/更新到0627/parquet/融资融券明细_2026
+  c3a2365f  1.parquet格式数据/融资融券/融资融券明细更新到2026.5.28/历史数据压缩包
+  f1732d2e  1.2parquet格式股票数据/指数权重数据/parquet格式20260807/_backup
+  f1732d2e  1.2parquet格式股票数据/指数权重数据/parquet格式20260807/_增量20260803-0807
+  f1732d2e  1.2parquet格式股票数据/筹码分布数据/筹码分布数据/tushare_cyq/cyq_daily
+  f1732d2e  1.2parquet格式股票数据/筹码分布数据/筹码分布数据/tushare_cyq/cyq_weekly

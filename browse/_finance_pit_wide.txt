@@ -1,0 +1,239 @@
+####################################################################################################
+# COVERAGE (is E only fresher?) + REAL reader-tie risk + WIDE PIT diff
+####################################################################################################
+
+====================================================================================================
+fina_indicator   FULL_KEY=['ts_code', 'end_date', 'ann_date']
+====================================================================================================
+  COVERAGE
+    [D] rows=354187   ann(ann_date) min=20050406 max=20260831   period max=20260630
+    [E] rows=675628   ann(ann_date) min=19901231 max=20260910   period max=20260630
+  READER-TIE RISK (same report period, several distinct ann_date)
+    [D] ambiguous periods=13      (0.00% of 338246 periods) rows involved=34
+    [E] ambiguous periods=705     (0.19% of 375997 periods) rows involved=1507
+    asof=20120630 pairs=58    identical=58    E-has-extra=0    REAL-DIFF=0    
+    asof=20151231 pairs=87    identical=86    E-has-extra=0    REAL-DIFF=1    
+            002781.SZ ['roe 8.2628|15.4971']
+    asof=20171229 pairs=108   identical=106   E-has-extra=0    REAL-DIFF=2    
+            002781.SZ ['roe 7.6837|13.9852']
+            600105.SH ['roe 6.5436|6.6983']
+    asof=20191231 pairs=115   identical=114   E-has-extra=0    REAL-DIFF=1    
+            600105.SH ['roe 0.6161|0.6357']
+    asof=20211231 pairs=125   identical=125   E-has-extra=0    REAL-DIFF=0    
+    asof=20221230 pairs=134   identical=132   E-has-extra=0    REAL-DIFF=2    
+            002569.SZ ['roe -32.8631|-32.5574', 'bps 1.2373|1.2129']
+            600576.SH ['eps 0.0137|0.0173', 'roe 0.7879|0.9947']
+    asof=20231229 pairs=138   identical=138   E-has-extra=0    REAL-DIFF=0    
+    asof=20240630 pairs=142   identical=142   E-has-extra=0    REAL-DIFF=0    
+    asof=20250630 pairs=146   identical=144   E-has-extra=0    REAL-DIFF=2    
+            300205.SZ ['roe -3.8518|-3.6973', 'bps 2.3795|2.4808']
+            603169.SH ['roe -0.9309|0.4397', 'bps 2.5041|2.5387']
+    asof=20260630 pairs=149   identical=149   E-has-extra=0    REAL-DIFF=0    
+    asof=20260831 pairs=150   identical=46    E-has-extra=1    REAL-DIFF=103  
+            000010.SZ ['end 20260331|20260630', 'eps 0.0235|-0.0148']
+            000019.SZ ['end 20260331|20260630', 'eps 0.0563|0.0971']
+            000070.SZ ['end 20260331|20260630', 'eps -0.0106|0.0698']
+  PIT VERDICT (periods <= D cutoff 20260831):
+      !! asof=20151231 REAL-DIFF=1
+      !! asof=20171229 REAL-DIFF=2
+      !! asof=20191231 REAL-DIFF=1
+      !! asof=20221230 REAL-DIFF=2
+      !! asof=20250630 REAL-DIFF=2
+      !! asof=20260831 REAL-DIFF=103
+
+====================================================================================================
+balancesheet   FULL_KEY=['ts_code', 'end_date', 'report_type', 'ann_date']
+====================================================================================================
+  COVERAGE
+    [D] rows=319515   ann(ann_date) min=20050406 max=20260831   period max=20260630
+    [E] rows=445365   ann(ann_date) min=19901231 max=20260910   period max=20260630
+  READER-TIE RISK (same report period, several distinct ann_date)
+    [D] ambiguous periods=21      (0.01% of 303967 periods) rows involved=64
+    [E] ambiguous periods=961     (0.28% of 340786 periods) rows involved=2379
+    asof=20120630 pairs=58    identical=58    E-has-extra=0    REAL-DIFF=0    
+    asof=20151231 pairs=96    identical=96    E-has-extra=0    REAL-DIFF=0    
+    asof=20171229 pairs=103   identical=103   E-has-extra=0    REAL-DIFF=0    
+    asof=20191231 pairs=116   identical=112   E-has-extra=3    REAL-DIFF=1    
+            920300.BJ ['end 20161231|20171231', 'total_assets 273838313.88|321794674.91']
+    asof=20211231 pairs=124   identical=120   E-has-extra=3    REAL-DIFF=1    
+            920300.BJ ['end 20161231|20171231', 'total_assets 273838313.88|321794674.91']
+    asof=20221230 pairs=130   identical=130   E-has-extra=0    REAL-DIFF=0    
+    asof=20231229 pairs=134   identical=134   E-has-extra=0    REAL-DIFF=0    
+    asof=20240630 pairs=137   identical=137   E-has-extra=0    REAL-DIFF=0    
+    asof=20250630 pairs=146   identical=146   E-has-extra=0    REAL-DIFF=0    
+    asof=20260630 pairs=147   identical=144   E-has-extra=0    REAL-DIFF=3    
+            874025.BJ ['end 20251231|20260331', 'total_assets 652106710.2|653175871.48']
+            874287.BJ ['end 20251231|20260331', 'total_assets 956991455.42|1010698122.31']
+            874747.BJ ['end 20251231|20260331', 'total_assets 691215350.22|695544587.58']
+    asof=20260831 pairs=150   identical=40    E-has-extra=3    REAL-DIFF=107  
+            000037.SZ ['end 20260331|20260630', 'total_assets 2348702628.56|2298027445.24']
+            000066.SZ ['end 20260331|20260630', 'total_assets 32970758850.51|34733592815.11']
+            000088.SZ ['end 20260331|20260630', 'total_assets 24409202191.09|24126552270.22']
+  PIT VERDICT (periods <= D cutoff 20260831):
+      !! asof=20191231 REAL-DIFF=1
+      !! asof=20211231 REAL-DIFF=1
+      !! asof=20260630 REAL-DIFF=3
+      !! asof=20260831 REAL-DIFF=107
+
+====================================================================================================
+income   FULL_KEY=['ts_code', 'end_date', 'report_type', 'ann_date']
+====================================================================================================
+  COVERAGE
+    [D] rows=329557   ann(ann_date) min=20050406 max=20260831   period max=20260630
+    [E] rows=419276   ann(ann_date) min=19950105 max=20260910   period max=20260630
+  READER-TIE RISK (same report period, several distinct ann_date)
+    [D] ambiguous periods=11      (0.00% of 313799 periods) rows involved=34
+    [E] ambiguous periods=830     (0.24% of 349176 periods) rows involved=2120
+    asof=20120630 pairs=68    identical=68    E-has-extra=0    REAL-DIFF=0    
+    asof=20151231 pairs=94    identical=94    E-has-extra=0    REAL-DIFF=0    
+    asof=20171229 pairs=112   identical=112   E-has-extra=0    REAL-DIFF=0    
+    asof=20191231 pairs=127   identical=127   E-has-extra=0    REAL-DIFF=0    
+    asof=20211231 pairs=136   identical=136   E-has-extra=0    REAL-DIFF=0    
+    asof=20221230 pairs=136   identical=136   E-has-extra=0    REAL-DIFF=0    
+    asof=20231229 pairs=141   identical=141   E-has-extra=0    REAL-DIFF=0    
+    asof=20240630 pairs=143   identical=143   E-has-extra=0    REAL-DIFF=0    
+    asof=20250630 pairs=149   identical=149   E-has-extra=0    REAL-DIFF=0    
+    asof=20260630 pairs=149   identical=148   E-has-extra=0    REAL-DIFF=1    
+            874159.BJ ['end 20251231|20260331', 'revenue 842539950.51|195439694.74']
+    asof=20260831 pairs=150   identical=42    E-has-extra=1    REAL-DIFF=107  
+            000037.SZ ['end 20260331|20260630', 'revenue 90061597.28|201808302.33']
+            000060.SZ ['end 20260331|20260630', 'revenue 19013725475.25|42133265055.43']
+            000066.SZ ['end 20260331|20260630', 'revenue 3220200204.29|7958051684.14']
+  PIT VERDICT (periods <= D cutoff 20260831):
+      !! asof=20260630 REAL-DIFF=1
+      !! asof=20260831 REAL-DIFF=107
+
+====================================================================================================
+cashflow   FULL_KEY=['ts_code', 'end_date', 'report_type', 'ann_date']
+====================================================================================================
+  COVERAGE
+    [D] rows=316738   ann(ann_date) min=20050430 max=20260831   period max=20260630
+    [E] rows=387698   ann(ann_date) min=19990130 max=20260910   period max=20260630
+  READER-TIE RISK (same report period, several distinct ann_date)
+    [D] ambiguous periods=7       (0.00% of 301878 periods) rows involved=22
+    [E] ambiguous periods=710     (0.23% of 311999 periods) rows involved=1847
+    asof=20120630 pairs=56    identical=56    E-has-extra=0    REAL-DIFF=0    
+    asof=20151231 pairs=79    identical=79    E-has-extra=0    REAL-DIFF=0    
+    asof=20171229 pairs=93    identical=93    E-has-extra=0    REAL-DIFF=0    
+    asof=20191231 pairs=114   identical=114   E-has-extra=0    REAL-DIFF=0    
+    asof=20211231 pairs=129   identical=129   E-has-extra=0    REAL-DIFF=0    
+    asof=20221230 pairs=133   identical=124   E-has-extra=1    REAL-DIFF=8    
+            688388.SH ['end 20220630|20220930', 'n_cashflow_act -88750496.99|-274002393.11']
+            831406.BJ ['end 20180630|20211231', 'n_cashflow_act 29968291.03|56167008.94']
+            870757.BJ ['end 20200630|20211231', 'n_cashflow_act -42564332.14|23854148.61']
+    asof=20231229 pairs=137   identical=136   E-has-extra=0    REAL-DIFF=1    
+            831406.BJ ['end 20180630|20211231', 'n_cashflow_act 29968291.03|56167008.94']
+    asof=20240630 pairs=139   identical=139   E-has-extra=0    REAL-DIFF=0    
+    asof=20250630 pairs=144   identical=136   E-has-extra=4    REAL-DIFF=4    
+            831928.BJ ['end 20180630|20241231', 'n_cashflow_act -84622176.64|3902964.27']
+            832513.BJ ['end 20180630|20241231', 'n_cashflow_act 18601765.02|14676279.64']
+            870804.BJ ['end 20180630|20241231', 'n_cashflow_act 5198993.28|142758999.13']
+    asof=20260630 pairs=146   identical=103   E-has-extra=0    REAL-DIFF=43   
+            600893.SH ['end 20251231|20260331', 'n_cashflow_act -4417719128.58|3367392775.85']
+            601099.SH ['end 20251231|20260331', 'n_cashflow_act 852352584.35|709719724.31']
+            601311.SH ['end 20251231|20260331', 'n_cashflow_act 828815454.51|-270266434.99']
+    asof=20260831 pairs=149   identical=37    E-has-extra=3    REAL-DIFF=109  
+            000037.SZ ['end 20260331|20260630', 'n_cashflow_act -17064169.28|-113682778.37']
+            000088.SZ ['end 20260331|20260630', 'n_cashflow_act 110622317.0|88046702.25']
+            000429.SZ ['end 20260331|20260630', 'n_cashflow_act 1297578966.29|1708576224.87']
+  PIT VERDICT (periods <= D cutoff 20260831):
+      !! asof=20221230 REAL-DIFF=8
+      !! asof=20231229 REAL-DIFF=1
+      !! asof=20250630 REAL-DIFF=4
+      !! asof=20260630 REAL-DIFF=43
+      !! asof=20260831 REAL-DIFF=109
+
+====================================================================================================
+forecast   FULL_KEY=['ts_code', 'end_date', 'ann_date', 'type']
+====================================================================================================
+  COVERAGE
+    [D] rows=122540   ann(ann_date) min=20050303 max=20260819   period max=20260930
+    [E] rows=149106   ann(ann_date) min=19990108 max=20260824   period max=20260930
+  READER-TIE RISK (same report period, several distinct ann_date)
+    [D] ambiguous periods=7656    (6.68% of 114683 periods) rows involved=15500
+    [E] ambiguous periods=7687    (6.40% of 120035 periods) rows involved=16497
+    asof=20120630 pairs=61    identical=61    E-has-extra=0    REAL-DIFF=0    
+    asof=20151231 pairs=75    identical=75    E-has-extra=0    REAL-DIFF=0    
+    asof=20171229 pairs=97    identical=97    E-has-extra=0    REAL-DIFF=0    
+    asof=20191231 pairs=101   identical=101   E-has-extra=0    REAL-DIFF=0    
+    asof=20211231 pairs=117   identical=117   E-has-extra=0    REAL-DIFF=0    
+    asof=20221230 pairs=129   identical=129   E-has-extra=0    REAL-DIFF=0    
+    asof=20231229 pairs=134   identical=134   E-has-extra=0    REAL-DIFF=0    
+    asof=20240630 pairs=136   identical=136   E-has-extra=0    REAL-DIFF=0    
+    asof=20250630 pairs=145   identical=145   E-has-extra=0    REAL-DIFF=0    
+    asof=20260630 pairs=149   identical=149   E-has-extra=0    REAL-DIFF=0    
+    asof=20260831 pairs=150   identical=146   E-has-extra=1    REAL-DIFF=3    
+            002289.SZ ['net_profit_min 32272.0|32272.42']
+            688231.SH ['net_profit_min 10078.0|10078.21']
+            688819.SH ['end 20220930|20260630', 'p_change_min 31.0|-68.92']
+  PIT VERDICT (periods <= D cutoff 20260819):
+      OK - zero value-level differences on every asof <= D ann_date cutoff
+
+====================================================================================================
+dividend   FULL_KEY=['ts_code', 'end_date', 'ann_date', 'div_proc']
+====================================================================================================
+  COVERAGE
+    [D] rows=169067   ann(ann_date) min=19940101 max=20260910   period max=20260810
+    [E] rows=169333   ann(ann_date) min=19940101 max=20260923   period max=20260922
+  READER-TIE RISK (same report period, several distinct ann_date)
+    [D] ambiguous periods=152     (0.09% of 168705 periods) rows involved=304
+    [E] ambiguous periods=152     (0.09% of 168802 periods) rows involved=304
+    asof=20120630 pairs=52    identical=52    E-has-extra=0    REAL-DIFF=0    
+    asof=20151231 pairs=60    identical=60    E-has-extra=0    REAL-DIFF=0    
+    asof=20171229 pairs=76    identical=76    E-has-extra=0    REAL-DIFF=0    
+    asof=20191231 pairs=90    identical=90    E-has-extra=0    REAL-DIFF=0    
+    asof=20211231 pairs=121   identical=121   E-has-extra=0    REAL-DIFF=0    
+    asof=20221230 pairs=131   identical=131   E-has-extra=0    REAL-DIFF=0    
+    asof=20231229 pairs=144   identical=144   E-has-extra=0    REAL-DIFF=0    
+    asof=20240630 pairs=145   identical=145   E-has-extra=0    REAL-DIFF=0    
+    asof=20250630 pairs=146   identical=146   E-has-extra=0    REAL-DIFF=0    
+    asof=20260630 pairs=150   identical=150   E-has-extra=0    REAL-DIFF=0    
+    asof=20260831 pairs=150   identical=150   E-has-extra=0    REAL-DIFF=0    
+  PIT VERDICT (periods <= D cutoff 20260910):
+      OK - zero value-level differences on every asof <= D ann_date cutoff
+
+====================================================================================================
+express   FULL_KEY=['ts_code', 'end_date', 'ann_date']
+====================================================================================================
+  COVERAGE
+    [D] rows=29506    ann(ann_date) min=20050419 max=20260818   period max=20260630
+    [E] rows=29598    ann(ann_date) min=20050108 max=20260825   period max=20260630
+  READER-TIE RISK (same report period, several distinct ann_date)
+    [D] ambiguous periods=13      (0.04% of 29490 periods) rows involved=26
+    [E] ambiguous periods=14      (0.05% of 29584 periods) rows involved=28
+    asof=20120630 pairs=50    identical=49    E-has-extra=1    REAL-DIFF=0    FRESHNESS-ONLY
+    asof=20151231 pairs=67    identical=66    E-has-extra=1    REAL-DIFF=0    FRESHNESS-ONLY
+    asof=20171229 pairs=82    identical=81    E-has-extra=1    REAL-DIFF=0    FRESHNESS-ONLY
+    asof=20191231 pairs=97    identical=96    E-has-extra=1    REAL-DIFF=0    FRESHNESS-ONLY
+    asof=20211231 pairs=117   identical=116   E-has-extra=1    REAL-DIFF=0    FRESHNESS-ONLY
+    asof=20221230 pairs=130   identical=129   E-has-extra=1    REAL-DIFF=0    FRESHNESS-ONLY
+    asof=20231229 pairs=142   identical=141   E-has-extra=1    REAL-DIFF=0    FRESHNESS-ONLY
+    asof=20240630 pairs=147   identical=146   E-has-extra=1    REAL-DIFF=0    FRESHNESS-ONLY
+    asof=20250630 pairs=148   identical=147   E-has-extra=1    REAL-DIFF=0    FRESHNESS-ONLY
+    asof=20260630 pairs=150   identical=149   E-has-extra=1    REAL-DIFF=0    FRESHNESS-ONLY
+    asof=20260831 pairs=150   identical=149   E-has-extra=1    REAL-DIFF=0    FRESHNESS-ONLY
+  PIT VERDICT (periods <= D cutoff 20260818):
+      OK - zero value-level differences on every asof <= D ann_date cutoff
+
+====================================================================================================
+share_change_event   FULL_KEY=['ts_code', 'change_date', 'change_reason']
+====================================================================================================
+  COVERAGE
+    [D] rows=53892    ann(change_date) min=20090106 max=20260821   period max=20260821
+    [E] rows=53892    ann(change_date) min=20090106 max=20260821   period max=20260821
+  READER-TIE RISK (same report period, several distinct ann_date)
+    [D] ambiguous periods=0       (0.00% of 53824 periods) rows involved=0
+    [E] ambiguous periods=0       (0.00% of 53824 periods) rows involved=0
+    asof=20120630 pairs=45    identical=45    E-has-extra=0    REAL-DIFF=0    
+    asof=20151231 pairs=67    identical=67    E-has-extra=0    REAL-DIFF=0    
+    asof=20171229 pairs=80    identical=80    E-has-extra=0    REAL-DIFF=0    
+    asof=20191231 pairs=98    identical=98    E-has-extra=0    REAL-DIFF=0    
+    asof=20211231 pairs=113   identical=113   E-has-extra=0    REAL-DIFF=0    
+    asof=20221230 pairs=129   identical=129   E-has-extra=0    REAL-DIFF=0    
+    asof=20231229 pairs=137   identical=137   E-has-extra=0    REAL-DIFF=0    
+    asof=20240630 pairs=142   identical=142   E-has-extra=0    REAL-DIFF=0    
+    asof=20250630 pairs=146   identical=146   E-has-extra=0    REAL-DIFF=0    
+    asof=20260630 pairs=149   identical=149   E-has-extra=0    REAL-DIFF=0    
+    asof=20260831 pairs=150   identical=150   E-has-extra=0    REAL-DIFF=0    
+  PIT VERDICT (periods <= D cutoff 20260821):
+      OK - zero value-level differences on every asof <= D ann_date cutoff

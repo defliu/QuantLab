@@ -1,0 +1,189 @@
+####################################################################################################
+# Q1/Q2  dedup safety      Q3  D subset of E      Q5  reader tie risk
+####################################################################################################
+
+====================================================================================================
+fina_indicator       FULL_KEY = ['ts_code', 'end_date', 'ann_date']
+====================================================================================================
+  [D] rows=354187   FULL_KEYs=338259    update_flag in schema=True
+       R1 keep flag==1   : rows=148955   FULL_KEYs=135481   LOST-FK=202778  ( 59.95%)  rows dropped=205232
+       R2 safe rule       : rows=338259   FULL_KEYs=338259   LOST-FK=0       (  0.00%)
+  [E] rows=675628   FULL_KEYs=376704    update_flag in schema=True
+       R1 keep flag==1   : rows=373974   FULL_KEYs=373288   LOST-FK=3416    (  0.91%)  rows dropped=301654
+       R2 safe rule       : rows=376704   FULL_KEYs=376704   LOST-FK=0       (  0.00%)
+  Q3  D_R2=338259   E_R2=376704    D-only=2      E-only=38447   D subset of E: False
+        D-only  A15130.SZ2026063020260718
+        D-only  A20005.SH2026063020260720
+        E-only  000001.SZ1990123119901231
+        E-only  000001.SZ1991123119911231
+  Q5  [D] FULL_KEYs with >1 row = 14346   ; of those value-disagreeing = 79      (0.6%) ; same end_date but different ann_date = 0
+  Q5  [E] FULL_KEYs with >1 row = 298567  ; of those value-disagreeing = 2601    (0.9%) ; same end_date but different ann_date = 0
+  Q4  PIT winner field comparison (8 codes x 6 asof)
+       comparable=47  identical=40  differing=7
+       DIFF 000001.SZ@20260831 ['end 20260331|20260630', 'eps 0.67|1.24', 'roe 2.652|4.6746']
+       DIFF 000002.SZ@20260831 ['end 20260331|20260630', 'eps -0.4989|-1.2532', 'roe -5.234|-13.6487']
+       DIFF 600000.SH@20260831 ['end 20260331|20260630', 'eps 0.52|0.89', 'roe 2.1641|3.7501']
+       DIFF 600519.SH@20260831 ['end 20260331|20260630', 'eps 21.76|35.57', 'roe 10.5687|17.9543']
+       DIFF 002594.SZ@20260831 ['end 20260331|20260630', 'eps 0.448|1.35', 'roe 1.6464|4.8612']
+       DIFF 601318.SH@20260831 ['bps 56.7751|56.78']
+
+====================================================================================================
+balancesheet         FULL_KEY = ['ts_code', 'end_date', 'report_type', 'ann_date']
+====================================================================================================
+  [D] rows=319515   FULL_KEYs=303988    update_flag in schema=True
+       R1 keep flag==1   : rows=128539   FULL_KEYs=126074   LOST-FK=177914  ( 58.53%)  rows dropped=190976
+       R2 safe rule       : rows=303988   FULL_KEYs=303988   LOST-FK=0       (  0.00%)
+  [E] rows=445365   FULL_KEYs=341780    update_flag in schema=True
+       R1 keep flag==1   : rows=137860   FULL_KEYs=137830   LOST-FK=203950  ( 59.67%)  rows dropped=307505
+       R2 safe rule       : rows=341780   FULL_KEYs=341780   LOST-FK=0       (  0.00%)
+  Q3  D_R2=303988   E_R2=341780    D-only=0      E-only=37792   D subset of E: True
+        E-only  000001.SZ19901231119901231
+        E-only  000001.SZ19911231119911231
+  Q5  [D] FULL_KEYs with >1 row = 13982   ; of those value-disagreeing = 28      (0.2%) ; same end_date but different ann_date = 0
+  Q5  [E] FULL_KEYs with >1 row = 103564  ; of those value-disagreeing = 748     (0.7%) ; same end_date but different ann_date = 0
+  Q4  PIT winner field comparison (8 codes x 6 asof)
+       comparable=47  identical=40  differing=7
+       DIFF 000001.SZ@20260831 ['end 20260331|20260630', 'total_assets 6033962000000.0|6028785000000.0', 'total_liab 5489879000000.0|5480571000000.0']
+       DIFF 000002.SZ@20260831 ['end 20260331|20260630', 'total_assets 997406724022.05|959761482723.02', 'total_liab 769344739328.43|743955250505.51']
+       DIFF 600000.SH@20260831 ['end 20260331|20260630', 'total_assets 10305646000000.0|10405355000000.0', 'total_liab 9464247000000.0|9564670000000.0']
+       DIFF 600519.SH@20260831 ['end 20260331|20260630', 'total_assets 319918844905.58|309050784569.31', 'total_liab 38782958469.89|46954432394.95']
+       DIFF 300750.SZ@20260831 ['end 20260331|20260630', 'total_assets 1046329036000.0|1138880789000.0', 'total_liab 652096744000.0|724925558000.0']
+       DIFF 002594.SZ@20260831 ['end 20260331|20260630', 'total_assets 902076965000.0|941278424000.0', 'total_liab 639956542000.0|667907609000.0']
+
+====================================================================================================
+income               FULL_KEY = ['ts_code', 'end_date', 'report_type', 'ann_date']
+====================================================================================================
+  [D] rows=329557   FULL_KEYs=313810    update_flag in schema=True
+       R1 keep flag==1   : rows=148392   FULL_KEYs=134073   LOST-FK=179737  ( 57.28%)  rows dropped=181165
+       R2 safe rule       : rows=313810   FULL_KEYs=313810   LOST-FK=0       (  0.00%)
+  [E] rows=419276   FULL_KEYs=350038    update_flag in schema=True
+       R1 keep flag==1   : rows=164835   FULL_KEYs=164570   LOST-FK=185468  ( 52.99%)  rows dropped=254441
+       R2 safe rule       : rows=350038   FULL_KEYs=350038   LOST-FK=0       (  0.00%)
+  Q3  D_R2=313810   E_R2=350038    D-only=0      E-only=36228   D subset of E: True
+        E-only  000001.SZ19941231119950310
+        E-only  000001.SZ19950630119950811
+  Q5  [D] FULL_KEYs with >1 row = 14185   ; of those value-disagreeing = 35      (0.2%) ; same end_date but different ann_date = 0
+  Q5  [E] FULL_KEYs with >1 row = 69187   ; of those value-disagreeing = 583     (0.8%) ; same end_date but different ann_date = 0
+  Q4  PIT winner field comparison (8 codes x 6 asof)
+       comparable=47  identical=40  differing=7
+       DIFF 000001.SZ@20260831 ['end 20260331|20260630', 'revenue 35277000000.0|70617000000.0', 'n_income_attr_p 14523000000.0|25696000000.0']
+       DIFF 000002.SZ@20260831 ['end 20260331|20260630', 'revenue 28927889365.26|70169108549.07', 'n_income_attr_p -5952156227.34|-14951268522.5']
+       DIFF 600000.SH@20260831 ['end 20260331|20260630', 'revenue 46573000000.0|93777000000.0', 'n_income_attr_p 17861000000.0|30951000000.0']
+       DIFF 600519.SH@20260831 ['end 20260331|20260630', 'revenue 53909252220.51|90703260964.48', 'n_income_attr_p 27242512886.45|44516880421.86']
+       DIFF 300750.SZ@20260831 ['end 20260331|20260630', 'revenue 129131041000.0|276916580000.0', 'n_income_attr_p 20737710000.0|43284002000.0']
+       DIFF 002594.SZ@20260831 ['end 20260331|20260630', 'revenue 150225314000.0|344815421000.0', 'n_income_attr_p 4084551000.0|12325408000.0']
+
+====================================================================================================
+cashflow             FULL_KEY = ['ts_code', 'end_date', 'report_type', 'ann_date']
+====================================================================================================
+  [D] rows=316738   FULL_KEYs=301885    update_flag in schema=True
+       R1 keep flag==1   : rows=140350   FULL_KEYs=132722   LOST-FK=169163  ( 56.04%)  rows dropped=176388
+       R2 safe rule       : rows=301885   FULL_KEYs=301885   LOST-FK=0       (  0.00%)
+  [E] rows=387698   FULL_KEYs=312730    update_flag in schema=True
+       R1 keep flag==1   : rows=166149   FULL_KEYs=166071   LOST-FK=146659  ( 46.90%)  rows dropped=221549
+       R2 safe rule       : rows=312730   FULL_KEYs=312730   LOST-FK=0       (  0.00%)
+  Q3  D_R2=301885   E_R2=312730    D-only=0      E-only=10845   D subset of E: True
+        E-only  000001.SZ20260630120260815
+        E-only  000002.SZ20260630120260828
+  Q5  [D] FULL_KEYs with >1 row = 13611   ; of those value-disagreeing = 9       (0.1%) ; same end_date but different ann_date = 0
+  Q5  [E] FULL_KEYs with >1 row = 74935   ; of those value-disagreeing = 133     (0.2%) ; same end_date but different ann_date = 0
+  Q4  PIT winner field comparison (8 codes x 6 asof)
+       comparable=47  identical=40  differing=7
+       DIFF 000001.SZ@20260831 ['end 20260331|20260630', 'n_cashflow_act 37802000000.0|215012000000.0', 'n_cashflow_inv_act -53517000000.0|-70495000000.0']
+       DIFF 000002.SZ@20260831 ['end 20260331|20260630', 'n_cashflow_act -2163425441.93|494766013.42', 'n_cashflow_inv_act -157857090.64|1170394769.42']
+       DIFF 600000.SH@20260831 ['end 20260331|20260630', 'n_cashflow_act 91724000000.0|404304000000.0', 'n_cashflow_inv_act 17225000000.0|-64565000000.0']
+       DIFF 600519.SH@20260831 ['end 20260331|20260630', 'n_cashflow_act 26909891269.13|70690750119.06', 'n_cashflow_inv_act 25638946497.35|25640543520.6']
+       DIFF 300750.SZ@20260831 ['end 20260331|20260630', 'n_cashflow_act 33680852000.0|60216851000.0', 'n_cashflow_inv_act -14623616000.0|-36929091000.0']
+       DIFF 002594.SZ@20260831 ['end 20260331|20260630', 'n_cashflow_act 2790305000.0|37334744000.0', 'n_cashflow_inv_act -20249591000.0|-55570464000.0']
+
+====================================================================================================
+forecast             FULL_KEY = ['ts_code', 'end_date', 'ann_date', 'type']
+====================================================================================================
+  [D] rows=122540   FULL_KEYs=122527    update_flag in schema=True
+       R1 keep flag==1   : rows=74481    FULL_KEYs=74473    LOST-FK=48054   ( 39.22%)  rows dropped=48059
+       R2 safe rule       : rows=122527   FULL_KEYs=122527   LOST-FK=0       (  0.00%)
+  [E] rows=149106   FULL_KEYs=127910    update_flag in schema=True
+       R1 keep flag==1   : rows=89061    FULL_KEYs=89061    LOST-FK=38849   ( 30.37%)  rows dropped=60045
+       R2 safe rule       : rows=127910   FULL_KEYs=127910   LOST-FK=0       (  0.00%)
+  Q3  D_R2=122527   E_R2=127910    D-only=414    E-only=5797    D subset of E: False
+        D-only  000002.SZ2026063020260711续亏
+        D-only  000006.SZ2026063020260715续亏
+        D-only  000008.SZ2026063020260715续亏
+        D-only  000010.SZ2026063020260715续亏
+        E-only  000002.SZ2002123120021028预增
+        E-only  000002.SZ2004033120040402预增
+  Q5  [D] FULL_KEYs with >1 row = 13      ; of those value-disagreeing = 0       (0.0%) ; same end_date but different ann_date = 0
+  Q5  [E] FULL_KEYs with >1 row = 21196   ; of those value-disagreeing = 6       (0.0%) ; same end_date but different ann_date = 0
+  Q4  PIT winner field comparison (8 codes x 6 asof)
+       comparable=47  identical=46  differing=1
+       DIFF 000002.SZ@20260831 ['type 续亏|增亏']
+
+====================================================================================================
+dividend             FULL_KEY = ['ts_code', 'end_date', 'ann_date', 'div_proc']
+====================================================================================================
+  [D] rows=169067   FULL_KEYs=168857    update_flag in schema=False
+       R1 keep flag==1   : rows=0        FULL_KEYs=0        LOST-FK=168857  (100.00%)  rows dropped=169067
+       R2 safe rule       : rows=168857   FULL_KEYs=168857   LOST-FK=0       (  0.00%)
+  [E] rows=169333   FULL_KEYs=168954    update_flag in schema=False
+       R1 keep flag==1   : rows=0        FULL_KEYs=0        LOST-FK=168954  (100.00%)  rows dropped=169333
+       R2 safe rule       : rows=168954   FULL_KEYs=168954   LOST-FK=0       (  0.00%)
+  Q3  D_R2=168857   E_R2=168954    D-only=0      E-only=97      D subset of E: True
+        E-only  000099.SZ2026063020260923股东大会通过
+        E-only  000426.SZ2026063020260915股东大会通过
+  Q5  [D] FULL_KEYs with >1 row = 210     ; of those value-disagreeing = 1       (0.5%) ; same end_date but different ann_date = 0
+  Q5  [E] FULL_KEYs with >1 row = 379     ; of those value-disagreeing = 169     (44.6%) ; same end_date but different ann_date = 0
+  Q4  PIT winner field comparison (8 codes x 6 asof)
+       comparable=47  identical=47  differing=0
+
+====================================================================================================
+express              FULL_KEY = ['ts_code', 'end_date', 'ann_date']
+====================================================================================================
+  [D] rows=29506    FULL_KEYs=29503     update_flag in schema=True
+       R1 keep flag==1   : rows=0        FULL_KEYs=0        LOST-FK=29503   (100.00%)  rows dropped=29506
+       R2 safe rule       : rows=29503    FULL_KEYs=29503    LOST-FK=0       (  0.00%)
+  [E] rows=29598    FULL_KEYs=29598     update_flag in schema=True
+       R1 keep flag==1   : rows=1        FULL_KEYs=1        LOST-FK=29597   (100.00%)  rows dropped=29597
+       R2 safe rule       : rows=29598    FULL_KEYs=29598    LOST-FK=0       (  0.00%)
+  Q3  D_R2=29503    E_R2=29598     D-only=0      E-only=95      D subset of E: True
+        E-only  000055.SZ2004123120050128
+        E-only  000066.SZ2004123120050330
+  Q5  [D] FULL_KEYs with >1 row = 3       ; of those value-disagreeing = 0       (0.0%) ; same end_date but different ann_date = 0
+  Q5  [E] FULL_KEYs with >1 row = 0       ; of those value-disagreeing = 0       (0.0%) ; same end_date but different ann_date = 0
+  Q4  PIT winner field comparison (8 codes x 6 asof)
+       comparable=38  identical=37  differing=1
+       DIFF 600000.SH@20260831 ['end 20251231|20260630']
+
+====================================================================================================
+share_change_event   FULL_KEY = ['ts_code', 'change_date', 'change_reason']
+====================================================================================================
+  [D] rows=53892    FULL_KEYs=53824     update_flag in schema=False
+       R1 keep flag==1   : rows=0        FULL_KEYs=0        LOST-FK=53824   (100.00%)  rows dropped=53892
+       R2 safe rule       : rows=53824    FULL_KEYs=53824    LOST-FK=0       (  0.00%)
+  [E] rows=53892    FULL_KEYs=53824     update_flag in schema=False
+       R1 keep flag==1   : rows=0        FULL_KEYs=0        LOST-FK=53824   (100.00%)  rows dropped=53892
+       R2 safe rule       : rows=53824    FULL_KEYs=53824    LOST-FK=0       (  0.00%)
+  Q3  D_R2=53824    E_R2=53824     D-only=0      E-only=0       D subset of E: True
+  Q5  [D] FULL_KEYs with >1 row = 68      ; of those value-disagreeing = 0       (0.0%) ; same end_date but different ann_date = 0
+  Q5  [E] FULL_KEYs with >1 row = 68      ; of those value-disagreeing = 0       (0.0%) ; same end_date but different ann_date = 0
+  Q4  PIT winner field comparison (8 codes x 6 asof)
+       comparable=47  identical=47  differing=0
+
+====================================================================================================
+SUMMARY  table / side / rows / FULL_KEYs / R1-lost-FK / R2-rows / R2-FULL_KEYs
+====================================================================================================
+  fina_indicator       D  rows=354187   FK=338259   R1lost=202778  R2rows=338259   R2FK=338259  
+  fina_indicator       E  rows=675628   FK=376704   R1lost=3416    R2rows=376704   R2FK=376704  
+  balancesheet         D  rows=319515   FK=303988   R1lost=177914  R2rows=303988   R2FK=303988  
+  balancesheet         E  rows=445365   FK=341780   R1lost=203950  R2rows=341780   R2FK=341780  
+  income               D  rows=329557   FK=313810   R1lost=179737  R2rows=313810   R2FK=313810  
+  income               E  rows=419276   FK=350038   R1lost=185468  R2rows=350038   R2FK=350038  
+  cashflow             D  rows=316738   FK=301885   R1lost=169163  R2rows=301885   R2FK=301885  
+  cashflow             E  rows=387698   FK=312730   R1lost=146659  R2rows=312730   R2FK=312730  
+  forecast             D  rows=122540   FK=122527   R1lost=48054   R2rows=122527   R2FK=122527  
+  forecast             E  rows=149106   FK=127910   R1lost=38849   R2rows=127910   R2FK=127910  
+  dividend             D  rows=169067   FK=168857   R1lost=168857  R2rows=168857   R2FK=168857  
+  dividend             E  rows=169333   FK=168954   R1lost=168954  R2rows=168954   R2FK=168954  
+  express              D  rows=29506    FK=29503    R1lost=29503   R2rows=29503    R2FK=29503   
+  express              E  rows=29598    FK=29598    R1lost=29597   R2rows=29598    R2FK=29598   
+  share_change_event   D  rows=53892    FK=53824    R1lost=53824   R2rows=53824    R2FK=53824   
+  share_change_event   E  rows=53892    FK=53824    R1lost=53824   R2rows=53824    R2FK=53824   

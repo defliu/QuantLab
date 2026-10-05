@@ -1,0 +1,472 @@
+=== 数据集清单（按目录去版本层聚合） ===
+数据集数=94
+
+目录: 1.parquet格式个股行情数据/stock_1min
+  文件数=11750  体积=135.71 GiB  分享=f1732d2e8e2a
+  版本层: 20260911,20260918,20260930
+  文件名模式: {code}.SZ x6185; {code}.SH x4874; {code}.BJ x691
+
+目录: 1.parquet格式个股行情数据/个股行情数据全量按年分类
+  文件数=78  体积=128.29 GiB  分享=f1732d2e8e2a
+  版本层: 20260911,20260918,20260924
+  文件名模式: stock_daily_full x3; stock_daily_2010 x3; stock_daily_2026 x3; stock_daily_2025 x3
+
+目录: parquet格式ETF数据/etf_1min
+  文件数=13753  体积=49.08 GiB  分享=c3a2365f2cac
+  版本层: 20260911,20260918,20260930
+  文件名模式: {code}.SZ x5930; {code}.SH x5058; {code}.SZ(1) x1489; {code}.SH(1) x1271
+
+目录: 1.parquet格式个股行情数据/stock_5min
+  文件数=11681  体积=35.25 GiB  分享=f1732d2e8e2a
+  版本层: 20260911,20260918
+  文件名模式: {code}.SZ x6116; {code}.SH x4874; {code}.BJ x691
+
+目录: parquet格式指数数据/index_1min
+  文件数=1566  体积=32.79 GiB  分享=c3a2365f2cac
+  版本层: 20260911,20260918,20260930
+  文件名模式: {code}.SZ x957; {code}.SH x609
+
+目录: 1.parquet格式个股行情数据/stock_15min
+  文件数=17503  体积=21.74 GiB  分享=f1732d2e8e2a
+  版本层: 20260911,20260918,20260930
+  文件名模式: {code}.SZ x9160; {code}.SH x7302; {code}.BJ x1041
+
+目录: parquet格式指数数据/index_5min
+  文件数=2160  体积=14.02 GiB  分享=c3a2365f2cac
+  版本层: 20260911,20260918,20260930
+  文件名模式: {code}.SZ x1367; {code}.SH x791; {code}.BJ x2
+
+目录: parquet格式行业概念板块
+  文件数=8  体积=13.50 GiB  分享=f1732d2e8e2a
+  版本层: <无版本层>
+  文件名模式: 
+
+目录: 1.parquet格式个股行情数据/stock_30min
+  文件数=17498  体积=12.41 GiB  分享=f1732d2e8e2a
+  版本层: 20260911,20260918,20260930
+  文件名模式: {code}.SZ x9161; {code}.SH x7297; {code}.BJ x1040
+
+目录: parquet格式ETF数据/etf_5min
+  文件数=10964  体积=11.56 GiB  分享=c3a2365f2cac
+  版本层: 20260911,20260918,20260930
+  文件名模式: {code}.SZ x5906; {code}.SH x5058
+
+目录: parquet格式ETF数据/etf_15min
+  文件数=13721  体积=6.29 GiB  分享=c3a2365f2cac
+  版本层: 20260911,20260918,20260930
+  文件名模式: {code}.SZ x5905; {code}.SH x5061; {code}.SZ(1) x1483; {code}.SH(1) x1272
+
+目录: 财务数据parquet格式（已清洗去重）
+  文件数=85  体积=6.29 GiB  分享=f1732d2e8e2a
+  版本层: 20260731,20260807,20260814,20260821,20260828,20260904,20260911,20260918,20260924,20260930
+  文件名模式: income x10; forecast x10; fina_indicator x10; express x10
+
+目录: <root>
+  文件数=6  体积=5.65 GiB  分享=ce4b5b27f15e
+  版本层: <无版本层>
+  文件名模式: daily_adj_{code}19_{code}30 x1; daily_adj_{code}19_{code}29 x1; daily_adj_{code}19_{code}28 x1
+
+目录: parquet格式资金流向数据
+  文件数=29  体积=5.37 GiB  分享=f1732d2e8e2a
+  版本层: 20260911,20260918,20260924,20260930
+  文件名模式: moneyflow_ths x4; moneyflow_mkt_dc x4; moneyflow_ind_ths x4; moneyflow_ind_dc x4
+
+目录: parquet格式指数数据/index_15min
+  文件数=2164  体积=5.34 GiB  分享=c3a2365f2cac
+  版本层: 20260911,20260918,20260930
+  文件名模式: {code}.SZ x1371; {code}.SH x791; {code}.BJ x2
+
+目录: 1.parquet格式个股行情数据/stock_60min
+  文件数=11681  体积=5.04 GiB  分享=f1732d2e8e2a
+  版本层: 20260911,20260918
+  文件名模式: {code}.SZ x6116; {code}.SH x4874; {code}.BJ x691
+
+目录: parquet格式ETF数据/etf_30min
+  文件数=10975  体积=2.96 GiB  分享=c3a2365f2cac
+  版本层: 20260911,20260918,20260930
+  文件名模式: {code}.SZ x5914; {code}.SH x5061
+
+目录: parquet格式指数数据/index_30min
+  文件数=2165  体积=2.87 GiB  分享=c3a2365f2cac
+  版本层: 20260911,20260918,20260930
+  文件名模式: {code}.SZ x1372; {code}.SH x791; {code}.BJ x2
+
+目录: parquet格式特色数据
+  文件数=13  体积=2.51 GiB  分享=f1732d2e8e2a
+  版本层: 20260911,20260918,20260924,20260930
+  文件名模式: stock_auction_o_daily x4; stock_auction_c_daily x4; report_rc_daily x4
+
+目录: 1.parquet格式个股行情数据
+  文件数=5  体积=2.51 GiB  分享=f1732d2e8e2a
+  版本层: 20260911,20260918
+  文件名模式: stock_daily x2; stock_basic_data x2
+
+目录: parquet格式ETF数据/etf_60min
+  文件数=13716  体积=2.33 GiB  分享=c3a2365f2cac
+  版本层: 20260911,20260918,20260930
+  文件名模式: {code}.SZ x5902; {code}.SH x5060; {code}.SZ(1) x1483; {code}.SH(1) x1271
+
+目录: parquet格式指数数据/index_60min
+  文件数=2163  体积=1.65 GiB  分享=c3a2365f2cac
+  版本层: 20260911,20260918,20260930
+  文件名模式: {code}.SZ x1372; {code}.SH x791
+
+目录: 融资融券
+  文件数=3931  体积=1.39 GiB  分享=c3a2365f2cac
+  版本层: 20260528
+  文件名模式: {code}13 x138; {code}28 x137; {code}27 x137; {code}21 x137
+
+目录: parquet格式集合竞价tick数据/2025
+  文件数=51  体积=1.22 GiB  分享=c3a2365f2cac
+  版本层: 20250000
+  文件名模式: tick_3s_2025-12-20_2025-12-26_1.csv x1; tick_3s_2025-12-27_2025-12-31_1.csv x1; tick_3s_2025-12-13_2025-12-19_1.csv x1; tick_3s_2025-12-12_2025-12-12_1.csv x1
+
+目录: parquet格式打板专题数据
+  文件数=29  体积=1.20 GiB  分享=f1732d2e8e2a
+  版本层: 20260911,20260918,20260924,20260930
+  文件名模式: top_list x4; top_inst x4; ths_index x4; ths_daily x4
+
+目录: parquet格式集合竞价tick数据/2026
+  文件数=70  体积=1.11 GiB  分享=c3a2365f2cac
+  版本层: 20260000
+  文件名模式: tick_3s_2026-09-19_2026-09-24_1.csv x1; tick_3s_2026-09-12_2026-09-18_1.csv x1; tick_3s_2026-09-01_2026-09-04_1.csv x1; tick_3s_2026-08-29_2026-08-31_1.csv x1
+
+目录: parquet格式集合竞价tick数据/2024
+  文件数=44  体积=1.01 GiB  分享=c3a2365f2cac
+  版本层: 20240000
+  文件名模式: tick_3s_2024-12-28_2024-12-31_1.csv x1; tick_3s_2024-12-21_2024-12-27_1.csv x1; tick_3s_2024-12-14_2024-12-20_1.csv x1; tick_3s_2024-12-01_2024-12-10_1.csv x1
+
+目录: parquet格式集合竞价tick数据/2023
+  文件数=69  体积=0.83 GiB  分享=c3a2365f2cac
+  版本层: 20230000
+  文件名模式: tick_3s_2023-12-23_2023-12-31_1.csv x1; tick_3s_2023-12-16_2023-12-22_1.csv x1; tick_3s_2023-12-09_2023-12-15_1.csv x1; tick_3s_2023-12-01_2023-12-08_1.csv x1
+
+目录: 可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式/2024
+  文件数=6  体积=0.77 GiB  分享=c3a2365f2cac
+  版本层: 20240000
+  文件名模式: 
+
+目录: 可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式/2023
+  文件数=6  体积=0.69 GiB  分享=c3a2365f2cac
+  版本层: 20230000
+  文件名模式: 
+
+目录: 可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式/2025
+  文件数=6  体积=0.65 GiB  分享=c3a2365f2cac
+  版本层: 20250000
+  文件名模式: 
+
+目录: 筹码分布数据
+  文件数=11138  体积=0.63 GiB  分享=f1732d2e8e2a
+  版本层: 20260821,20260918
+  文件名模式: {code}_SZ x5822; {code}_SH x4668; {code}_BJ x646; cyq_daily_{code}21 x1
+
+目录: 可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式/2022
+  文件数=6  体积=0.58 GiB  分享=c3a2365f2cac
+  版本层: 20220000
+  文件名模式: 
+
+目录: parquet格式集合竞价tick数据/2022
+  文件数=23  体积=0.51 GiB  分享=c3a2365f2cac
+  版本层: 20220000
+  文件名模式: tick_3s_2022-12-01_2022-12-31_1.csv x1; tick_3s_2022-12-01_2022-12-31_2.csv x1; tick_3s_2022-11-01_2022-11-30_1.csv x1; tick_3s_2022-11-01_2022-11-30_2.csv x1
+
+目录: parquet格式集合竞价tick数据/2021
+  文件数=22  体积=0.49 GiB  分享=c3a2365f2cac
+  版本层: 20210000
+  文件名模式: tick_3s_2021-12-01_2021-12-31_1.csv x1; tick_3s_2021-12-01_2021-12-31_2.csv x1; tick_3s_2021-11-01_2021-11-30_1.csv x1; tick_3s_2021-11-01_2021-11-30_2.csv x1
+
+目录: parquet格式集合竞价tick数据/2020
+  文件数=21  体积=0.47 GiB  分享=c3a2365f2cac
+  版本层: 20200000
+  文件名模式: tick_3s_2020-12-01_2020-12-31_1.csv x1; tick_3s_2020-12-01_2020-12-31_2.csv x1; tick_3s_2020-01-01_2020-01-31_1.csv x1; tick_3s_2020-11-01_2020-11-30_1.csv x1
+
+目录: 可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式/2021
+  文件数=6  体积=0.45 GiB  分享=c3a2365f2cac
+  版本层: 20210000
+  文件名模式: 
+
+目录: parquet格式ETF数据
+  文件数=11  体积=0.42 GiB  分享=c3a2365f2cac
+  版本层: 20260911,20260918,20260930
+  文件名模式: etf_daily x4; etf_basic_data x4; {code}.SZ x1; etf_basic_data(1) x1
+
+目录: 可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式/2026
+  文件数=6  体积=0.34 GiB  分享=c3a2365f2cac
+  版本层: 20260000
+  文件名模式: 
+
+目录: 可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式/2020
+  文件数=6  体积=0.31 GiB  分享=c3a2365f2cac
+  版本层: 20200000
+  文件名模式: 
+
+目录: parquet格式指数数据
+  文件数=14  体积=0.26 GiB  分享=c3a2365f2cac
+  版本层: 20260911,20260918,20260930
+  文件名模式: sw_l1_daily x3; index_basic x3; ci_l2_daily x3; ci_l1_daily x3
+
+目录: parquet格式可转债日度数据
+  文件数=29  体积=0.18 GiB  分享=c3a2365f2cac
+  版本层: 20260911,20260918,20260924,20260930
+  文件名模式: cb_issue x4; cb_share x4; repo_daily x4; cb_rate x4
+
+目录: 1.parquet格式个股行情数据/行情数据（增量数据9.7-9.11）
+  文件数=7  体积=0.18 GiB  分享=f1732d2e8e2a
+  版本层: <无版本层>
+  文件名模式: stock_daily x1; stock_basic_data x1; stock_60min_data x1; stock_5min_data x1
+
+目录: 1.parquet格式个股行情数据/行情数据（增量数据9.14-9.18）
+  文件数=7  体积=0.17 GiB  分享=f1732d2e8e2a
+  版本层: <无版本层>
+  文件名模式: stock_daily x1; stock_basic_data x1; stock_60min_data x1; stock_5min_data x1
+
+目录: 可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式/2019
+  文件数=6  体积=0.14 GiB  分享=c3a2365f2cac
+  版本层: 20190000
+  文件名模式: 
+
+目录: 1.parquet格式个股行情数据/行情数据（增量数据9.21-9.24）
+  文件数=7  体积=0.13 GiB  分享=f1732d2e8e2a
+  版本层: <无版本层>
+  文件名模式: stock_daily x1; stock_basic_data x1; stock_60min_data x1; stock_5min_data x1
+
+目录: 1.parquet格式个股行情数据/行情数据（增量数据9.28-9.30）
+  文件数=7  体积=0.10 GiB  分享=f1732d2e8e2a
+  版本层: <无版本层>
+  文件名模式: stock_daily x1; stock_basic_data x1; stock_60min_data x1; stock_5min_data x1
+
+目录: parquet格式ETF历史持仓数据
+  文件数=2926  体积=0.08 GiB  分享=c3a2365f2cac
+  版本层: 20260622,20260901
+  文件名模式: {code} x2924; summary x1; etf_list x1
+
+目录: 股东数据parquet（20260615更新 月更）
+  文件数=4  体积=0.07 GiB  分享=c3a2365f2cac
+  版本层: 20260615
+  文件名模式: top10_floatholders x1; top10_holders x1; stk_holdertrade x1; stk_holdernumber x1
+
+目录: 指数权重数据/parquet格式20260807
+  文件数=2071  体积=0.06 GiB  分享=f1732d2e8e2a
+  版本层: 20260807
+  文件名模式: index_weight_data_1259 x1; index_weight_data_1261 x1; index_weight_data_1260 x1; index_weight_data_1237 x1
+
+目录: 可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式/2018
+  文件数=6  体积=0.06 GiB  分享=c3a2365f2cac
+  版本层: 20180000
+  文件名模式: 
+
+目录: 北向资金/parquet 20260807
+  文件数=4  体积=0.06 GiB  分享=f1732d2e8e2a
+  版本层: 20260807
+  文件名模式: hk_hold_full x1; ggt_top10_full x1; moneyflow_hsgt_full x1; hsgt_top10_full x1
+
+目录: parquet格式指数数据/指数数据（增量数据9.14-9.18）
+  文件数=11  体积=0.04 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: sw_l1_daily x1; index_global x1; index_daily x1; index_basic x1
+
+目录: 增量数据/6.29-7.3/ETF数据
+  文件数=6  体积=0.04 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: etf_15min_data x1; etf_30min_data x1; etf_5min_data x1; etf_1min_data x1
+
+目录: 增量数据/6.1-6.5/ETF数据
+  文件数=6  体积=0.04 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: etf_1min_data x1; etf_30min_data x1; etf_5min_data x1; etf_60min_data x1
+
+目录: 增量数据/6.8-6.12/ETF数据
+  文件数=6  体积=0.04 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: etf_daily x1; etf_5min_data x1; etf_15min_data x1; etf_1min_data x1
+
+目录: parquet格式ETF数据/ETF数据（增量数据9.14-9.18）
+  文件数=7  体积=0.04 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: etf_daily x1; etf_basic_data x1; etf_60min_data x1; etf_5min_data x1
+
+目录: parquet格式ETF历史持仓数据/parquet格式ETF持仓数据季度更新 2006年-2026年二季度 20260806更新
+  文件数=1475  体积=0.04 GiB  分享=c3a2365f2cac
+  版本层: 20260806
+  文件名模式: {code} x1473; summary x1; etf_list x1
+
+目录: 增量数据/4.20-4.24/ETF数据
+  文件数=6  体积=0.04 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: etf_1min_data x1; etf_daily x1; etf_60min_data x1; etf_5min_data x1
+
+目录: parquet格式ETF历史持仓数据/parquet格式ETF持仓数据季度更新 2006年-2026年一季度 20260702更新
+  文件数=1471  体积=0.04 GiB  分享=c3a2365f2cac
+  版本层: 20260702
+  文件名模式: {code} x1469; summary x1; etf_list x1
+
+目录: 增量数据/4.13-4.17/ETF数据
+  文件数=6  体积=0.04 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: etf_1min_data x1; etf_5min_data x1; etf_60min_data x1; etf_daily x1
+
+目录: 增量数据/6.29-7.3/指数数据
+  文件数=8  体积=0.04 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: index_30min_data x1; index_15min_data x1; index_1min_data x1; index_60min_data x1
+
+目录: 可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式/日k
+  文件数=11  体积=0.04 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: 
+
+目录: parquet格式指数数据/指数数据（增量数据9.21-9.24）
+  文件数=11  体积=0.04 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: sw_l1_daily x1; index_global x1; index_daily x1; index_basic x1
+
+目录: 增量数据/6.8-6.12/指数数据
+  文件数=8  体积=0.03 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: index_5min_data x1; index_60min_data x1; sw_l1_daily x1; ci_l1_daily x1
+
+目录: 增量数据/6.1-6.5/指数数据
+  文件数=8  体积=0.03 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: index_5min_data x1; ci_l2_daily x1; index_1min_data x1; index_60min_data x1
+
+目录: 增量数据/4.20-4.24/指数数据
+  文件数=8  体积=0.03 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: index_1min_data x1; index_5min_data x1; index_60min_data x1; index_30min_data x1
+
+目录: 增量数据/4.13-4.17/指数数据
+  文件数=8  体积=0.03 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: index_1min_data x1; sw_l1_daily x1; index_60min_data x1; index_5min_data x1
+
+目录: parquet格式ETF数据/ETF数据（增量数据9.21-9.24）
+  文件数=7  体积=0.03 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: etf_daily x1; etf_basic_data x1; etf_60min_data x1; etf_5min_data x1
+
+目录: 增量数据/4.7-4.10/指数数据
+  文件数=8  体积=0.03 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: index_1min_data x1; index_60min_data x1; index_5min_data x1; sw_l1_daily x1
+
+目录: parquet格式指数数据/指数数据（增量数据9.28-9.30）
+  文件数=11  体积=0.03 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: sw_l1_daily x1; index_global x1; index_daily x1; index_basic x1
+
+目录: 增量数据/4.7-4.10/ETF数据
+  文件数=6  体积=0.03 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: etf_1min_data x1; etf_30min_data x1; etf_daily x1; etf_5min_data x1
+
+目录: parquet格式ETF数据/ETF数据（增量数据9.28-9.30）
+  文件数=7  体积=0.02 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: etf_daily x1; etf_basic_data x1; etf_60min_data x1; etf_5min_data x1
+
+目录: parquet格式指数数据/index_global
+  文件数=66  体积=0.02 GiB  分享=c3a2365f2cac
+  版本层: 20260911,20260918,20260930
+  文件名模式: XIN9 x3; SPTSX x3; SPX x3; TWII x3
+
+目录: 可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式/2017
+  文件数=6  体积=0.01 GiB  分享=c3a2365f2cac
+  版本层: 20170000
+  文件名模式: 
+
+目录: 1.parquet格式个股行情数据/2026.7.31后缺5-60min的9.30那根分钟线补充包，后续主库更新后修复这个问题
+  文件数=9  体积=0.01 GiB  分享=f1732d2e8e2a
+  版本层: 20260731
+  文件名模式: stock_60min_0930_patch(1) x1; stock_5min_0930_patch(1) x1; stock_30min_0930_patch(1) x1; stock_15min_0930_patch(1) x1
+
+目录: 2026.7.31后缺5-60min的9.30那根分钟线补充包，后续主库更新后修复这个问题/1.parquet格式
+  文件数=12  体积=0.01 GiB  分享=c3a2365f2cac
+  版本层: 20260731
+  文件名模式: stock_60min_0930_patch x1; stock_5min_0930_patch x1; stock_30min_0930_patch x1; stock_15min_0930_patch x1
+
+目录: 可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式/2016
+  文件数=6  体积=0.01 GiB  分享=c3a2365f2cac
+  版本层: 20160000
+  文件名模式: 
+
+目录: A股全部上市公司主营业务数据
+  文件数=1  体积=0.01 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: stock_company x1
+
+目录: 数据使用说明
+  文件数=2  体积=0.00 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: 
+
+目录: parquet格式ETF数据/2026.7.31后缺5-60min的9.30那根分钟线补充包，后续主库更新后修复这个问题
+  文件数=10  体积=0.00 GiB  分享=c3a2365f2cac
+  版本层: 20260731
+  文件名模式: etf_60min_0930_patch(1) x1; etf_5min_0930_patch(1) x1; etf_30min_0930_patch(1) x1; etf_15min_0930_patch(1) x1
+
+目录: 可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式
+  文件数=2  体积=0.00 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: 强赎 x1; cb_list x1
+
+目录: parquet（个股分钟线缺失修补数据（7.27-8.7））/行情数据（修补数据7.27-8.7）
+  文件数=5  体积=0.00 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: stock_30min_data x1; stock_60min_data x1; stock_5min_data x1; stock_1min_data x1
+
+目录: 增量数据
+  文件数=1  体积=0.00 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: 
+
+目录: 筹码分布数据/筹码分布数据/tushare_cyq
+  文件数=4  体积=0.00 GiB  分享=f1732d2e8e2a
+  版本层: <无版本层>
+  文件名模式: 
+
+目录: 增量数据/4.20-4.24/可转债数据
+  文件数=2  体积=0.00 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: repo_daily x1; cb_daily x1
+
+目录: 增量数据/4.13-4.17/可转债数据
+  文件数=2  体积=0.00 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: repo_daily x1; cb_daily x1
+
+目录: 增量数据/6.1-6.5/可转债数据
+  文件数=2  体积=0.00 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: cb_daily x1; repo_daily x1
+
+目录: 增量数据/6.8-6.12/可转债数据
+  文件数=2  体积=0.00 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: cb_daily x1; repo_daily x1
+
+目录: 增量数据/6.29-7.3/可转债数据
+  文件数=2  体积=0.00 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: cb_daily x1; repo_daily x1
+
+目录: 增量数据/6.22-6.26/可转债数据
+  文件数=2  体积=0.00 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: repo_daily x1; cb_daily x1
+
+目录: 增量数据/4.7-4.10/可转债数据
+  文件数=2  体积=0.00 GiB  分享=c3a2365f2cac
+  版本层: <无版本层>
+  文件名模式: repo_daily x1; cb_daily x1
+
+目录: 指数权重数据
+  文件数=1  体积=0.00 GiB  分享=f1732d2e8e2a
+  版本层: <无版本层>
+  文件名模式: 
+
+目录: 北向资金
+  文件数=1  体积=0.00 GiB  分享=f1732d2e8e2a
+  版本层: <无版本层>
+  文件名模式: 

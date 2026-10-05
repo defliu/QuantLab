@@ -1,0 +1,234 @@
+################################################################################################
+# Duplicate anatomy: are repeated FULL_KEYs exact copies or real versions?
+################################################################################################
+
+================================================================================================
+E-side fina_indicator   FULL_KEY=['ts_code', 'end_date', 'ann_date']
+================================================================================================
+
+  rows=675628  cols=167
+  uniq FULL_KEY      = 376704
+  surplus rows       = 298924
+  uniq full-row hash = 675628
+  >> VERDICT: duplicates carry DIFFERING values
+     surplus differing rows = 298924
+     => same FULL_KEY has multiple value versions
+     FULL_KEYs with >1 distinct value version = 298567
+     max distinct versions for one FULL_KEY = 4
+     top conflicting FULL_KEYs:
+        ['300047.SZ', '20250331', '20250426']  versions=4
+        ['002801.SZ', '20250930', '20251030']  versions=4
+        ['301158.SZ', '20250331', '20250423']  versions=4
+        ['301158.SZ', '20240930', '20241025']  versions=4
+        ['603920.SH', '20240930', '20241029']  versions=4
+        ['300832.SZ', '20231231', '20240412']  versions=4
+        ['688432.SH', '20231231', '20240329']  versions=4
+        ['688432.SH', '20250331', '20250424']  versions=4
+     conflict end_date year dist (sample): {'1990': 49, '1991': 71, '1992': 108, '1993': 218, '1994': 291, '1995': 314, '1996': 364, '1997': 380, '1998': 379, '1999': 388, '2000': 404, '2001': 476, '2002': 777, '2003': 780}
+
+================================================================================================
+E-side balancesheet   FULL_KEY=['ts_code', 'end_date', 'report_type', 'ann_date']
+================================================================================================
+
+  rows=445365  cols=158
+  uniq FULL_KEY      = 341780
+  surplus rows       = 103585
+  uniq full-row hash = 445365
+  >> VERDICT: duplicates carry DIFFERING values
+     surplus differing rows = 103585
+     => same FULL_KEY has multiple value versions
+     FULL_KEYs with >1 distinct value version = 103564
+     max distinct versions for one FULL_KEY = 3
+     top conflicting FULL_KEYs:
+        ['002397.SZ', '20231231', '1', '20240429']  versions=3
+        ['002726.SZ', '20240331', '1', '20240416']  versions=3
+        ['920249.BJ', '20241231', '1', '20250429']  versions=3
+        ['002878.SZ', '20231231', '1', '20240419']  versions=3
+        ['600753.SH', '20211231', '1', '20220430']  versions=3
+        ['600692.SH', '20231231', '1', '20240424']  versions=3
+        ['000903.SZ', '20231231', '1', '20240430']  versions=3
+        ['300284.SZ', '20231231', '1', '20240416']  versions=3
+     conflict end_date year dist (sample): {'2005': 569, '2006': 1109, '2007': 1667, '2008': 1661, '2009': 558, '2010': 1105, '2011': 1097, '2012': 1650, '2013': 1100, '2014': 1096, '2015': 550, '2016': 1093, '2017': 1086, '2018': 1446}
+
+================================================================================================
+E-side income   FULL_KEY=['ts_code', 'end_date', 'report_type', 'ann_date']
+================================================================================================
+
+  rows=419276  cols=94
+  uniq FULL_KEY      = 350038
+  surplus rows       = 69238
+  uniq full-row hash = 419276
+  >> VERDICT: duplicates carry DIFFERING values
+     surplus differing rows = 69238
+     => same FULL_KEY has multiple value versions
+     FULL_KEYs with >1 distinct value version = 69187
+     max distinct versions for one FULL_KEY = 3
+     top conflicting FULL_KEYs:
+        ['874302.BJ', '20250630', '1', '20250828']  versions=3
+        ['603813.SH', '20250930', '1', '20251028']  versions=3
+        ['920932.BJ', '20231231', '1', '20240423']  versions=3
+        ['002726.SZ', '20250630', '1', '20250829']  versions=3
+        ['002726.SZ', '20250331', '1', '20250426']  versions=3
+        ['002726.SZ', '20241231', '1', '20250426']  versions=3
+        ['688511.SH', '20250930', '1', '20251031']  versions=3
+        ['002496.SZ', '20250930', '1', '20251028']  versions=3
+     conflict end_date year dist (sample): {'2005': 1, '2006': 2, '2007': 5, '2008': 9, '2009': 8, '2010': 13, '2011': 14, '2012': 17, '2013': 19, '2014': 26, '2015': 37, '2016': 72, '2017': 131, '2018': 2741}
+
+================================================================================================
+E-side cashflow   FULL_KEY=['ts_code', 'end_date', 'report_type', 'ann_date']
+================================================================================================
+
+  rows=387698  cols=97
+  uniq FULL_KEY      = 312730
+  surplus rows       = 74968
+  uniq full-row hash = 387698
+  >> VERDICT: duplicates carry DIFFERING values
+     surplus differing rows = 74968
+     => same FULL_KEY has multiple value versions
+     FULL_KEYs with >1 distinct value version = 74935
+     max distinct versions for one FULL_KEY = 3
+     top conflicting FULL_KEYs:
+        ['600455.SH', '20250630', '1', '20250816']  versions=3
+        ['300749.SZ', '20250630', '1', '20250828']  versions=3
+        ['300781.SZ', '20250630', '1', '20250829']  versions=3
+        ['002368.SZ', '20250630', '1', '20250829']  versions=3
+        ['874142.BJ', '20250630', '1', '20250827']  versions=3
+        ['600615.SH', '20250930', '1', '20251031']  versions=3
+        ['874628.BJ', '20250630', '1', '20250827']  versions=3
+        ['600848.SH', '20250930', '1', '20251029']  versions=3
+     conflict end_date year dist (sample): {'2005': 1, '2006': 5, '2007': 6, '2008': 8, '2009': 4, '2010': 8, '2011': 14, '2012': 19, '2013': 8, '2014': 15, '2015': 13, '2016': 22, '2017': 49, '2018': 806}
+
+================================================================================================
+E-side forecast   FULL_KEY=['ts_code', 'end_date', 'ann_date', 'type']
+================================================================================================
+
+  rows=149106  cols=13
+  uniq FULL_KEY      = 127910
+  surplus rows       = 21196
+  uniq full-row hash = 149106
+  >> VERDICT: duplicates carry DIFFERING values
+     surplus differing rows = 21196
+     => same FULL_KEY has multiple value versions
+     FULL_KEYs with >1 distinct value version = 21196
+     max distinct versions for one FULL_KEY = 2
+     top conflicting FULL_KEYs:
+        ['000002.SZ', '20240630', '20240710', '首亏']  versions=2
+        ['600290.SH', '20230630', '20230715', '续亏']  versions=2
+        ['600290.SH', '20211231', '20220127', '首亏']  versions=2
+        ['600289.SH', '20251231', '20260124', '续亏']  versions=2
+        ['600289.SH', '20240630', '20240711', '扭亏']  versions=2
+        ['600289.SH', '20231231', '20240131', '续亏']  versions=2
+        ['600289.SH', '20230630', '20230715', '续亏']  versions=2
+        ['600289.SH', '20221231', '20230131', '续亏']  versions=2
+     conflict end_date year dist (sample): {'2021': 6514, '2022': 5118, '2023': 4028, '2024': 2688, '2025': 1591, '2026': 61}
+
+################################################################################################
+# Same test on D side (control)
+################################################################################################
+
+================================================================================================
+D-side fina_indicator   FULL_KEY=['ts_code', 'end_date', 'ann_date']
+================================================================================================
+
+  rows=354187  cols=167
+  uniq FULL_KEY      = 338259
+  surplus rows       = 15928
+  uniq full-row hash = 349298
+  >> VERDICT: duplicates carry DIFFERING values
+     surplus differing rows = 11039
+     => same FULL_KEY has multiple value versions
+     FULL_KEYs with >1 distinct value version = 11039
+     max distinct versions for one FULL_KEY = 2
+     top conflicting FULL_KEYs:
+        ['000006.SZ', '20231231', '20240427']  versions=2
+        ['600993.SH', '20250630', '20250829']  versions=2
+        ['600992.SH', '20251231', '20260425']  versions=2
+        ['600992.SH', '20260331', '20260430']  versions=2
+        ['600993.SH', '20231231', '20240413']  versions=2
+        ['600993.SH', '20240331', '20240420']  versions=2
+        ['600993.SH', '20240630', '20240824']  versions=2
+        ['600993.SH', '20240930', '20241026']  versions=2
+     conflict end_date year dist (sample): {'2020': 3, '2021': 36, '2022': 45, '2023': 1085, '2024': 4378, '2025': 4390, '2026': 1102}
+
+================================================================================================
+D-side balancesheet   FULL_KEY=['ts_code', 'end_date', 'report_type', 'ann_date']
+================================================================================================
+
+  rows=319515  cols=158
+  uniq FULL_KEY      = 303988
+  surplus rows       = 15527
+  uniq full-row hash = 314161
+  >> VERDICT: duplicates carry DIFFERING values
+     surplus differing rows = 10173
+     => same FULL_KEY has multiple value versions
+     FULL_KEYs with >1 distinct value version = 10173
+     max distinct versions for one FULL_KEY = 2
+     top conflicting FULL_KEYs:
+        ['000006.SZ', '20231231', '1', '20240427']  versions=2
+        ['600935.SH', '20240930', '1', '20241030']  versions=2
+        ['600927.SH', '20250630', '1', '20250828']  versions=2
+        ['600927.SH', '20250930', '1', '20251029']  versions=2
+        ['600927.SH', '20251231', '1', '20260424']  versions=2
+        ['600927.SH', '20260331', '1', '20260424']  versions=2
+        ['600935.SH', '20231231', '1', '20240426']  versions=2
+        ['600935.SH', '20240331', '1', '20240426']  versions=2
+     conflict end_date year dist (sample): {'2021': 3, '2022': 10, '2023': 999, '2024': 4020, '2025': 4112, '2026': 1029}
+
+================================================================================================
+D-side income   FULL_KEY=['ts_code', 'end_date', 'report_type', 'ann_date']
+================================================================================================
+
+  rows=329557  cols=94
+  uniq FULL_KEY      = 313810
+  surplus rows       = 15747
+  uniq full-row hash = 324811
+  >> VERDICT: duplicates carry DIFFERING values
+     surplus differing rows = 11001
+     => same FULL_KEY has multiple value versions
+     FULL_KEYs with >1 distinct value version = 11001
+     max distinct versions for one FULL_KEY = 2
+     top conflicting FULL_KEYs:
+        ['000006.SZ', '20231231', '1', '20240427']  versions=2
+        ['600970.SH', '20260331', '1', '20260429']  versions=2
+        ['600970.SH', '20240331', '1', '20240427']  versions=2
+        ['600970.SH', '20240630', '1', '20240824']  versions=2
+        ['600970.SH', '20240930', '1', '20241026']  versions=2
+        ['600970.SH', '20241231', '1', '20250326']  versions=2
+        ['600970.SH', '20250331', '1', '20250424']  versions=2
+        ['600970.SH', '20250630', '1', '20250827']  versions=2
+     conflict end_date year dist (sample): {'2022': 24, '2023': 1081, '2024': 4353, '2025': 4433, '2026': 1110}
+
+================================================================================================
+D-side cashflow   FULL_KEY=['ts_code', 'end_date', 'report_type', 'ann_date']
+================================================================================================
+
+  rows=316738  cols=97
+  uniq FULL_KEY      = 301885
+  surplus rows       = 14853
+  uniq full-row hash = 310284
+  >> VERDICT: duplicates carry DIFFERING values
+     surplus differing rows = 8399
+     => same FULL_KEY has multiple value versions
+     FULL_KEYs with >1 distinct value version = 8399
+     max distinct versions for one FULL_KEY = 2
+     top conflicting FULL_KEYs:
+        ['000006.SZ', '20231231', '1', '20240427']  versions=2
+        ['600362.SH', '20251231', '1', '20260327']  versions=2
+        ['600362.SH', '20250630', '1', '20250829']  versions=2
+        ['600362.SH', '20250331', '1', '20250429']  versions=2
+        ['600362.SH', '20241231', '1', '20250328']  versions=2
+        ['600362.SH', '20240930', '1', '20241030']  versions=2
+        ['600362.SH', '20240630', '1', '20240829']  versions=2
+        ['600362.SH', '20240331', '1', '20240427']  versions=2
+     conflict end_date year dist (sample): {'2022': 13, '2023': 838, '2024': 3429, '2025': 3476, '2026': 643}
+
+================================================================================================
+D-side forecast   FULL_KEY=['ts_code', 'end_date', 'ann_date', 'type']
+================================================================================================
+
+  rows=122540  cols=13
+  uniq FULL_KEY      = 122527
+  surplus rows       = 13
+  uniq full-row hash = 122527
+  >> VERDICT: duplicates are EXACT byte-identical copies
+     (uniq_row_hash == uniq_FULL_KEY) -> safe dedup

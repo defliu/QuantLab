@@ -1,0 +1,107 @@
+=== 供应商 -> D:/astock 生产对账（快照） ===
+供应商去版本层数据集=76   D侧一级目录=20
+
+--- A. 分证券数据集：证券代码级覆盖 ---
+供应商数据集                                         D侧目录           供应码     最新码      命中      缺失  最新版本/覆盖率
+1.parquet格式个股行情数据/stock_5min                   min_5min      5842    5842    5826      16  20260918 / 99.7%
+1.parquet格式个股行情数据/stock_60min                  min_60min     5842    5842    5826      16  20260918 / 99.7%
+1.parquet格式个股行情数据/stock_15min                  min_15min     5849    5822    5799      23  20260930 / 99.6%
+1.parquet格式个股行情数据/stock_30min                  min_30min     5849    5817    5794      23  20260930 / 99.6%
+筹码分布数据                                         chip          5568    5568    5568       0  20260918 / 100.0%
+parquet格式ETF数据/etf_1min                        etf           2761    2760       0    2760  20260930 / 0.0%
+parquet格式ETF数据/etf_30min                       etf           2757    2756       0    2756  20260930 / 0.0%
+parquet格式ETF数据/etf_15min                       etf           2756    2755       0    2755  20260930 / 0.0%
+parquet格式ETF数据/etf_5min                        etf           2756    2755       0    2755  20260930 / 0.0%
+parquet格式ETF数据/etf_60min                       etf           2755    2754       0    2754  20260930 / 0.0%
+parquet格式指数数据/index_30min                      index          726     725     719       6  20260930 / 99.2%
+parquet格式指数数据/index_15min                      index          726     724     718       6  20260930 / 99.2%
+parquet格式指数数据/index_60min                      index          724     723     719       4  20260930 / 99.4%
+parquet格式指数数据/index_5min                       index          726     720     714       6  20260930 / 99.2%
+parquet格式指数数据/index_1min                       index          720     126     126       0  20260930 / 100.0%
+1.parquet格式个股行情数据/stock_1min                   min_1min      5842      69      69       0  20260930 / 100.0%
+
+--- B. 聚合表数据集：表名 -> D侧归属 ---
+供应商数据集                                             最新版本               文件      GiB  D侧匹配
+parquet格式行业概念板块                                    -                   8    13.50  <全为分证券文件或无 parquet>
+<root>                                             -                   6     5.65  daily_adj_19901219_20260928->MISS; daily_adj_19901219_20260929->MISS; daily_adj_19901219_20260930->MISS
+1.parquet格式个股行情数据/个股行情数据全量按年分类                     20260924           19     2.49  stock_daily_2009->MISS; stock_daily_2010->MISS; stock_daily_2011->MISS; stock_daily_2012->MISS; stock_daily_2013->MISS; stock_dail
+parquet格式资金流向数据                                    20260930            7     1.35  moneyflow->moneyflow; moneyflow_cnt_ths->MISS; moneyflow_dc->MISS; moneyflow_ind_dc->MISS; moneyflow_ind_ths->MISS; moneyflow_mkt_
+1.parquet格式个股行情数据                                  20260918            2     1.25  stock_basic_data->MISS; stock_daily->MISS
+parquet格式集合竞价tick数据                                20260000           70     1.11  tick_3s_2026-01-01_2026-01-09_1.csv->MISS; tick_3s_2026-01-10_2026-01-16_1.csv->MISS; tick_3s_2026-01-17_2026-01-23_1.csv->MISS; t
+parquet格式特色数据                                      20260930            3     0.63  report_rc_daily->MISS; stock_auction_c_daily->MISS; stock_auction_o_daily->MISS
+财务数据parquet格式（已清洗去重）                               20260930            8     0.62  balancesheet->MISS; cashflow->MISS; dividend->MISS; express->MISS; fina_indicator->MISS; forecast->MISS ...(+2)
+融资融券                                               20260528         3924     0.36  20100331->MISS; 20100401->MISS; 20100402->MISS; 20100406->MISS; 20100407->MISS; 20100408->MISS ...(+3917)
+可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式        20260000            6     0.34  <全为分证券文件或无 parquet>
+parquet格式打板专题数据                                    20260930            7     0.30  limit_list_d->MISS; limit_list_ths->MISS; stock_auction_daily->MISS; ths_daily->MISS; ths_index->MISS; top_inst->MISS ...(+1)
+1.parquet格式个股行情数据/行情数据（增量数据9.7-9.11）               -                   7     0.18  stock_15min_data->MISS; stock_1min_data->MISS; stock_30min_data->MISS; stock_5min_data->MISS; stock_60min_data->MISS; stock_basic_
+1.parquet格式个股行情数据/行情数据（增量数据9.14-9.18）              -                   7     0.17  stock_15min_data->MISS; stock_1min_data->MISS; stock_30min_data->MISS; stock_5min_data->MISS; stock_60min_data->MISS; stock_basic_
+1.parquet格式个股行情数据/行情数据（增量数据9.21-9.24）              -                   7     0.13  stock_15min_data->MISS; stock_1min_data->MISS; stock_30min_data->MISS; stock_5min_data->MISS; stock_60min_data->MISS; stock_basic_
+parquet格式ETF数据                                     20260930            4     0.10  etf_basic_data(1)->MISS; etf_basic_data->MISS; etf_daily->MISS
+parquet格式指数数据                                      20260930            5     0.10  ci_l1_daily(1)->MISS; ci_l1_daily->MISS; ci_l2_daily->MISS; index_basic->MISS; sw_l1_daily->MISS
+1.parquet格式个股行情数据/行情数据（增量数据9.28-9.30）              -                   7     0.10  stock_15min_data->MISS; stock_1min_data->MISS; stock_30min_data->MISS; stock_5min_data->MISS; stock_60min_data->MISS; stock_basic_
+股东数据parquet（20260615更新 月更）                         20260615            4     0.07  stk_holdernumber->MISS; stk_holdertrade->MISS; top10_floatholders->MISS; top10_holders->MISS
+指数权重数据                                             20260807         2071     0.06  index_basic->MISS; index_weight_0001->MISS; index_weight_0002->MISS; index_weight_0003->MISS; index_weight_0004->MISS; index_weigh
+北向资金/parquet 20260807                              20260807            4     0.06  ggt_top10_full->MISS; hk_hold_full->MISS; hsgt_top10_full->MISS; moneyflow_hsgt_full->MISS
+parquet格式可转债日度数据                                   20260930            7     0.04  cb_basic->MISS; cb_call->MISS; cb_daily->MISS; cb_issue->MISS; cb_rate->MISS; cb_share->MISS ...(+1)
+parquet格式指数数据/指数数据（增量数据9.14-9.18）                  -                  11     0.04  ci_l1_daily->MISS; ci_l2_daily->MISS; index_15min_data->MISS; index_1min_data->MISS; index_30min_data->MISS; index_5min_data->MISS
+parquet格式ETF历史持仓数据                                 20260901         1473     0.04  159007->MISS; 159008->MISS; 159009->MISS; 159010->MISS; 159011->MISS; 159012->MISS ...(+1467)
+增量数据/6.29-7.3/ETF数据                                -                   6     0.04  etf_15min_data->MISS; etf_1min_data->MISS; etf_30min_data->MISS; etf_5min_data->MISS; etf_60min_data->MISS; etf_daily->MISS
+增量数据/6.1-6.5/ETF数据                                 -                   6     0.04  etf_15min_data->MISS; etf_1min_data->MISS; etf_30min_data->MISS; etf_5min_data->MISS; etf_60min_data->MISS; etf_daily->MISS
+增量数据/6.8-6.12/ETF数据                                -                   6     0.04  etf_15min_data->MISS; etf_1min_data->MISS; etf_30min_data->MISS; etf_5min_data->MISS; etf_60min_data->MISS; etf_daily->MISS
+parquet格式ETF数据/ETF数据（增量数据9.14-9.18）                -                   7     0.04  etf_15min_data->MISS; etf_1min_data->MISS; etf_30min_data->MISS; etf_5min_data->MISS; etf_60min_data->MISS; etf_basic_data->MISS .
+parquet格式ETF历史持仓数据/parquet格式ETF持仓数据季度更新 2006年-2026 20260806         1475     0.04  159007->MISS; 159008->MISS; 159009->MISS; 159010->MISS; 159011->MISS; 159012->MISS ...(+1469)
+增量数据/4.20-4.24/ETF数据                               -                   6     0.04  etf_15min_data->MISS; etf_1min_data->MISS; etf_30min_data->MISS; etf_5min_data->MISS; etf_60min_data->MISS; etf_daily->MISS
+parquet格式ETF历史持仓数据/parquet格式ETF持仓数据季度更新 2006年-2026 20260702         1471     0.04  159007->MISS; 159008->MISS; 159009->MISS; 159010->MISS; 159011->MISS; 159012->MISS ...(+1465)
+增量数据/4.13-4.17/ETF数据                               -                   6     0.04  etf_15min_data->MISS; etf_1min_data->MISS; etf_30min_data->MISS; etf_5min_data->MISS; etf_60min_data->MISS; etf_daily->MISS
+增量数据/6.29-7.3/指数数据                                 -                   8     0.04  ci_l1_daily->MISS; ci_l2_daily->MISS; index_15min_data->MISS; index_1min_data->MISS; index_30min_data->MISS; index_5min_data->MISS
+可转债全K线数据parquet格式~~~~~~~~/可转债全K线数据parquet格式/日k     -                  11     0.04  <全为分证券文件或无 parquet>
+parquet格式指数数据/指数数据（增量数据9.21-9.24）                  -                  11     0.04  ci_l1_daily->MISS; ci_l2_daily->MISS; index_15min_data->MISS; index_1min_data->MISS; index_30min_data->MISS; index_5min_data->MISS
+增量数据/6.8-6.12/指数数据                                 -                   8     0.03  ci_l1_daily->MISS; ci_l2_daily->MISS; index_15min_data->MISS; index_1min_data->MISS; index_30min_data->MISS; index_5min_data->MISS
+增量数据/6.1-6.5/指数数据                                  -                   8     0.03  ci_l1_daily->MISS; ci_l2_daily->MISS; index_15min_data->MISS; index_1min_data->MISS; index_30min_data->MISS; index_5min_data->MISS
+增量数据/4.20-4.24/指数数据                                -                   8     0.03  ci_l1_daily->MISS; ci_l2_daily->MISS; index_15min_data->MISS; index_1min_data->MISS; index_30min_data->MISS; index_5min_data->MISS
+增量数据/4.13-4.17/指数数据                                -                   8     0.03  ci_l1_daily->MISS; ci_l2_daily->MISS; index_15min_data->MISS; index_1min_data->MISS; index_30min_data->MISS; index_5min_data->MISS
+parquet格式ETF数据/ETF数据（增量数据9.21-9.24）                -                   7     0.03  etf_15min_data->MISS; etf_1min_data->MISS; etf_30min_data->MISS; etf_5min_data->MISS; etf_60min_data->MISS; etf_basic_data->MISS .
+增量数据/4.7-4.10/指数数据                                 -                   8     0.03  ci_l1_daily->MISS; ci_l2_daily->MISS; index_15min_data->MISS; index_1min_data->MISS; index_30min_data->MISS; index_5min_data->MISS
+parquet格式指数数据/指数数据（增量数据9.28-9.30）                  -                  11     0.03  ci_l1_daily->MISS; ci_l2_daily->MISS; index_15min_data->MISS; index_1min_data->MISS; index_30min_data->MISS; index_5min_data->MISS
+增量数据/4.7-4.10/ETF数据                                -                   6     0.03  etf_15min_data->MISS; etf_1min_data->MISS; etf_30min_data->MISS; etf_5min_data->MISS; etf_60min_data->MISS; etf_daily->MISS
+parquet格式ETF数据/ETF数据（增量数据9.28-9.30）                -                   7     0.02  etf_15min_data->MISS; etf_1min_data->MISS; etf_30min_data->MISS; etf_5min_data->MISS; etf_60min_data->MISS; etf_basic_data->MISS .
+1.parquet格式个股行情数据/2026.7.31后缺5-60min的9.30那根分钟线补充包， 20260731            9     0.01  stock_15min_0930_patch(1)->MISS; stock_15min_0930_patch->MISS; stock_30min_0930_patch(1)->MISS; stock_30min_0930_patch->MISS; stoc
+2026.7.31后缺5-60min的9.30那根分钟线补充包，后续主库更新后修复这个问题/1.pa 20260731           12     0.01  etf_15min_0930_patch->MISS; etf_30min_0930_patch->MISS; etf_5min_0930_patch->MISS; etf_60min_0930_patch->MISS; index_15min_0930_pa
+parquet格式指数数据/index_global                         20260930           22     0.01  as51->MISS; cklse->MISS; csx5p->MISS; dji->MISS; fchi->MISS; ftse->MISS ...(+16)
+A股全部上市公司主营业务数据                                     -                   1     0.01  stock_company->MISS
+数据使用说明                                             -                   2     0.00  <全为分证券文件或无 parquet>
+parquet格式ETF数据/2026.7.31后缺5-60min的9.30那根分钟线补充包，后续主 20260731           10     0.00  etf_15min_0930_patch(1)->MISS; etf_15min_0930_patch->MISS; etf_30min_0930_patch(1)->MISS; etf_30min_0930_patch->MISS; etf_5min_093
+parquet（个股分钟线缺失修补数据（7.27-8.7））/行情数据（修补数据7.27-8.7）  -                   5     0.00  stock_15min_data->MISS; stock_1min_data->MISS; stock_30min_data->MISS; stock_5min_data->MISS; stock_60min_data->MISS
+增量数据                                               -                   1     0.00  <全为分证券文件或无 parquet>
+筹码分布数据/筹码分布数据/tushare_cyq                          -                   4     0.00  <全为分证券文件或无 parquet>
+增量数据/4.20-4.24/可转债数据                               -                   2     0.00  cb_daily->MISS; repo_daily->MISS
+增量数据/4.13-4.17/可转债数据                               -                   2     0.00  cb_daily->MISS; repo_daily->MISS
+增量数据/6.1-6.5/可转债数据                                 -                   2     0.00  cb_daily->MISS; repo_daily->MISS
+增量数据/6.8-6.12/可转债数据                                -                   2     0.00  cb_daily->MISS; repo_daily->MISS
+增量数据/6.29-7.3/可转债数据                                -                   2     0.00  cb_daily->MISS; repo_daily->MISS
+增量数据/6.22-6.26/可转债数据                               -                   2     0.00  cb_daily->MISS; repo_daily->MISS
+增量数据/4.7-4.10/可转债数据                                -                   2     0.00  cb_daily->MISS; repo_daily->MISS
+北向资金                                               -                   1     0.00  <全为分证券文件或无 parquet>
+
+--- C. D侧生产目录 vs 供应商供给 ---
+D侧目录                 文件      GiB  映射    供应商相关数据集
+auction               2     0.57  -     <无>
+basic                 1     0.00  -     <无>
+board              5322     0.72  -     <无>
+board_fundflow        1     0.00  -     <无>
+cb                    9     0.05  -     <无>
+chip               5570     0.46  Y     <无>
+daily                 2     1.29  -     <无>
+etf                   2     0.10  Y     <无>
+finance               8     0.55  -     <无>
+index              1074    16.34  Y     <无>
+index_weight       2067     0.06  -     <无>
+lhb                   4     0.06  -     <无>
+min_15min          5826     7.19  Y     <无>
+min_1min           5826    66.84  Y     <无>
+min_30min          5826     4.10  Y     <无>
+min_5min           5826    17.48  Y     <无>
+min_60min          5826     2.49  Y     <无>
+moneyflow             8     1.31  -     <无>
+northbound            3     0.03  -     <无>
+research              1     0.05  -     <无>

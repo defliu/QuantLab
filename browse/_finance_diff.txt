@@ -1,0 +1,302 @@
+
+================================================================================================
+fina_indicator
+  FULL_KEY  = ['ts_code', 'end_date', 'ann_date']
+  LOGIC_KEY = ['ts_code', 'end_date']
+================================================================================================
+  rows            D=338259    E=376704    delta=+38445
+  FULL_KEY uniq   D=338259    E=376704    delta=+38445
+  LOGIC_KEY uniq  D=338246    E=375997    delta=+37751
+
+  shared FULL_KEY      = 338257
+  E-only  FULL_KEY     = 38447   (E新增/新公告版本)
+  D-only  FULL_KEY     = 2   (E缺失/旧公告版本)
+  E-only  LOGIC_KEY    = 37753   (E新增报告期)
+  D-only  LOGIC_KEY    = 2   (E缺失报告期)
+
+  D versions/logic-key : max=2     keys_with_multi=13
+  E versions/logic-key : max=3     keys_with_multi=705
+
+  D-only FULL_KEY by end_date year:
+     2026        2
+  sample D-only FULL_KEY:
+     ['A15130.SZ', '20260630', '20260718']
+     ['A20005.SH', '20260630', '20260720']
+
+  E-only FULL_KEY by end_date year (top 12):
+     1990      142
+     1991      187
+     1992      314
+     1993      683
+     1994     1033
+     1995     1171
+     1996     1454
+     1997     1862
+     1998     1974
+     1999     2235
+     2000     2459
+     2001     2908
+     ... 12 more years
+  sample E-only FULL_KEY:
+     ['000001.SZ', '19901231', '19901231']
+     ['000001.SZ', '19911231', '19911231']
+     ['000001.SZ', '19921231', '19921231']
+     ['000001.SZ', '19930630', '19930811']
+     ['000001.SZ', '19931231', '19940416']
+
+  D-only LOGIC_KEY by end_date year:
+     2026        2
+  sample D-only LOGIC_KEY:
+     ['A15130.SZ', '20260630']
+     ['A20005.SH', '20260630']
+
+================================================================================================
+balancesheet
+  FULL_KEY  = ['ts_code', 'end_date', 'report_type', 'ann_date']
+  LOGIC_KEY = ['ts_code', 'end_date', 'report_type']
+================================================================================================
+  rows            D=303988    E=341780    delta=+37792
+  FULL_KEY uniq   D=303988    E=341780    delta=+37792
+  LOGIC_KEY uniq  D=303967    E=340786    delta=+36819
+
+  shared FULL_KEY      = 303988
+  E-only  FULL_KEY     = 37792   (E新增/新公告版本)
+  D-only  FULL_KEY     = 0   (E缺失/旧公告版本)
+  E-only  LOGIC_KEY    = 36819   (E新增报告期)
+  D-only  LOGIC_KEY    = 0   (E缺失报告期)
+
+  D versions/logic-key : max=2     keys_with_multi=21
+  E versions/logic-key : max=4     keys_with_multi=961
+
+  E-only FULL_KEY by end_date year (top 12):
+     1990       95
+     1991      140
+     1992      293
+     1993      640
+     1994     1015
+     1995     1161
+     1996     1437
+     1997     1817
+     1998     1957
+     1999     2144
+     2000     2362
+     2001     2686
+     ... 14 more years
+  sample E-only FULL_KEY:
+     ['000001.SZ', '19901231', '1', '19901231']
+     ['000001.SZ', '19911231', '1', '19911231']
+     ['000001.SZ', '19921231', '1', '19921231']
+     ['000001.SZ', '19931231', '1', '19940416']
+     ['000001.SZ', '19940630', '1', '19940830']
+
+================================================================================================
+income
+  FULL_KEY  = ['ts_code', 'end_date', 'report_type', 'ann_date']
+  LOGIC_KEY = ['ts_code', 'end_date', 'report_type']
+================================================================================================
+  rows            D=313810    E=350038    delta=+36228
+  FULL_KEY uniq   D=313810    E=350038    delta=+36228
+  LOGIC_KEY uniq  D=313799    E=349176    delta=+35377
+
+  shared FULL_KEY      = 313810
+  E-only  FULL_KEY     = 36228   (E新增/新公告版本)
+  D-only  FULL_KEY     = 0   (E缺失/旧公告版本)
+  E-only  LOGIC_KEY    = 35377   (E新增报告期)
+  D-only  LOGIC_KEY    = 0   (E缺失报告期)
+
+  D versions/logic-key : max=2     keys_with_multi=11
+  E versions/logic-key : max=3     keys_with_multi=830
+
+  E-only FULL_KEY by end_date year (top 12):
+     1990        2
+     1991       11
+     1992       32
+     1993      232
+     1994      725
+     1995     1126
+     1996     1403
+     1997     1828
+     1998     1912
+     1999     2145
+     2000     2394
+     2001     2801
+     ... 13 more years
+  sample E-only FULL_KEY:
+     ['000001.SZ', '19941231', '1', '19950310']
+     ['000001.SZ', '19950630', '1', '19950811']
+     ['000001.SZ', '19951231', '1', '19960209']
+     ['000001.SZ', '19960630', '1', '19960829']
+     ['000001.SZ', '19961231', '1', '19970421']
+
+================================================================================================
+cashflow
+  FULL_KEY  = ['ts_code', 'end_date', 'report_type', 'ann_date']
+  LOGIC_KEY = ['ts_code', 'end_date', 'report_type']
+================================================================================================
+  rows            D=301885    E=312730    delta=+10845
+  FULL_KEY uniq   D=301885    E=312730    delta=+10845
+  LOGIC_KEY uniq  D=301878    E=311999    delta=+10121
+
+  shared FULL_KEY      = 301885
+  E-only  FULL_KEY     = 10845   (E新增/新公告版本)
+  D-only  FULL_KEY     = 0   (E缺失/旧公告版本)
+  E-only  LOGIC_KEY    = 10121   (E新增报告期)
+  D-only  LOGIC_KEY    = 0   (E缺失报告期)
+
+  D versions/logic-key : max=2     keys_with_multi=7
+  E versions/logic-key : max=3     keys_with_multi=710
+
+  E-only FULL_KEY by end_date year (top 12):
+     1998        1
+     1999        2
+     2000        2
+     2001        4
+     2002        6
+     2003      109
+     2004      247
+     2008        1
+     2018        5
+     2019       14
+     2020       15
+     2021      778
+     ... 5 more years
+  sample E-only FULL_KEY:
+     ['000001.SZ', '20260630', '1', '20260815']
+     ['000002.SZ', '20260630', '1', '20260828']
+     ['000004.SZ', '20260630', '1', '20260825']
+     ['000008.SZ', '20260630', '1', '20260829']
+     ['000009.SZ', '20260630', '1', '20260829']
+
+================================================================================================
+forecast
+  FULL_KEY  = ['ts_code', 'end_date', 'ann_date', 'type']
+  LOGIC_KEY = ['ts_code', 'end_date']
+================================================================================================
+  rows            D=122527    E=127910    delta=+5383
+  FULL_KEY uniq   D=122527    E=127910    delta=+5383
+  LOGIC_KEY uniq  D=114371    E=119707    delta=+5336
+
+  shared FULL_KEY      = 122113
+  E-only  FULL_KEY     = 5797   (E新增/新公告版本)
+  D-only  FULL_KEY     = 414   (E缺失/旧公告版本)
+  E-only  LOGIC_KEY    = 5336   (E新增报告期)
+  D-only  LOGIC_KEY    = 0   (E缺失报告期)
+
+  D versions/logic-key : max=4     keys_with_multi=7953
+  E versions/logic-key : max=4     keys_with_multi=7999
+
+  D-only FULL_KEY by end_date year:
+     2026      414
+  sample D-only FULL_KEY:
+     ['000002.SZ', '20260630', '20260711', '续亏']
+     ['000006.SZ', '20260630', '20260715', '续亏']
+     ['000008.SZ', '20260630', '20260715', '续亏']
+     ['000010.SZ', '20260630', '20260715', '续亏']
+     ['000014.SZ', '20260630', '20260715', '续亏']
+
+  E-only FULL_KEY by end_date year (top 12):
+     1998       76
+     1999       79
+     2000      190
+     2001      559
+     2002     1037
+     2003     1507
+     2004     1834
+     2021        1
+     2022        5
+     2023        2
+     2024        5
+     2025        1
+     ... 1 more years
+  sample E-only FULL_KEY:
+     ['000002.SZ', '20021231', '20021028', '预增']
+     ['000002.SZ', '20040331', '20040402', '预增']
+     ['000002.SZ', '20040630', '20040705', '预增']
+     ['000002.SZ', '20041231', '20050112', '预增']
+     ['000002.SZ', '20260630', '20260711', '增亏']
+
+================================================================================================
+dividend
+  FULL_KEY  = ['ts_code', 'end_date', 'ann_date', 'div_proc']
+  LOGIC_KEY = ['ts_code', 'end_date']
+================================================================================================
+  rows            D=168857    E=168954    delta=+97
+  FULL_KEY uniq   D=168857    E=168954    delta=+97
+  LOGIC_KEY uniq  D=99099     E=99142     delta=+43
+
+  shared FULL_KEY      = 168857
+  E-only  FULL_KEY     = 97   (E新增/新公告版本)
+  D-only  FULL_KEY     = 0   (E缺失/旧公告版本)
+  E-only  LOGIC_KEY    = 43   (E新增报告期)
+  D-only  LOGIC_KEY    = 0   (E缺失报告期)
+
+  D versions/logic-key : max=7     keys_with_multi=42381
+  E versions/logic-key : max=7     keys_with_multi=42434
+
+  E-only FULL_KEY by end_date year (top 12):
+     2026       97
+  sample E-only FULL_KEY:
+     ['000099.SZ', '20260630', '20260923', '股东大会通过']
+     ['000426.SZ', '20260630', '20260915', '股东大会通过']
+     ['000531.SZ', '20260630', '20260917', '股东大会通过']
+     ['000538.SZ', '20260630', '20260916', '实施']
+     ['000554.SZ', '20260630', '20260918', '股东大会通过']
+
+================================================================================================
+express
+  FULL_KEY  = ['ts_code', 'end_date', 'ann_date']
+  LOGIC_KEY = ['ts_code', 'end_date']
+================================================================================================
+  rows            D=29503     E=29598     delta=+95
+  FULL_KEY uniq   D=29503     E=29598     delta=+95
+  LOGIC_KEY uniq  D=29490     E=29584     delta=+94
+
+  shared FULL_KEY      = 29503
+  E-only  FULL_KEY     = 95   (E新增/新公告版本)
+  D-only  FULL_KEY     = 0   (E缺失/旧公告版本)
+  E-only  LOGIC_KEY    = 94   (E新增报告期)
+  D-only  LOGIC_KEY    = 0   (E缺失报告期)
+
+  D versions/logic-key : max=2     keys_with_multi=13
+  E versions/logic-key : max=2     keys_with_multi=14
+
+  E-only FULL_KEY by end_date year (top 12):
+     2004       75
+     2025        1
+     2026       19
+  sample E-only FULL_KEY:
+     ['000055.SZ', '20041231', '20050128']
+     ['000066.SZ', '20041231', '20050330']
+     ['000100.SZ', '20041231', '20050414']
+     ['000635.SZ', '20041231', '20050216']
+     ['000678.SZ', '20041231', '20050129']
+
+================================================================================================
+share_change_event
+  FULL_KEY  = ['ts_code', 'change_date', 'change_reason']
+  LOGIC_KEY = ['ts_code', 'change_date']
+================================================================================================
+  rows            D=53824     E=53824     delta=+0
+  FULL_KEY uniq   D=53824     E=53824     delta=+0
+  LOGIC_KEY uniq  D=53823     E=53823     delta=+0
+
+  shared FULL_KEY      = 53824
+  E-only  FULL_KEY     = 0   (E新增/新公告版本)
+  D-only  FULL_KEY     = 0   (E缺失/旧公告版本)
+  E-only  LOGIC_KEY    = 0   (E新增报告期)
+  D-only  LOGIC_KEY    = 0   (E缺失报告期)
+
+  D versions/logic-key : max=2     keys_with_multi=1
+  E versions/logic-key : max=2     keys_with_multi=1
+
+################################################################################################
+SUMMARY  table  rowsD  rowsE  fkD  fkE  EonlyFK  DonlyFK  EonlyLK  DonlyLK
+fina_indicator         338259  376704 338259 376704    38447        2    37753        2
+balancesheet           303988  341780 303988 341780    37792        0    36819        0
+income                 313810  350038 313810 350038    36228        0    35377        0
+cashflow               301885  312730 301885 312730    10845        0    10121        0
+forecast               122527  127910 122527 127910     5797      414     5336        0
+dividend               168857  168954 168857 168954       97        0       43        0
+express                 29503   29598  29503  29598       95        0       94        0
+share_change_event      53824   53824  53824  53824        0        0        0        0
+################################################################################################

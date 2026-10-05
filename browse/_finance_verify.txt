@@ -1,0 +1,100 @@
+################################################################################################
+# PART 1  forecast: 414 D-only rows -- is it a type-label replacement?
+################################################################################################
+
+  D-only FULL_KEY = 414
+  D-only type distribution:
+     续亏            413
+     首亏              1
+  D-only end_date distribution:
+     20260630      414
+  D-only ann_date range: 20260701 .. 20260729
+
+  CHECK A: same (ts_code,end_date,ann_date) exists in E with different type?
+     matched   = 414
+     unmatched = 0
+  label replacement pairs (D type -> E types), top 15:
+     续亏 -> 增亏                                    217
+     续亏 -> 减亏                                    196
+     首亏 -> 减亏                                      1
+
+################################################################################################
+# PART 2  fina_indicator: 2 D-only rows -- absent from E entirely?
+################################################################################################
+
+  D-only FULL_KEY = 2
+
+     key = ['A15130.SZ', '20260630', '20260718']
+       E rows for this ts_code = 4
+       E end_date  = ['20231231', '20241231', '20250630', '20251231']
+       E ann_date  = ['20250930', '20260331']
+
+     key = ['A20005.SH', '20260630', '20260720']
+       E rows for this ts_code = 7
+       E end_date  = ['20231231', '20241231', '20250630', '20250930', '20251231', '20260331']
+       E ann_date  = ['20240428', '20250429', '20250714', '20251011', '20260430']
+
+  code prefix check: A15xxx / A20xxx are B-share style codes
+     A15130.SZ  D_count=5  E_count=4
+     A20005.SH  D_count=6  E_count=7
+
+################################################################################################
+# PART 3  duplicate-row anatomy (same FULL_KEY, multiple physical rows)
+################################################################################################
+
+  table                     rowsD      uniqD      dupD      rowsE      uniqE
+  --------------------------------------------------------------------------
+  fina_indicator           354187     338259     15928     675628     376704
+  balancesheet             319515     303988     15527     445365     341780
+  income                   329557     313810     15747     419276     350038
+  cashflow                 316738     301885     14853     387698     312730
+  forecast                 122540     122527        13     149106     127910
+  dividend                 169067     168857       210     169333     168954
+  express                   29506      29503         3      29598      29598
+  share_change_event        53892      53824        68      53892      53824
+
+  dup% D:
+     fina_indicator         4.50%  (dup=15928)
+     balancesheet           4.86%  (dup=15527)
+     income                 4.78%  (dup=15747)
+     cashflow               4.69%  (dup=14853)
+     forecast               0.01%  (dup=13)
+     dividend               0.12%  (dup=210)
+     express                0.01%  (dup=3)
+     share_change_event     0.13%  (dup=68)
+  dup% E:
+     fina_indicator        44.24%  (dup=298924)
+     balancesheet          23.26%  (dup=103585)
+     income                16.51%  (dup=69238)
+     cashflow              19.34%  (dup=74968)
+     forecast              14.22%  (dup=21196)
+     dividend               0.22%  (dup=379)
+     express                0.00%  (dup=0)
+     share_change_event     0.13%  (dup=68)
+
+################################################################################################
+# PART 4  history depth: earliest end_date per side
+################################################################################################
+
+  table                D earliest     E earliest    
+  fina_indicator       20050331       19900630        E extends back 15 years
+  balancesheet         20050331       19900630        E extends back 15 years
+  income               20050331       19901231        E extends back 15 years
+  cashflow             20050331       19981231        E extends back 7 years
+  forecast             20050331       19981231        E extends back 7 years
+  dividend             19901231       19901231        E extends back 0 years
+  express              20050331       20041231        E extends back 1 years
+  share_change_event   20090106       20090106        E extends back 0 years
+
+################################################################################################
+# PART 5  ts_code universe per side
+################################################################################################
+
+  fina_indicator       D=7156   E=7318    E-only=162   D-only=0    
+  balancesheet         D=6404   E=6567    E-only=163   D-only=0    
+  income               D=6406   E=6568    E-only=162   D-only=0    
+  cashflow             D=6313   E=6527    E-only=214   D-only=0    
+  forecast             D=5905   E=5952    E-only=47    D-only=0    
+  dividend             D=5789   E=5793    E-only=4     D-only=0    
+  express              D=4602   E=4613    E-only=11    D-only=0    
+  share_change_event   D=5061   E=5061    E-only=0     D-only=0    

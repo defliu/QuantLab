@@ -1,0 +1,709 @@
+[
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "2837aca194304c02b1a4bdc8b8c7c167",
+  "name": "可转债数据",
+  "pfid8": "0b402bc7",
+  "pname": "6.1-6.5"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "4fbdf571cf1d41bfb3fe25c4129ce011",
+  "name": "指数数据",
+  "pfid8": "0b402bc7",
+  "pname": "6.1-6.5"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "7882cdc1a10243fb930ed3e61030015e",
+  "name": "ETF数据",
+  "pfid8": "0b402bc7",
+  "pname": "6.1-6.5"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "e06a188370734c26ba0be88d58f4c38f",
+  "name": "股票数据",
+  "pfid8": "0b402bc7",
+  "pname": "6.1-6.5"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "2ccc3dce4df340a7a63bf80a2bd6c94f",
+  "name": "parquet",
+  "pfid8": "0b726b13",
+  "pname": "更新到0627"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "011dde8c35a145fc888783cae2a1de6d",
+  "name": "2024",
+  "pfid8": "10462a7d",
+  "pname": "2020-2024"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "b8a67587f4d94ee2952b0270337caf9f",
+  "name": "2023",
+  "pfid8": "10462a7d",
+  "pname": "2020-2024"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "f71d43ecb4384013b0bfed2b9bdddde4",
+  "name": "2022",
+  "pfid8": "10462a7d",
+  "pname": "2020-2024"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "c99736f8e8cc4a328438f17c6f631992",
+  "name": "2021",
+  "pfid8": "10462a7d",
+  "pname": "2020-2024"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "6c8b1045b3f14ca8b6cf73ee8a10b8a4",
+  "name": "2020",
+  "pfid8": "10462a7d",
+  "pname": "2020-2024"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "49a0c9a574994d488405c34a246a2d25",
+  "name": "etf_60min",
+  "pfid8": "27985f4b",
+  "pname": "ETF数据更新至2026.9.18"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "b1840150d7d045a298567ad7b8734b89",
+  "name": "etf_5min",
+  "pfid8": "27985f4b",
+  "pname": "ETF数据更新至2026.9.18"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "44c00cce2b6146e2a9ef7804b2eff084",
+  "name": "etf_30min",
+  "pfid8": "27985f4b",
+  "pname": "ETF数据更新至2026.9.18"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "01a4b317dcf14c40960ab388133c4dcb",
+  "name": "etf_1min",
+  "pfid8": "27985f4b",
+  "pname": "ETF数据更新至2026.9.18"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "2625e5a305e64e52adbda47f82b15f3a",
+  "name": "etf_15min",
+  "pfid8": "27985f4b",
+  "pname": "ETF数据更新至2026.9.18"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "a59cc0eb610b4519b1e884c5b6b70997",
+  "name": "etf_60min",
+  "pfid8": "3670eb1b",
+  "pname": "ETF数据更新至2026.9.11"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "5550a0bce77a4f07a58ad270572a2cc4",
+  "name": "etf_5min",
+  "pfid8": "3670eb1b",
+  "pname": "ETF数据更新至2026.9.11"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "f57a7593ca414201a90f62682f7397b8",
+  "name": "etf_30min",
+  "pfid8": "3670eb1b",
+  "pname": "ETF数据更新至2026.9.11"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "9196386e8e3d4255bf3d1df1ccce8d02",
+  "name": "etf_1min",
+  "pfid8": "3670eb1b",
+  "pname": "ETF数据更新至2026.9.11"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "d1a2072e38d4447ba101335ff4e74705",
+  "name": "etf_15min",
+  "pfid8": "3670eb1b",
+  "pname": "ETF数据更新至2026.9.11"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "c98a31ba4ddc49719d78693b2b460564",
+  "name": "股票数据",
+  "pfid8": "3e83575c",
+  "pname": "6.22-6.26"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "7bb6be2d8acc43d5a2b6434cbbfb2262",
+  "name": "可转债数据",
+  "pfid8": "3e83575c",
+  "pname": "6.22-6.26"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "4d3f55f378294d0cb3fd2ac3ef0991b2",
+  "name": "股票数据",
+  "pfid8": "4bd9ae9e",
+  "pname": "6.8-6.12"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "731677da79044199953e7c55649b574d",
+  "name": "可转债数据",
+  "pfid8": "4bd9ae9e",
+  "pname": "6.8-6.12"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "81c469a0c44d49db91a46f86220f9629",
+  "name": "指数数据",
+  "pfid8": "4bd9ae9e",
+  "pname": "6.8-6.12"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "b94e666f3f844233b2273074d9214d25",
+  "name": "ETF数据",
+  "pfid8": "4bd9ae9e",
+  "pname": "6.8-6.12"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "8d571f1f374e46fdbb61ea045f8ae582",
+  "name": "index_global",
+  "pfid8": "76d494ec",
+  "pname": "指数数据更新至2026.9.30"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "398ebf0e751f494aa3403785a8e52143",
+  "name": "index_daily",
+  "pfid8": "76d494ec",
+  "pname": "指数数据更新至2026.9.30"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "abf12333a96744f89b88346c8af19b5d",
+  "name": "index_60min",
+  "pfid8": "76d494ec",
+  "pname": "指数数据更新至2026.9.30"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "8ec39e815c9c4d5e88a9f9d926e4e666",
+  "name": "index_5min",
+  "pfid8": "76d494ec",
+  "pname": "指数数据更新至2026.9.30"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "d0faacc7a4534fa6b2dbc948f5487766",
+  "name": "index_30min",
+  "pfid8": "76d494ec",
+  "pname": "指数数据更新至2026.9.30"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "1c18227da6fa45f5a99188b3a05d9e41",
+  "name": "index_1min",
+  "pfid8": "76d494ec",
+  "pname": "指数数据更新至2026.9.30"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "4c26dfb2ab054922a6c60e2fafe36992",
+  "name": "index_15min",
+  "pfid8": "76d494ec",
+  "pname": "指数数据更新至2026.9.30"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "496e7291061f469e8b103d538a9cc885",
+  "name": "股票数据",
+  "pfid8": "835fe349",
+  "pname": "6.29-7.3"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "642af43f8a2d479cb4efb194b5f8eb10",
+  "name": "指数数据",
+  "pfid8": "835fe349",
+  "pname": "6.29-7.3"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "a84a31c199ea4f2a8cb8d7d301b47080",
+  "name": "ETF数据",
+  "pfid8": "835fe349",
+  "pname": "6.29-7.3"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "f5d7387e0d3f4e509eeec277753a5622",
+  "name": "可转债数据",
+  "pfid8": "835fe349",
+  "pname": "6.29-7.3"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "0703e755fc0f4522b7ed829c72446a0d",
+  "name": "etf_1min",
+  "pfid8": "8990b598",
+  "pname": "ETF数据更新至2026.9.30"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "b695bd1afff74097946717d567474ed7",
+  "name": "etf_15min",
+  "pfid8": "8990b598",
+  "pname": "ETF数据更新至2026.9.30"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "f54aea8fd9bd4ce79b0a9b17c414ff2d",
+  "name": "etf_60min",
+  "pfid8": "8990b598",
+  "pname": "ETF数据更新至2026.9.30"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "565373c372f545b0b03bc725496c09c2",
+  "name": "etf_5min",
+  "pfid8": "8990b598",
+  "pname": "ETF数据更新至2026.9.30"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "0608139747d847ec8f52c4252850aeb6",
+  "name": "etf_30min",
+  "pfid8": "8990b598",
+  "pname": "ETF数据更新至2026.9.30"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "9c5a72fd77f74ebaba1ff5bfe2b125bc",
+  "name": "index_global",
+  "pfid8": "8ab12e74",
+  "pname": "指数数据更新至2026.9.11"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "bd2d95c0d6db4b13819f1a5b20eb1a5a",
+  "name": "index_daily",
+  "pfid8": "8ab12e74",
+  "pname": "指数数据更新至2026.9.11"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "b61c7f108f1d430bb843ad5ad21fb80b",
+  "name": "index_60min",
+  "pfid8": "8ab12e74",
+  "pname": "指数数据更新至2026.9.11"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "8d10f829496444d2bc9dc9d94d7c0330",
+  "name": "index_5min",
+  "pfid8": "8ab12e74",
+  "pname": "指数数据更新至2026.9.11"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "1638900a0fb545bfb78340eddb83db95",
+  "name": "index_30min",
+  "pfid8": "8ab12e74",
+  "pname": "指数数据更新至2026.9.11"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "85ad42638ea34b00a30e3f750fdc3d68",
+  "name": "index_1min",
+  "pfid8": "8ab12e74",
+  "pname": "指数数据更新至2026.9.11"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "14651bd4eea7476286ed975043b2e351",
+  "name": "index_15min",
+  "pfid8": "8ab12e74",
+  "pname": "指数数据更新至2026.9.11"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "9389ef180a9a42069e79b552a48119f7",
+  "name": "2026",
+  "pfid8": "8ac8a134",
+  "pname": "可转债全K线数据parquet格式"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "3d066dc991be42c89e1649a77a28a23f",
+  "name": "日k",
+  "pfid8": "8ac8a134",
+  "pname": "可转债全K线数据parquet格式"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "932ac842a03347d8bf39909f6137b6a4",
+  "name": "2025",
+  "pfid8": "8ac8a134",
+  "pname": "可转债全K线数据parquet格式"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "01817b4102de46598045ac38a811bf0c",
+  "name": "2024",
+  "pfid8": "8ac8a134",
+  "pname": "可转债全K线数据parquet格式"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "9250b02aa3564188bf65ee7af52716c4",
+  "name": "2023",
+  "pfid8": "8ac8a134",
+  "pname": "可转债全K线数据parquet格式"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "c7f34293cbba4589a624d1c899190c49",
+  "name": "2022",
+  "pfid8": "8ac8a134",
+  "pname": "可转债全K线数据parquet格式"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "61c6702e58144e598eceba0cf610d5be",
+  "name": "2021",
+  "pfid8": "8ac8a134",
+  "pname": "可转债全K线数据parquet格式"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "c2713fa43d2a41c8b70ded8d8165f5d4",
+  "name": "2020",
+  "pfid8": "8ac8a134",
+  "pname": "可转债全K线数据parquet格式"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "4d1e950f42454185b10f9d00cb73887c",
+  "name": "2018",
+  "pfid8": "8ac8a134",
+  "pname": "可转债全K线数据parquet格式"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "127d5929735b4cdaa3edbdefaafb7374",
+  "name": "2019",
+  "pfid8": "8ac8a134",
+  "pname": "可转债全K线数据parquet格式"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "988e7d3997ab4abea3339a0c4a545a32",
+  "name": "2017",
+  "pfid8": "8ac8a134",
+  "pname": "可转债全K线数据parquet格式"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "3223256dd90f42648bdab478bbc5c816",
+  "name": "2016",
+  "pfid8": "8ac8a134",
+  "pname": "可转债全K线数据parquet格式"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "56e07a2d0dd14ba2aa3e39dcac72dcca",
+  "name": "指数数据",
+  "pfid8": "8fad3159",
+  "pname": "4.20-4.24"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "1bbe73d9dd9f44b7aea835461ffcd84a",
+  "name": "ETF数据",
+  "pfid8": "8fad3159",
+  "pname": "4.20-4.24"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "9a47e1541dde471baab23e5450a6e5d4",
+  "name": "可转债数据",
+  "pfid8": "8fad3159",
+  "pname": "4.20-4.24"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "4e081af23a4a4a9392166b826301cbd8",
+  "name": "股票数据",
+  "pfid8": "c00ddbdd",
+  "pname": "4.7-4.10"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "36713b867817468d8ebd2faff13dde51",
+  "name": "指数数据",
+  "pfid8": "c00ddbdd",
+  "pname": "4.7-4.10"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "8967e786b8d846cc9cdf3f319f347c33",
+  "name": "ETF数据",
+  "pfid8": "c00ddbdd",
+  "pname": "4.7-4.10"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "36ba8b34c528475c80da760b9dc3df3f",
+  "name": "可转债数据",
+  "pfid8": "c00ddbdd",
+  "pname": "4.7-4.10"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "94ee802e7a0c4f5faf0d1d38bbc011dd",
+  "name": "index_global",
+  "pfid8": "d5d10163",
+  "pname": "指数数据更新至2026.9.18"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "0ba8ecc17120426b843191adafa416e0",
+  "name": "index_daily",
+  "pfid8": "d5d10163",
+  "pname": "指数数据更新至2026.9.18"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "fdc3bf1a26d8410f89af83a6c0cb985e",
+  "name": "index_60min",
+  "pfid8": "d5d10163",
+  "pname": "指数数据更新至2026.9.18"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "edc8455590a4473883b0cad683c8aac8",
+  "name": "index_5min",
+  "pfid8": "d5d10163",
+  "pname": "指数数据更新至2026.9.18"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "104011e2ad1b4255b31dc5b0a5dfb3fd",
+  "name": "index_30min",
+  "pfid8": "d5d10163",
+  "pname": "指数数据更新至2026.9.18"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "86bced53e4a549d9b522c93214619374",
+  "name": "index_1min",
+  "pfid8": "d5d10163",
+  "pname": "指数数据更新至2026.9.18"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "bc4e5faeacd048df999f094079c72d4d",
+  "name": "index_15min",
+  "pfid8": "d5d10163",
+  "pname": "指数数据更新至2026.9.18"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "040ff7f22a1f497d85e1ee406c07a527",
+  "name": "增量数据",
+  "pfid8": "d65eb0b3",
+  "pname": "Data"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "2d4d0440411c48b591ae7f8edf5db2ba",
+  "name": "历史数据压缩包",
+  "pfid8": "f354162b",
+  "pname": "融资融券明细更新到2026.5.28"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "3a82005ea11f465782054e08f3ebde58",
+  "name": "指数数据",
+  "pfid8": "f7dad619",
+  "pname": "4.13-4.17"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "74a352ba66b54ffa9827e1a813e5b95a",
+  "name": "ETF数据",
+  "pfid8": "f7dad619",
+  "pname": "4.13-4.17"
+ },
+ {
+  "tag": "c3a2365f2cac",
+  "fid": "74f7aea42ad1437bad170cf18af6eeb5",
+  "name": "可转债数据",
+  "pfid8": "f7dad619",
+  "pname": "4.13-4.17"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "5acde9fee90d4a5a94d0ab6b64b46831",
+  "name": "tushare_cyq",
+  "pfid8": "2dab6083",
+  "pname": "筹码分布数据"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "aa6fcc6bff914b79935c9b52d1c6c0c2",
+  "name": "stock_60min",
+  "pfid8": "3bb0e2d3",
+  "pname": "行情数据更新至2026.9.18"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "835deb48ff294920a21a2bb3d1955a09",
+  "name": "stock_5min",
+  "pfid8": "3bb0e2d3",
+  "pname": "行情数据更新至2026.9.18"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "3e64fdc66b1c4d29a658cdc274b10773",
+  "name": "stock_30min",
+  "pfid8": "3bb0e2d3",
+  "pname": "行情数据更新至2026.9.18"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "dd5b61fc7c5d4f3da47daf9b5e0f90c4",
+  "name": "stock_1min",
+  "pfid8": "3bb0e2d3",
+  "pname": "行情数据更新至2026.9.18"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "761fd6ed0f604f3f8a2a33537af5361a",
+  "name": "stock_15min",
+  "pfid8": "3bb0e2d3",
+  "pname": "行情数据更新至2026.9.18"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "ae73c4ff37124f21b0130a55821d67f4",
+  "name": "stock_60min",
+  "pfid8": "5a486f2f",
+  "pname": "行情数据更新至2026.9.11"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "1cb00c5a2c0b415b9e46e2eb5e411cd3",
+  "name": "stock_5min",
+  "pfid8": "5a486f2f",
+  "pname": "行情数据更新至2026.9.11"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "8500fbb8dee348b4a82a13f6a11e5a3c",
+  "name": "stock_30min",
+  "pfid8": "5a486f2f",
+  "pname": "行情数据更新至2026.9.11"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "c353b21d77234b4594fd22b0ff8635c6",
+  "name": "stock_1min",
+  "pfid8": "5a486f2f",
+  "pname": "行情数据更新至2026.9.11"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "62ba29b7e555469985ff073ef4da29ff",
+  "name": "stock_15min",
+  "pfid8": "5a486f2f",
+  "pname": "行情数据更新至2026.9.11"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "96207b039a4c42afa8e66f273919750d",
+  "name": "_增量20260803-0807",
+  "pfid8": "666b901b",
+  "pname": "parquet格式20260807"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "c58a25bad31d4fa1b3da4a440363d6f2",
+  "name": "_backup",
+  "pfid8": "666b901b",
+  "pname": "parquet格式20260807"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "0a84eb81f81c431cbb828a32bd385d96",
+  "name": "stock_5min",
+  "pfid8": "cf28589d",
+  "pname": "行情数据更新至2026.9.30"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "56243b1f11714c418ccdcdf59c617963",
+  "name": "stock_30min",
+  "pfid8": "cf28589d",
+  "pname": "行情数据更新至2026.9.30"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "5d4c5ab3ebd546d08d6c11fb6937dea6",
+  "name": "stock_1min",
+  "pfid8": "cf28589d",
+  "pname": "行情数据更新至2026.9.30"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "2eaa47f578994d709e75c8ae2fb7929a",
+  "name": "stock_15min",
+  "pfid8": "cf28589d",
+  "pname": "行情数据更新至2026.9.30"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "1266994541594868b0a88842c804de67",
+  "name": "日线全量（更新到20260924）",
+  "pfid8": "d19b1390",
+  "pname": "个股行情数据全量按年分类"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "47e88095f3d84f679f9d102dccbef0b2",
+  "name": "日线全量（更新到20260918）",
+  "pfid8": "d19b1390",
+  "pname": "个股行情数据全量按年分类"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "04daeac7d6fa4a14abdc485e761ff66b",
+  "name": "日线全量（更新到20260911）",
+  "pfid8": "d19b1390",
+  "pname": "个股行情数据全量按年分类"
+ },
+ {
+  "tag": "f1732d2e8e2a",
+  "fid": "b9d44f3fb96348acb1dc4d494050653a",
+  "name": "2026的更新中是重叠的，只需要下载最新的那个日期的就行）",
+  "pfid8": "d19b1390",
+  "pname": "个股行情数据全量按年分类"
+ }
+]

@@ -1,0 +1,168 @@
+################################################################################################
+# update_flag role: is it the discriminator for duplicated FULL_KEYs?
+################################################################################################
+
+================================================================================================
+fina_indicator
+================================================================================================
+
+  update_flag value counts:
+     E: {'1': 373288, '0': 300822, '<NA>': 709, '1.0': 686, '0.0': 123}
+     D: {'0': 204302, '1': 148241, '<NA>': 888, '1.0': 714, '0.0': 42}
+
+  [E] rows=675628 uniqFULL=376704 surplus=298924 groups>1=298567
+  [E] groups where update_flag itself varies = 298567
+  [E] after keep update_flag==1 : rows=373288 uniqFULL=373288 still_dup_groups=0
+  [E] update_flag==0 rows=300822 (these are superseded versions)
+
+  [D] rows=354187 uniqFULL=338259 surplus=15928 groups>1=14346
+  [D] groups where update_flag itself varies = 1822
+  [D] after keep update_flag==1 : rows=148241 uniqFULL=135445 still_dup_groups=11477
+  [D] update_flag==0 rows=204302 (these are superseded versions)
+
+  === alignment ===
+  D_all subset of E_all      : False   (D-only=2)
+  D_flag1 subset of E_flag1  : True   (D-only=0)
+  D_flag1 subset of E_all    : True   (D-only=0)
+
+================================================================================================
+balancesheet
+================================================================================================
+
+  update_flag value counts:
+     E: {'0': 307505, '1': 137860}
+     D: {'0': 190976, '1': 128539}
+
+  [E] rows=445365 uniqFULL=341780 surplus=103585 groups>1=103564
+  [E] groups where update_flag itself varies = 103554
+  [E] after keep update_flag==1 : rows=137860 uniqFULL=137830 still_dup_groups=30
+  [E] update_flag==0 rows=307505 (these are superseded versions)
+
+  [D] rows=319515 uniqFULL=303988 surplus=15527 groups>1=13982
+  [D] groups where update_flag itself varies = 843
+  [D] after keep update_flag==1 : rows=128539 uniqFULL=126074 still_dup_groups=2360
+  [D] update_flag==0 rows=190976 (these are superseded versions)
+
+  === alignment ===
+  D_all subset of E_all      : True   (D-only=0)
+  D_flag1 subset of E_flag1  : True   (D-only=0)
+  D_flag1 subset of E_all    : True   (D-only=0)
+
+================================================================================================
+income
+================================================================================================
+
+  update_flag value counts:
+     E: {'0': 254441, '1': 164835}
+     D: {'0': 181165, '1': 148392}
+
+  [E] rows=419276 uniqFULL=350038 surplus=69238 groups>1=69187
+  [E] groups where update_flag itself varies = 68972
+  [E] after keep update_flag==1 : rows=164835 uniqFULL=164570 still_dup_groups=265
+  [E] update_flag==0 rows=254441 (these are superseded versions)
+
+  [D] rows=329557 uniqFULL=313810 surplus=15747 groups>1=14185
+  [D] groups where update_flag itself varies = 399
+  [D] after keep update_flag==1 : rows=148392 uniqFULL=134073 still_dup_groups=13099
+  [D] update_flag==0 rows=181165 (these are superseded versions)
+
+  === alignment ===
+  D_all subset of E_all      : True   (D-only=0)
+  D_flag1 subset of E_flag1  : True   (D-only=0)
+  D_flag1 subset of E_all    : True   (D-only=0)
+
+================================================================================================
+cashflow
+================================================================================================
+
+  update_flag value counts:
+     E: {'0': 221549, '1': 166149}
+     D: {'0': 176388, '1': 140350}
+
+  [E] rows=387698 uniqFULL=312730 surplus=74968 groups>1=74935
+  [E] groups where update_flag itself varies = 74890
+  [E] after keep update_flag==1 : rows=166149 uniqFULL=166071 still_dup_groups=78
+  [E] update_flag==0 rows=221549 (these are superseded versions)
+
+  [D] rows=316738 uniqFULL=301885 surplus=14853 groups>1=13611
+  [D] groups where update_flag itself varies = 3617
+  [D] after keep update_flag==1 : rows=140350 uniqFULL=132722 still_dup_groups=7094
+  [D] update_flag==0 rows=176388 (these are superseded versions)
+
+  === alignment ===
+  D_all subset of E_all      : True   (D-only=0)
+  D_flag1 subset of E_flag1  : True   (D-only=0)
+  D_flag1 subset of E_all    : True   (D-only=0)
+
+================================================================================================
+forecast
+================================================================================================
+
+  update_flag value counts:
+     E: {'1': 89061, '0': 60045}
+     D: {'1': 74481, '0': 48059}
+
+  [E] rows=149106 uniqFULL=127910 surplus=21196 groups>1=21196
+  [E] groups where update_flag itself varies = 21196
+  [E] after keep update_flag==1 : rows=89061 uniqFULL=89061 still_dup_groups=0
+  [E] update_flag==0 rows=60045 (these are superseded versions)
+
+  [D] rows=122540 uniqFULL=122527 surplus=13 groups>1=13
+  [D] groups where update_flag itself varies = 0
+  [D] after keep update_flag==1 : rows=74481 uniqFULL=74473 still_dup_groups=8
+  [D] update_flag==0 rows=48059 (these are superseded versions)
+
+  === alignment ===
+  D_all subset of E_all      : False   (D-only=414)
+  D_flag1 subset of E_flag1  : False   (D-only=37)
+  D_flag1 subset of E_all    : True   (D-only=0)
+  D_flag1 but not E_flag1, samples:
+     ['000060.SZ', '20260630', '20260704', '预增']
+     ['000514.SZ', '20260630', '20260714', '首亏']
+     ['001237.SZ', '20260630', '20260521', '略增']
+     ['001365.SZ', '20260630', '20260515', '续盈']
+     ['001393.SZ', '20260630', '20260514', '略减']
+
+================================================================================================
+express
+================================================================================================
+
+  update_flag value counts:
+     E: {'0': 29597, '1': 1}
+     D: {'0': 29506}
+
+  [E] rows=29598 uniqFULL=29598 surplus=0 groups>1=0
+
+  [D] rows=29506 uniqFULL=29503 surplus=3 groups>1=3
+  [D] groups where update_flag itself varies = 0
+  [D] after keep update_flag==1 : rows=0 uniqFULL=0 still_dup_groups=0
+  [D] update_flag==0 rows=29506 (these are superseded versions)
+
+  === alignment ===
+  D_all subset of E_all      : True   (D-only=0)
+  D_flag1 subset of E_flag1  : True   (D-only=0)
+  D_flag1 subset of E_all    : True   (D-only=0)
+
+################################################################################################
+# PIT safety check on the deduped E side: ann_date coverage vs f_ann_date
+################################################################################################
+
+  fina_indicator     all=675628   flag1=373288  
+
+  balancesheet       all=445365   flag1=137860  
+     flag1 rows with f_ann_date>ann_date = 4656
+     flag1 rows with ann_date<end_date  = 0
+     ann_date range = 19940926 .. 20260831
+     f_ann_date range = 19940926 .. 20260902
+
+  income             all=419276   flag1=164835  
+     flag1 rows with f_ann_date>ann_date = 3428
+     flag1 rows with ann_date<end_date  = 0
+     ann_date range = 19990809 .. 20260902
+     f_ann_date range = 19990809 .. 20260902
+
+  cashflow           all=387698   flag1=166149  
+     flag1 rows with f_ann_date>ann_date = 2420
+     flag1 rows with ann_date<end_date  = 0
+     ann_date range = 20060329 .. 20260902
+     f_ann_date range = 20060329 .. 20260902

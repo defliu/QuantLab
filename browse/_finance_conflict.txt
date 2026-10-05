@@ -1,0 +1,58 @@
+################################################################################################
+# A. Column-set diff D vs E
+################################################################################################
+
+  fina_indicator     D=167 E=167  ghostD=[] ghostE=['__index_level_0__']
+
+  balancesheet       D=158 E=158  ghostD=[] ghostE=['__index_level_0__']
+
+  income             D=94 E=94  ghostD=[] ghostE=['__index_level_0__']
+
+  cashflow           D=97 E=97  ghostD=[] ghostE=['__index_level_0__']
+
+  forecast           D=13 E=13  ghostD=[] ghostE=['__index_level_0__']
+
+################################################################################################
+# B. Which columns actually differ inside a duplicated FULL_KEY?
+#   (sample up to 800 conflicting FULL_KEYs per table)
+################################################################################################
+
+================================================================================================
+E-side fina_indicator
+================================================================================================
+
+  rows=675628 cols=167
+  FULL_KEY groups       = 376704
+  groups with >1 row    = 298567
+  surplus rows          = 298924
+  sampled rows          = 1957 (from 800 groups)
+  columns that vary     = 105
+     column                            n_group        pct
+     update_flag                           800      40.9%
+     fcff                                  110       5.6%
+     fcfe                                  110       5.6%
+     fcfe_ps                               107       5.5%
+     fcff_ps                               106       5.4%
+     cash_ratio                             50       2.6%
+     networking_capital                     42       2.1%
+     roic                                   18       0.9%
+     bps_yoy                                18       0.9%
+     roa2_yearly                            17       0.9%
+     eqt_yoy                                17       0.9%
+     roa                                    15       0.8%
+     assets_yoy                             15       0.8%
+     roa_yearly                             14       0.7%
+     ca_turn                                13       0.7%
+     roe                                    12       0.6%
+     roe_dt                                 12       0.6%
+     npta                                   12       0.6%
+     roe_yearly                             12       0.6%
+     dp_assets_to_eqt                       12       0.6%
+     roa_dp                                 12       0.6%
+     assets_turn                            11       0.6%
+     q_roe                                   9       0.5%
+     q_dt_roe                                9       0.5%
+     q_npta                                  9       0.5%
+     ... 80 more
+  detail sample on 'update_flag':
+     KEY ['300047.SZ', '20250331', '20250426']
