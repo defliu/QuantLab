@@ -214,6 +214,17 @@ python scripts/migrate_astock_full_v2.py --rollback-only
 
 **审计产物**（全部只读留档）：`browse/_finance_secondbatch_verdict.md`（裁决）、`_finance_safededup.txt`（R1/R2）、`_finance_pit_wide.txt`（150 票×11 asof）、`_finance_drill.txt`、`_finance_drill2.txt`（归因分离，**不可单独作最终依据**）、`_finance_drill3.txt`（**D⊂E 决定性证据**）；脚本 `scripts/_probe_safe_dedup.py`、`_probe_dtype_pit.py`、`_probe_drill{,2,3}.py`。**未改动任何 `D:\astock` 数据、reader、`factors/fina.py`、config。**
 
+#### 📌 状态跃迁：夸克供应商包已把财务四大表全量替换进生产（2026-10-05，op 独立复核）
+
+> 上一节「未迁移」状态**已被夸克供应商通道推翻**（T-20261005-001 第二轮 `D:/astock/_vendor_20261005/apply_from_edrive.py`，纯全量替换、无任何选版逻辑，事务日志 `apply_txn_20261005e.json`，备份 `.bak_20261005e`）。op 独立复核三段探针结论（只读脚本 `verify_finance_{vendor,phase2,phase3,phase4}_20261005.py`）：
+
+1. **同公告多版本裸露进生产**：fina_indicator 675,628 行含 **298,567 组**同 FULL_KEY 双版本（income 68,972 / cashflow 74,890 / balancesheet 103,554 组 update_flag 不一致）。旧表（备份）是**单版本表**（354,187 行零重复）→ 本轮替换把供应商的原始多版本行序原样带进生产。`astock_finance_reader` 的 `end_date.idxmax()` 取首个最大行 → **实际任取一版**（双版本组首行 flag 分布 68.7%='1'、30.8%='0'——非确定性规则，样例全取 flag=1 纯属行序巧合）。
+2. **供应商快照静默删旧键 17,060 个**（fina_indicator）：ann_date 全部 2024-2026，涉及 1,394 只、**无整股消失**、非 ann_date 修订而是 (ts_code,end_date) 整组消失——违反财务表「只增不删」合并规则（income/cashflow/balancesheet 同病各 ~16.6-16.8k 键）。注意 drill3 的「D⊂E 孪生 100%」是对**旧 E 盘快照**验的，本轮应用的是更新的夸克包。
+3. **值差面有限**（新旧 337,123 共有 FULL_KEY，旧单版本值 vs reader 现实际取值）：roe 0.84% / bps 0.48% / netprofit_margin 0.42% / eps 0.24% 键值改变；|diff| 中位数小但最大值巨大（roe max 80,610，个别行数量级异常）。
+4. **待拍板四选项**：(a) 维持现状等裁决（数据最新至 2026-09-10 公告、值差<1%、选版非确定）；(b) 回滚四大表至 `.bak_20261005e`（恢复单版本、损失 2026-08→09-10 新公告）；(c) 从备份回补 17,060 缺失键（新表现无这些键、零冲突、机械安全）；(d) 按裁定规则正式去重。**op 倾向 (c)+(a)，裁决前不改 reader、不去重、不回滚。**
+
+**⚠️ parquet 元数据 P0（同场发现，已修复）**：`apply_vendor.py`/`apply_from_edrive.py` 的 `t.select()` 丢弃 `__index_level_0__` 物理列但保留引用它的 pandas 元数据 → 5 个产物（express + 四大财务表）被 `pd.read_parquet(path, columns=[...])` 指定列读取时**直接崩溃**（全表读不受影响，故验证报告未察觉）；全仓 9 处 columns= 消费点中招，含 P16 生产脚本 `nightly_check.py`/`t0_data_precheck.py`。修复 = 5 文件 `replace_schema_metadata(None)` 元数据 strip（数据零变更，行数/schema/类型/首尾样本逐项校验）；根因已在两个 apply 脚本 3 处 select 后补 strip。**通用规则：任何 parquet 列选择/重写后必须 `replace_schema_metadata(None)` 清洗元数据**。
+
 章节来源
 - [scripts/migrate_astock_full_v2.py](file://scripts/migrate_astock_full_v2.py)
 - [data/astock_reader.py](file://data/astock_reader.py)
