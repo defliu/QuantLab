@@ -93,6 +93,15 @@ def mk_result():
                 "n_buckets": 2, "bucket_top1": "300成长",
                 "bucket_top1_ratio": 0.6,
                 "bucket_counts": {"300成长": 3, "300价值": 1},
+                # 以下为 core.style_concentration 的真实字段，
+                # 报告层若不投影，读者无法判断「风格不可用」与「零命中」
+                "coverage_ratio": 0.8,
+                "data_available": True,
+                "n_benchmarks_loaded": 9, "n_benchmarks_missing": 0,
+                "missing_benchmarks": [], "extra_benchmarks": [],
+                "members_date": "20260630",
+                "asof_date": "20260929",
+                "stale_days": 91,
             },
             "index": {
                 "status": WARN,
@@ -515,6 +524,94 @@ except Exception as e:  # noqa: BLE001
 check("F10 抛异常时不落盘半成品",
       not os.path.isfile(os.path.join(_out, "x_bad.json")),
       "残留文件")
+
+
+print("=" * 74)
+print("[D4] 风格字段投影（覆盖率/基准可用性/数据日期）")
+print("=" * 74)
+
+# 背景：core.style_concentration 已把「数据不可用 / 零命中 / 数据可用但陈旧」
+# 三种语义分开，但报告层若只投影 n_in_any_style 与桶计数，读者看到
+# 「未命中 5 只」时无法区分是风格数据坏了还是候选真的不属于任何风格桶。
+_ps = (_p.get("sections") or {}).get("style") or {}
+check("D4-1 style.coverage_ratio 投影",
+      _ps.get("coverage_ratio") == 0.8, _ps.get("coverage_ratio"))
+check("D4-2 style.data_available 投影",
+      _ps.get("data_available") is True, _ps.get("data_available"))
+check("D4-3 style 基准可用性计数投影",
+      _ps.get("n_benchmarks_loaded") == 9 and
+      _ps.get("n_benchmarks_missing") == 0,
+      (_ps.get("n_benchmarks_loaded"), _ps.get("n_benchmarks_missing")))
+check("D4-4 style.missing_benchmarks 投影",
+      _ps.get("missing_benchmarks") == [], _ps.get("missing_benchmarks"))
+check("D4-5 style.extra_benchmarks 投影",
+      _ps.get("extra_benchmarks") == [], _ps.get("extra_benchmarks"))
+check("D4-6 style.members_date 投影",
+      _ps.get("members_date") == "20260630", _ps.get("members_date"))
+check("D4-7 style.asof_date 投影",
+      _ps.get("asof_date") == "20260929", _ps.get("asof_date"))
+check("D4-8 style.stale_days 投影",
+      _ps.get("stale_days") == 91, _ps.get("stale_days"))
+
+# 字段缺失时必须显式 None，不能静默消失：消失会让「未投影」和
+# 「真的没有数据」在报告里长得一模一样
+_ps_none = REP.build_payload(
+    {"sections": {"style": {"status": OK, "reasons": [],
+                            "n_in_any_style": 0}}}, GEN_AT)
+_pn_sty = (_ps_none.get("sections") or {}).get("style") or {}
+check("D4-9 字段缺失时显式 None 而非丢键",
+      _pn_sty.get("coverage_ratio") is None and
+      _pn_sty.get("stale_days") is None and
+      "coverage_ratio" in _pn_sty and
+      "stale_days" in _pn_sty,
+      sorted(_pn_sty))
+
+# Markdown 必须把「唯一覆盖率」与「基准可用性/快照日期」写出来，
+# 否则 G2/ENS 的 0/9 命中会被读成策略失效。
+# 注意用「整行包含」而不是子串包含：index 段的 top1_ratio 也是 0.8，
+# 纯子串 "80.0%" 会因 index 段渲染而巧合通过——这种假绿最危险，
+# 因为它让人以为覆盖率已经投影出去了。
+_md4 = REP.render_markdown(_p)
+_md4_lines = _md4.splitlines()
+check("D4-10 MD 含唯一覆盖率",
+      any("唯一覆盖率" in x for x in _md4_lines),
+      [x for x in _md4_lines if "覆盖" in x])
+check("D4-11 MD 含基准可用性计数",
+      any("风格基准" in x and "9/9" in x for x in _md4_lines),
+      [x for x in _md4_lines if "基准" in x])
+check("D4-12 MD 含风格快照日期",
+      any("20260630" in x for x in _md4_lines),
+      [x for x in _md4_lines if "快照" in x])
+check("D4-13 MD 含陈旧天数",
+      any("91" in x for x in _md4_lines if "滞后" in x or "陈旧" in x),
+      [x for x in _md4_lines if "滞后" in x or "陈旧" in x])
+
+# 快照日期缺失时不得伪造日期
+_md4n = REP.render_markdown(_ps_none)
+check("D4-14 快照日期缺失时渲染 NA 而非空白",
+      "NA" in _md4n,
+      [x for x in _md4n.splitlines() if "快照" in x])
+
+# IO 段新增字段必须透传：排查批次接线问题时，这两个字段是唯一的
+# 「PIT 基准日到底取到没有」的自证
+_res_io = mk_result()
+_res_io["io"] = dict(_res_io["io"])
+_res_io["io"]["signal_date"] = "20260929"
+_res_io["io"]["style_members_date"] = "20260630"
+_pio = REP.build_payload(_res_io, GEN_AT, kind="v13",
+                         batch_date="20260930")
+check("D4-15 io.signal_date 透传",
+      (_pio.get("io") or {}).get("signal_date") == "20260929",
+      (_pio.get("io") or {}).get("signal_date"))
+check("D4-16 io.style_members_date 透传",
+      (_pio.get("io") or {}).get("style_members_date") == "20260630",
+      (_pio.get("io") or {}).get("style_members_date"))
+
+# 旧 result（无新字段）不得崩：向后兼容，字段为 None
+_pold = REP.build_payload(mk_result(), GEN_AT)
+check("D4-17 旧 result 缺新字段不崩",
+      (_pold.get("io") or {}).get("signal_date") is None,
+      (_pold.get("io") or {}).get("signal_date"))
 
 
 print("=" * 74)

@@ -154,6 +154,20 @@ def build_payload(result, generated_at, kind=None, batch_date=None):
             "bucket_top1": sty.get("bucket_top1"),
             "bucket_top1_ratio": sty.get("bucket_top1_ratio"),
             "bucket_counts": _sorted_deep(sty.get("bucket_counts") or {}),
+            # 必须投影数据可用性与新鲜度：只投影 n_in_any_style 时，
+            # 「风格数据不可用」与「候选真的没命中任何风格桶」在报告里
+            # 长得一模一样，读者会把数据故障读成策略失效。
+            # 缺失时显式写 None（不丢键），让「未投影」与「真的无数据」
+            # 在 JSON 里可区分。
+            "coverage_ratio": sty.get("coverage_ratio"),
+            "data_available": sty.get("data_available"),
+            "n_benchmarks_loaded": sty.get("n_benchmarks_loaded"),
+            "n_benchmarks_missing": sty.get("n_benchmarks_missing"),
+            "missing_benchmarks": list(sty.get("missing_benchmarks") or []),
+            "extra_benchmarks": list(sty.get("extra_benchmarks") or []),
+            "members_date": sty.get("members_date"),
+            "asof_date": sty.get("asof_date"),
+            "stale_days": sty.get("stale_days"),
         }
 
     idx = sections.get("index")
@@ -306,8 +320,30 @@ def render_markdown(payload):
         A("## %s" % SECTION_TITLE["style"])
         A("")
         A("- 状态: %s" % _STATUS_ICON.get(sty.get("status"), "-"))
-        A("- 命中风格基准: %s 只，未命中 %s 只" % (sty.get("n_in_any_style"),
-                                                sty.get("n_no_style")))
+        A("- 命中风格基准: %s 只，未命中 %s 只（唯一覆盖率: %s）"
+          % (sty.get("n_in_any_style"), sty.get("n_no_style"),
+             _pct(sty.get("coverage_ratio"))))
+        # 基准可用性与快照新鲜度必须显式呈现：真实批次出现过 G2/ENS
+        # 0/9 命中，若不写清是「9 个基准全都没成分」还是「候选真的
+        # 不属于任何风格桶」，读者会把数据问题误判为策略失效。
+        _nb_l = sty.get("n_benchmarks_loaded")
+        _nb_m = sty.get("n_benchmarks_missing")
+        if _nb_l is None and _nb_m is None:
+            A("- 风格基准可用: NA")
+        else:
+            _nb_t = _nb_l + _nb_m if (_nb_l is not None and
+                                     _nb_m is not None) else None
+            A("- 风格基准可用: %s/%s（缺失 %s）"
+              % (_nb_l, _nb_t if _nb_t is not None else "NA", _nb_m))
+        _mb = sty.get("missing_benchmarks") or []
+        if _mb:
+            A("- 缺失风格基准: %s" % ", ".join([str(x) for x in _mb]))
+        _sd = sty.get("stale_days")
+        if _sd is None:
+            A("- 风格成分快照: NA（未取得快照日期，无法判断新鲜度）")
+        else:
+            A("- 风格成分快照: %s（相对批次日 %s 滞后 %d 天）"
+              % (sty.get("members_date"), sty.get("asof_date"), _sd))
         A("- 有效风格桶: %s" % sty.get("n_buckets"))
         A("- 第一大风格桶: %s（%s）" % (sty.get("bucket_top1"),
                                        _pct(sty.get("bucket_top1_ratio"))))
