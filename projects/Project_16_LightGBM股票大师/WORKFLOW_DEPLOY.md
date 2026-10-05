@@ -191,7 +191,7 @@ python factor_ic_monitor.py
 - **策略资金池**：账户约 1000 万，但策略只用 `START_CAPITAL=100000`（10 万）建仓；资金池 = 初始 + 已实现盈亏（成交记录 FIFO 配对）+ 策略持仓浮盈（QMT 查询，查不到保守按 0）。`strategy_capital.py` 计算并写 `data/strategy_capital.json`，收益滚动进池子用于加仓。
 - **买入（方案A·每日换仓，2026-08-21 上线）**：持仓永远等于当日评分最高的 top T（大盘正常 T=2 / 降半仓 T=1 / 破位 T=0 空仓）。9:45 复核生成当日完整版清单 → `rebalance_daily.py --date <日> --top <T> --live` 自动换仓：卖"不在目标 top 内且今日可卖"的持仓（T+1 锁定不卖）、买"目标内未持有"的票（等权）。依据：含真实成本回测 `data/scan_rotate_cost_report.md`（每日换仓超额最优 +0.32%~+0.68%）、`data/scan_newsc_report.md`。不设轮动阈值、不设一票否决；价格风控（止损/止盈/移动止盈）由六档盯盘负责。
 - **F6 估值口径（审计修复 2026-08-21）**：F6 优先用实时 PE（`tdx_review.json` 的 `pe_ttm`），PE<0 或 PE>100 得 1 分；**不设一票否决**（新体系回测 `data/scan_newsc_report.md` 证明：否决 PE 极端票会降低胜率/盈亏比/超额且放大回撤，模型选出的高 PE/亏损票多为正贡献）；无实时 PE 时回退面板 `SC_F6`。
-- **仓位**：常态总仓 95%（留 5% 交易缓冲）、2 只均分（每只约资金池/2 ≈ 4.75 万）、单票上限 50%；**已有持仓抵扣**（买入只补到目标数，避免叠加超配）。
+- **仓位**：常态总仓 98%（留 2% 缓冲，2026-10-03 T-20261003-006 由 95% 上调，吸收 P2-14 卖出费盲区）、2 只均分（每只约资金池×98%÷2 ≈ 4.9 万）、单票上限 50%；**已有持仓抵扣**（买入只补到目标数，避免叠加超配）。
 - **大盘风控**（沪深300 当日涨跌）：`<= -1.5%` 空仓不买；`-1.5% ~ -1.0%` 降半仓（目标持仓降为 1、金额 50%）；`> -1.0%` 正常满仓（目标 2 只）。
 - **盯盘风控**：止损 -7% / 止盈 +15% / 移动止盈 8%（高点回撤），`qmt_monitor --auto-sell` 触发即自动卖出；持仓优先 QMT 实时查询（`query_stock_positions`），非交易时段查询可能为空时回退本地成交记录。
 
@@ -222,9 +222,10 @@ python factor_ic_monitor.py
 
 ## 十一、飞书推送机制（已验证连通）
 
-- **通道**：`lark-cli im +messages-send`，**bot 身份**，私聊发送给用户 `ou_76deaecde50e10576f8fdc8ba954a7b0`（刘诚，已测试连通）。不要用 user 身份、不要发到其他 open_id（会 cross-app 报错）。
-- **关键环境变量处理（必须）**：调用 lark-cli 前，在其进程环境里**移除 `LARKSUITE_CLI_APP_ID` 和 `LARKSUITE_CLI_USER_ACCESS_TOKEN`**，并设置 `LARKSUITE_CLI_STRICT_MODE=off`。原因：外部注入的 app 只有 user token 且 strict-mode=user 会挡 bot；移除后 lark-cli 回退到 config.json 里的 Trae app（cli_aa0fbe282c399cef，有 bot 凭据）。
-- **lark-cli 路径**：`C:\Users\Administrator\.trae-cn\plugins\trae-remote-official\lark\1.0.5\bin\lark-cli.exe`
+- **通道**：`lark-cli im +messages-send`，**bot 身份**（bot `cli_aade...`），私聊发送给用户 `ou_bd13444d8ea53c28249c669f43f3eeff`（刘诚，已验证可私聊，2026-08-29 实测）。不要用 user 身份。**open_id 唯一事实源 = `qmt_config.py` / `g2_config.py` / `g2_ens_config.py` 的 `FEISHU_OPEN_ID`**；本文档此前写的 `ou_76de...` 是**已废弃旧值**（见 `部署核对清单_新机.md`「已确认废弃勿用」），勿再照抄。
+- **关键环境变量处理（必须）**：调用 lark-cli 前，在其进程环境里**移除 `LARKSUITE_CLI_APP_ID` 和 `LARKSUITE_CLI_USER_ACCESS_TOKEN`**，并设置 `LARKSUITE_CLI_STRICT_MODE=off`。原因：外部注入的 app 只有 user token 且 strict-mode=user 会挡 bot；移除后 lark-cli 回退到 `~/.lark-cli/config.json` 里注册的 bot 应用 **`cli_aade2524ddbd9bd6`**（2026-10-02 实读该文件：这是本机唯一注册的应用，appSecret 在系统 keychain）。**本文档此前写的 `cli_aa0fbe282c399cef` 属漂移——该 appId 并不在本机 config.json 中，按它排查会走错方向。**
+- **lark-cli 路径（禁止硬编码插件版本目录）**：统一稳定出口 `C:\Users\Administrator\bin\lark-cli.exe`。**首选项目统一包装器 `lark_push.py`**（多候选探测 + glob 兜底 + 分片 + 严格成功判定），不要直接拼 lark-cli 命令行。自检：`python lark_push.py --check`。
+  - 原因（2026-09-23 / 2026-10-02 两次实测）：插件版本目录随升级腐化（`1.0.4` → `1.0.5`），文档与代码里的版本路径必然失效；配置侧 `qmt_config.py` / `g2_config.py` / `g2_ens_config.py` 已改为「稳定出口优先 + 版本目录仅作 fallback」。
 - **推送内容约定**：9:25 预判每次推摘要（持仓等级+候选强弱，强预警重点标出）；9:45 推买入结果（大盘结论+买入清单/未买原因）；盯盘脚本 `qmt_monitor.notify_feishu()` 触发信号时推送（无信号推送"持仓正常"心跳）。
 - **优先级与容错（必须遵守）**：飞书推送**永远放在任务所有主步骤之后**执行，优先级最低。推送失败/异常时**仅记录**（日志/汇报中说明），**绝不因推送失败中断、重试或阻塞主流程**——交易、报告等主任务完成即为成功。脚本层 `notify_feishu()` 已 try-except 容错，失败只打印不影响主循环。
 - 脚本内实现见 `qmt_monitor.py` 的 `notify_feishu()`（已内置环境变量处理）。
@@ -236,7 +237,7 @@ python factor_ic_monitor.py
 - **主库滞后**：快照到 8/14，用 data_live 增量 + merge 得到最新特征
 - **盘前实时数据为空**：资金流/量比/板块要 9:30 开盘后才有，盘前只能查新闻
 - **TDX 查询无结果**：如实记录"无数据"，禁止编造（金融数据红线）
-- **飞书 bot 推送失败或发错人**：必须移除 `LARKSUITE_CLI_APP_ID`/`LARKSUITE_CLI_USER_ACCESS_TOKEN` 并设 `LARKSUITE_CLI_STRICT_MODE=off`，用 bot 身份发 `ou_76deaecde50e10576f8fdc8ba954a7b0`（见第十一节）
+- **飞书 bot 推送失败或发错人**：必须移除 `LARKSUITE_CLI_APP_ID`/`LARKSUITE_CLI_USER_ACCESS_TOKEN` 并设 `LARKSUITE_CLI_STRICT_MODE=off`，用 bot 身份发 `ou_bd13444d8ea53c28249c669f43f3eeff`（bot `cli_aade...` 下刘诚，唯一事实源见 `qmt_config.py` 的 `FEISHU_OPEN_ID`；若报 `open_id cross app` 说明 open_id 与 app 不匹配，勿换用 `ou_76dea...` 硬试——那是 `cli_aa0f...` 应用的旧值，见第十一节与 `飞书卡片推送_部署说明.md`）
 - **持仓查询非交易时段返回空**：`query_stock_positions` 不稳定，盯盘自动回退本地成交记录；`strategy_capital.py` 浮盈按 0 保守计（已内置重试）
 - **清仓记录价格 0 污染盈亏**：市价清仓 SELL 价格可能为 0，`strategy_capital.py` 已跳过 price<=0 的记录
 - **QMT 持仓列表残留（孤儿持仓，已实测）**：当天卖出的票，QMT 持仓列表仍会显示该股但 `volume=0`（次日才清除）。**判断持仓必须以持仓数量 >0 为准，vol=0 即已卖出**，绝不能只看"列表里有"就当作持仓。`qmt_monitor.py`/`strategy_capital.py`/`qmt_clear.py` 均已按 volume>0 过滤；卖出后需在 `qmt_trade_log.csv` 补 SELL 记录（否则"已有持仓数/已实现盈亏"会误判）。知识库参考《QMT孤儿持仓与撤单不拉黑》。

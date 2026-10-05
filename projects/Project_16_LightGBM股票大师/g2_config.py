@@ -29,7 +29,7 @@ G2_CAPITAL_FILE = os.path.join(BRIDGE_DIR, "g2_strategy_capital.json")
 # ---- 交易参数（对齐 V1.3 口径） ----
 TOP_N = 3                            # 目标持仓数（等权；2026-09-21 拍板 TOP_N 2→3，依据《持仓只数最优论证_20260921.md》）
 SELECT_TOP = 10                      # 候选池大小（对齐回测 TOP10；deploy_predict_g2 --top 10 产出 _g2_top10.csv）
-RESERVE_CASH_PCT = 0.05              # 保留现金 5%（总仓 95%）
+RESERVE_CASH_PCT = 0.02              # 保留现金 2%（总仓 98%，T-20261003-006 拍板：吸收 P2-14 卖出费盲区年累积 ~1-1.7% + 换仓日时序错配）
 MIN_ORDER_VOL = 100                  # 整手
 REDLINE = 60.0                       # g2 评分红线（deploy_predict_g2 --threshold 60 已过滤）
 HOLD_DAYS = 15                       # 持有期（交易日，2026-09-10 拍板升级 N15-live_trail：对齐网格最优 G2-live_trail/N15/红线60/TOP2 +0.213%；桥出场=STOP→TP→TRAIL 与回测 live_trail 一致）
@@ -97,7 +97,7 @@ GAP_VR       = float(os.environ.get("GAP_VR", "2.0"))          # 低开放行量
 # 数据缺失（取不到沪深300）→ fail-safe 按 T=1 半仓 + 醒目告警（刹车数据缺失时降速不裸奔）。
 TIER_STOP_PCT = float(os.environ.get("G2_TIER_STOP", "-1.5"))   # 停买线
 TIER_HALF_PCT = float(os.environ.get("G2_TIER_HALF", "-1.0"))   # 半仓线
-DEPLOY_PCT     = 0.95                                            # 满仓部署比例（保留 5% 现金）
+DEPLOY_PCT     = 0.98                                            # 满仓部署比例（保留 2% 现金，T-20261003-006：三档对照 98% 拿满仓收益增量 40-60%，回撤代价 <0.5pp）
 HALF_DEPLOY_PCT = 0.50                                           # 半仓部署比例
 HS300_QT_SYMBOL = "sh000300"                                     # 腾讯行情沪深300 代码
 

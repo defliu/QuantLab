@@ -6,7 +6,7 @@
   2) 读融合账本持仓（只认融合自己的：cmd/positions_cfg_<date>.json 成本锚 + fills FIFO 推导；
      绝不读/纳管账户全量持仓里他人的票）
   3) 卖出：融合账本中不在目标 topN 的 → SELL（可卖量受 can_use 限制，T+1 锁定不卖）
-  4) 买入：目标中持有不足的 → BUY 补到目标股数（等权对齐资金池 95%/N，整手）
+  4) 买入：目标中持有不足的 → BUY 补到目标股数（等权对齐资金池 98%/N，整手）
      重叠规避：跳过 G2 账本（g2_hold_dates.json）已持有的票，防同账户双桥争同一持仓
   5) 写 orders 到桥 cmd/orders_<date>.json（dry-run 默认，--live 才真写）
   6) 输出 data/rebalance_g2_ens_<date>.md/.json
@@ -460,7 +460,7 @@ def build_plan(date, capital):
         # 原实现"budget_each = 资金池×(1-保留)/空位"存在两个问题：①只补空位不减仓，老仓占满资金池
         # 时补不到新 TOP_N；②预算用资金池总额未扣保留持仓成本，部分补仓场景总敞口超资金池
         # （G2 早已修的 T-20260903-019 bug 未同步）。改为 V1.3 式等权（ENS 无大盘门控，用固定保留现金）：
-        #   target_value = 资金池×(1-保留5%)/TOP_N；kept 超配→SELL 减仓释放资金、新晋→建仓到目标股数。
+        #   target_value = 资金池×(1-保留2%)/TOP_N；kept 超配→SELL 减仓释放资金、新晋→建仓到目标股数。
         # 注：此实盘等权口径与回测「只补空位」不同，历史回测数字须标注口径前提。
         #
         # 第一步：预取最多 n_slots 只新晋票（取价+低开校验通过）
@@ -486,7 +486,7 @@ def build_plan(date, capital):
                     continue
             new_targets.append((code, price, best["total"]))
 
-        # 第二步：等权目标市值（固定分母 TOP_N；ENS 无大盘门控，deploy=1-保留5%）
+        # 第二步：等权目标市值（固定分母 TOP_N；ENS 无大盘门控，deploy=1-保留2%）
         target_value = capital * (1 - G.RESERVE_CASH_PCT) / float(G.TOP_N)
         plan["target_value"] = round(target_value, 2)
 

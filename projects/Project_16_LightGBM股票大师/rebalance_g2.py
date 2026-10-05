@@ -6,7 +6,7 @@
   2) 读 G2 账本持仓（只认 G2 自己的：cmd/positions_cfg_<date>.json 成本锚 + fills FIFO 推导；
      绝不读/纳管账户全量持仓里他人的票）
   3) 卖出：G2 账本中不在目标 topN 的 → SELL（可卖量受 can_use 限制，T+1 锁定不卖）
-  4) 买入：目标中持有不足的 → BUY 补到目标股数（等权对齐资金池 95%/N，整手）
+  4) 买入：目标中持有不足的 → BUY 补到目标股数（等权对齐资金池 98%/N，整手）
   5) 写 orders 到桥 cmd/orders_<date>.json（dry-run 默认，--live 才真写）
   6) 输出 data/rebalance_g2_<date>.md/.json
 

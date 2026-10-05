@@ -24,7 +24,7 @@
   1) 前置守卫：交易日 / 时间>=09:35（实时行情前提）/ 桥存活（live 时）
   2) **开盘后用实时数据重跑 deploy_predict_g2（--threshold 60 --top 2 --pool 100）重算今日 top2**
   3) 卖出 = G2 已知持仓中不在今日 top2 的（600262/300964），量取桥 state/positions 最新文件
-  4) 买入 = 今日 top2 中未持有的，等权 95% 池 / N
+  4) 买入 = 今日 top2 中未持有的，等权 98% 池 / N
   5) 实时取价 → 构建 SELL/BUY → write_orders 写桥（--live）
   6) 更新 g2_hold_dates（建仓日=运行日）；不生成 positions_cfg（等 15:40 reconcile 以 QMT 真相为准）
   7) 落盘 data/rebalance_g2/g2_correction_<date>.json + 飞书通知
