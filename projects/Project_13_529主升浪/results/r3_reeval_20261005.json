@@ -1,0 +1,167 @@
+{
+  "date": "2026-10-05",
+  "window": [
+    "2026-08-18",
+    "2026-09-30"
+  ],
+  "engine_dir": "D:/QuantLab/reports/20261005_224856_f7786c_r3reeval20261005_n12",
+  "decay_by_year": {
+    "2019": {
+      "n": 49,
+      "n_expired": 34,
+      "n_stop": 15,
+      "expired_mean_pct": 9.9,
+      "stop_mean_pct": -13.85,
+      "stop_share_pct": 30.6,
+      "expired_win_pct": 73.5
+    },
+    "2020": {
+      "n": 60,
+      "n_expired": 35,
+      "n_stop": 25,
+      "expired_mean_pct": 18.5,
+      "stop_mean_pct": -14.57,
+      "stop_share_pct": 41.7,
+      "expired_win_pct": 62.9
+    },
+    "2021": {
+      "n": 56,
+      "n_expired": 38,
+      "n_stop": 18,
+      "expired_mean_pct": 9.95,
+      "stop_mean_pct": -13.28,
+      "stop_share_pct": 32.1,
+      "expired_win_pct": 63.2
+    },
+    "2022": {
+      "n": 56,
+      "n_expired": 38,
+      "n_stop": 18,
+      "expired_mean_pct": 12.16,
+      "stop_mean_pct": -13.53,
+      "stop_share_pct": 32.1,
+      "expired_win_pct": 65.8
+    },
+    "2023": {
+      "n": 53,
+      "n_expired": 43,
+      "n_stop": 10,
+      "expired_mean_pct": 6.57,
+      "stop_mean_pct": -12.87,
+      "stop_share_pct": 18.9,
+      "expired_win_pct": 74.4
+    },
+    "2024": {
+      "n": 59,
+      "n_expired": 43,
+      "n_stop": 16,
+      "expired_mean_pct": 3.82,
+      "stop_mean_pct": -14.59,
+      "stop_share_pct": 27.1,
+      "expired_win_pct": 62.8
+    },
+    "2025": {
+      "n": 49,
+      "n_expired": 38,
+      "n_stop": 11,
+      "expired_mean_pct": 5.58,
+      "stop_mean_pct": -12.83,
+      "stop_share_pct": 22.4,
+      "expired_win_pct": 65.8
+    },
+    "2026": {
+      "n": 41,
+      "n_expired": 27,
+      "n_stop": 14,
+      "expired_mean_pct": 1.44,
+      "stop_mean_pct": -14.08,
+      "stop_share_pct": 34.1,
+      "expired_win_pct": 51.9
+    }
+  },
+  "expired_mean_2326_updated": 4.62,
+  "rolling_expired": {
+    "2026YTD": {
+      "n": 27,
+      "mean_pct": 1.44,
+      "win_pct": 51.9
+    },
+    "近6个月": {
+      "n": 17,
+      "mean_pct": 1.83,
+      "win_pct": 58.8
+    },
+    "近3个月": {
+      "n": 9,
+      "mean_pct": 1.17,
+      "win_pct": 66.7
+    }
+  },
+  "drift_check": {
+    "old_dir": "D:/QuantLab/reports\\20260816_123422_0a5fdf_v3_1n_n12_h60_s12",
+    "old_n": 412,
+    "new_n": 414,
+    "old_exp_mean": 8.752,
+    "new_exp_mean": 8.752,
+    "identical": false
+  },
+  "fwd20_by_year": {
+    "2019": {
+      "n": 1483,
+      "mean_pct": 1.93,
+      "hit_pct": 55.2
+    },
+    "2020": {
+      "n": 1268,
+      "mean_pct": 1.06,
+      "hit_pct": 44.7
+    },
+    "2021": {
+      "n": 1784,
+      "mean_pct": 2.08,
+      "hit_pct": 49.7
+    },
+    "2022": {
+      "n": 1057,
+      "mean_pct": -1.22,
+      "hit_pct": 36.2
+    },
+    "2023": {
+      "n": 2606,
+      "mean_pct": 0.33,
+      "hit_pct": 42.6
+    },
+    "2024": {
+      "n": 1163,
+      "mean_pct": 1.12,
+      "hit_pct": 53.5
+    },
+    "2025": {
+      "n": 2398,
+      "mean_pct": 1.18,
+      "hit_pct": 49.4
+    },
+    "2026": {
+      "n": 1075,
+      "mean_pct": -0.8,
+      "hit_pct": 36.9
+    }
+  },
+  "window_flow": {
+    "trading_days": 31,
+    "days_with_signals": 30,
+    "signals": 160,
+    "mean_per_day": 5.2,
+    "baseline_mean_per_day": 7.9,
+    "fwd20_evaluable_n": 67,
+    "fwd20_pending_n": 93,
+    "fwd20_mean_pct": -0.51,
+    "fwd20_hit_pct": 47.8
+  },
+  "verdict": "维持 R3（未回 +8%）",
+  "verdict_detail": "滚动到期均收 +1.44% < +8%（基线 +4.4%），信号延续性衰减未修复，维持 DOING+监控、不配资、不上载",
+  "thresholds": {
+    "reeval_pct": 8.0,
+    "baseline_2326_pct": 4.4
+  }
+}
