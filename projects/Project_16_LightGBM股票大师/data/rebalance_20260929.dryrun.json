@@ -1,0 +1,27 @@
+{
+  "date": "20260929",
+  "target": [],
+  "strategy_capital": 88752.16,
+  "target_value_each": 84314.55,
+  "tier": 2,
+  "eff_top": 5,
+  "sell": [],
+  "buy": [],
+  "trim": [],
+  "hold": [
+    "600547.SH",
+    "603882.SH",
+    "000155.SZ",
+    "000920.SZ",
+    "300531.SZ"
+  ],
+  "locked": [],
+  "selection_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20260929_selection_full.csv",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20260929_selection_full.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20260929",
+  "candidate_rows": 0,
+  "candidate_rows_raw": 10,
+  "candidate_sha256": "24383fb13f20931f6d5ee4b6da086c53271f18de5bf5ea39184b3f9709ae9d3e",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\candidates_asof\\20260929_24383fb1_20260929_selection_full.csv"
+}

@@ -1,0 +1,61 @@
+{
+  "date": "20261002",
+  "account_id": "70180771",
+  "capital": 97432.37,
+  "pool": [],
+  "ledger": {
+    "000607.SZ": {
+      "vol": 7700,
+      "cost": 3.9034,
+      "src": "cfg"
+    },
+    "002510.SZ": {
+      "vol": 5300,
+      "cost": 5.835,
+      "src": "cfg"
+    },
+    "605098.SH": {
+      "vol": 500,
+      "cost": 54.8899,
+      "src": "cfg"
+    }
+  },
+  "note": "g2 候选数据日 20261008 落后于增量库最新日 20260930（09:25 候选生成失败？），宁缺毋滥中止，绝不用过期候选",
+  "candidate_file": null,
+  "candidate_loader": "none",
+  "candidate_data_date": null,
+  "candidate_rows": 0,
+  "candidate_rows_raw": 0,
+  "candidate_sha256": null,
+  "candidate_asof": null,
+  "hold_days": 15,
+  "hold_dates": {
+    "002510.SZ": "20260922",
+    "605098.SH": "20260916",
+    "000607.SZ": "20260929"
+  },
+  "sells": [],
+  "buys": [],
+  "skips": [
+    {
+      "code": "000607.SZ",
+      "vol": 7700,
+      "reason": "持有未满15日(20260929起,已2日,日历OK)"
+    },
+    {
+      "code": "002510.SZ",
+      "vol": 5300,
+      "reason": "持有未满15日(20260922起,已6日,日历OK)"
+    },
+    {
+      "code": "605098.SH",
+      "vol": 500,
+      "reason": "持有未满15日(20260916起,已10日,日历OK)"
+    }
+  ],
+  "hs300_pct": 0.2856,
+  "tier": 2,
+  "deploy_pct": 0.95,
+  "written": false,
+  "orders": []
+}
