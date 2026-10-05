@@ -1503,5 +1503,14 @@ DE 运行约 25 分钟，**无 `SCOPE_ACK`、无报告正文、CPU 长时间几�
 - **正确性校验 + 方法论澄清（分段 ≠ 独立重跑）**：OOS 段年化（G2 0.95 = 97.1%）**低于**官方独立跑（110.1%）——已实证归因：用同一脚本代码路径按官方窗口 2024-07-01 **冷启动**重跑 G2 0.95，总收益 357.41%/年化 110.12%/夏普 2.278/回撤 -16.71%/交易 78/跳空 37，与 T-20261003-005 锚点**六项逐位一致**（`research/results/backtest_5y_check_oos_freshstart_20261004.json`）→ 脚本无 bug，差距纯属**连续跑路径依赖**（2024-07 边界携带 6 月建仓持仓、live_trail 锚与轮动相位不同，TOP2 集中策略对入场时点敏感，-13pp 年化）。**规则：引用 OOS 成绩以官方冷启动独立跑为准；连续长窗的分段数字只用于同一资金曲线内的时代对比，两套数字不可混引。**
 - **踩坑**：①seg_metrics 里字符串日期与 `strat.index` 的 Timestamp 直接比较抛 TypeError（pandas 列比较会自动转型、标量比较不会）→ 必须 `pd.Timestamp(s)`；②PowerShell 内嵌 python -c 带中文/`%` 格式串会被解析器打碎 → 长提取逻辑一律写临时 .py 文件再跑；③**PowerShell 双引号 -c 字符串里 markdown 反引号是转义符（`` `r ``=CR/`` `e ``=ESC，T-20260922-001 教训④同源，本日两次命中）**——凡含反引号的文本经 `python -c "..."` 写入文件必被吃字符+断行（本次 repowiki 两处损坏，已修复）；**规则：写含反引号/中文的文件内容一律走 write 工具或临时 .py 文件，禁止 PowerShell -c 直传**。
 
+## 2026-10-05 · 磁盘大扫除（释放 ~24GB，诚哥批准 A+B+C）
+
+- **删除（data/ 根级）**：8/23-25 实验面板群 15 个 ≈12.3GB（v3.1/v3.1b/v3.2/v3.3/v3.4/v3.4_N3/N5/t5、enh2、enh2_n3、enh2_n3_bt_42/43、enh2_n3_proxy_bt、sc_real、f3）+ 复权迁移前旧备份 3 个 ≈2.0GB（v2_unadj_bak/v3_adj_bak_20260824/v3_unadj_bak）+ enh 轮转 bak 9 个 ≈6.5GB（保留最近 2 个：bak_20260929/0930）。
+- **删除（versions/）**：panels_bak_20260828（1.4GB）、V1.0_20260821（685MB）、V2.0-candidate_20260824（743MB）整目录（含 11 个已入库小文件 selection/报告，git 历史可找回）；**models/ 2165MB 模型资产保留**。
+- **删除（全局）**：browse/ 未跟踪原始转储 557 文件 ≈354MB（crawl/ + jsonl；**19 个已入库审计结论文件保留**）、根目录 `_*.txt` 55 个、scripts 未跟踪回执 `_*.txt`、research/tests `_rep_*` 回执、`__pycache__` 114 个目录。
+- **保留的活跃/冻结面板（后续引用以此为准）**：`feature_panel_v2/v3/v3_enh.parquet`（9-30 每日刷新）、`feature_panel_v3.4_latest.parquet`（V2.0 面板资产，已回滚但留作大QMT 改造依据）、`feature_panel_v3_sc.parquet`（V1.4 回测冻结面板）、`feature_panel_v3_enh2_n3_bt.parquet`（G2/融合回测冻结面板）、`data_live/merged_daily_full`、versions/models。
+- **注意**：v3.2 已删 → `build_panel_v3_sc.py` 无法原样重建 v3_sc（其依赖 v3.2 的 main_net_v32 列），但 v3_sc 已冻结在盘，回测研究不受影响；enh2_n3（非 bt）已删 → G2 训练面板不可复原，模型在 versions/models，重训练请走现行 build_features_v2 → enh 链。
+- **教训（shell 转义）**：`python -c` 里 `line.replace('/','\\\\')` 在 PowerShell 双引号串里实得 `\\`（双反斜杠）→ 与 relpath 单反斜杠永不匹配 → `git ls-files` 跟踪集判定全失效，误删 19 个已入库 browse 结论文件 + `_run_capture.py`（均已 `git restore` 恢复）。**判定 git 跟踪集必须写临时 .py 文件跑，禁止 -c 内嵌转义**。
+
 
 
