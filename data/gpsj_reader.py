@@ -7,6 +7,9 @@ Duck-typed match for AstockParquetReader / DuckDBDailyReader 4-method interface:
 口径对齐 (已验证 2025-01-06 / 2024-06-03 / 2019-05-06 与 D:/astock 同股同日逐字段一致):
   - adj_factor / 换手率 / 流通市值 / 成交量 / 成交额 / pe_ttm / pb 与 astock 完全相同 (同源 tushare)
   - astock close = 不复权价 == gpsj '不复权_收盘价'；gpsj '收盘价' 是前复权价(不用!)
+  - is_st 已归一化 (2026-10-05, T-20260827-003): gpsj "ST" 列语义与 astock/tushare 相反
+    (gpsj 0=该股是 ST、1=正常)，reader 层反转生成 (1 - "ST") AS is_st，
+    与 astock 口径一致 (1=ST、0=正常)；"ST" 为 NULL 时 is_st 亦为 NULL(NaN)，不猜测缺省。
   - 本 reader 一律取 gpsj '不复权_*' 列 + '复权因子'，adjustment 逻辑与 astock_reader 一致
     (raw 原样 / hfq=raw*adj / qfq=raw*(adj/latest_adj))
 覆盖: 日线 1990-12-19 ~ 2026-04-03 (1376万行)；全市场完整覆盖仅 2015-01 起
@@ -55,7 +58,7 @@ _COL_MAP = {
     "市净率": "pb",
     "市销率TTM": "ps_ttm",
     "股息率TTM(%)": "dv_ttm",
-    "ST": "is_st",
+    "ST": "is_st",  # 语义与 astock 相反(gpsj 0=ST、1=正常)，_sql_cols 反转归一化
 }
 _GPSJ_COLS = list(_COL_MAP.keys())
 
@@ -88,8 +91,18 @@ class GpsjDuckDBReader(object):
         self._n_codes = int(row[2] or 0)
 
     # ---------- 内部工具 ----------
-    def _sql_cols(self):
-        return ", ".join('"%s" AS %s' % (g, s) for g, s in _COL_MAP.items())
+    @staticmethod
+    def _sql_cols():
+        # 2026-10-05 (T-20260827-003): gpsj "ST" 语义与 astock/tushare 相反
+        # (0=该股是 ST、1=正常)，此处反转归一化为 astock 口径 (1=ST、0=正常)。
+        # "ST" 为 NULL 时 (1-NULL)=NULL，is_st 透传为 NaN，不猜测缺省。
+        parts = []
+        for g, s in _COL_MAP.items():
+            if s == "is_st":
+                parts.append('(1 - "%s") AS %s' % (g, s))
+            else:
+                parts.append('"%s" AS %s' % (g, s))
+        return ", ".join(parts)
 
     def _apply_adjustment(self, df):
         if self.adjustment != "raw" and "adj_factor" in df.columns:

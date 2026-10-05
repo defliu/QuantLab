@@ -42,9 +42,11 @@ def panel_from_gpsj(reader, codes, start, end):
     panel = pd.concat(frames, ignore_index=True)
     panel["trade_date"] = pd.to_datetime(panel["date"])
     panel = panel.drop(columns=["date"])
-    # 归一化 is_st：gpsj 的 "ST" 列语义与 tushare/astock 相反，且 numpy 标量判断易出错。
+    # 归一化 is_st：gpsj 的 "ST" 列语义与 tushare/astock 相反（注：2026-10-05 起
+    # gpsj_reader 已在 reader 层反转归一化，原生 is_st 即 astock 口径，测试见
+    # data/test_gpsj_reader.py）。本脚本为 P18 结题产物，保留原有规避写法不改行为：
     # 交叉验证目的 = 隔离"价格/量数据源"差异对信号的影响；is_st 只是过滤条件非信号输入，
-    # 因此这里不依赖 gpsj 的 ST 列，统一由调用方用 astock 的 is_st 对齐（见 main）。
+    # 统一由调用方用 astock 的 is_st 对齐（见 main）。
     panel["is_st"] = 0
     panel["circ_mv"] = panel["circ_mv"].astype(float)
     panel["turnover_rate"] = panel["turnover_rate"].astype(float)
@@ -86,7 +88,8 @@ def main():
     reader = GpsjDuckDBReader(adjustment="raw")
     panel_g = panel_from_gpsj(reader, codes, start, end)
     # 用 astock 的 is_st 对齐 gpsj 面板（is_st 只是过滤条件，非信号输入；
-    # gpsj 的 ST 列语义与 tushare 相反，见 AGENTS.md gpsj_reader 口径说明）
+    # 注：gpsj_reader 已于 2026-10-05 在 reader 层反转归一化 is_st（T-20260827-003），
+    # 此处 astock 对齐是结题时写法的双保险，保留不改行为）
     panel_g["is_st"] = panel_a["is_st"].reindex(panel_g.index).fillna(0)
     idx_close_g = idx.reindex(panel_g.index.get_level_values("trade_date").unique()).ffill()
     rg = run_signal(panel_g, idx_close_g, dict(_DEFAULT_CFG))
