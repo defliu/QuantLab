@@ -82,6 +82,10 @@ data/astock_kit_data/
 data/schedules/
 **/data/schedules/
 
+# 夸克网盘备份运行时状态（state.json 每次跑都变 / work 临时区 / 日志）
+# 备份产物本身在网盘，不入 git；state 丢失只会退化为下次重新全量
+data/quark_backup/
+
 # 错误日志
 *.err
 
