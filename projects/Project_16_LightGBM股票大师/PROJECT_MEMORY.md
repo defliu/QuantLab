@@ -259,14 +259,44 @@
   * **修复后首批结果（8 笔 = 8/17~8/20 各 2 只，N=10 open→open）**：绝对 **+1.110%** vs 同窗口全市场等权 **+1.643%** → **超额 -0.533%，t=-0.24，超额胜率 62.5%**。逐笔：8/17 −7.73%/+2.04%、8/18 −6.02%/−8.82%、8/19 +3.08%/+3.14%、8/20 +8.75%/+1.29%（超额口径）。**同日两票高度同向**（8/19 两只 +6.35%/+6.41%），ANOVA 粗估组内相关 ICC ρ≈0.68 → **有效独立观测约 4.8 个，远小于 8 笔**（ρ 估计仅基于 4 组配对，误差极大，仅取数量级）。**结论：样本不足，不作任何判定；G2 不得据此 promote 或加仓。** 约 **9/15** 达 30 笔（TOP2 口径，2 笔/交易日）；若按 30 个独立观测计约需至 **10 月中**。
   * **次生缺陷（T-20260904-010，待拍板）**：`deploy_predict_g2.py` 把 Top10 `picks` 全量写 live，而实盘 `g2_config.py:30 TOP_N=2` → 9/2 起候选口径由 2 只/天变 10 只/天（**中途变更且无人察觉**）。已加 `rank` 列（1..N，按 total_new 降序），`forward_stats.py` 双轨输出；待拍板主判定用 TOP2 子集（对齐实盘、累积慢 5 倍）还是 Top10 全集。
 
-### 2026-09-29 开盘复核：0 下单 + 暴露 early return 抑制到期卖出的流程缺陷（P0，待修）
+### 2026-09-29 开盘复核：0 下单 + early return 抑制到期卖出（P0，**已于 2026-10-02 修复 T-20261002-001**）
 
 * **今日结果**：交易日放行；D=20260928（面板最新日）；`D_model_top10.csv` 别名陈旧(0924)已备份 `.bak_stale_20260924` 并同步为当日候选；F2/F3/F5 取数 10/10 落 `data/tdx_review.json`；`market_tier.py --json` → **tier=2**（沪深300 -0.19%）→ eff_top=5；`rebalance_daily.py --date 20260929 --top 2 --live` **已调用一次**，因「过红线(>58)的票为 0」在**成熟度判定之前** return → **0 买入 0 卖出 0 委托**，资金池 89,247.77 元未动用。只读反查 miniQMT 确认：今日成交记录新增 0 行、`traework_rebalance` 委托 0 笔（无重复/半单风险）。
-* **P0 流程缺陷（未修，已如实留档待用户拍板）**：`rebalance_daily.py` 的 zero-target early return 把**买入拦截与到期卖出一起短路**。今日实证 2 只持仓已满 `HOLD_DAYS=5` 且不在候选清单内，按到期制本应 `reason=MATURE`/`remark=planA_mature` 卖出却被抑制：603049.SH(900股,9日)、603237.SH(2800股,8日)。**正确设计：early return 应只拦截新买入（buy_plan 置空），不应跳过 sell_plan 构造**。修前建议人工确认，勿由 agent 擅自改生产下单代码。
-* **脚本副作用**：early return 发生在写 artifact 之前 → 当日**不会**自动生成 `rebalance_<date>.md/.json`。本次由临时脚本按只读审计结果补写真实零单留档（`executed_live=false` + `live_invoked=true`），**未伪造为生产路径输出**。
+* **P0 流程缺陷（✅ 已修 T-20261002-001，2026-10-02）**：`rebalance_daily.py` 的 zero-target early return 把**买入拦截与到期卖出一起短路**。今日实证 2 只持仓已满 `HOLD_DAYS=5` 且不在候选清单内，按到期制本应 `reason=MATURE`/`remark=planA_mature` 卖出却被抑制：603049.SH(900股,9日)、603237.SH(2800股,8日)。**修复**：early return 改为置 `buy_allowed=False`，继续走持仓/成熟度判定；`slots` 计算后新增买入闸门把 `exec_buys` 压到 0，`sell_plan`/`trim_orders` 完全不动（与既有「纸面降级闸」同范式）。回归测试 `research/tests/test_rebalance_sell_priority.py`（S1~S6 共 18 项，含 T=0 清仓不回归、到期制保留、target 内不误卖），配套 `test_order_guard_backfill.py` 19 项全绿。
+* **两只票实际已正常卖出（事后核实，2026-10-02）**：`qmt_trade_log.csv` L123/L129 显示 603049.SH(900股@43.89) 与 603237.SH(2800股@15.2418) 均于 **2026-09-30 10:08/10:09 按 `MATURE` 成交**（09-30 清单 7 只过红线 → 走正常路径，`rebalance_20260930.json` sell 段完整）。即滞留仅 1 个交易日、未演变为无限期，属流程缺陷而非资金损失。603237.SH 当时 `guard_note=CANCELED_TIMEOUT(重试10次)` 但实为全成交，已由只读对账补记（`manual_reconciliation` 区块 + L129 账本行）。
+* **教训（固化进 AGENTS 认知）**：**买入拦截与卖出执行必须是两条独立通道**。任何「无候选 → 不买」的短路都不得放在持仓成熟度判定之前。同类隐患排查口诀：在 `rebalance_daily.py` 里凡是 early `return`，先问它是否落在「持仓读取 → 成熟度 → sell_plan → 委托」链路之上。
+* **脚本副作用（历史，修复前）**：旧版 zero-target early return 位于 live artifact 写入之前 → 2026-09-29 当日**没有**生成生产 `rebalance_<date>.json`；旧 TRAE prompt 随后要求 agent 补写同名文件，造成非生产字段污染（`rebalance_20260929.json` 的 `executed_live=false` + `live_invoked=true`），亦使 `.de_bak.json` 备份与污染文件完全相同、无法用于恢复；候选输入只能靠 `data/candidates_asof/` 旁路文件还原。
+* **脚本副作用（现状，T-20261002-001 修复后）**：红线空仓日 live 路径照常写 `rebalance_<date>.json`（含完整 `candidate_*` 溯源字段）；dry-run 独立写 `rebalance_<date>.dryrun.json` 防覆盖 live 记录；**本脚本不写 `.md`**。若 agent 侧另需留档，走 `rebalance_<date>.trae_note.json` 旁路，不得写生产 plan JSON。
 * **飞书推送教训**：任务书硬编码的 `lark\1.0.4\bin\lark-cli.exe` 在本机**不存在**，统一出口 `lark_push.resolve_cli()` 实际解析到 `C:\Users\Administrator\bin\lark-cli.exe`（告警卡与纯文本摘要均经此路成功送达）。`config bind` 需用户确认身份策略，未擅自绑定。**step5 私聊文本应直接用 `lark_push.py --file <txt> --user-id <open_id> --as bot`**，勿自己拼 lark-cli 命令行。
+* **路径腐化实测（2026-10-02 现场核实）**：`1.0.4` 目录确实已不存在，插件已升级到 `1.0.5`（`...\trae-remote-official\lark\1.0.5\bin\lark-cli.exe`）——**再次印证「硬编码带版本号的插件路径必然随升级腐化」**。权威出口 `C:\Users\Administrator\bin\lark-cli.exe` 存在=True；`lark_push.py --check` 自检输出 `[自检] lark-cli: ...（来源=probe）存在=True`，可自动探活。
+* **TRAE 任务 15868a74 prompt 现场回读（2026-10-02，以 Schedule get 为唯一准绳）**：✅ 已生效 = step4 只读禁写 plan json、step4b 溯源核验、step4c 账实不符 6 步对账协议、备注分流 `.trae_note.json`、方案 B 产物隔离。❌ 仍残留两处过时：①step4 末尾仍写「红线空仓/候选缺失时脚本在写文件之前早退」——该 early return 已由 T-20261002-001 删除，live 路径任何非致命情况都应写出 plan json，旧文案会让 agent 把异常误判为正常而漏报；②step5 仍钉死 `1.0.4` 路径（见上条）。**本次 Schedule update 第 4 次仍在用户确认弹窗阶段等待 10 分钟后被自动跳过，更新后立即回读确认两处旧文案均未改动 → 未生效，不得据回执声称成功**（历史状态，该两处残留已于第 8 次修订落地，见下条「✅ 已关闭」）。影响可控：step5 失效仅致飞书推送失败（prompt 已规定「推送失败仅记录，绝不阻塞主流程」），不危及下单；step4 旧文案风险为异常漏报，「禁止重复下单」与 4c「严禁重下」条款仍在。
+* **【重要·机制结论 + ✅ 已关闭】Schedule update 必须有人守弹窗；第 8 次成功落地（2026-10-02）**：**失败史（保留作教训）**——第 4、5 次先 `Schedule get` 取**现场完整 prompt 原文**、基于原文做三处最小修订（step3 增补卖出优先级红线 / step4 改为带 4c 例外的只读规则并新增 step4a 只读诊断顺序 / step5 改走 `python lark_push.py`），**不凭记忆改**，发起 update 后**均停在确认弹窗等待 10 分钟被自动跳过**；每次失败后立即 `Schedule get` 回读逐字比对（zero-target 旧句仍在、`1.0.4` 路径仍在、无 step 4a），**不存在部分写入**。连同 09-29 的 3 次，**跨会话累计前 7 次失败点完全相同 → 判定为机制约束（update 必须经用户在弹窗内显式确认，超时整体跳过），而非文案问题**。**第 8 次做法**：先问用户是否方便守着弹窗，用户答「立即执行」后再发起 → **当场成功**（`Schedule '开盘实时复核(项目16)' updated successfully.`）。**✅ 验收（独立 `Schedule get` 回读，不采信 update 回执）8/8 通过**：zero-target 旧句消失 / `1.0.4` 硬编码可执行路径消失 / step 4a 存在 / `python lark_push.py` 存在 / step 3 卖出优先级红线存在 / step 4 只读规则含 4c 白名单前置例外 / step 4b·4c + 方案 B + 模型降级条款完整 / cron `45 9 * * MON,TUE,WED,THU,FRI`、Active、执行次数 24、next run `2026-10-05T01:46:00+00:00` 均未变。**据此关闭 T-20261002-002**。**教训（取代原「第一次超时即改走人工路径」）**：发起需确认弹窗的工具动作前，**先问用户是否在场守着弹窗**，不要在无人值守时连发重试空耗；**TRAE 侧修改由 agent 直接 `Schedule update` 完成，用户只需在弹窗点确认**——需用户手工粘贴的**只有 QMT/miniQMT 客户端的策略编辑器部署**（自绘 UI，粘贴是设计内人工动作），两者不可混为一谈。**修订后必须 `Schedule get` 独立回读才可声称成功**（「文档说已改」≠「任务实际已改」）。存档：完整 prompt 落 `specs/TRAE任务_prompt全文_待粘贴_20261002.txt`（已生效存档，文件名「待粘贴」为历史遗留）、现场记录 `data/rebalance_20260929.trae_note.json` 的 `verification_20261002_get` 区块、详见 `specs/TRAE任务修改说明_0945开盘实时复核_20260930.md` §十。
+* **10-02 当日核实（2026-10-02，法定节假日休市）**：`is_trade_day.py` 输出「2026-10-02 A股交易日: 否（法定节假日休市）」，故 09:45 任务（01:47:41Z 启动）第一步即正常退出，**当日无 `rebalance_20261002.json` 属预期而非缺陷**。另注：`rebalance_20260929.dryrun.json` 的 mtime 为 10-02 10:01，但其 `date` 字段是 `20260929`、`hold` 是当前 QMT 持仓——系**历史日期 dry-run 重放**（用当前持仓重放不会复现历史卖单），非当日产物；且 dry-run 写独立文件不覆盖 live json，无污染。**版本时序留痕**：`rebalance_daily.cpython-310.pyc` 编译于 01:00:12，而修复后源码 mtime 为 10:11:32 → 该次运行加载的是**修复前版本**，但因休市未进入换仓逻辑，无实际影响。下一交易日（10-05 起，节后）才是修复后代码的首次真实运行验证窗口。
 * **数据源当日实证**：`mcp_tdx` list tools failed（已降级）；东财 F3 旧接口 404 → 换 `search-api-web.eastmoney.com/search/jsonp` 后 10/10；东财扩展接口 `RemoteDisconnected` → 量比回退腾讯 f[49] 补齐 10/10；悟道盘中熔断 → F5 双源对拍未完成（清单 10/10 带警示）；F2 主源 Tushare T-1 本地 parquet 正常（刷新至 2026-09-28）。
 * **流程纪律**：候选别名文件**非空≠新鲜**——必须校验 `trade_date` 与面板最新日一致再用，否则会用 3 日前的候选下单（今日实证 0924 vs 0928）。
+
+### 同源缺陷全库审计 + 飞书配置漂移订正（2026-10-02，T-20261002-003）
+
+* **背景**：继 T-20261002-001（P0 zero-target 短路卖出）修完后，对全库做「还有没修的地方」的定向审计，目标是不复现同一类缺陷。
+* **G2 / 融合（ENS）Python 源码审计结论=干净，无需改动**：`rebalance_g2.py` 与 `rebalance_ens.py` 的 `build_plan()` 均是「先独立从 ledger 生成到期/调出 SELL → 再按 `n_slots > 0 and pool and deploy_pct > 0` 决定买入」，**`pool=[]` 不会阻断卖出**，也没有候选为空时的裸 `return`。→ **同源缺陷不在源码，在调度层**。
+* **真正的 P0 在两个 Active TRAE 任务的 prompt（已修，T-20261002-003）**：`G2换仓(项目16大QMT)`=30344e79（cron `50 9 * * MON,TUE,WED,THU,FRI`，23 次）、`融合换仓(项目16大QMT)`=051bc2d9（cron `52 9 * * MON,TUE,WED,THU,FRI`，16 次）。两处 prompt 各有 2 个缺陷：
+  1. **候选文件名错**：写「勿因找不到 `<今日>_g2_top2.csv` 而误判」，但 `g2_config.SELECT_TOP=10` / `g2_ens_config.SELECT_TOP=10`，实际产物是 `<今日>_g2_top10.csv`；且把 `TOP_N`（G2=3 / ENS=5，目标持仓数）与候选数 10 混为一谈 → 已改为 top10 口径并显式区分两个概念。
+  2. **候选异常连带中止卖出（P0，与 001 同源）**：原句「若输出候选缺失/数据日落后/宁缺毋滥类报错 → 推告警后**直接中止并报告**」会在候选为空时把 SELL 一起拦掉 → 已改为「此类字样只说明本日**不新增买入**，绝不说明不卖出」「**卖出照常执行**的判定依据 = dry-run 输出中存在 SELL 记录」「只允许在 ①崩溃 traceback ②桥不存活 ③plan json 缺失/损坏 三种情形中止」，并在 live 步骤补「即使本日 0 ，只要有 SELL 也必须 `--live` 提交，否则到期卖出会被滞留」。
+* **教训（机制级，取代一切 prompt 文案修补的临时说法）**：**「不用过期候选交易」这条约束，由「空候选池→不新增买入」天然保证；不需要、也不允许用「连卖出一起停」来落实它。** 买入拦截与卖出执行是两条独立通道，调度 prompt 必须显式写明三段语义：①候选异常的准确含义（只影响买入）②卖出照常的判定依据③允许中止的**穷举清单**（不含业务性字样）。凡是 prompt 里出现「遇 X 情况直接中止」而 X 属于**业务语义**（而非基础设施故障），就要怀疑它是否误伤了卖出链路。
+* **飞书配置漂移订正（3 份现行文档 + 3 个死脚本）**：①`open_id` 唯一事实源 = `qmt_config.py`/`g2_config.py`/`g2_ens_config.py` 的 `FEISHU_OPEN_ID` = **`ou_bd13444d8ea53c28249c669f43f3eeff`**（bot `cli_aade2524ddbd9bd6` 下刘诚，2026-08-29 实测可私聊）；旧值 `ou_76deaecde50e10576f8fdc8ba954a7b0` 属 **`cli_aa0fbe282c399cef` 旧应用**，跨应用发会报 `open_id cross app`，已废弃。②bot appId 亦漂移：文档曾写回退 `cli_aa0fbe282c399cef`，**实读 `~/.lark-cli/config.json` 证伪——该文件只注册了 `cli_aade2524ddbd9bd6` 一个应用**，按旧 appId 排查会走错方向。③lark-cli 路径一律改为稳定出口 `C:\Users\Administrator\bin\lark-cli.exe` + 统一包装器 `lark_push.py`（`--check` 自检），**禁止硬编码 `...\plugins\...\lark\1.0.x\...` 版本目录**（1.0.4 → 1.0.5 已实证腐化两次）。
+* **死脚本处置（不删，加废弃头）**：`push_lark.ps1`、`push_lark.bat`、`scripts/push_auction_summary.ps1` 全库无调用方且硬编码 1.0.4 版本目录，误调用必然失败 → 保留文件（历史推送身份验证记录 + 失败史证据），在文件头加「[已废弃 2026-10-02] + 正确替代命令 + 保留原因」，正文原路径原样留作证据。含中文的 `.ps1` 重写时用 `UTF8Encoding(true)` 保住 BOM，并用 PowerShell AST Parser 校验语法 → `bom=True parseErrors=0`。
+* **已排除的伪问题（省下次重复排查）**：①`rebalance_20260930.json` 与 `.scriptorig` 的差异是**人工对账区块**（`manual_reconciliation`），属有效事故证据，**不是污染**；②`.trae_note.json` 是会话级旁路备注，绝不可写进生产 plan JSON（`rebalance_20260929.json` 曾因此被 `executed_live=false` + `live_invoked=true` 污染）；③`__pycache__/*.pyc` 已被 `.gitignore` 覆盖，非现行缺陷。
+* **双调度器核实（AGENTS 双调度器红线）**：用户确认 **WorkBuddy 侧当前没有任何任务、且未介入交易体系** → 现存换仓调度唯一 owner = TRAE（30344e79 / 051bc2d9），`D:/QMT_POOL/` 产物**不存在双写**。此结论有时效性，未来若在 WorkBuddy 侧新建任务必须先互查。
+* **未执行的动作（本轮刻意不做）**：未运行任何 live 换仓、未触发 QMT 委托、未重复提交 603049.SH/603237.SH 卖单、未 `git commit`、未用飞书消息做无谓的实盘验证；验收一律以独立 `Schedule get` 回读为准，不采信 update 回执。
+* **终检补漏（第二轮 grep + 实读码，抓到 3 处活文档/脚本残留）**：
+  1. `G2_RUNBOOK.md` 第 27 行仍把现行候选写 `data/selections/g2/<date>_g2_top2.csv`，而同文件第 129 行已写明现行产物是 top10 → **活文档自相矛盾**，已订正为 `_g2_top10.csv`。
+  2. `QMT避坑指南.md` 一条排障说明仍以旧 open_id `ou_76de...` 为操作对象（"不要用 user 身份发 `ou_76de...`"）→ 会引导读者继续用废弃 ID，已改为 `ou_bd134...`。
+  3. **一次性高风险脚本 `g2_correction_exec.py` 只加注释不够，已加运行时 fail-closed 门禁**（详见下条）。
+* **【重要·纠正我自己的错误结论】`g2_correction_exec.py` 的废弃注释首版写「直接跑必 `[ABORT]`」是错的，实读码后订正**：①`deploy_predict_g2.py` 第 317 行按 `f"{date_str}_g2_top{args.top}.csv"` 拼名，`--top 2` **仍会产出** `_g2_top2.csv`，不会因文件名缺失而中止；②`data/selections/g2/` 下**留有 25 个历史 `_g2_top2.csv`**（最新 `20260922`），若重跑 `deploy_predict_g2` 异常但 rc=0，第 121 行 `sorted(...)[-1]` 会**静默取到一个月前的陈旧候选**；③`SELL_HINTS` 守卫**不构成保护**——`_known_volumes()` 读不到桥持仓时 `return out or fallback` **回退硬编码 6400/1000 股**，卖单照常生成；④第 10 步会覆写 `g2_hold_dates`（以 `R.load_g2_ledger` 为 active 基集）→ **污染现行 G2 账本**。真实风险是「误用陈旧候选 + 按硬编码数量真实写大 QMT 桥」，不是「跑一下就中止」。
+  - **处置（双层门禁，注释拦不住误操作，只有运行时守卫能）**：`g2_correction_exec.py` 与包装脚本 `g2_correction_20260904.ps1` 均在入口检查 `G2_CORRECTION_EXEC_ALLOW=1`，未设则打印原因清单并 `return/exit 2`；仅复现 T-20260903-007 事故证据时显式开启。实测两侧门禁均生效（`exitcode=2`，未进入业务流程）。**未删除脚本**（T-20260903-007 完整证据链，含 dry-run 记录与决策依据）。
+  - **已实测确认 `g2_correction_20260904.ps1` 未注册 schtasks**（查 `Quant*` 任务清单只有 DE_G2_Compare / G2Candidates_Night / G2RerunCompare_Daily / G2Rerun_Weekly / G2_Rebalance_Guard 五个，均不调本脚本）→ 排除「次日 09:43 自动写桥」风险。
+  - **BOM 教训再次实证（T-20260903-015）**：重写含中文的 `g2_correction_20260904.ps1` 时写入工具**丢了 UTF-8 BOM** → `powershell.exe` 按 GBK 解码 → 路径 `Project_16_LightGBM股票大师` 变乱码 `鑲＄エ澶у笀` → 字符串引号被吞 → `The string is missing the terminator: "` 解析崩溃。**修复方式：`[System.IO.File]::WriteAllText($f, $text, [System.Text.UTF8Encoding]::new($true))` 补 BOM**，复测 `BOM=True parseErrors=0`。**每次编辑含中文 .ps1 后必须校验 BOM** 这条规则，本轮再次被真实验证。
+* **本轮验证记录（可复现）**：解释器 `C:\Users\Administrator\.workbuddy\binaries\python\envs\miniqmt\Scripts\python.exe`（3.11.15；该 shell 无 `python` 命令，直接调 `python` 会 exit 9009）。`py_compile g2_correction_exec.py` OK；`pytest research/tests/test_rebalance_sell_priority.py research/tests/test_order_guard_backfill.py -q` → **11 passed**（唯一 warning 是 QMT 端 numexpr 的 `distutils Version classes deprecated`，与本轮改动无关）；`Schedule get` 独立回读 30344e79 / 051bc2d9 → 修订后 prompt 全文逐条命中 `_g2_top10.csv`、候选异常只禁买、有 SELL 必须 `--live`、三类允许中止条件、`python lark_push.py`，cron/executions/next run 未变。
 
 ### 评分卡参数寻优（2026-08-28，T-20260828-004）
 
@@ -1277,4 +1307,201 @@ ollback_streak.json 计数，连续 3 交易日才触发；方法论第七节同
 **修复（最小改动，未动下单/重试核心逻辑与 action 字符串语义）**：`order_guard.py` 6 处——活跃态 50/51/52 加入 L203 撤单分支集合（+对应 print）；死透确认窗口补记 `traded_vol` 累加/remaining 扣减 + remaining≤0 返 FILLED；cancel==0 新增回查补记块；`ok: traded>0` 误用改 `total_traded>0`（原漏前几轮累计）；未知状态兜底从盲 continue 改「按实际成交量放弃」（绝不双重委托）；docstring 厘清 ok 语义=「有已确认成交」。消费方门槛去 `ok` 化：`rebalance_daily.py` 卖/减/买 3 处 + `qmt_clear.py` 1 处改 `traded_vol > 0` 单条件（真实确认成交必入账本）；`qmt_monitor.py` 运行时本已正确（traded_vol>0 记账、ok 只管 sold.add），仅修 docstring。
 
 **验证**：新建回归测试 `research/tests/test_order_guard_backfill.py`（FakeTrader mock 带 cancel_script/query_transitions/auto_fill_from/reject_from 钩子；stub xtquant 防连真客户端；提速 patch `wait_order_fill.__defaults__=(1,)`+POLL_INTERVAL=0.05+sleep 压缩）——S1 事故复现（撤单失败→死透确认窗口全成 2800 必返 FILLED/traded_vol=2800，修复前 ok=False/traded_vol=0）、S2 撤单成功窗口补记+重挂只挂净剩余 1000（防双倍）、S3 耗尽部分成交 traded_vol=1000 不丢、S4 撤单失败原单活跃绝不重挂（placements==1）、S5 记账门槛源码断言（4 文件无 `ok and traded_vol` 残留）——**19/19 PASS**；复跑 `test_monitor_sell.py` 19/19；py_compile 5 文件过。**保留**：4c 对账协议仍为兜底；`versions/V1.4_20260908` 冻结归档不改。**行为级验收**：下个交易日（预计 10-09）按说明 §六核对修复后记账正确性。
+
+## 2026-10-01 · ENS 执行时点实验立项落地（T-20261001-002，诚哥拍板「动 ENS 留 G2」）
+
+**实验**：ENS 桥触发 09:52→09:31（目标成交 ~09:35，避开 09:30-09:32 最宽价差），G2 09:50 锁死（前向验证期不动变量），15 个执行交易日 fill-vs-open 对照。基线（`results/fill_vs_open_baseline_20261001.md`）：ENS n=14 mean|dev|=**154.9bps**、G2 n=17 **167.6bps**（控制臂）；判定口径预注册锁定（降幅≥25% 且单侧 p<0.1，`specs/ENS执行时点实验预注册_20261001.md`）。
+
+**本轮核实的代码事实（后续接手必读）**：
+1. **`rebalance_ens.py` 本体无幂等**——`write_orders` 是 `next_seq` + 原子**覆写**同一路径 `cmd/orders_<date>.json`；二次 `--live` = 新 seq 覆写 = 内置桥按新订单重复执行（同账户双重下单）。幂等只存在于 guard 脚本层（orders json / plan written=true / lock 三标记）。**闭合手段 = TRAE 任务 message 加 step 0 前置检查**（`specs/TRAE任务修改说明_ENS执行时点前移_20261001.md` §三），脚本层内建幂等另立项。
+2. **硬时序规则**：guard 触发时点必须晚于 TRAE 完成时点（现状 09:52→~10:02 完成→10:08 guard，6 分钟余量）。**反向操作（先提前 guard）会让 guard 抢跑变主执行 + TRAE 后写 = 双重下单**。故 TRAE 回执核验前 op 不动任何 Windows 时点；中间态（TRAE 09:31 + guard 10:08）安全。回执后联动：guard 10:08→09:48、DE 核验 10:12→09:52。
+3. **两桥互斥是文件级双向的**：ENS 跳 G2 账本（`rebalance_ens.py` L444-455）+ G2 反向跳 ENS 账本（`rebalance_g2.py` L504-519，T-20260913-001 C2）。ENS 提前后互斥仍闭合且**消除现状竞态**（G2 09:53 写 hold_dates vs ENS 09:52-09:54 读）；代价 = 撞票优先权翻转（ENS 先得、G2 让位）。3 周实盘零撞票实证，影响面小。
+4. **ENS 无大盘门控**（`rebalance_ens.py` L462 注释明示），此前会话记录的「T 档门控读取前移 17 分钟」副作用**不成立**——以代码为准。
+5. fills 格式：`<bridge>/state/fills_<date>.json`（code/action/vol/price/ts/status），open 对照用主库+增量面板（未复权，与 QMT 成交价同口径）。
+
+**观测链（已落地）**：`research/fill_vs_open_track.py` 全量重算（幂等无追加漂移，首跑数字与基线审计一致交叉验证过）+ schtasks `Quant_P16_FillVsOpen_Track`（每日 20:45，S4U，回读核验过）；guard 兜底日（lock 存在）自动标记并从实验臂主样本排除。**坑**：lookup 键口径必须统一去连字符（`20260929` vs `2026-09-29` 混用会全量 open 缺失，首跑已踩已修）。
+
+**生效与回退**：2026-10-09 起算；回退 = TRAE cron 改回 `52 9` + schtasks 改回 10:08/10:12，单日可完成无代码回滚。**遗留**：TRAE 侧改动待诚哥转交 + 回执（§六清单）；回执后 op 执行 Windows 侧联动（修改说明 §七）。
+
+## 2026-10-02 · 非交易日暂停优化（诚哥「非交易日，相关推送和任务就可以暂停」，T-20261002-003 后续）
+
+**需求定性**：不是「永久 Paused」，而是**运行时 fail-closed 门禁**。TRAE cron 只能表达 `MON-FRI`，无法表达法定节假日——10-01~10-07 国庆休市期间调度器仍会唤醒任务（实测 10-02 换仓任务确实被唤醒）。若改 `Paused` 则交易日也不跑，等于全停。故方案 = 调度器照常唤醒 + **prompt 第一条**跑交易日检查，非交易日立即结束。
+
+**统一事实源**：`is_trade_day.py`（项目根，131 行）。`python is_trade_day.py --json`，退出码 0=交易日 / 1=非交易日。判定顺序 = 周末 → 主库交易日历 → `HOLIDAYS` 硬编码表 → 兜底。实测 10-01/10-02/10-05 exit=1「法定节假日休市」，10-08 exit=0。
+
+**门禁六条铁律（后续所有交易类任务 prompt 统一遵守）**：①必须是第一条，不得跳过、不得提前做任何动作；②非交易日只输出 `[SKIP-NON-TRADING-DAY] <日期> <reason>` 一行后结束；③禁止事项 = 不跑业务脚本 / 不做桥检查 / 不生成或修改任何产物 / 不访问行情 / 不推飞书（含告警、成交卡、模型降级卡）/ 不触发 QMT 或文件桥；④**非交易日不交易是设计内行为，不是异常**，不告警不人工介入，不得以「昨天有到期持仓该卖」绕过；⑤交易日通过门禁后**卖出优先原则照旧**，候选异常只拦买入；⑥prompt 内统一写 `python`（TRAE 定时任务环境可调用，历史 20+ 次执行为证；仅 Agent 交互终端需绝对路径）。
+
+**已生效 8/8（Agent 改完 + 逐个独立 `Schedule get` 回读验收通过；Status/cron/executions/next run 全部未变，仅 prompt 正文更新）**：
+
+| ID | 名称 | cron | executions | 批次 |
+|---|---|---|---:|---|
+| `30344e79` | G2换仓 | `50 9 * * MON-FRI` | 23 | 第一批 |
+| `4cf3db92` | G2日终对账 | `45 15 * * MON-FRI` | 23 | 第一批 |
+| `18c0c8d2` | 融合日终对账 | `50 15 * * MON-FRI` | 16 | 第一批 |
+| `051bc2d9` | 融合换仓 | `52 9 * * MON-FRI` | 16 | 第二批 |
+| `e05e526a` | 夜间检修 | `0 1 * * MON-FRI` | 21 | 第二批（守卫判**次日**） |
+| `b0254f11` | 集合竞价 | `25 9 * * MON-FRI` | 25 | 第二批（`--top 10`） |
+| `9a41d7f7` | 盘后复盘 | `40 15 * * MON-FRI` | 25 | 第二批（绝对路径门禁） |
+| `095bbe1b` | 午休报告 | `35 11 * * MON-FRI` | 25 | 第二批（绝对路径门禁） |
+
+**第二批 5 个的落地经过（诚哥「那 5 个我没确认的重来，我盯着」）**：首轮 `Schedule update` 卡在确认弹窗满 10 分钟被整体跳过（`051bc2d9`、`9a41d7f7` 各一次超时），每次事后独立 `Schedule get` 回读确认 prompt 逐字未变、Status/cron/executions/next run 均未动 → 判定未写入、无误更新、无重复触发；**用户在场守弹窗后重发即当场成功**，5/5 全部通过独立回读验收。**教训订正（取代「超时即改走人工粘贴」的旧退路）**：超时只说明「需要用户点确认」，不代表写入失败——**先回读判定真未写入，若用户在场则直接重发**，比落可粘贴全文改人工处理更快更可靠；无人值守连发重试才是真浪费（T-20261002-002 已 8 次验证：前 7 次无人值守全败、第 8 次守弹窗当场成功）。**口径区分（勿误读）**：`051bc2d9` / `e05e526a` 首轮「未生效」的**仅是本轮非交易日门禁**——T-20261002-003 的核心修订（`_g2_top10.csv` 口径 + 候选异常只禁买 + SELL 独立生成 + 有 SELL 必须 `--live`）当时已生效并验收，两件事状态独立、切勿混为一谈。
+
+**全量 A 股 Active 任务门禁覆盖（`Schedule list` 实测 13 个任务）**：**10 个 A 股 Active** = 上表 8 个强门禁 + `3c7fdd1e` 候选预生成（`15 9`，24，已有基础守卫）+ `15868a74` 开盘实时复核（`45 9`，24，已有基础守卫）；另有 1 个非 A 股 Active `5f2bd77c` 夸克网盘（**不需要**交易日守卫）、2 个 Paused（`eda9b0c3` 成本锚、`c63cff58` Tushare 刷新，当前不运行、不纳入验收）。**口径订正**：此前口头表述的「9 个 A 股 Active」是**计数错误，实为 10 个**。
+
+**同批抓出的两个真缺陷（已在第二批 prompt 中一并修掉并回读确认生效）**：
+1. **`e05e526a` 夜间检修守卫方向错**：01:00 的语义是「为**次日**开盘做准备」，旧 prompt 却判断「今天」。周五 01:00 旧逻辑判断「今天=周五=交易日」→ 不跳过 → **为周六做检修（周六不开市，白跑）**；节前最后一个交易日的 01:00 同理为休市日做检修。改为 `is_trade_day.py <次日YYYYMMDD>`，跨月跨年按真实日历推算，禁止字符串拼接，跳过标签改 `[SKIP-NEXT-DAY-NON-TRADING]`。同时修 lark 1.0.4 腐化路径（改走 `python lark_push.py` / 稳定出口 `C:\Users\Administrator\bin\lark-cli.exe`；插件版本目录仅作为「禁止硬编码」的反例出现，**终检不能只做字符串命中、须判语义位置**）。
+2. **`b0254f11` 集合竞价两处 `--top 2` 断链**：旧 prompt 走 `--threshold 60 --top 2 --pool 100` 生成 `_g2_top2.csv`，而消费端 `rebalance_g2.py` 用 `pattern="_g2_top%d.csv" % top_n` 且传 `SELECT_TOP=10` → **换仓读不到，且目录内 25 个历史 top2 文件会成陈旧候选误用源**。已改为 `--top 10`，两处执行命令均已回读确认；修订稿中保留的 `--top 2` 字样是「严禁使用」的反例。**残留清理项（未做，不影响运行）**：`deploy_predict_g2.py` 顶部帮助文本仍有 `[--top 2]` 旧示例，属文档/帮助文本层面，下次触碰该文件时可顺手订正。
+
+**脚本层守卫 ≠ prompt 层守卫（易误解点）**：`de_report_daily.ps1` **已有**交易日守卫（非交易日记日志后 `exit 0`），但脚本返回 0 + 报告文件不存在时，**模型会把「预期跳过」误判为 P0 异常**并补发告警/模型降级卡。故 `9a41d7f7` / `095bbe1b` 仍须在 prompt 层提前退出；这两个任务工作目录是 `D:\QuantLab` 而脚本在项目子目录，门禁必须用**绝对路径** `python "D:\QuantLab\projects\Project_16_LightGBM股票大师\is_trade_day.py" --json`。
+
+**已知限制（需每年维护）**：`is_trade_day.py` 的 `HOLIDAYS` **仅硬编码 2026 年**（含 10-01~10-07）。兜底方向是「工作日且非节假日→交易日」，故次年 1 月法定节假日会**误跑**（不是误停），不涉资金安全但会产生无谓推送。**每年 12 月前必须补下一年度交易所休市安排**。
+
+**教训（调度层通用）**：①`Schedule update` 的成功回执不可信，**必须独立 `Schedule get` 回读**核对 status/cron/executions/prompt 全文；②**发起需确认弹窗的动作前先问用户是否在场守弹窗**（本项目已两次实证：T-20261002-002 守弹窗当场成功 / 本轮 5 个任务守弹窗 5/5 成功），无人值守连发重试纯属浪费；③**超时 ≠ 写入失败**——超时只说明没人点确认，先回读判定真未写入，若用户在场直接重发即可，**不必改走「人工粘贴」退路**（该退路是用户确实无法守弹窗时的备案）；④`python` 是否在 PATH **取决于运行环境**——Agent 交互终端无 `python`（exit 9009）但 TRAE 定时任务有，不要把终端结论写进 prompt。
+
+## 2026-10-02 · 成交通道全链路审计（16 文件）+ premarket BUILD_TAG 漂移修复（T-20261002-004）
+
+**背景**：T-20260930-001 修复落地后工作区积累成交通道文件改动，诚哥要求「3 条都执行」= 认可范围判定 + 补完剩余文件/Py3.6 兼容性/测试有效性审计 + 清理 DE 卡死证据。DE 审计委派**卡死失败**（见下「DE 委派事故」），审计由 op 独立完成。
+
+> **文件数与 diff 统计口径订正（2026-10-03 复核）**：本章节早期版本写「10 文件 / 13 文件 / `+1929/-413`」，属**统计口径漂移**——旧口径既未覆盖全部六个桥文件，也未含测试与邻接改动。**权威数字以 Git 实测为准：16 个文件，`+3033/-793`**（前 15 文件 `+2720/-788`，`test_order_guard_backfill.py` `+313/-5`）。下表已按 16 文件重列，**引用本项目历史结论时请用新口径**。
+
+### 一、逐文件裁决（全部保留，无一建议回滚）
+
+| 文件 | 改动 | 裁决 | 依据 |
+|---|---|---|---|
+| `order_guard.py` | +258 | 保留 | 成交事实优先；均价不完整返 `None` 而非部分均价 |
+| `rebalance_daily.py` | +63 | 保留 | 3 通道门槛统一；SELL 不被候选阻断 |
+| `reconcile_trades.py` | +91 | 保留 | 零价 SELL 扣 FIFO 成本不计盈亏，账务自洽 |
+| `qmt_monitor.py` | +35 | 保留 | 告警/卖出职责完整，未被候选异常压制 |
+| `qmt_clear.py` | +18 | 保留 | 撤单超时/重挂耗尽不丢已成交量 |
+| `strategy_capital.py` | +17 | 保留 | FIFO 语义与 reconcile 一致 |
+| 三桥 src + build（6 文件） | +1474 | 保留 | src↔build 归一化后仅首行编码头不同（`# coding=utf-8` → `# coding=gbk`，QMT 红线要求的转换），除该行外逻辑 IN_SYNC |
+| `research/tests/test_order_guard_backfill.py` | +313 | 保留 | 68 项断言，源码级校验非空壳 |
+| `premarket_g2_check.py` | +30 | 保留（本轮修复） | 见第二节 |
+| `g2_correction_exec.py` / `.ps1` | +38 | 保留 | 无现行调用方，废弃守卫优于删除 |
+| **合计 16 文件** | **+3033/-793** | **保留 16 / 回滚 0** | 权威数字以 Git 实测为准 |
+
+### 二、本轮唯一代码修复：premarket_g2_check.py 的 BUILD_TAG 漂移
+
+**缺陷**：`EXPECTED_BUILD_TAG` 硬编码 `"20260902-161814"`，而 `build_p16_g2.py` 每次重建都自动盖新时间戳 → 盘前核对**永久误报「未切换新版」**，把人工核对信号退化成噪声（与 lark-cli 1.0.4 硬编码路径腐化同类）。
+**修复**：新增 `_read_local_build_tag()`，从 `build/strategy_p16_g2_bridge.py` **动态读取**（GBK 解码，因 QMT 红线产物非 UTF-8）；读不到（产物缺失/被删）时 `check_heartbeat()` 显式告警并返 False，**不静默通过**。原「半成品」状态（函数已插入但缺 `import re`、`check_heartbeat` 仍引用已删变量）本轮补齐。
+**验证**：`py_compile` OK；`_read_local_build_tag()` 实测返 `20261002-193332`。
+
+### 三、op 自身两处审计错误（方法论教训，比结论更重要）
+
+1. **f-string 正则判定法有缺陷**：首轮用正则 `f["']` 判定，复核时在 6 个桥文件上**误报 `fstr=6`**。改用 `ast.JoinedStr` 节点判定（唯一可靠方式）后**全部为 0**——**结论没变，方法错了**。正则会把 `for attr in (...)` 的 `f"`、`"SELL_STOP", "` 都算进去。**教训：语法级判定必须走 AST，正则只做粗筛**；`build_p16_g2.py` 的禁用语法扫描同理，其正则存在同类假阳/假阴风险。
+2. **函数归属判错**：曾称 `_resolve_fill_avg` / `_adverse_slippage`「不存在」。实际存在于**三个 QMT 桥内部**（自包含实现，因 QMT 单文件不能 import 外部模块），不在 `order_guard.py`。**结论对、理由错**。
+
+**由此查出一处设计口径差异（非缺陷）**：
+```text
+桥内：fill_avg → order_obj → ref_price → unresolved   （四级）
+外部：fill_avg → ref_price → unresolved               （三级）
+```
+桥内多一级 `order_obj` 兜底（桥拿不到 `traded_price`），且 `strategy_p16_g2_bridge_src.py:508-519` 明确要求 `price 恒 > 0` 才可记账，**比外部侧更严**。合理，勿误判为不一致。
+
+### 四、验证证据
+
+```text
+测试：10 文件 TOTAL PASS=618  FAIL=0  全部 exit 0
+  test_order_guard_backfill 68 / test_zero_price_sell_fifo 31 / test_rebalance_sell_priority 18
+  test_monitor_sell 19 / test_g2_deal_fill_slippage 62 / test_ens_deal_fill_slippage 62
+  test_v13_deal_fill_slippage 87 / test_g2_state_machine 108 / test_ens_state_machine 108
+  test_v13_state_machine 55
+Py3.6 红线（ast 判定）：6 桥文件 fstring/walrus/pep604/genann/match 全 0
+构建一致性（2026-10-03 全量重算）：g2 src=1773/build=1773、v13 1365/1365、ens 1763/1763，
+  行数完全相等；完整解码逐行比较每对**恰 2 处**差异 = L1 编码头（`# coding=utf-8`→`# coding=gbk`，
+  QMT 红线强制）+ BUILD_TAG 行（src 占位时间戳 → 本地构建时间戳，构建器自动注入）。
+  归一化这两处后 normalized_diff_lines=0、difflib ratio=1.000000 → **逻辑完全同步，字节不一致
+  属设计转换，非缺陷**。**三层判据：①原始字节不一致 ②完整解码每对 2 处 ③归一化后完全一致**；
+  旧口径「1613/1253/1603、DIFF_LINES=1、唯一差异=编码头」三处均已作废（行数与差异数都错）
+外部脚本 f-string 不构成红线：order_guard(38)/rebalance_daily(46)/reconcile_trades(19)
+  /strategy_capital(4)/qmt_clear(10)/qmt_monitor(36) 均未被内联进 QMT 产物
+```
+测试用 `xtquant` stub，**不连真实 QMT、不产生真实委托**。
+
+### 五、唯一真实阻塞项：QMT 部署滞后（非代码 bug）
+
+```text
+本地构建  build/strategy_p16_g2_bridge.py  BUILD_TAG = 20261002-193332
+QMT 实际   heart_20261002.json  build_tag    = 20260928-113106   ← 落后 7 天
+```
+`premarket_g2_check.py` 现返回 `RET=False`，这是**真实部署滞后信号**。按 QMT 红线须人工粘贴部署，op 不能自动完成。**注意区分**：这是「改了没部署」，**不是**「改了没重建」——src/build 侧已 IN_SYNC。
+
+### 六、DE 委派事故归档（承接 `_de_audit_brief_20261002.md`）
+
+DE 运行约 25 分钟，**无 `SCOPE_ACK`、无报告正文、CPU 长时间几乎不增长**，已终止全部 `deveco` 进程、**未重派**，零信息量输出 `_de_audit_out_20261002.json` 已删除，任务书改为归档记录。
+**原任务书 Q1 前提已被推翻**：曾把 `build/...py 的 BUILD_TAG`（本地构建版本）与 `heart_*.json 的 build_tag`（QMT 实际运行版本）混为一谈，据此断言「build 产物 tag 仍是 20260928-113106」——**该表述错误**，真实问题见第五节。
+**委派纪律补记（补 AGENTS.md「两类委派事故」第三条）**：③**任务书里的事实前提必须由 op 用原始数据先验证**，不能把未核实的判断写进任务书让 DE 去「确认」——DE 会基于错误前提产出自洽但答非所问的报告，且污染后续所有引用。本项目已两次实证（本次 Q1 前提错误 / 上次 Project_21 自行重界定范围），**共同点是任务书本身有缺陷，而非 DE 能力问题**。
+
+### 七、遗留
+
+- **QMT 部署**：3 个桥产物待人工粘贴，逐一核对日志 `BUILD_TAG`（本节第五节）。**这是本轮唯一真实阻塞**。
+- **Git**：未提交。工作区混有并行任务产物（astock 升级审计、ENS 换仓、v13 纸面并行），**建议分批提交**，只提本轮 16 文件。
+- **repowiki 知识库**：P16 两张卡（架构设计 / 特殊配置与命令）+ 知识库导航已补齐（2026-10-03）。
+- **残留下游**：`deploy_predict_g2.py` 顶部帮助文本仍有 `[--top 2]` 旧示例（文档层面，不影响运行），下次触碰该文件时顺手订正。
+
+## 2026-10-03 · corr_diag 夜间批次独立审计（T-20261003-001，补录+关闭）
+
+**补录背景**：10-02 23:10 ~ 10-03 02:34 夜间会话产出 corr_diag（同批次选股相关性诊断）22 文件（core/io/report/runner 四模块 + 三测试套件 + 三策略 20260930 批次报告 + 8 个只读探针），**当时未记看板/记忆（违反硬规则），本条即补录**。审计报告：`results/corr_diag夜间批次独立审计_20261003.md`。
+
+**定性**：诊断工具而非策略优化，**不构成生产交易闸门**（全项目 grep 零生产引用；core/io 零写操作；探针输出走 TEMP）。用户所说「TW 三策略优化」的另一半——白天成交通道批次——已由 T-20261002-004 关闭。
+
+**审计结论 PASS**，关键验证（独立复算脚本 `research/audit_corr_diag_20261003.py`，不 import corr_diag）：
+- 19/19 复算全吻合：三策略候选清单（v13 10/g2 9/ens 7）逐一匹配；主库末日 20260911；ens 21 对 60 日相关全表 ±5e-4（max 002181.SZ/920237.BJ @0.4754）；申万截面 2026-08-14 独立重建行业映射 7/7（含北交所 920237 正确归类）、HHI=0.1837。
+- 测试亲跑：core 183 / io 153 / report 100 全 PASS（io 夜间回执 140 是旧版本快照，以亲跑为准）。
+
+**唯一 P1（已当场修复）——报告产物滞后于定稿代码**：报告 00:57 生成后 core/io 02:31 又改（新增风格快照滞后 ≤45 天、风格覆盖率 ≥50% 两检查），未重新生成 → 盘上 v13 风格维度误显示 OK。已用定稿代码原地重生成三份报告（v13 风格修正为 WARN），重生成后 19/19 PASS + 再生成幂等（六文件逐字节一致）。
+
+**P2 记录**：①corr_diag 只读主库未合并 `data_live/incremental_daily`（口径弱于 fill_vs_open 的合并口径，报告已 WARN 披露）；②风格成分快照停在 20260731（滞后批次 61 天，数据源层面待离线包升级）。**P3**：`_rep_io.txt` 回执未刷新；探针脚本留盘待清理。
+
+**教训（产物-代码同步）**：**改了生成器必须立刻重跑产物**——报告类产物与代码不同步时，「盘上结论」会替错误代码背书（本次 v13 风格 OK 实为旧代码结论）；审计「报告 vs 代码版本」先比对时间戳再信内容。
+- **DE 复核任务书**：`research/_de_audit_brief_20261003.md`（写死 16 文件绝对路径 + `SCOPE_ACK` 要求），供外部 agent 独立复核本轮结论。
+
+## 2026-10-03 · 成交通道 16 文件 DE 独立审计关闭 + P1/P2 修复（T-20261003-002）
+
+**DE 独立审计**（报告 `results/DE审计_成交通道16文件_20261003.md`，复算脚本 `research/_de_audit_compare_20261003.py`，全程只读、不采信主 agent 结论）：Q1 三桥 src→build 归一化 **diff=0**（仅编码头+BUILD_TAG 两行，g2/v13/ens 差异行 [1,25]/[1,22]/[1,24]）；Q4 成交价链路全核验（**桥内 deal 查询函数实名 `_query_deals`**，任务书误写 `query_stock_trade_stats`——查桥源码时按实名找）；Q5 六桥 AST 全零+GBK/CSV/passorder 红线全过（**静态层面，非 3.6.8 运行证明**）；Q6 亲跑 15 测试全绿（PASS=618 与主 agent 逐文件一致）；Q7 修正脚本守卫在 main 首语句无绕过；Q8 账号戳 fail-safe 齐全。与主 agent 分歧：order_guard numstat 实测 **+255/-3**（主报告误写 +258）。
+
+**审计新发现并已修复两项（代码注释沿用任务书编号 T-20261003-001）**：
+1. **P1 `rebalance_daily.py` 清单早退残留**：「清单缺失/读取失败」两个裸 `return` 仍压在持仓→成熟度→sell_plan 之上（zero-target 修复未覆盖）→ 已改为 `_sel_text=None → target=[]` 走既有 `if not target:` 分支（T≥1 只禁买 / T=0 清仓照常）。**踩坑：`_candidate_meta` 不预填 `candidate_rows_filtered`**（仅 `load_selection` 回填），清单缺失路径到 plan 落盘会 KeyError——修复显式补 `candidate_rows_filtered=0`。
+2. **P2 `premarket_g2_check.py` 退出码**：main() 恒 `return 0` → 改 `0 if all_ok else 1`；全库 grep 无自动调用方依赖退出码（仅 RUNBOOK 人工），安全。
+
+**回归测试增量**：`test_rebalance_sell_priority.py` 新增 S7/S8（清单缺失·读取失败→MATURE 卖出照常）/S9（清单缺失+T=0 全清）/S10（源码绊线：清单分支无裸 return），32/32 PASS；order_guard 68/68（S5/A8 源码断言未破坏）；全通道套件复跑全绿。
+
+**硬约束（粘贴窗口）**：**P1/P2 修复只动外部脚本，不动桥 src → 三桥无需重建，粘贴 T-20261002-004-B 照常**，核对 tag g2=20261002-193332 / v13=20261002-193451 / ens=20261002-200314。P3 两项（桥内 1 处 `datetime.now()` 相对年龄测量、`build_p16_g2.py` BUILD_TAG count=1 弱校验）**观察不修**——后者刻意留到下轮构建脚本加固批次，避免粘贴窗口引入新构建变量。
+
+**经验**：审计「卖出优先」类红线时，光看修复 diff 不够——**要把 main() 里全部 early return 逐个对照「持仓→成熟度→sell_plan」链路位置**（T-20261002-001 修了 zero-target 分支，同文件还有两条别的早退路径压在链路上）；DE 静态 AST 检查的边界要在报告里显式声明（≠3.6.8 运行证明）。
+
+## 2026-10-03 · 三桥构建脚本 BUILD_TAG 校验加固（T-20261003-003）
+
+**DE 审计 P3 第一项**，在三桥粘贴完成（-B）后即时落地——只动构建脚本、不碰桥 src、不跑真构建，不影响已部署三 tag。
+
+**加固（三脚本统一）**：①BUILD_TAG 赋值**恰 1 处**硬断言（原 `count=1` 弱校验会静默漏替第二处赋值——审计 Q1「静默不一致」追问项；0 处/2 处/单引号形态均 `[BUILD_TAG-REJECT]` 拒绝且不写产物）；②GBK 写出后**回读复核**（首行 `# coding=gbk`+新 tag+行数守恒，防截断/未刷新）；③g2/ens 补齐 v13 已有的 MOCK/pytest/unittest/assert 残留扫描（红线前移到构建期；三 src 实测零命中，无行为变化）。
+
+**验证**：`research/tests/test_build_p16_hardening.py` **40/40 PASS**。关键手法：importlib 加载构建脚本 + 把模块级 `OUT` 重定向到临时目录 → **全链路 build() 验证而不触发真重建**；末尾 sha256 断言生产产物逐字节不变（粘贴窗口红线）。拒绝路径断言「SystemExit 且产物未写出」。
+
+**铁律**：三桥部署完成 ≠ 构建链可以随便动——**改构建脚本可以随时做（不影响已部署 tag），跑真构建才会作废部署**（产物盖新时间戳 → 与 QMT 心跳不一致 → 须再粘贴）。桥内 `datetime.now`（P3 第二项）因此维持观察：改它必须重建+再粘贴，零功能收益，攒到下次桥 src 实质改动一并带上。
+
+## 2026-10-03 · 部署比例 95%→98%（T-20261003-005 研究 + T-20261003-006 执行）
+
+**口径澄清（易错）**：回测从来不是满仓——官方引擎 `scan_rotate_cost_real.py` 部署硬编码 `budget = cash*0.95/n`（文档「满仓2只」只是 T=2 档位称呼），与实盘 `RESERVE_CASH_PCT=0.05` 刻意同口径。**回答年化口径时区分三层**：实盘资金池 = 初始 10 万 + 已实现（FIFO）+ 浮盈（复利执行、亏损缩池不补钱）；回测年化 = 复利几何折算（(1+总收益)^(252/n)，已验算 ANNUAL_RESULT 25.42% 与 walkforward 44.0% 吻合）；季评超额 = 单笔 open→open 口径（非组合复利）。老脚本 `analyze_sell_timing.py` 用 /100000 固定本金是单利历史口径。
+
+**三档对照（T-20261003-005，op 亲跑）**：引擎 L395 改 `BT_DEPLOY_PCT` env（默认 0.95 行为不变）+ `research/deploy_pct_compare.py`。结果（2024-07~2026-08，复利年化）：G2 110.1→113.6→116.7%（98 档 +3.5pp/100 档 +6.6pp）；融合 109.6→112.0→113.1%（+2.4/+3.5pp）；V1.4 82.6→83.8→84.4%（+1.2/+1.8pp）；回撤代价 +0.3~0.6pp、夏普不动、三档交易数/胜率一致。产物 `research/results/deploy_pct_compare_20261003.json` + `_report.md`。
+
+**诚哥拍板（2026-10-03）**：收到 **98%**，不推 100%。**2% 的用途要能算出来**：P2-14 卖出费盲区（realized 永不扣卖出费，每轮 ~0.036% 池，一年累积 ~1.2-1.7%）+ 换仓日时序错配；不预留则名义满仓实际是真实权益的 101-102%，**悄悄突破 10 万 capital_base 额度且 `check_capital_allocation.py` 查不到**（只查声明值不查实际敞口）。**废单论在本双账号不成立**（两账户可用资金 ~1000 万，V1.3 日报实测 10,009,004 元）——2% 保的是额度纪律+净值口径真实，不是订单存活。
+
+**执行（T-20261003-006）**：`g2_config.DEPLOY_PCT` 0.95→0.98（RESERVE_CASH_PCT 0.05→0.02）、`g2_ens_config.RESERVE_CASH_PCT` 0.05→0.02、`qmt_config.RESERVE_CASH_PCT` 0.05→0.02；T=1 半仓 0.50 不动；注释/文档/知识库四处同步；py_compile 7 文件过 + 配置回读 0.98×3 + `test_rebalance_sell_priority.py` 32/32 PASS。**桥产物不引用这些常量（全项目验证），无需重建粘贴，10-08 节后首个换仓日自动生效**。**回测官方基线保持 0.95 不动**（对照锚点，研究需对齐实盘时用 BT_DEPLOY_PCT=0.98）。
+
+**遗留**：P2-14 根因修法（reconcile 写回 realized 扣卖出费，fee-aware）排进下一轮资金池维护——修完 98% 可评估收到 99%+；按 AGENTS 红线属资金池写回逻辑改动，需补测试、三边（V1.3/G2/ENS）同口径。
+
+## 2026-10-04 · 近 5 年回测详测（T-20261004-005，三策略 2021-08~2026-08 双档 IS/VALID/OOS 分段）
+
+- **背景**：诚哥要求跑三策略近 5 年回测、详细数据指标落盘。**runner** `research/backtest_5y_20261004.py`（复用 jq_metrics 官方三配置，一次 build 双档 simulate；窗口 2021-08-16~2026-08-14；argv 支持策略/档位过滤分次跑——V1.4 带 lite posfilter 很慢必须单独跑+3600s 超时）。报告 `results/近5年回测_三策略_20261004.md`；三份全指标 json `research/results/backtest_5y_20261004_{G2,融合,V1.4}.json`（逐日净值/回撤/月度/分段）。
+- **训练切分约定（方法论底线，引用前必查）**：全项目统一 train 2020-01~2023-06 / valid 2023-07~2024-06 / test 2024-07+（`train_g2.py` L13、`train_optuna.py` L148-150）→ **5 年窗口必含 IS/VALID 段，全窗合计数字不可冒充样本外成绩**；官方 OOS 口径=2024-07 起。
+- **核心数字（deploy=0.98 现行口径，全窗 1210 交易日）**：G2 总收益 +236.9%/年化 28.8%/夏普 0.90/回撤 -46.8%；融合 +455.7%/42.9%/1.19/-41.5%（全窗综合最优）；V1.4 +349.2%/36.7%/1.02/-49.7%；基准（全市场等权）年化 9.6%/回撤 -29.9%。分年：G2 2022 -21.9%、2026YTD(至8-14) +98.7%；融合 2025 +161.3%；V1.4 2024 +52.0%。
+- **三条硬结论**：①**IS 段并未虚高**——G2 训练样本内 -7.7%（年化 -4.3%）、融合 +45.1%、V1.4 +18.7% → LightGBM 450 万行学不出记忆化，「in-sample 通胀」担忧实测不成立；真实画像=**模型只适应 2024-07 之后的 regime**（OOS 段年化 G2 100.1%/融合 107.9%/V1.4 90.4%）。②**压力段全军覆没**——VALID 段（2023H2~2024H1，含 2024-02 微盘流动性危机）G2 -11.9%/融合 -14.4%/V1.4 +1.3%，段内回撤 -35~-42%，**策略对小微盘流动性危机无防御力**；回测引擎无分层风控/无大盘门控=与实盘桥口径的最大缺口。③**融合是唯一 2022/2023 连续为正的策略**（+13.7%/+11.8%），双模型 rank 融合的稳健性在长窗口获实证，与 ENS 桥实金配置互为印证。
+- **回撤警示（后续验收必修课）**：三策略全窗回撤 -41.5%~-49.7%，全部远超组合 15% 红线；若走正式验收，组合级回撤控制（大盘门控扩展至融合/V1.4 或组合回撤熔断）须另立项——不改现网。
+- **口径披露**：open→open 可执行成本口径（跳空/一字剔除 34-86 笔）；**单源（仅 astock）未经 gpsj 备用源交叉验证**；北向因子 2025 起 99% NaN、rc_rating 全期 97%（LightGBM 原生处理，报告已披露）。0.95 vs 0.98 差异 +0.5~1pp 年化，与 T-20261003-005 三档对照方向一致。
+- **正确性校验 + 方法论澄清（分段 ≠ 独立重跑）**：OOS 段年化（G2 0.95 = 97.1%）**低于**官方独立跑（110.1%）——已实证归因：用同一脚本代码路径按官方窗口 2024-07-01 **冷启动**重跑 G2 0.95，总收益 357.41%/年化 110.12%/夏普 2.278/回撤 -16.71%/交易 78/跳空 37，与 T-20261003-005 锚点**六项逐位一致**（`research/results/backtest_5y_check_oos_freshstart_20261004.json`）→ 脚本无 bug，差距纯属**连续跑路径依赖**（2024-07 边界携带 6 月建仓持仓、live_trail 锚与轮动相位不同，TOP2 集中策略对入场时点敏感，-13pp 年化）。**规则：引用 OOS 成绩以官方冷启动独立跑为准；连续长窗的分段数字只用于同一资金曲线内的时代对比，两套数字不可混引。**
+- **踩坑**：①seg_metrics 里字符串日期与 `strat.index` 的 Timestamp 直接比较抛 TypeError（pandas 列比较会自动转型、标量比较不会）→ 必须 `pd.Timestamp(s)`；②PowerShell 内嵌 python -c 带中文/`%` 格式串会被解析器打碎 → 长提取逻辑一律写临时 .py 文件再跑；③**PowerShell 双引号 -c 字符串里 markdown 反引号是转义符（`` `r ``=CR/`` `e ``=ESC，T-20260922-001 教训④同源，本日两次命中）**——凡含反引号的文本经 `python -c "..."` 写入文件必被吃字符+断行（本次 repowiki 两处损坏，已修复）；**规则：写含反引号/中文的文件内容一律走 write 工具或临时 .py 文件，禁止 PowerShell -c 直传**。
+
+
 

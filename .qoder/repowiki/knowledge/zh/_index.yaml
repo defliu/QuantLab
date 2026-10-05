@@ -325,6 +325,17 @@ modules:
             - quant_projects/project_10_value_smallcap_v2
             - quant_projects/project_16_lightgbm_master
             - quant_projects/project_18_buy_sell_signals
+    quant_projects/project_22_rps_daily_monitor:
+        dir_name: Project_22 RPS每日监控（强势股排序观察工具）
+        title: Project_22 RPS每日监控（强势股排序观察工具）
+        scope:
+            - projects/Project_22_RPS每日监控/
+        source_files: []
+        children: []
+        depends_on:
+            - data_layer
+        related_to:
+            - quant_projects/project_21_intraday_t
     research_audit:
         dir_name: 因子研究与策略审计脚本集
         title: 因子研究与策略审计脚本集

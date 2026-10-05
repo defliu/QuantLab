@@ -8,6 +8,9 @@
 - [backtest/engine.py](file://backtest/engine.py)
 - [backtest/report.py](file://backtest/report.py)
 - [data/duckdb_reader.py](file://data/duckdb_reader.py)
+- [scripts/update_astock_from_e.py](file://scripts/update_astock_from_e.py)
+- [scripts/refresh_online_incremental.py](file://scripts/refresh_online_incremental.py)
+- [scripts/migrate_astock_full_v2.py](file://scripts/migrate_astock_full_v2.py)
 </cite>
 
 ## 目录
@@ -16,6 +19,7 @@
 3. [核心组件总览](#核心组件总览)
 4. [架构与数据流](#架构与数据流)
 5. [关键机制深度解析](#关键机制深度解析)
+   - [严格整体迁移（FULL/INCR 指纹确认制）](#严格整体迁移2026-10-03-立scriptsmigrate_astock_full_v2py14-张-full--1-个-incr)
    - [增量合并与主仓+Updatedata优先策略](#增量合并与主仓updatedata优先策略)
    - [复权因子处理与价格转换](#复权因子处理与价格转换)
    - [列选择优化与内存占用控制](#列选择优化与内存占用控制)
@@ -98,12 +102,121 @@ sequenceDiagram
 
 ### 离线数据升级制度（2026-09-14 立，E 盘离线包 → D:/astock）
 
-主库升级流程见 `scripts/update_astock_from_e.py`（唯一事实源），制度要点：
+主库升级流程见 `scripts/update_astock_from_e.py`（合并式升级语义），制度要点：
+
+> ⚠️ **与严格整体迁移的区别**：本节是「合并式」——只增不删、冲突以 E 版为主、主键去重。用户 2026-10-03 拍板的「全量就整体替换、增量就单独归档」是**另一套严格语义**，见下节 `scripts/migrate_astock_full_v2.py`，**两者不可互相替代**。日常周更用本节脚本；采购全量数据包做整体换代才用 v2 脚本，且 v2 必须带 `--accept-plan` 指纹确认。
 
 - **主行情（daily/stock_daily）**：E 盘离线包若有到最新日期的**全量版** → **不备份、直接全量替换迁移**（`replace=True`，写临时文件 `.tmp_full` 后 `os.replace` 原子替换 = 删除旧文件 + 迁移新全量版）；若只有**增量版** → **增量文件放增量目录、不合并进主库**（防增量合并口径污染）。
 - **其他数据（finance/lhb/research/board/board_fundflow/basic）**：可合并（按主键去重、冲突以 E 版为准、只增不删），写前备份为 `<name>.bak_20260913`。
 - **安全**：任何一步异常立即停止，后续表不动；写后必须复核（行数/日期范围）并生成验证报告；执行前 `--dry-run`（默认）只打印计划不写盘。
 - **校验**：全量替换前校验 E 行数 ≥ D 行数（否则拒绝，判定 E 非全量版）；合并模式先检查 index 层级一致（replace 模式跳过该检查）。
+
+### 严格整体迁移（2026-10-03 立，`scripts/migrate_astock_full_v2.py`；14 张 FULL + 1 个 INCR）
+
+> 与上面 `update_astock_from_e.py` 的区别：前者是「合并式升级」（只增不删、主键去重）；本脚本按用户指令实现**严格语义**——E 侧是全量就整体替换 D 侧主库（旧版即删除），E 侧只是增量就单独归档、不混进主库。两者不可混用同一个脚本。
+
+**FULL / INCR 路由语义**（用户 2026-10-03 拍板）：
+
+| 类别 | 判定 | 动作 |
+| --- | --- | --- |
+| FULL | E 侧文件是全量版 | 整体替换 D 侧对应主库文件，**删除旧版本** |
+| INCR | E 侧文件只是增量 | **不混入 FULL 主库**，单独归档到 `D:\astock\_incremental\<group>\` |
+
+14 张 FULL = 8 张财务（finance/）+ `daily/stock_daily`、`board/ths_daily`、`lhb/top_list`、`research/report_rc_daily`、`board_fundflow/moneyflow_ind_ths`、`basic/stock_basic`。
+唯一 INCR = `E:\temp\行情数据\stock_daily.parquet` → `D:\astock\_incremental\daily\stock_daily_incr_<日期>.parquet`。
+
+**计划指纹纪律（核心风控，两步不可省）**：把「不可逆后果」哈希成 16 位短指纹，`--apply` 必须带 `--accept-plan <指纹>` 精确承认；计划一变指纹即变，旧令牌自动失效。指纹必须绑定四样东西，缺一即形同虚设：
+
+1. **不可逆后果**：D 独有行数、日线缺口行数、财务掉值单元格、E 重复行、多版本行、空值日期清单；
+2. **语义开关**（`--keep-d-only` 等）——否则用户承认的是「严格替换」的后果，实际执行的却是开了偏离开关的另一个语义；
+3. **源与目标文件身份**（path + size + mtime）——否则 E 盘文件被换过，凭旧指纹授权了新内容；
+4. **本轮表清单**（`--tables` 白名单）——否则「只迁 6 张」的授权会被拿去执行「迁 14 张」。
+
+```powershell
+# 1) 只读预检（默认不写任何文件）
+python scripts/migrate_astock_full_v2.py --tables "daily/stock_daily,..."
+
+# 2) 看过报告后，用指纹精确承认本次计划再写盘
+python scripts/migrate_astock_full_v2.py --apply --accept-plan <指纹> --tables "..." --run-tag 20261003
+
+# 3) 仅回滚上一轮
+python scripts/migrate_astock_full_v2.py --rollback-only
+```
+
+- `--tables` 用**精确表名**（如 `daily/stock_daily`）而非子串匹配：`--only daily` 会同时命中 `daily/stock_daily` 和 `daily_incr/stock_daily`，把 FULL 和 INCR 混作一谈。
+- **指纹不绑定脚本代码版本**：改过代码后应重新 dry-run 再 apply，不要因为指纹碰巧相同就复用旧命令。
+
+**写入安全链**：同卷 staging parquet → 备份原文件 → 校验原文件与备份 SHA-256 一致 → **在 `os.replace` 之前**登记事务 → `os.replace` 原子替换 → 写后完整重读复核（行数 / 索引契约 / 列清单 / 日期范围）→ 标记 `VERIFIED`。事务三阶段 `PREPARED` / `REPLACED_PENDING_VERIFY` / `VERIFIED`，INCR 归档为 `ARCHIVING` / `ARCHIVED`。
+
+**跨表事务的关键不变量**：当前表在 `os.replace` 之后、复核之前即登记为「已应用」，否则「刚替换完但复核失败」会退化成不可回滚的脏数据（旧脚本在此有漏洞）。回滚也走 staging + `os.replace`，不做 copy2 就地覆盖；回滚 INCR 前重新核对 SHA，防止误删被其他程序改写后的归档。事务日志原子写入（临时文件 + `os.replace`）。
+
+**财务表必须用 LOGIC KEY 对齐，不能只比全表非空数**：FULL KEY（如 `ts_code+end_date+report_type+ann_date`）识别的是「同一条物理记录」，LOGIC KEY（去掉 `ann_date`）识别的是「同一业务对象的多个公告版本」——同一报告期先发预告、后发正式年报是多条合法记录，按 FULL KEY 去重后宣称「掉值」是误判。
+
+**PIT 安全**：财务表严格替换后仍以 `ann_date`/`f_ann_date` 为准做 PIT 过滤，替换动作本身不改变「公告日之前不可见」的语义。
+
+**日线补洞规则**：`stock_daily` 以 `(trade_date, ts_code)` 为 MultiIndex 落盘，用 `read_parquet(columns=[...])` 局部投影时**必须带上键列全集**（`trade_date` + `ts_code`），否则 Pandas 无法复原索引层，报「键列既不在数据列也不在索引层」。空单元只按**共同 `(trade_date, ts_code)` 键精确回填**，禁止前向填充伪造历史值。
+
+**第一批执行结果（2026-10-03，指纹 `452f61a0acf4f36b`，已独立复核通过）**：
+
+- 6 张 FULL `phase=VERIFIED`：`daily/stock_daily` 14,706,848 行（补回 5 个交易日 27,562 行 + 27,778 个 `is_st`/`listed_days` 空单元）、`lhb/top_list` 230,099、`research/report_rc_daily` 936,424、`board/ths_daily` 3,018,169、`board_fundflow/moneyflow_ind_ths` 44,370、`basic/stock_basic` 5,913；
+- 1 个 INCR 归档：22,246 行 / 33 列，SHA-256 `c0995612…c1e8`；
+- 事务终态 `applied=6, incr=1, aborted=None, rollback_incomplete=None`，无 staging 残留，6 个 `.bak_20261003` 备份在盘可回滚。
+
+**已知降级点（写入知识库备查）**：E 侧 `20260914`、`20260918` 两个交易日的 `is_st`/`listed_days` 整日为空，而 D 侧 2026 年日线止于 `20260911`，**无权威来源可精确回填**，当前保持为空（不用前向填充伪造）。仅 `20260828` 由 D 精确覆盖。
+
+**🛑 财务表暂缓整体替换的原因（2026-10-03 实测，非"供应商不同源"）**：核实结论是 E/D 财务表**同供应商、同产品口径**（旧结论已推翻），但**不能直接套用第一批的纯 E 严格替换**，因为按业务键对齐后发现海量「D 有值而 E 为空」的单元格：
+
+| 表 | 对齐后 D 有 E 空单元格 | 涉及列 |
+| --- | --- | --- |
+| fina_indicator | 15,198,840 | 163 |
+| income | 894,486 | 52 |
+| balancesheet | 413,612 | 119 |
+| cashflow | 19,346 | 68 |
+| dividend | 388 | 3 |
+| forecast / express | 6 / 2 | 1 / 1 |
+| share_change_event | 0 | 0 |
+
+> ⚠️ **本段结论部分已被下一节推翻（2026-10-04）**：字段改名事实仍成立（仍需字段映射表），但「直接替换会丢历史值 / 只能合并」这一判断**已被 drill3 精确孪生证据证伪**（D→E 精确孪生率 100.00%）。以下一节为准。
+
+抽检证明**绝大多数不是数据丢失，而是同族字段改名 / 供应商字段布局变化**：`income/continued_net_profit` → `n_income`（同名一致率 99.77%，承接候选覆盖 97.47%）、`balancesheet/oth_eq_ppbond` → `oth_eqt_tools`（一致率 100%，覆盖 82.49%）。因此财务表第二批必须先做**字段映射表 + 多公告版本裁决（`update_flag`/`f_ann_date` 优先级）**设计，再谈合并；直接替换会静默丢掉 `factor_defs_pilot._fin` / `run_screen.FIN_FIELDS` 正在消费的下游字段。
+
+#### 🔍 财务表第二批审计订正（2026-10-04，只读审计，未迁移）
+
+上面「海量 D 有 E 空 → 直接替换会丢历史值」的说法**已被决定性证据推翻**。以 FULL_KEY 对齐、逐行要求「键 + 两侧全部共有数值列完全相等」做精确孪生判定，7 张核心财务表 **D→E 精确孪生率均为 100.00%**：
+
+| 表 | D 行数 | E 行数 | FULL_KEY(D/E) | D→E 精确孪生率 |
+| --- | ---: | ---: | ---: | ---: |
+| fina_indicator | 354,187 | 675,628 | 338,259 / 376,704 | **100.00%** |
+| balancesheet | 319,515 | 445,365 | 303,988 / 341,780 | **100.00%** |
+| income | 329,557 | 419,276 | 313,810 / 350,038 | **100.00%** |
+| cashflow | 316,738 | 387,698 | 301,885 / 312,730 | **100.00%** |
+| forecast | 122,540 | 149,106 | 122,527 / 127,910 | **100.00%** |
+| dividend | 169,067 | 169,333 | 168,857 / 168,954 | **100.00%** |
+| express | 29,506 | 29,598 | 29,503 / 29,598 | **100.00%** |
+
+**订正后的结论**：E 是 D 的**严格超集**，全量替换在「丢历史行 / E 改写历史」这一层面**已证可行**——原计划里逐表核对历史值的环节可从阻塞项降级为常规复核。E 的增量 = 新公告 + 同一公告的 `update_flag` 变体（forecast 最典型：D 侧仅 13 个公告多行，E 侧 21,209 个公告成对出现，flag 分布严格 `{'1': 21209, '0': 21209}`）。
+
+**真正的阻塞收敛为「同一公告两个数值不同版本，哪版权威」**（数据本身不可解，须业务裁定）：`fina_indicator/002781.SZ` 同 `end=20150630 ann=20151204`，flag=0 `roe=8.2628` / flag=1 `roe=15.4971`；`600105.SH` `end=20151231 ann=20160428` flag=0 `9.3014` / flag=1 `8.3973`。
+
+**两条被证伪的候选规则**（写此节就是为了防止下次重踩）：
+
+- **R1「`update_flag == 1` 作全表预过滤」——证伪**：按 FULL_KEY 口径丢弃 39%~100% 有效公告（`dividend`/`express`/`share_change_event` 达 100%，这些表根本没有 `update_flag` 列）。物理表示含 `'0'/'1'/'0.0'/'1.0'/缺失`，直接比字符串 `'1'` 也不安全。
+- **R2「flag==1 优先 → ann 最新 → f_ann 最新 → hash → 行序」——机械安全但语义不可用**：16 个表/侧组合上「去重后行数 == FULL_KEY 数、LOST-FK == 0」，但它会系统性改写全部历史因子值（示例 roe 8.26→15.50）。**选版口径落地前禁止用于生产**。
+
+**探针工程教训（复用价值高）**：`load()` 给缺失列注入字符串哨兵 `'NA'`，若后续用 `'col' in d.columns` 判断真实 schema，会把哨兵误当真实列——`share_change_event` 无 `end_date`/`ann_date`（真实报告期列是 `change_date`），据此跑 PIT 会选错列并触发 `TypeError: '<=' not supported between instances of 'str' and 'float'`。**正确做法：先 `pq.ParquetFile(fp).schema_arrow.names` 读真实 schema 再决定投影**，报告期列按「非哨兵内容」回退。
+
+**与迁移解耦的既存生产风险（本轮只审计、未修）**：
+
+- `data/astock_finance_reader.py`：`f_ann_date` 优先于 `ann_date`（`f_ann_date > ann_date` 实测 balancesheet 4,656 / income 3,428 / cashflow 2,420 行）；同 `end_date` 多行时 `end_dates.idxmax()` 返回**首行**，结果依赖 parquet 行序，**无确定性 tie-break**。
+- `factors/fina.py`：只读 `["ts_code","end_date"] + _FIELDS`，**不读** `ann_date`/`f_ann_date`/`update_flag`，用 `np.searchsorted` 取值 → 无 PIT 可见性、重复报告期命中任意成员。已知 **63,738 个重复报告期组在 `roe`/`fcff`/`fcfe`/`ocfps` 上数值分歧**（172,353 行）。**该风险在当前 D 状态下已存在，不因迁移而消失**，故拆为独立任务（任务乙）先行。
+
+**2026 覆盖空洞（真实缺口，与版本问题无关）**：`cashflow end_date=20260331` 在 E 侧 `ann_date<=20260630` 可见 9,869 行 / 5,649 票，D 侧该报告期仅 4,025 票 → **E 可见票中 D 缺 1,625 票**，属行覆盖缺口（**D 侧部分缺失，非整期缺失**）。各表 20260630 的 D/E 覆盖差（E-not-D）：fina_indicator 4,760 / balancesheet 4,844 / income 4,810 / cashflow 4,818 → 倾向 **D 侧此前漏抓**。
+
+**审计产物**（全部只读留档）：`browse/_finance_secondbatch_verdict.md`（裁决）、`_finance_safededup.txt`（R1/R2）、`_finance_pit_wide.txt`（150 票×11 asof）、`_finance_drill.txt`、`_finance_drill2.txt`（归因分离，**不可单独作最终依据**）、`_finance_drill3.txt`（**D⊂E 决定性证据**）；脚本 `scripts/_probe_safe_dedup.py`、`_probe_dtype_pit.py`、`_probe_drill{,2,3}.py`。**未改动任何 `D:\astock` 数据、reader、`factors/fina.py`、config。**
+
+章节来源
+- [scripts/migrate_astock_full_v2.py](file://scripts/migrate_astock_full_v2.py)
+- [data/astock_reader.py](file://data/astock_reader.py)
 
 ### 在线增量补充（2026-09-14 立，Tushare → G2 数据保鲜；2026-09-26 扩至 daily_basic 日刷）
 
