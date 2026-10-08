@@ -1,6 +1,6 @@
 # V1.3 口径对齐方案B：纸面并行对比报告
 
-> 生成：2026-10-02 20:31 | SPEC：specs/V13口径对齐方案B落地_SPEC_20260930.md §3.2
+> 生成：2026-10-07 20:31 | SPEC：specs/V13口径对齐方案B落地_SPEC_20260930.md §3.2
 > 口径：old臂=执行日T 09:45重排名单(total≥58 Top5) vs new臂=T-1晚 final_list(redline Top5)；
 > 两臂统一执行日 T 开盘入场、第 5 个交易日开盘退出；均不施加 position_filter。
 
