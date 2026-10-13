@@ -1,0 +1,66 @@
+{
+  "date": "20261013",
+  "account_id": "70180771",
+  "capital": 97149.51,
+  "pool": [
+    {
+      "code": "000960.SZ",
+      "total": 60.5
+    }
+  ],
+  "ledger": {
+    "000607.SZ": {
+      "vol": 7700,
+      "cost": 3.9034,
+      "src": "cfg"
+    },
+    "603021.SH": {
+      "vol": 7600,
+      "cost": 4.1936,
+      "src": "cfg"
+    },
+    "605098.SH": {
+      "vol": 500,
+      "cost": 54.8899,
+      "src": "cfg"
+    }
+  },
+  "note": "g2 候选池 1 只（红线 60）",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\g2\\20261013_g2_top10.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20261013",
+  "candidate_rows": 1,
+  "candidate_rows_raw": 1,
+  "candidate_sha256": "c503252ffb14131b6d5154590df5d7ed4d0303eef92cfb2cd1bc2ba2e992da8b",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\rebalance_g2\\candidates_asof\\20261013_c503252f_20261013_g2_top10.csv",
+  "hold_days": 15,
+  "hold_dates": {
+    "605098.SH": "20260916",
+    "000607.SZ": "20260929",
+    "603021.SH": "20261012"
+  },
+  "sells": [],
+  "buys": [],
+  "skips": [
+    {
+      "code": "000607.SZ",
+      "vol": 7700,
+      "reason": "持有未满15日(20260929起,已5日,日历OK)"
+    },
+    {
+      "code": "603021.SH",
+      "vol": 7600,
+      "reason": "ST剔除但T+1锁定可卖0(次日换仓再卖)"
+    },
+    {
+      "code": "605098.SH",
+      "vol": 500,
+      "reason": "持有未满15日(20260916起,已13日,日历OK)"
+    }
+  ],
+  "hs300_pct": -0.9317,
+  "tier": 2,
+  "deploy_pct": 0.98,
+  "written": true,
+  "orders": []
+}

@@ -111,3 +111,12 @@ research_external/
 
 # 已归档项目的一次性全量扫描入口（不入库）
 run_scanner.py
+
+# 飞书互通桥运行时状态（inbox/processed 去重状态 / 监听日志 / pid，本地运行态不入库；2026-10-13 补）
+data/feishu_bridge/
+
+# 本地工作区与已弃用产物（.workbuddy-ai 记忆 / _superseded_* 旧文件，不入库；2026-10-13 补）
+workspace/
+
+# 浏览器会话日志（browse/ 下一次性 jsonl，不入库；2026-10-13 补）
+browse/*.jsonl

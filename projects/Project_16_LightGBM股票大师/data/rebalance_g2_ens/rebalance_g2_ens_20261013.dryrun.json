@@ -1,0 +1,133 @@
+{
+  "date": "20261013",
+  "account_id": "70180771",
+  "capital": 91642.85,
+  "pool": [
+    {
+      "code": "002762.SZ",
+      "total": 64.0
+    },
+    {
+      "code": "688758.SH",
+      "total": 63.0
+    }
+  ],
+  "ledger": {
+    "002841.SZ": {
+      "vol": 400,
+      "cost": 43.7394,
+      "src": "cfg"
+    },
+    "600691.SH": {
+      "vol": 6700,
+      "cost": 2.693,
+      "src": "cfg"
+    },
+    "688758.SH": {
+      "vol": 600,
+      "cost": 27.39,
+      "src": "fills"
+    }
+  },
+  "note": "融合候选池 2 只（红线 60）",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\g2_ens\\20261013_g2_top10.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20261013",
+  "candidate_rows": 2,
+  "candidate_rows_raw": 2,
+  "candidate_sha256": "13d2d5bd724f799216aea1cd1742198dbda17f448ce2c9b041edf371dbeac9cb",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\rebalance_g2_ens\\candidates_asof\\20261013_13d2d5bd_20261013_g2_top10.csv",
+  "hold_days": 10,
+  "hold_dates": {
+    "000610.SZ": "20260928",
+    "600691.SH": "20260928",
+    "002841.SZ": "20260929",
+    "002762.SZ": "20261012",
+    "688758.SH": "20261013"
+  },
+  "sells": [
+    {
+      "code": "002841.SZ",
+      "vol": 200,
+      "cost": 43.7394,
+      "price": 41.86,
+      "note": "等权减仓"
+    },
+    {
+      "code": "600691.SH",
+      "vol": 3300,
+      "cost": 2.693,
+      "price": 2.67,
+      "note": "等权减仓"
+    }
+  ],
+  "buys": [
+    {
+      "code": "002762.SZ",
+      "vol": 1000,
+      "price": 8.53,
+      "held": 0,
+      "target_vol": 1000,
+      "total": 64.0
+    }
+  ],
+  "skips": [
+    {
+      "code": "002841.SZ",
+      "vol": 400,
+      "reason": "持有未满10日(20260929起,已5日,日历OK)"
+    },
+    {
+      "code": "600691.SH",
+      "vol": 6700,
+      "reason": "持有未满10日(20260928起,已6日,日历OK)"
+    },
+    {
+      "code": "688758.SH",
+      "vol": 600,
+      "reason": "持有未满10日(20261013起,已0日,日历OK)"
+    },
+    {
+      "code": "688758.SH",
+      "vol": 600,
+      "reason": "超配但T+1锁定/不足一手"
+    }
+  ],
+  "hs300_pct": -1.0273,
+  "tier": 1,
+  "deploy_pct": 0.5,
+  "target_value": 9164.28,
+  "written": false,
+  "hold_dates_preview": {
+    "600691.SH": "20260928",
+    "002841.SZ": "20260929",
+    "002762.SZ": "20261012",
+    "688758.SH": "20261013"
+  },
+  "orders": [
+    {
+      "action": "SELL",
+      "code": "002841.SZ",
+      "vol": 200,
+      "price": 41.86,
+      "reason": "动态等权超配减仓(目标市值9164)",
+      "strategy_order_id": "P16_20261013_0002"
+    },
+    {
+      "action": "SELL",
+      "code": "600691.SH",
+      "vol": 3300,
+      "price": 2.67,
+      "reason": "动态等权超配减仓(目标市值9164)",
+      "strategy_order_id": "P16_20261013_0003"
+    },
+    {
+      "action": "BUY",
+      "code": "002762.SZ",
+      "vol": 1000,
+      "price": 8.53,
+      "reason": "融合选股Top1(total=64.0)",
+      "strategy_order_id": "P16_20261013_0004"
+    }
+  ]
+}

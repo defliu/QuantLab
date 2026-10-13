@@ -62,7 +62,14 @@ function Notify-Feishu($msg) {
 # 唯一实测可用的解释器是 miniqmt venv（与全部 *_guard.ps1 一致），故列为首选。
 $MINIQMT_PY = "C:\Users\Administrator\.workbuddy\binaries\python\envs\miniqmt\Scripts\python.exe"
 $FALLBACK_PY = "C:\Users\Administrator\AppData\Roaming\TRAE SOLO CN\ModularData\ai-agent\vm\tools\python\python.exe"
+# T-20261013-002：retrain 模式调用 train_optuna.py，额外依赖 optuna；若探针只测
+# numpy/lightgbm，则缺 optuna 的解释器会被判为"可用"，运行到 train_optuna 才崩溃
+# （2026-10-12 17:00 周更静默断链即此因）。故按模式收紧探针：
+# 所有模式要求 numpy/lightgbm；retrain 额外要求 optuna。
+$REQUIRED_IMPORTS = "numpy, lightgbm"
+if ($Mode -eq 'retrain') { $REQUIRED_IMPORTS = "numpy, lightgbm, optuna" }
 function Get-GoodPy {
+    param([string]$Imports = "numpy, lightgbm")
     $cands = @()
     if (Test-Path $MINIQMT_PY) { $cands += $MINIQMT_PY }
     $p = (Get-Command python -ErrorAction SilentlyContinue).Source
@@ -70,15 +77,15 @@ function Get-GoodPy {
     if (Test-Path $FALLBACK_PY) { $cands += $FALLBACK_PY }
     foreach ($c in $cands) {
         try {
-            $v = & $c -c "import numpy, lightgbm; print('OK')" 2>$null | Select-Object -Last 1
+            $v = & $c -c "import $Imports; print('OK')" 2>$null | Select-Object -Last 1
             if ($v -eq 'OK') { return $c }
         } catch { }
     }
     return $null
 }
-$py = Get-GoodPy
+$py = Get-GoodPy -Imports $REQUIRED_IMPORTS
 if (-not $py) {
-    Log "!! 未找到带 numpy/lightgbm 的 Python，定时任务无法运行"
+    Log "!! 未找到带 $REQUIRED_IMPORTS 的 Python，定时任务无法运行"
     exit 1
 }
 Log "使用 Python: $py"

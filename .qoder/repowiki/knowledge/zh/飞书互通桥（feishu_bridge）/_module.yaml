@@ -1,0 +1,9 @@
+schema_version: 1
+module_path: scripts/feishu_bridge
+title: 飞书互通桥（feishu_bridge）
+scope:
+    - scripts/feishu_bridge/
+    - data/feishu_bridge/
+source_files: []
+depends_on: []
+related_to: []
