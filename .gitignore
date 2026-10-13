@@ -45,6 +45,9 @@ config/web_search_keys.yaml
 # Project_16 riskstack aux 缓存（292MB 二进制，本地重建即可）
 projects/Project_16_公开策略审计/results/riskstack_aux_cache.pkl
 
+# Project_16 DE-OP 交叉验证中间产物（opx 特征映射 pickle，460MB，本地重建即可）
+projects/Project_16_LightGBM股票大师/research/_opx_maps_*.pkl
+
 # 本地大目录/工具产物（不入库）
 /models/
 archive/
