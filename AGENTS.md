@@ -87,8 +87,8 @@
   - f-string
 - `passorder()` 是全局函数，不是 `C.passorder()`。
 - 账号 ID 必须硬编码，**双账号并存（2026-08-25 用户确认，各跑各的策略，禁止混用）**：
-  - `67014907`（旧国金QMT账号，**仍在用**）：miniQMT（xtquant）委托，执行 Project_16 LightGBM 策略，见 `projects/Project_16_LightGBM股票大师/qmt_config.py` 的 `ACCOUNT_ID`。
-  - `70180771`（新国金QMT模拟账号）：纯 QMT 端执行 ATR低波 / 价值小盘V2 等策略，见 `config/*.yaml`。
+  - `67014907`（旧国金QMT账号，**仍在用**）：① Project_16 LightGBM 策略（V1.3，miniQMT/xtquant 委托，见 `projects/Project_16_LightGBM股票大师/qmt_config.py` 的 `ACCOUNT_ID`）；② Project_10 价值小盘V2（**2026-10 起迁至此号**，QMT 端自包含单文件，账号见 `config/value_smallcap_v2_config.yaml` 的 `account_id='67014907'`）。两策略各有独立 `capital_base` 与持票账本（state 文件内嵌 `account_id`），互不纳管。
+  - `70180771`（新国金QMT模拟账号）：纯 QMT 端执行 ATR低波 / 黄氏529 / G2 / 融合 / 全天候等策略，见 `config/*.yaml` 与资金池文件。
   - 哪个策略用哪个号必须严格对应；引用错号会废单。此前「67014907 已停用」的说法已推翻，Project_16 的 build/脚本引用 `67014907` 属正常，不是废单。
 - **持票账本（holdings/state 文件）必须内嵌 `account_id` 戳**；加载时若 `account_id` 字段缺失或与当前策略 `ACCOUNT_ID` 不匹配，必须自动备份旧档（重命名为 `.bak_acct_<旧戳>_<时间戳>`）并空仓起步（fail-safe），严禁拿错账号的账本交易（T-20260823-004）。
 - `C.get_market_data_ex` 缺少财务字段，PE/PB/circ_mv 必须来自预生成 CSV。
@@ -114,10 +114,10 @@
 
 ### 资金分配红线
 
-- 国金QMT账号 `70180771`（新模拟账号）下多策略共存，每个策略锁定独立「虚拟子账户」本金（`capital_base`），只能动自己 ledger 的票和自己的额度，**绝不抢占他人资金、绝不纳管/卖出他人持仓**。另一账号 `67014907`（旧号，miniQMT 跑 Project_16 研发策略，2026-08-25 用户确认仍在用）不在本分配表内，独立管理。
-- **账户总额约束（硬）**：`Σ 各策略 capital_base ≤ 账户实际总资产`。唯一事实源 `D:/QuantLab/config/capital_allocation.yaml`（已从 QMT_STRATEGIES 迁移并删副本）；改后必须跑 `D:/QuantLab/scripts/check_capital_allocation.py`（退出码 0 才许部署）。
+- 国金QMT账号 `70180771`（新模拟账号）下多策略共存，每个策略锁定独立「虚拟子账户」本金（`capital_base`），只能动自己 ledger 的票和自己的额度，**绝不抢占他人资金、绝不纳管/卖出他人持仓**。另一账号 `67014907`（旧号，miniQMT/自包含）承载 Project_16 V1.3 与 Project_10 价值小盘V2 两个策略（各有独立 `capital_base` 与持票账本，互不纳管），独立管理。
+- **账户总额约束（硬）**：`Σ 各策略 capital_base ≤ 账户实际总资产`。仓库内权威副本 `D:/QuantLab/config/capital_allocation.yaml`；**校验器脚本实际读取的是池副本 `D:/QMT_POOL/config/capital_allocation.yaml`，两副本必须保持一致**（改仓库副本后须同步池副本）；改后必须跑 `D:/QuantLab/scripts/check_capital_allocation.py`（退出码 0 才许部署）。
 - 账户 `total_capital` 必须在国金QMT客户端查「总资产」填入；未填只警告不报错，但生产环境必填。
-- 当前已锁（2026-09-11 全量复查，唯一事实源 `config/capital_allocation.yaml`）：**atr_lowvol_equalweight（ATR低波等权不杠杆）10 万 / value_smallcap_v2（价值小盘V2）10 万 / huang529_breakout（黄氏529主升浪）10 万 / g2_bridge（G2大QMT文件桥，P16）10 万 / p16_ensemble_bridge（融合大QMT文件桥，P16）10 万，Σ=50 万 ≤ 账户总资产 1000 万**。`dual_band_6plus2`（主升浪6+2）已于 2026-08-05 淘汰，不再占用额度。新增/调额先改分配表再跑校验（退出码 0 才许部署）。
+- 当前已锁（唯一事实源 `config/capital_allocation.yaml`）：**atr_lowvol_equalweight（ATR低波等权不杠杆）10 万 / value_smallcap_v2（价值小盘V2，账号 67014907）10 万 / huang529_breakout（黄氏529主升浪）10 万 / g2_bridge（G2大QMT文件桥，P16）10 万 / p16_ensemble_bridge（融合大QMT文件桥，P16）10 万 / all_weather（全天候底仓V1）10 万，Σ=60 万 ≤ 账户总资产 1000 万**。`dual_band_6plus2`（主升浪6+2）已于 2026-08-05 淘汰，不再占用额度。新增/调额先改分配表再跑校验（退出码 0 才许部署）。
 - 共享账户无法物理阻止别策略花掉你的额度，真隔离需开子账户/多模拟账号；当前靠约定保证不超额。
 - **人读总表（与校验器同源，已同步至 QuantLab 枢纽）**：`D:/QMT_STRATEGIES/资金分配总表与约束.md`（镜像副本：`D:/QuantLab/资金分配总表与约束.md`）。
 

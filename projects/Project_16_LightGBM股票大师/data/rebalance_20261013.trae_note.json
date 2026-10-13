@@ -1,0 +1,80 @@
+{
+  "date": "20261013",
+  "updated_at": "2026-10-13 10:20:00",
+  "supersedes": "本文件为 20261013 会话级备注首版（无前序版本）",
+
+  "phenomenon": [
+    "step1 发现 data/tdx_review.json 仅有 catalyst_note 无 catalyst_score → review_full.py 第377行 s.get('catalyst_score', 0.0) 返回 0.0 → 若直接跑则 F3 恒为 0 → 10 只候选总分全部 <红线 58（与 20261012 现象同型）。",
+    "step3 rebalance_daily.py --live 期间 3 次打印『查询成交明细阻塞超时(>10s)』→ 002011.SZ 无真实成交均价 → 按参考价 11.57 记账并落待补价队列。",
+    "本日 QMT 端与本地 CSV 均无存量持仓 → 纯买入计划，sell=[] 为正常（非卖出漏执行）。"
+  ],
+
+  "root_cause": {
+    "id": "T-20261013-001",
+    "layer": "F3 催化分回填链路（人工/agent 判分环）",
+    "detail": "collect_v13_review 只采集 F3 新闻事实（collect_v13_review_20261013.py 第155行注释明确『只取事实，评分人工判定后回填』），不自动打分；agent 需依 rubric 判分并回填 catalyst_score。本轮已按 rubric（0-2 明确利空/4 无个股事件仅噪音/5 中性/6 题材行业正向/8+ 强确证）依 data/cache/f3_news_20261013.json 实际新闻完成 10 只判分回填。",
+    "impact_chain": "catalyst_score 未回填 → F3=0 → 全部候选 total 天花板约 52 <58 → 红线空仓零单（若不回填）"
+  },
+
+  "fix_applied": {
+    "file": "data/tdx_review.json",
+    "change": "为 10 只候选逐个在 catalyst_note 之后插入 catalyst_score / catalyst_basis / f3_source 三字段（顶层 date=20261013，写后自查通过）。",
+    "scores": {
+      "300592.SZ 华凯易佰": [3.0, "个股级负面：股东质押8.76% + 周新华罗晔合计减持398万股"],
+      "603068.SH 博通集成": [5.0, "个股弱正向482万政府补助 vs 板块级汽车芯片下跌，抵消判中性"],
+      "300685.SZ 艾德生物": [4.0, "无个股事件，仅创新药概念/突破年线名单噪音"],
+      "002011.SZ 盾安环境": [4.0, "无个股事件，仅家电行业资金流名单正负混杂（决策关键票）"],
+      "600699.SH 均胜电子": [2.0, "个股明确利空：跌停+机构净卖出5256.70万+沪股通净卖出2615.68万"],
+      "603186.SH 华正新材": [3.0, "板块级明确负面：覆铜板概念集体下挫，多家公司紧急回应"],
+      "301183.SZ 东田微": [4.0, "无个股事件，仅百元股名单噪音；CPO下跌为10-08旧闻"],
+      "600487.SH 亨通光电": [4.0, "无个股事件，仅杠杆资金/通信行业资金日报名单，方向混杂"],
+      "603991.SH 领先股份": [5.0, "名单类弱正向：主力资金连续5日净流入 10-08/09/12 多次上榜"],
+      "301107.SZ 瑜欣电子": [2.0, "个股明确利空：2026中报净利-49.23% + 前十大机构持股比例下跌2.00pct"]
+    },
+    "verification": [
+      "JSON 有效性校验通过（date=20261013，10 只 scores 齐全）",
+      "重跑 review_full.py --candidates data/selections/20261012_model_top10.csv → 生成 20261013_selection_full.csv",
+      "回填后 002011.SZ 盾安环境 F1=9/F2=8/F3=4/F4=3/F5=2/F6=7 = 60.0 ≥ 红线 58，唯一过线票"
+    ]
+  },
+
+  "step4_verification": {
+    "4a_plan_json": "存在（data/rebalance_20261013.json），未触发诊断流程。executed_live=true，candidate_rows=1/candidate_rows_raw=10，degraded=''。",
+    "4b_candidate_sha256": "0a1b532f9c404cd144da4cdabdbf0212892175a8c5a32c1e1087c62cbfa60714 —— 存在且非 null，PASS，未补写任何字段。candidate_asof=...\\data\\candidates_asof\\20261013_0a1b532f_20261013_selection_full.csv",
+    "4c_reconciliation": "未触发。买入 002011.SZ 7600股 已 FILLED（guard_note『买002011.SZ:FILLED(重试1次)』）；账本 qmt_trade_log.csv 第137行已记 2026-10-13 10:10:42,002011.SZ,BUY,7600,11.57,60.0,1098914113,67014907（8列齐）。无存量持仓、无卖出，账实相符，无需 manual_reconciliation 区块。",
+    "orders": "委托 #1098914113 已全部成交 7600股（重试 1 次）；成交均价未确认 → 落待补价队列，非撤单/非废单。"
+  },
+
+  "data_degradation": {
+    "tier": "沪深300 -0.9088% → T=2（market_tier.py 脚本判定，missing=false，eff_top=TOP_N=5）",
+    "F2": "Tushare moneyflow 本地快照 2026-10-12（滞后 1 天 ≤2，新鲜）→ f2_source=tushare_20261012",
+    "F3": "10/10 已由 agent 依 rubric 判分回填（本轮修复），非回退值",
+    "F5": "申万一级行业 T-1 自算 20261012（sw_l1_20261012）",
+    "F6": "Tushare daily_basic 20261012 覆盖 10/10（校验通过）+ 实时 PE",
+    "quote": "selection_full.csv quote_pct/name 正常取值（source=tencent+eastmoney_curl）",
+    "成交价": "002011.SZ 成交均价未确认（明细查询超时）→ 按参考价 11.57 记账，落 data/qmt_pending_fills.jsonl 待补价队列（0 价仅作待补标记，需人工核对成交回报后补价，不得据此结算盈亏）"
+  },
+
+  "guard_behavior_note": "本日仅 002011.SZ 一只过红线（60.0），符合『宁缺毋滥』；T=2 满仓档，eff_top=TOP_N=5，但过线票仅 1 只 → 目标组合 top1=[002011.SZ]，实际买入 1 只，属候选质量约束而非降级。",
+
+  "actions_taken": [
+    "依 F3 rubric + data/cache/f3_news_20261013.json 实际新闻，为 10 只候选回填 catalyst_score/catalyst_basis/f3_source",
+    "重跑 review_full.py 生成含真实 F3 的 20261013_selection_full.csv（002011.SZ=60.0 唯一过线）",
+    "运行 market_tier.py --json → tier=2",
+    "运行 rebalance_daily.py --date 20261013 --top 2 --live（exit 0）→ 买入 002011.SZ 7600股 @11.57 FILLED",
+    "只读核对：plan json 存在、candidate_sha256 非空 PASS、账本已追加、待补价队列已落、持仓账实相符",
+    "观察 3 次成交明细查询超时 → 按设计降级落待补价队列，未阻断换仓"
+  ],
+
+  "not_done_per_redline": [
+    "未写/未修改 data/rebalance_20261013.json（4c 白名单外严禁写入）",
+    "未补写 plan json 任何字段（含 candidate_* / executed_live）",
+    "未重跑 rebalance_daily.py --live（executed_live=true，红线禁止重复下单）"
+  ],
+
+  "remaining": [
+    "成交均价待补：需人工核对 QMT 成交回报后补记 002011.SZ 真实均价到账本（现为参考价 11.57）",
+    "成交明细查询阻塞超时（>10s）根因待排查（xtquant get_trade_detail_data 3 次超时，可能为盘中断连/负载）",
+    "F3 判分回填环节仍依赖 agent 手工执行，建议后续评估半自动化（新闻事实→rubric 判分）以降漏填风险"
+  ]
+}

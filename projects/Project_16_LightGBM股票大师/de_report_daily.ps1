@@ -1,7 +1,7 @@
 ﻿# coding: utf-8
 # DE 报告流水线（T-20260903-023）：TRAE 端协调下指令 → DE(GLM5.3) 生成报告 → 飞书推送
 # 用法：powershell.exe -File de_report_daily.ps1 -Task close|midday [-ForcePush] [-DryRun]
-#   close  = 盘后持仓复盘（15:40 后，当日三策略执行痕迹+行情 → 复盘报告 + 风险核对）
+#   close  = 盘后持仓复盘（15:40 后，当日四策略执行痕迹+行情 → 复盘报告 + 风险核对）
 #   midday = 午休持仓报告（11:35 后，半日持仓/盘面 → 简报告）
 #   -ForcePush = 同日已推送过也强制重发（修完抽取器后补推用）
 #   -DryRun    = 只产出推送正文文件、不真发飞书（验证正文完整度用）
@@ -88,11 +88,11 @@ if ($isoRc -ne 0) {
 if ($Task -eq "midday") {
     $prompt = @"
 你是 Project_16 午休持仓报告助手（DE 生成，只读，绝不下单）。工作目录：D:\QuantLab。
-允许读取：D:\QuantLab\projects\Project_16_LightGBM股票大师\data\（qmt_trade_log.csv、selections\、rebalance_g2\、reconcile_g2\、real\）、D:/QMT_POOL/g2_bridge/state/、p16_ensemble_bridge/state/、p16_v13_risk/state/、D:/QMT_POOL/g2_bridge/cmd/、p16_ensemble_bridge/cmd/、p16_v13_risk/cmd/ 的 json/csv。
-任务：汇总当日（$date）截至午休（11:30）的三策略（V1.3 账号67014907 / G2 与融合 账号70180771）持仓报告，输出：
+允许读取：D:\QuantLab\projects\Project_16_LightGBM股票大师\data\（qmt_trade_log.csv、selections\、rebalance_g2\、reconcile_g2\、real\）、D:/QMT_POOL/g2_bridge/state/、p16_ensemble_bridge/state/、p16_v13_risk/state/、D:/QMT_POOL/g2_bridge/cmd/、p16_ensemble_bridge/cmd/、p16_v13_risk/cmd/、D:/QMT_POOL/v2_holdings_state.json、D:/QMT_POOL/strategy_log_v2.txt、D:\QuantLab\config\value_smallcap_v2_config.yaml 的 json/csv。
+任务：汇总当日（$date）截至午休（11:30）的四策略（V1.3 账号67014907 / 价值小盘V2 账号67014907 / G2 与融合 账号70180771）持仓报告，输出：
 ①**逐票持仓明细表**（每只持仓一行，必含）：代码、名称、所属策略、持仓股数、成本价（含费）、现价（用腾讯行情 qt.gtimg.cn 实时取价，格式 q=sh601058/q=sz300475，cost 从 positions_cfg 读）、当日涨跌幅%、持仓市值（现价×股数）、浮盈/浮亏金额（(现价-成本)×股数）与浮盈/浮亏百分比、距止损线（成本×0.93）与止盈线（成本×1.15）的百分比缓冲；
 ②当日已成交动作（V1.3 qmt_trade_log / G2与融合 fills）买卖明细；
-③桥健康（三桥心跳时间/build_tag/pending/peak）；
+③桥健康（G2/融合/V13 三桥心跳时间/build_tag/pending/peak；价值小盘V2 无桥，心跳取 strategy_log_v2.txt 最后更新时间及其 hb 行的持仓数/现金/nav）；
 ④午后关注点：浮亏最大、最接近止损/止盈线、当日跌幅最大的持仓优先提示。
 数据只读当日与最近历史；腾讯取价失败则该票标"取价失败"并说明。
 输出：写报告到 $outFile（markdown，含完整逐票明细表格与结论）。
@@ -101,12 +101,12 @@ if ($Task -eq "midday") {
 } else {
     $prompt = @"
 你是 Project_16 盘后持仓复盘助手（DE 生成，只读，绝不下单）。工作目录：D:\QuantLab。
-允许读取：D:\QuantLab\projects\Project_16_LightGBM股票大师\data\（qmt_trade_log.csv、selections\、rebalance_g2\、reconcile_g2\、reconcile\、real\）、D:/QMT_POOL/g2_bridge/state/、p16_ensemble_bridge/state/、p16_v13_risk/state/、D:/QMT_POOL/g2_bridge/cmd/、p16_ensemble_bridge/cmd/、p16_v13_risk/cmd/、data\schedules\de_g2_compare_$date.md（若有）的 json/csv。
-任务：汇总当日（$date）收盘后三策略（V1.3 账号67014907 / G2 与融合 账号70180771）持仓复盘，输出：
+允许读取：D:\QuantLab\projects\Project_16_LightGBM股票大师\data\（qmt_trade_log.csv、selections\、rebalance_g2\、reconcile_g2\、reconcile\、real\）、D:/QMT_POOL/g2_bridge/state/、p16_ensemble_bridge/state/、p16_v13_risk/state/、D:/QMT_POOL/g2_bridge/cmd/、p16_ensemble_bridge/cmd/、p16_v13_risk/cmd/、D:/QMT_POOL/v2_holdings_state.json、D:/QMT_POOL/strategy_log_v2.txt、D:\QuantLab\config\value_smallcap_v2_config.yaml、data\schedules\de_g2_compare_$date.md（若有）的 json/csv。
+任务：汇总当日（$date）收盘后四策略（V1.3 账号67014907 / 价值小盘V2 账号67014907 / G2 与融合 账号70180771）持仓复盘，输出：
 ①**逐票持仓明细表**（每只持仓一行，必含）：代码、名称、所属策略、持仓股数、成本价（含费，positions_cfg 读）、当日收盘价（腾讯行情 qt.gtimg.cn 实时取价，格式 q=sh601058/q=sz300475；失败标"取价失败"）、当日涨跌幅%、当日开盘/最高/最低、持仓市值、浮盈/浮亏金额（(现价-成本)×股数）与百分比、距止损线（成本×0.93）与止盈线（成本×1.15）的百分比缓冲、持有起始日与已持交易日/满期剩余日；
-②**已实现盈亏明细**：当日卖出成交（G2/融合 fills、V1.3 qmt_trade_log）每笔：代码/股数/卖出价/估算盈亏；以及三策略资金池当前值（g2/ens/v13 的 strategy_capital）；
+②**已实现盈亏明细**：当日卖出成交（G2/融合 fills、V1.3 qmt_trade_log）每笔：代码/股数/卖出价/估算盈亏；以及四策略资金池当前值（g2/ens/v13 的 strategy_capital、价值小盘V2 的 v2_holdings_state.json 现金+持仓市值）；
 ③当日各策略动作汇总（换仓/对账结果/持有期）；
-④桥健康（三桥心跳时间/build_tag/pending/peak、异常标注）；
+④桥健康（G2/融合/V13 三桥心跳时间/build_tag/pending/peak；价值小盘V2 无桥，心跳取 strategy_log_v2.txt 最后更新时间及其 hb 行、异常标注）；
 ⑤风控体检：逐票列"距止损/止盈线最近"风险排行（缓冲<3% 标 🔴）；
 ⑥明日关注点（候选 top 变化、数据新鲜度、临近到期的持仓）。
 数据只读当日与最近历史。

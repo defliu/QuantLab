@@ -409,8 +409,9 @@ def check_e():
         else:
             log("E", "E2 桥心跳 %s" % name, "WARN", "最近 %s 距今 %.0fh（>阈值 %dh，桥可能停）" % (
                 lh, (age or 0) / 3600, threshold / 3600))
-    # E3 账本戳（P1-6：V1.3/G2/ENS 三资金池 account_id 校验）
+    # E3 账本戳（P1-6：V1.3/V2/G2/ENS 四资金池 account_id 校验）
     caps = [("V13", os.path.join(DATA, "strategy_capital.json")),
+            ("V2", "D:/QMT_POOL/v2_holdings_state.json"),
             ("G2", "D:/QMT_POOL/g2_bridge/g2_strategy_capital.json"),
             ("ENS", "D:/QMT_POOL/p16_ensemble_bridge/ens_strategy_capital.json")]
     for name, cf in caps:

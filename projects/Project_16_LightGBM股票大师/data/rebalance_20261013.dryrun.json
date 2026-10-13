@@ -1,0 +1,31 @@
+{
+  "date": "20261013",
+  "target": [
+    {
+      "code": "002011.SZ",
+      "name": "盾安环境",
+      "total": 60.0,
+      "prob": 0.5997
+    }
+  ],
+  "strategy_capital": 89742.85,
+  "target_value_each": 87947.99,
+  "tier": 5,
+  "eff_top": 5,
+  "sell": [],
+  "buy": [],
+  "trim": [],
+  "hold": [
+    "002011.SZ"
+  ],
+  "locked": [],
+  "selection_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20261013_selection_full.csv",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20261013_selection_full.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20261013",
+  "candidate_rows": 1,
+  "candidate_rows_raw": 10,
+  "candidate_sha256": "0a1b532f9c404cd144da4cdabdbf0212892175a8c5a32c1e1087c62cbfa60714",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\candidates_asof\\20261013_0a1b532f_20261013_selection_full.csv",
+  "degraded": ""
+}

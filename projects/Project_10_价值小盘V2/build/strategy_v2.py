@@ -2,17 +2,17 @@
 """价值小盘V2微调版 — QMT单文件策略
 行业中性BP(z-score)*1.0 (V2a 纯BP, hp已去除)
 风控: 8%止损 / 60天持有上限 / 15%组合回撤
-账号: 70180771
+账号: 67014907
 自动生成于 2026-08-04"""
 import math
 import csv
 import json
 import os
 import time as _time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # ============ 参数 ============
-ACCOUNT_ID = "70180771"
+ACCOUNT_ID = "67014907"
 N_STOCKS = 80
 REBALANCE_MONTHS = 2
 STOP_LOSS = 0.08
@@ -56,8 +56,16 @@ PENDING_TIMEOUT_MIN = 3      # 委托超过3分钟仍未成交，触发撤单重下
 PENDING_MAX_RETRIES = 3      # 单只最多重下次数（含首次），超过则放弃（等收盘对账校准）
 RETRY_COOLDOWN_MIN = 1       # 撤单重下的最小冷却间隔（分钟），防止同一分钟反复重下
 
+# 下单/撤单机制常量（2026-10-13 修复，依据 QMT撤单重委托方案调研.md + P16 生产范式）
+PRTYPE_LATEST = 5            # prType=5「最新价」限价单（会忽略 price 参数，仅作取价失败兜底）
+PRTYPE_PRICE = 11            # prType=11「指定价」限价单（用 price 做限价）
+AGGRESSIVE_BUFFER = 0.02     # 激进价缓冲：买入上浮 / 卖出下探，促成交
+CONFIRM_DEAD_STATUS = (53, 54, 57)  # 撤单确认死透终态：部撤/已撤/废单
+CANCEL_CONFIRM_RETRIES = 4          # 撤单后确认终态的轮询次数
+CANCEL_CONFIRM_INTERVAL = 0.5       # 撤单后确认终态的轮询间隔（秒）
+
 # 构建版本标记：build.py 每次构建时自动替换为时间戳（YYYYmmdd-HHMMSS）
-BUILD_TAG = "20261013-055319"
+BUILD_TAG = "20261013-144730"
 
 # ============ 全局状态 ============
 _cash = CAPITAL_INIT       # 专属资金池现金（与账户其他策略资金完全隔离）
@@ -382,14 +390,134 @@ def _find_order(orders, code, direction):
         return cand[0]
     return None
 
-def _cancel_order_by(C, code, order_id):
-    """按订单号撤单（生产惯用法：passorder(24,1101,acct,code,5,order_id,0,remark,2,"",C)）"""
+def _extract_order_id(order):
+    """从QMT订单对象提取委托标识（字段名随QMT版本变化，多字段兜底）。
+    模拟端无 m_nOrderID（DIAG 实锤），必须回退 m_strOrderSysID/m_strOrderRef 等，否则恒取不到；
+    取不到返回 ""（调用方据此判定"无可撤标识"，不撤也不重下）。"""
+    if order is None:
+        return ""
+    for attr in ("m_nOrderID", "m_strOrderID", "m_strOrderRef",
+                 "m_strOrderSysID", "m_strSysid", "m_nOrderRef", "m_strUserOrderId"):
+        try:
+            v = getattr(order, attr, "")
+            if v:
+                return str(v)
+        except Exception:
+            continue
+    return ""
+
+def _extract_sysid(order):
+    """提取柜台合同号（撤单官方推荐 orderId=m_strOrderSysID）。取不到返回 ""。"""
+    if order is None:
+        return ""
+    for attr in ("m_strOrderSysID", "m_strSysid"):
+        try:
+            v = getattr(order, attr, "")
+            if v:
+                return str(v)
+        except Exception:
+            continue
+    return ""
+
+def _refresh_last_price(C, code, fallback=0.0):
+    """重试前刷新最新价：避免用陈旧触发价重挂。取不到行情退回 fallback（fail-safe 不阻断）。"""
     try:
-        passorder(24, 1101, ACCOUNT_ID, code, 5, order_id, 0, "V2撤单", 2, "", C)
-        _log("[cancel] 撤单 %s order_id=%s" % (code, order_id), C)
+        tick = C.get_full_tick([code])
+        if tick:
+            t = tick.get(code)
+            if t:
+                p = float(t.get("lastPrice", 0) or 0)
+                if p > 0:
+                    return p
+    except Exception:
+        pass
+    return fallback
+
+def _get_pre_close(C, code):
+    """取昨收价（涨跌停 clamp 用）。取不到返回 0。"""
+    try:
+        data = C.get_market_data_ex(["pre_close"], [code], period="1d")
+        if data and code in data and len(data[code]) > 0:
+            return float(data[code].iloc[-1].get("pre_close", 0) or 0)
+    except Exception:
+        pass
+    return 0.0
+
+def _aggressive_price(C, code, side, ref_price):
+    """激进限价：买入上浮 / 卖出下探 AGGRESSIVE_BUFFER 促成交，
+    并按当日涨跌停价 clamp 防废单。ref_price<=0 返回 0（调用方回退最新价单）。"""
+    try:
+        ref = float(ref_price or 0)
+        if ref <= 0:
+            return 0.0
+        limit = _limit_pct(code)
+        pre_close = _get_pre_close(C, code)
+        if side == "buy":
+            p = ref * (1.0 + AGGRESSIVE_BUFFER)
+            hi = (pre_close * (1.0 + limit - 0.001)) if pre_close > 0 else (ref * (1.0 + limit - 0.001))
+            return round(min(p, hi), 2)
+        p = ref * (1.0 - AGGRESSIVE_BUFFER)
+        lo = (pre_close * (1.0 - limit + 0.001)) if pre_close > 0 else (ref * (1.0 - limit + 0.001))
+        return round(max(p, lo), 2)
+    except Exception:
+        return 0.0
+
+def _place_order(C, side, code, amount, ref_price):
+    """统一下单入口（2026-10-13 修复）：prType=11 指定价 + 激进限价促成交；
+    取价失败回退 prType=5 最新价单。11参数格式，末尾必须传 C。
+    side: 'buy'/'sell'；remark 与 _find_order 的 V2 优先级一致。返回 (prType, 限价)。"""
+    op_type = 23 if side == "buy" else 24
+    remark = "V2买入" if side == "buy" else "V2卖出"
+    price = _aggressive_price(C, code, side, ref_price)
+    if price and price > 0:
+        passorder(op_type, 1101, ACCOUNT_ID, code, PRTYPE_PRICE, price, amount, remark, 2, "", C)
+        return PRTYPE_PRICE, price
+    passorder(op_type, 1101, ACCOUNT_ID, code, PRTYPE_LATEST, -1, amount, remark, 2, "", C)
+    return PRTYPE_LATEST, 0.0
+
+def _confirm_cancelled(C, code, direction):
+    """撤单确认：轮询委托列表，直到原单消失或其状态为死透终态（53/54/57）才返回 True。
+    返回 False = 未确认死透（调用方延后复查，绝不乐观重下，防重复下单）。"""
+    for _ in range(CANCEL_CONFIRM_RETRIES):
+        try:
+            _time.sleep(CANCEL_CONFIRM_INTERVAL)
+        except Exception:
+            pass
+        orders = _query_orders()
+        if orders is None:
+            return False
+        matched = _find_order(orders, code, direction)
+        if matched is None:
+            return True
+        try:
+            st = int(getattr(matched, "m_nOrderStatus", 0) or 0)
+        except Exception:
+            st = 0
+        if st in CONFIRM_DEAD_STATUS:
+            return True
+    return False
+
+def _cancel_order_by(C, code, order_id, sysid=""):
+    """按订单号撤单（官方 cancel() 入口，2026-10-13 修复）。
+    passorder opType 无撤单值（24=卖出），官方唯一撤单入口：
+      can_cancel_order(oid, acct, 'stock') 预检 → cancel(oid, acct, 'stock', C)。
+    oid 优先 sysid（m_strOrderSysID 柜台合同号）。cancel() 返回 True 仅=指令送达，
+    调用方须轮询确认终态（_confirm_cancelled），不得乐观认为已撤。"""
+    oid = sysid or order_id
+    if not oid:
+        return False
+    try:
+        if not can_cancel_order(oid, ACCOUNT_ID, "stock"):
+            _log("[cancel] %s oid=%s 当前不可撤（预检未通过）" % (code, oid), C)
+            return False
+    except Exception:
+        pass
+    try:
+        r = cancel(oid, ACCOUNT_ID, "stock", C)
+        _log("[cancel] %s oid=%s 返回:%s" % (code, oid, r), C)
         return True
     except Exception as e:
-        _log("[cancel error] %s order_id=%s: %s" % (code, order_id, str(e)), C)
+        _log("[cancel error] %s oid=%s: %s" % (code, oid, str(e)), C)
         return False
 
 def _cancel_pending_orders(C):
@@ -399,9 +527,9 @@ def _cancel_pending_orders(C):
     for code, info in list(_pending_orders.items()):
         if orders:
             order = _find_order(orders, code, info["type"])
-            order_id = getattr(order, "m_nOrderID", None) if order else None
+            order_id = _extract_order_id(order)
             if order_id:
-                _cancel_order_by(C, code, order_id)
+                _cancel_order_by(C, code, order_id, _extract_sysid(order))
         # 无论是否反查到，先清跟踪（真实成交由收盘对账校准）
     _pending_orders = {}
 
@@ -417,9 +545,9 @@ def _rollback_pending(C, code, info):
         orders = _query_orders()
         if orders:
             order = _find_order(orders, code, info["type"])
-            order_id = getattr(order, "m_nOrderID", None) if order else None
+            order_id = _extract_order_id(order)
             if order_id:
-                _cancel_order_by(C, code, order_id)
+                _cancel_order_by(C, code, order_id, _extract_sysid(order))
         orig = info.get("original_amount", info.get("amount", 0))
         if info["type"] == "buy":
             _holdings.pop(code, None)
@@ -452,28 +580,39 @@ def _rollback_pending(C, code, info):
     except Exception as e:
         _log("[rollback error] %s: %s" % (code, str(e)), C)
 
-def _retry_pending(C, code, info, order_id=None):
-    """撤单重下：撤旧单 + 重新市价委托，重置超时与冷却
-    order_id 为已反查到的旧单号（None 表示反查不可用，不撤单也不重下，防重复下单）"""
+def _retry_pending(C, code, info, order=None):
+    """撤单重下（2026-10-13 修复）：撤旧单 → 确认死透 → 刷新现价重挂（prType=11 激进价），
+    重置超时与冷却。order: 已反查到的旧单对象（None 表示反查不可用）。
+    关键约束（防重复下单）：
+      ① 取不到撤单标识时只递增 retries + 重置 time，绝不重下；
+      ② 撤单后必须确认死透（_confirm_cancelled）才重报，未死透延后 60s 复查，绝不乐观重下；
+      ③ 重下前刷新最新价，避免用陈旧价重挂。"""
     global _pending_orders
     try:
-        # 1) 撤旧单
-        if order_id is None:
-            orders = _query_orders()
-            if orders:
-                order = _find_order(orders, code, info["type"])
-                order_id = getattr(order, "m_nOrderID", None) if order else None
-        if order_id is None:
-            # 反查不可用或订单不存在：不重下（原单可能已成交，重下会重复买入/卖出）
-            _log("[pending] %s 未反查到可撤订单，跳过重下（防重复下单，等收盘对账校准）" % code, C)
+        order_id = _extract_order_id(order)
+        sysid = _extract_sysid(order)
+        if not order_id and not sysid:
+            # 无撤单标识：不撤不重下（原单可能已成交，重下会重复买卖）。
+            # 必须递增 retries + 重置 time 让计数收敛到上限后由调用方回滚，
+            # 否则永久停在本分支日内空转（本修复针对的核心缺陷）。
+            info["retries"] = info.get("retries", 0) + 1
+            info["time"] = _get_market_time(C)
+            _pending_orders[code] = info
+            _log("[pending] %s 未反查到可撤订单，retry=%d（不重下，等重试耗尽回滚）"
+                 % (code, info["retries"]), C)
             return
-        _cancel_order_by(C, code, order_id)
-        # 2) 重新市价委托（与 _execute_buy/sell 相同的11参数格式）
-        if info["type"] == "buy":
-            passorder(23, 1101, ACCOUNT_ID, code, 5, -1, info["amount"], "V2买入", 2, "", C)
-        else:
-            passorder(24, 1101, ACCOUNT_ID, code, 5, -1, info["amount"], "V2卖出", 2, "", C)
-        # 3) 更新跟踪：retries+1，重置 time（超时重计）
+        # 1) 撤旧单（官方 cancel()）
+        _cancel_order_by(C, code, order_id, sysid)
+        # 2) 撤单确认：确认死透才重报；未死透延后 60s 复查，绝不乐观重下
+        if not _confirm_cancelled(C, code, info["type"]):
+            info["time"] = _get_market_time(C) - timedelta(seconds=PENDING_TIMEOUT_MIN * 60 - 60)
+            _pending_orders[code] = info
+            _log("[pending] %s 撤单未确认死透，延后复查（不重下）" % code, C)
+            return
+        # 3) 刷新现价后重挂（激进限价）
+        ref = _refresh_last_price(C, code, info.get("price", 0) or 0)
+        _place_order(C, info["type"], code, info["amount"], ref)
+        # 4) 更新跟踪：retries+1，重置 time（超时重计）
         info["retries"] = info.get("retries", 0) + 1
         info["time"] = _get_market_time(C)
         _pending_orders[code] = info
@@ -543,8 +682,8 @@ def _check_pending_orders(C):
             _rollback_pending(C, code, info)
             _pending_orders.pop(code, None)
             continue
-        # 撤单重下
-        _retry_pending(C, code, info)
+        # 撤单重下（传入已反查到的 order 供提取撤单标识；此路径下 order 必非 None）
+        _retry_pending(C, code, info, order)
 
 def _save_state():
     state = {
@@ -1062,10 +1201,9 @@ def _execute_buy(C, code):
             amount = int(_cash / price / 100) * 100
             if amount <= 0:
                 return
-        # 下单（生产级11参数格式，末尾必须传C：opType, orderType, accountid, orderCode, prType, modelprice, volume, remark, quickTrade, extra, C）
-        # 参考: D:/QuantLab 内自包含的 11 参数 passorder 封装（生产验证过）
-        # 买入用市价单(price_type=5, price=-1)，确保成交；不能用9参数无C格式（模拟端报 request_id 错误）
-        passorder(23, 1101, ACCOUNT_ID, code, 5, -1, amount, "V2买入", 2, "", C)
+        # 下单（统一入口，2026-10-13 修复）：prType=11 指定价 + 激进限价促成交，
+        # 取价失败回退 prType=5 最新价；11 参数格式末尾必须传 C。
+        _place_order(C, "buy", code, amount, price)
         # 记录待成交订单 + 当日下单（对账用）
         _pending_orders[code] = {
             "type": "buy",
@@ -1107,9 +1245,9 @@ def _execute_sell(C, code):
             price = _entry_prices.get(code, 0) or 0
         entry_price = _entry_prices.get(code, price)
         entry_date = _entry_dates.get(code, _get_market_time(C).strftime("%Y-%m-%d"))
-        # 下单（生产级11参数格式，末尾必须传C；卖出用市价单 price_type=5 确保成交）
-        # 参考: D:/QuantLab 内自包含的 11 参数 passorder 封装（生产验证过）
-        passorder(24, 1101, ACCOUNT_ID, code, 5, -1, amount, "V2卖出", 2, "", C)
+        # 下单（统一入口，2026-10-13 修复）：prType=11 指定价 + 激进限价促成交，
+        # 取价失败回退 prType=5 最新价；11 参数格式末尾必须传 C。
+        _place_order(C, "sell", code, amount, price)
         # 记录待成交订单 + 当日下单（对账用，保留原成本价/日期用于部分成交/回滚恢复）
         _pending_orders[code] = {
             "type": "sell",

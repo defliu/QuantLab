@@ -151,8 +151,8 @@ switch ($Mode) {
     "health" {
         $prompt = @"
 你是 Project_16 交易体系周度体检助手（DE 保障，只读，绝不下单）。工作目录：D:\QuantLab。
-允许读取：D:\QuantLab\projects\Project_16_LightGBM股票大师\ 下 config/strategy/data/data_live/data\rebalance_g2/data\reconcile_g2/data\selections、D:/QMT_POOL/ 下 g2_bridge、p16_ensemble_bridge、p16_v13_risk 三桥 cmd/state 全部 json、D:\QuantLab\config、D:\QuantLab\全局控制台.md、D:\QuantLab\AGENTS.md、D:\QuantLab\data\schedules\ 下当日 de_* 报告。
-任务：对本周（截至 $dateDash）交易体系做 7 维度体检：①三策略（V1.3/G2/融合）配置一致性（账号/资金池/隔离/持有期/红线）；②账本健康（幽灵持仓/hold_dates 陈旧/资金池滚动）；③桥健康（心跳/build_tag/pending/peak）；④定时任务（Windows schtasks 与看板对照，重复/错峰/缺失）；⑤数据新鲜度（moneyflow/增量库/面板/候选）；⑥风控门控（G2 门控/V1.3 tier/止损口径）；⑦产物完整性（positions_cfg/selection/对账/报告）。逐项给 PASS/FAIL/风险分级（P0/P1/P2），每项附证据（文件路径+关键值）；对比上周（若 data\schedules\de_health_weekly_上周.md 存在）给出变化。
+允许读取：D:\QuantLab\projects\Project_16_LightGBM股票大师\ 下 config/strategy/data/data_live/data\rebalance_g2/data\reconcile_g2/data\selections、D:/QMT_POOL/ 下 g2_bridge、p16_ensemble_bridge、p16_v13_risk 三桥 cmd/state 全部 json、D:/QMT_POOL/strategy_log_v2.txt 与 D:/QMT_POOL/v2_holdings_state.json（价值小盘V2）、D:\QuantLab\config、D:\QuantLab\全局控制台.md、D:\QuantLab\AGENTS.md、D:\QuantLab\data\schedules\ 下当日 de_* 报告。
+任务：对本周（截至 $dateDash）交易体系做 7 维度体检：①四策略（V1.3/V2/G2/融合）配置一致性（账号/资金池/隔离/持有期/红线；注意账号归属：V1.3 与价值小盘V2 在 67014907，G2 与融合 在 70180771）；②账本健康（幽灵持仓/hold_dates 陈旧/资金池滚动；含 V2 v2_holdings_state.json 的 account_id 戳与持仓）；③桥健康（心跳/build_tag/pending/peak；V2 无桥，心跳取 strategy_log_v2.txt 最后更新时间及其 hb 行）；④定时任务（Windows schtasks 与看板对照，重复/错峰/缺失）；⑤数据新鲜度（moneyflow/增量库/面板/候选）；⑥风控门控（G2 门控/V1.3 tier/止损口径）；⑦产物完整性（positions_cfg/selection/对账/报告）。逐项给 PASS/FAIL/风险分级（P0/P1/P2），每项附证据（文件路径+关键值）；对比上周（若 data\schedules\de_health_weekly_上周.md 存在）给出变化。
 输出：写完整周报到 $outFile（markdown：摘要/7 维度明细/风险分级清单/下周建议）。
 硬约束：禁止 --live、禁止下单/改仓、禁止修改任何文件、禁止 commit；数据缺失如实标注。
 "@
@@ -160,7 +160,7 @@ switch ($Mode) {
     "reconcile" {
         $prompt = @"
 你是 Project_16 日终对账异常复核助手（DE 保障，只读，绝不下单）。工作目录：D:\QuantLab。
-触发：当日（$dateDash）三策略对账报告含 issues。允许读取：data\reconcile_g2\reconcile_g2_$date.json、data\reconcile_$date.json（V1.3，若存在）、data\reconcile_ens\ 下当日 json（若存在）、D:/QMT_POOL/ 三桥 state（fills/positions/heart/asset）。
+触发：当日（$dateDash）对账报告含 issues（G2/融合/V1.3；价值小盘V2 无对账 json，参考 strategy_log_v2.txt 的 reconcile 行）。允许读取：data\reconcile_g2\reconcile_g2_$date.json、data\reconcile_$date.json（V1.3，若存在）、data\reconcile_ens\ 下当日 json（若存在）、D:/QMT_POOL/ 三桥 state（fills/positions/heart/asset）、D:/QMT_POOL/v2_holdings_state.json 与 strategy_log_v2.txt（价值小盘V2）。
 任务：对每个异常项（持仓差额/孤儿/未终态 fills/pending/资产异常）独立排查根因：①对照 fills 与 positions_cfg 推导账本 vs 账户持仓；②判断紧急度 P0/P1/P2；③给出处理建议（人工操作/脚本修复/仅观察）；④标注是否与昨日对账同源（历史遗留还是新发）。
 输出：写报告到 $outFile（markdown：异常清单/逐项根因/紧急度/处理建议）。
 硬约束：禁止 --live、禁止下单/改仓、禁止修改任何文件、禁止 commit；数据缺失如实标注。
@@ -187,8 +187,8 @@ switch ($Mode) {
     "intraday" {
         $prompt = @"
 你是 Project_16 盘中异动归因助手（DE 保障，只读，绝不下单）。工作目录：D:\QuantLab。
-触发：当日（$dateDash）盘中检测到异常（详见 $log 末尾输出：桥心跳超时 或 持仓单日波动>5%）。允许读取：D:/QMT_POOL/ 三桥 state（heart/fills/positions/peak）、data\qmt_trade_log.csv、data\selections\、如可用再读相关新闻/公告（官方公告/财联社）。
-任务：对每个异动项独立归因（桥进程异常/大盘带动/个股消息/板块联动/止损触发等），评估持续性与风险（是否可能引发连锁止损），给出关注/处置建议（盯盘重点/是否需人工干预）。
+触发：当日（$dateDash）盘中检测到异常（详见 $log 末尾输出：桥心跳超时 或 持仓单日波动>5%）。允许读取：D:/QMT_POOL/ 三桥 state（heart/fills/positions/peak）、D:/QMT_POOL/strategy_log_v2.txt（价值小盘V2 心跳来源：其 mtime 与末尾 hb/reconcile 行）与 D:/QMT_POOL/v2_holdings_state.json（价值小盘V2 账本：account_id=67014907）、data\qmt_trade_log.csv、data\selections\、如可用再读相关新闻/公告（官方公告/财联社）。
+任务：对每个异动项独立归因（桥进程异常/大盘带动/个股消息/板块联动/止损触发等），评估持续性与风险（是否可能引发连锁止损），给出关注/处置建议（盯盘重点/是否需人工干预）。注意账号归属：老账号 67014907 同时承载 V1.3 与价值小盘V2 两个策略，其持仓条数多（V2 最多 80 只）属正常，不得仅因持仓数激增就判为「来源不明/外部占用」；须先按策略归属拆分后归因。
 输出：写报告到 $outFile（markdown：异动清单/逐项归因/风险评级/处置建议）。
 硬约束：禁止 --live、禁止下单/改仓、禁止修改任何文件、禁止 commit；数据缺失如实标注。
 "@

@@ -52,7 +52,7 @@ strategies:
     config_file: "config/atr_lowvol_equalweight_config.yaml"
 ```
 
-当前在册（2026-09）：`atr_lowvol_equalweight` 10万/8只、`value_smallcap_v2` 10万/80只、`huang529_breakout` 10万/12只、`g2_bridge` 10万/2只，合计 40 万 ≤ 账户 1000 万。
+当前在册（2026-10-13）：`atr_lowvol_equalweight` 10万/8只、`value_smallcap_v2` 10万/80只（账号 67014907）、`huang529_breakout` 10万/12只、`g2_bridge` 10万/3只、`p16_ensemble_bridge` 10万/5只、`all_weather` 10万/5只，合计 60 万 ≤ 账户 1000 万。
 
 硬规则：
 
@@ -87,7 +87,7 @@ save_strategy(code, output_path)
 2. 内嵌 `BUILD_TAG`（`YYYYmmdd-HHMMSS`），每次构建自动替换，并在 `init(C)` 与日终日志输出，用于核对「本地构建版本 = 模拟盘实际运行版本」；
 3. 兼容 Python 3.6.8：**禁用** f-string、`dict[str,...]`、`list[str]`、`str | None`、`:=`、`match/case`；
 4. `passorder()` 是**全局函数**，不是 `C.passorder()`；
-5. 账号硬编码且严格对应：`67014907`（miniQMT / Project_16）、`70180771`（QMT 端 / ATR低波·价值小盘V2）——**引用错号会废单**；
+5. 账号硬编码且严格对应：`67014907`（miniQMT / Project_16 V1.3 **＋ QMT 端自包含 · 价值小盘V2，2026-10-13 迁入**）、`70180771`（QMT 端 / ATR低波·黄氏529·G2·融合·全天候）——**引用错号会废单**；
 6. `C.get_market_data_ex` 缺财务字段，PE/PB/circ_mv 必须来自预生成 CSV；QMT 内置 Python 无 pyarrow，**不能读 parquet**；
 7. `circ_mv` 单位是**万元**（30 亿 = 300000）；
 8. 生产版不得混入 mock 或测试代码。
