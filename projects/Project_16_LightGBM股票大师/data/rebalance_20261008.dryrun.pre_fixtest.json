@@ -1,0 +1,34 @@
+{
+  "date": "20261008",
+  "target": [],
+  "strategy_capital": 88752.16,
+  "target_value_each": 86977.12,
+  "tier": 5,
+  "eff_top": 5,
+  "sell": [
+    {
+      "code": "000920.SZ",
+      "cost": 12.621538461538462,
+      "vol": 1300,
+      "reason": "MATURE"
+    },
+    {
+      "code": "300531.SZ",
+      "cost": 15.224545454545455,
+      "vol": 1100,
+      "reason": "MATURE"
+    }
+  ],
+  "buy": [],
+  "trim": [],
+  "hold": [],
+  "locked": [],
+  "selection_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20261008_selection_full.csv",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20261008_selection_full.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20261008",
+  "candidate_rows": 0,
+  "candidate_rows_raw": 9,
+  "candidate_sha256": "92ee9495b3de135f160c726c8991ce3ffa28cc3bc4a5a3657a01d6f752baf760",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\candidates_asof\\20261008_92ee9495_20261008_selection_full.csv"
+}

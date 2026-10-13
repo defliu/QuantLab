@@ -35,6 +35,18 @@ DELIST_MV_MAIN = 75000.0     # 主板总市值红线缓冲: 5亿 x 1.5 (万元)
 DELIST_MV_GEMSTAR = 45000.0  # 创业板/科创板: 3亿 x 1.5 (万元)
 DELIST_NEAR_DAYS = 30        # 距退市日 <= 30 天剔除 (北交所不适用市值红线)
 
+# E1 宇宙筛选 (2026-10-13 对齐回测 runner.get_candidates / config/strategy.yaml):
+#   回测候选 = circ_mv∈(min,max) 且 pe_ttm>0 且 pb>0 且 质量排雷(bps>0 & roe>0 & profit_dedt>0)
+#             且 非ST 且 非停牌。生产旧版仅 pb>0 → 实为"全市场行业中性BP top80"，
+#   与回测口径漂移(P0)。补齐后生产候选池=回测口径。停牌沿用买入时 _is_suspended 实时剔除。
+MARKET_CAP_MAX = 300000.0    # 流通市值上限(万元) = 30亿
+MARKET_CAP_MIN = 0.0         # 流通市值下限(万元) >0
+PE_TTM_MIN = 0.0             # PE_TTM > 0
+PB_MIN = 0.0                 # PB > 0
+QUALITY_BPS_MIN = 0.0        # 每股净资产 > 0 (质量排雷)
+QUALITY_ROE_MIN = 0.0        # ROE > 0 (质量排雷)
+QUALITY_PROFIT_DEDT_MIN = 0.0  # 扣非净利润 > 0 (质量排雷)
+
 DATA_DIR = "D:/QMT_POOL"
 STATE_FILE = os.path.join(DATA_DIR, "v2_holdings_state.json")
 LOG_FILE = os.path.join(DATA_DIR, "strategy_log_v2.txt")
@@ -121,9 +133,10 @@ def _load_pool(C):
         return []
 
 def _load_financial():
-    """从CSV加载PE/PB/circ_mv/行业"""
+    """从CSV加载PE/PB/circ_mv/行业/质量字段 (E1: 含 bps/roe/profit_dedt 质量排雷字段)"""
     result = {}
-    for name in ["pe_ttm", "pb", "circ_mv", "industry", "total_mv"]:
+    for name in ["pe_ttm", "pb", "circ_mv", "industry", "total_mv",
+                 "bps", "roe", "profit_dedt"]:
         path = os.path.join(DATA_DIR, "financial_%s.csv" % name)
         if not os.path.exists(path):
             continue
@@ -200,6 +213,23 @@ def _load_delist_info():
                 if code:
                     result[code] = (row.get("list_status", "") or "",
                                     row.get("delist_date", "") or "")
+    except Exception:
+        pass
+    return result
+
+def _load_st_list():
+    """从CSV加载最新交易日 ST 股集合 (E1 对齐回测 exclude_st)"""
+    path = os.path.join(DATA_DIR, "st_list.csv")
+    result = set()
+    if not os.path.exists(path):
+        return result
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                code = row.get("ts_code", "")
+                if code:
+                    result.add(code)
     except Exception:
         pass
     return result
@@ -582,16 +612,42 @@ def _get_price(C, code, field="close"):
         pass
     return None
 
-def _score_stocks(C, pool, fin_data, bp_hist, ind_map, today_str):
-    """评分：行业中性BP z-score * 0.8 + hp * 0.2"""
+def _score_stocks(C, pool, fin_data, bp_hist, ind_map, today_str, st_set=None):
+    """评分: 行业中性BP z-score * Z_WEIGHT + hp * HP_WEIGHT (当前 Z=1.0 / HP=0.0)
+
+    E1 (2026-10-13): 候选池先过回测同款宇宙筛选 (镜像 runner.get_candidates):
+      circ_mv∈(MARKET_CAP_MIN, MARKET_CAP_MAX) 且 pe_ttm>PE_TTM_MIN 且 pb>PB_MIN
+      且 质量排雷 (bps>0 & roe>0 & profit_dedt>0) 且 非ST。
+    仅通过筛选的股票进入 bp_vals 参与评分 → 生产候选池与回测一致。
+    (停牌在买入时由 _is_suspended 实时剔除; 退市排雷由 _delist_hit_qmt 在换仓流程处理。)
+    """
+    if st_set is None:
+        st_set = set()
     scores = {}
-    # 收集BP值
+    # 收集BP值 (先过宇宙筛选)
     bp_vals = {}
     for code in pool:
+        if code in st_set:
+            continue  # exclude_st
         fd = fin_data.get(code, {})
+        circ_mv = fd.get("circ_mv", 0)
+        if not (circ_mv and circ_mv > MARKET_CAP_MIN and circ_mv < MARKET_CAP_MAX):
+            continue
+        pe = fd.get("pe_ttm", 0)
+        if not (pe and pe > PE_TTM_MIN):
+            continue
         pb = fd.get("pb", 0)
-        if pb and pb > 0:
-            bp_vals[code] = 1.0 / pb
+        if not (pb and pb > PB_MIN):
+            continue
+        # 质量排雷: bps>0 and roe>0 and profit_dedt>0 (缺字段视为不通过)
+        bps = fd.get("bps", 0)
+        roe = fd.get("roe", 0)
+        pdt = fd.get("profit_dedt", 0)
+        if not (bps and bps > QUALITY_BPS_MIN
+                and roe and roe > QUALITY_ROE_MIN
+                and pdt and pdt > QUALITY_PROFIT_DEDT_MIN):
+            continue
+        bp_vals[code] = 1.0 / pb
 
     if not bp_vals:
         return scores
@@ -766,8 +822,9 @@ def handlebar(C):
         bp_hist = _load_bp_history()
         ind_map = _load_industry_map()
         delist_info = _load_delist_info()   # v2.3 退市排雷
+        st_set = _load_st_list()            # E1 exclude_st
 
-        scores = _score_stocks(C, pool, fin_data, bp_hist, ind_map, today_str)
+        scores = _score_stocks(C, pool, fin_data, bp_hist, ind_map, today_str, st_set)
         if not scores:
             return
 

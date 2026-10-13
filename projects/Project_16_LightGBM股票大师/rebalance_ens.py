@@ -7,7 +7,9 @@
      绝不读/纳管账户全量持仓里他人的票）
   3) 卖出：融合账本中不在目标 topN 的 → SELL（可卖量受 can_use 限制，T+1 锁定不卖）
   4) 买入：目标中持有不足的 → BUY 补到目标股数（等权对齐资金池 98%/N，整手）
-     重叠规避：跳过 G2 账本（g2_hold_dates.json）已持有的票，防同账户双桥争同一持仓
+      重叠规避：跳过 G2 账本（g2_hold_dates.json）已持有的票，防同账户双桥争同一持仓
+      大盘门控（T-20261009-008 / E-4）：沪深300 三档 T=0 停买 / T=1 半仓 / T=2 满仓，
+      复用 rebalance_g2 门控（口径同源），数据缺失 fail-safe 半仓；测试注入 G2_HS300_PCT
   5) 写 orders 到桥 cmd/orders_<date>.json（dry-run 默认，--live 才真写）
   6) 输出 data/rebalance_g2_ens_<date>.md/.json
 
@@ -33,6 +35,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import g2_ens_config as G
 import is_trade_day as ITD
 import position_filter as PF
+import rebalance_g2 as RBG   # 大盘门控复用：load_hs300_pct/_calc_tier + g2_config 阈值（T-20261009-008，口径同源）
 from qmt_bridge_client_ens import (
     write_orders, read_fills, read_positions, read_heart,
     positions_from_fills, fetch_price, is_bridge_alive, _cmd_path, notify_feishu,
@@ -143,7 +146,8 @@ def _gen_positions_cfg(date):
 
 
 def _fetch_ohlc(code):
-    """腾讯行情取 现价/昨收/今开/当日成交量(手)。失败返回 None（G2-V1.0 低开校验用）。"""
+    """腾讯行情取 现价/昨收/今开/当日成交量(手)/实时名称。失败返回 None。
+    name（T-20261012-001）：实时证券简称（含 ST 前缀），供 PF.st_guard 免二次请求直判。"""
     try:
         import urllib.request
         sym = code.split(".")[0]
@@ -155,7 +159,8 @@ def _fetch_ohlc(code):
             f = raw.split("~")
             if len(f) > 6:
                 return {"price": float(f[3]), "pre_close": float(f[4]),
-                        "open": float(f[5]), "vol_lot": float(f[6])}
+                        "open": float(f[5]), "vol_lot": float(f[6]),
+                        "name": f[1].strip() if len(f) > 1 and f[1].strip() else None}
     except Exception:
         pass
     return None
@@ -401,6 +406,29 @@ def build_plan(date, capital):
 
     # ---- 卖出：持仓满 HOLD_DAYS 到期 → SELL（止损/止盈由桥内风控处理） ----
     for code, ld in ledger.items():
+        # ---- ST 风险警示强制剔除（T-20261012-001，诚哥拍板 2026-10-12）----
+        # ST 持仓不等持有期，下个换仓日强制卖出（背景：ENS 持仓 000610 为 ST、
+        # 10-12 候选 600180 亦为 ST——特征快照无 is_st 列致候选链盲区）。
+        # T+1 锁定则顺延次日换仓再卖（st_guard 每日重判）。
+        _st_skip, _st_why = PF.st_guard(code)
+        if _st_skip:
+            sellable = load_sellable(date, code)
+            vol = ld["vol"]
+            if sellable is not None:
+                vol = min(vol, sellable)
+            if vol <= 0:
+                plan["skips"].append({"code": code, "vol": ld["vol"], "reason": "ST剔除但T+1锁定可卖0(次日换仓再卖)"})
+                print("    !! %s %s 但 T+1 锁定可卖 0，次日换仓再卖" % (code, _st_why))
+                continue
+            price = fetch_price(code) or ld["cost"]
+            orders.append({
+                "action": "SELL", "code": code, "vol": vol, "price": round(price, 3),
+                "reason": "%s(强制卖出)" % _st_why, "strategy_order_id": "P16_%s_%04d" % (date, seq0 + len(orders) + 1),
+            })
+            plan["sells"].append({"code": code, "vol": vol, "cost": ld["cost"], "price": round(price, 3)})
+            sold_codes.add(code)
+            print("    !! [ST剔除] %s 强制卖出 %d 股（不等持有期）" % (code, vol))
+            continue
         since = hold_dates.get(code)
         if since:
             held_days, cal_ok = _count_trade_days(since, date)
@@ -438,7 +466,33 @@ def build_plan(date, capital):
         n_slots = 0
         plan["downgrade_frozen"] = True
         print("    !! [降级闸] ENS 纸面前向样本外为负，冻结加仓（只卖不买）——已持仓到期卖出照常，桥内风控照常")
-    if n_slots > 0 and pool:
+    # ---- 大盘门控（T-20261009-008 / E-4，2026-10-10 补上）：对齐 G2/V1.3 三档 ----
+    # T=0（≤-1.5%）停买（只卖不买，空位不补）/ T=1（<-1.0%）半仓 / T=2 满仓；
+    # 数据缺失 fail-safe 按 T=1 半仓（刹车数据缺失时降速不裸奔）。
+    # import 复用 rebalance_g2 的 load_hs300_pct/_calc_tier + g2_config 阈值与部署比例
+    # （口径同源：G2 未来换数据源/调阈值同步生效；测试注入环境变量同为 G2_HS300_PCT）。
+    # 风险声明（ens_alignment_design 差异二）：ENS 网格寻优未含门控，纸面 ens 臂自此与
+    # 实盘口径分叉（实盘多了门控），属防御性偏离，季评报告需带此注记。
+    hs300_pct = RBG.load_hs300_pct()
+    tier = RBG._calc_tier(hs300_pct)
+    if tier is None:
+        tier = 1  # 数据缺失 fail-safe 半仓
+        print("    !! [门控] 沪深300 涨跌幅获取失败，fail-safe 按 T=1 半仓执行")
+    deploy_pct = RBG.G.HALF_DEPLOY_PCT if tier == 1 else (0.0 if tier == 0 else RBG.G.DEPLOY_PCT)
+    plan["hs300_pct"] = hs300_pct
+    plan["tier"] = tier
+    plan["deploy_pct"] = deploy_pct
+    hs_disp = "N/A" if hs300_pct is None else ("%.2f%%" % hs300_pct)
+    if tier == 0:
+        print("    [门控] 沪深300 %s <= 停买线 %.1f%% → T=0 停买（只卖不买，空位不补）" % (hs_disp, RBG.G.TIER_STOP_PCT))
+    elif tier == 1:
+        if hs300_pct is None:
+            print("    [门控] 沪深300 取数失败 fail-safe → T=1 半仓（买入预算=资金池×%.0f%%）" % (RBG.G.HALF_DEPLOY_PCT * 100))
+        else:
+            print("    [门控] 沪深300 %s <= 半仓线 %.1f%% → T=1 半仓（买入预算=资金池×%.0f%%）" % (hs_disp, RBG.G.TIER_HALF_PCT, RBG.G.HALF_DEPLOY_PCT * 100))
+    else:
+        print("    [门控] 沪深300 %s → T=2 满仓（买入预算=资金池×%.0f%%）" % (hs_disp, RBG.G.DEPLOY_PCT * 100))
+    if n_slots > 0 and pool and deploy_pct > 0:
         # 重叠规避（2026-09-10 拍板）：跳过 G2 账本（g2_hold_dates.json）已持有的票，
         # 防同账户(70180771) 双桥（G2/融合）争同一持仓导致账本归属歧义
         g2_held = set()
@@ -459,7 +513,8 @@ def build_plan(date, capital):
         # ---- 动态等权（2026-09-22 对齐 V1.3，修复 TOP_N 上调后补仓资金不足）----
         # 原实现"budget_each = 资金池×(1-保留)/空位"存在两个问题：①只补空位不减仓，老仓占满资金池
         # 时补不到新 TOP_N；②预算用资金池总额未扣保留持仓成本，部分补仓场景总敞口超资金池
-        # （G2 早已修的 T-20260903-019 bug 未同步）。改为 V1.3 式等权（ENS 无大盘门控，用固定保留现金）：
+        # （G2 早已修的 T-20260903-019 bug 未同步）。改为 V1.3 式等权（大盘门控见下方 deploy_pct，
+        # T-20261009-008 补上，此前 ENS 是三链中唯一无刹车的）：
         #   target_value = 资金池×(1-保留2%)/TOP_N；kept 超配→SELL 减仓释放资金、新晋→建仓到目标股数。
         # 注：此实盘等权口径与回测「只补空位」不同，历史回测数字须标注口径前提。
         #
@@ -476,6 +531,13 @@ def build_plan(date, capital):
                 continue
             # ---- 低开校验（G2-V1.0，T3）：极端低开(<=-5%)跳过；低开(-5~-3%)需放量承接才放行 ----
             _ohlc = _fetch_ohlc(code)
+            # ---- ST 风险警示买入拦截（T-20261012-001）：主库快照 + 腾讯实时名称双层 ----
+            # name 直用 _fetch_ohlc 已取的实时简称（含 ST 前缀），免二次请求；两层皆失 fail-open。
+            _st_skip, _st_why = PF.st_guard(code, name=(_ohlc or {}).get("name"))
+            if _st_skip:
+                plan["skips"].append({"code": code, "reason": _st_why})
+                print(f"    !! {code} ST 拦截: {_st_why}")
+                continue
             if _ohlc:
                 _avg = _recent_avg_vol(code)
                 _vr = (_ohlc["vol_lot"] / _avg) if (_avg and _avg > 0) else None
@@ -486,8 +548,10 @@ def build_plan(date, capital):
                     continue
             new_targets.append((code, price, best["total"]))
 
-        # 第二步：等权目标市值（固定分母 TOP_N；ENS 无大盘门控，deploy=1-保留2%）
-        target_value = capital * (1 - G.RESERVE_CASH_PCT) / float(G.TOP_N)
+        # 第二步：等权目标市值（固定分母 TOP_N；基数乘 deploy_pct——大盘门控 T-20261009-008）
+        # T=2 时 deploy_pct=DEPLOY_PCT(0.98) ≡ 1-RESERVE_CASH_PCT(2%)（同一拍板 T-20261003-006），
+        # 与原公式 capital*(1-2%)/TOP_N 数值完全一致（行为零变化）；T=1 半仓、T=0 已被外层闸拦截。
+        target_value = capital * deploy_pct / float(G.TOP_N)
         plan["target_value"] = round(target_value, 2)
 
         # 第三步：对最终持有集平衡 —— 超配减仓收集（全部 SELL 先于 BUY）

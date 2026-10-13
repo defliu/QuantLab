@@ -4,7 +4,10 @@
 判断优先级：
   1) 周六/周日 -> 非交易日（A股周末必休；调休补班的周末同样休市）
   2) 日期在 data/ashare_trade_dates.txt（主库真实交易日快照，含增量）-> 交易日
-  3) 不在快照（主库周更滞后或未来日期）-> 查 2026 法定节假日休市表：是休市日则非交易日，否则视为交易日
+  3) 不在快照（主库周更滞后或未来日期）-> 查法定节假日休市表 HOLIDAYS：是休市日则非交易日，否则视为交易日
+     ⚠️ HOLIDAYS 按年硬编码，**每年 12 月前必须补下一年度休市安排**；年份缺表时
+     第 3 步无法判定，函数会 fail-loud（stderr 提示 + reason 标注）但保持「按交易日
+     处理」——详见 _warn_missing_holiday_year。
 
 用法：
   python is_trade_day.py              # 判断今天
@@ -94,6 +97,28 @@ def load_calendar():
         return set()
 
 
+_WARNED_YEARS = set()
+
+
+def _warn_missing_holiday_year(d):
+    """年份未登记在 HOLIDAYS 时 fail-loud（每年只提示一次）。
+
+    风险：HOLIDAYS 只硬编码到 2026 年。2027 起若未补表，长假会被判成「默认交易日」
+    → ①交易日门禁在休市日误跑；②持有期把长假计成交易日 → MATURE 提前触发
+    （与 2026-10-08 事故同型，见 T-20261009-005）。
+
+    这里**保持「按交易日处理」不改行为**——改成非交易日会让全部定时任务停摆，
+    是更糟的静默故障；改为响亮提示，让运维在每年 12 月前补下一年度休市安排。
+    """
+    y = str(d.year)
+    if y in HOLIDAYS or y in _WARNED_YEARS:
+        return
+    _WARNED_YEARS.add(y)
+    print("[warn] HOLIDAYS 未登记 %s 年休市安排 → 该年法定节假日会被判为交易日"
+          "（门禁可能误跑、持有期可能提前到期）。请补 is_trade_day.HOLIDAYS。"
+          % y, file=sys.stderr)
+
+
 def is_trade_day(d: datetime.date, cal) -> dict:
     ds = d.isoformat()
     if d.weekday() >= 5:
@@ -108,6 +133,12 @@ def is_trade_day(d: datetime.date, cal) -> dict:
     holidays = HOLIDAYS.get(str(d.year), set())
     if ds in holidays:
         return {"is_trade_day": False, "reason": "法定节假日休市", "date": ds}
+    if str(d.year) not in HOLIDAYS:
+        # 年份无休市表：无法判定是否为节假日，fail-loud 但保持原行为（见函数注释）
+        _warn_missing_holiday_year(d)
+        return {"is_trade_day": True,
+                "reason": "默认交易日(主库未覆盖且非节假日；⚠️%s年休市表未登记)" % d.year,
+                "date": ds}
     return {"is_trade_day": True, "reason": "默认交易日(主库未覆盖且非节假日)", "date": ds}
 
 

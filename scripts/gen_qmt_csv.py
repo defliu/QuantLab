@@ -11,6 +11,10 @@
   - financial_pe_ttm.csv    ts_code,value    最新交易日 PE_TTM
   - financial_circ_mv.csv   ts_code,value    最新交易日流通市值(万元)
   - industry_map.csv        ts_code,industry 申万行业 (来自 stock_basic)
+  - financial_bps.csv       ts_code,value    每股净资产 (质量排雷, E1 对齐回测)
+  - financial_roe.csv       ts_code,value    ROE (质量排雷, E1 对齐回测)
+  - financial_profit_dedt.csv ts_code,value 扣非净利润 (质量排雷, E1 对齐回测)
+  - st_list.csv             ts_code         最新交易日 ST 股 (E1 对齐回测 exclude_st)
   - bp_hist_pct.csv         ts_code,date,hp_pct  月度 BP 值(1/PB, 月末)
        注意: hp_pct 存的是【月度 BP 值】而非分位!
        strategy_v2._score_stocks 把该值当 BP 值, 数过去36月内 h<=latest 的比例
@@ -31,6 +35,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 DAILY = r"D:\astock\daily\stock_daily.parquet"
 BASIC = r"D:\astock\basic\stock_basic.parquet"
+FINA = r"D:\astock\finance\fina_indicator.parquet"
 OUT_DIR = r"D:\QMT_POOL"
 
 N_MONTHS = 36   # 历史分位窗口 (策略 HP_WINDOW)
@@ -42,7 +47,11 @@ def log(msg):
 
 
 def gen_valuation():
-    """financial_pb / financial_pe_ttm / financial_circ_mv: 最新交易日快照"""
+    """financial_pb / financial_pe_ttm / financial_circ_mv: 最新交易日快照
+
+    返回 (latest, last): latest = 最新交易日 Timestamp, last = 该日截面 DataFrame.
+    E1: 复用 last 给 gen_st_list 取 is_st, 避免重复读取 1472 万行 daily.
+    """
     log("读取 daily 最新交易日...")
     t0 = time.time()
     df = pd.read_parquet(DAILY)
@@ -69,6 +78,62 @@ def gen_valuation():
             for code, v in sub[col].items():
                 w.writerow([code, "%.4f" % v])
         log("  [OK] %s: %d 只 (%s)" % (fname, len(sub), label))
+    return latest, last
+
+
+def gen_quality(latest):
+    """financial_bps/roe/profit_dedt.csv: 质量排雷 PIT 快照 (E1 对齐回测)
+
+    镜像 runner.fin_snapshot: 只取 ann_date <= 最新交易日的最近一期财报
+    (按 ts_code+ann_date 排序后取每组最后一条), 避免使用未来财报。
+    存原始值(不预过滤>0), 正负判断交由 strategy_v2._score_stocks 施加。
+    """
+    t0 = time.time()
+    log("读取 fina_indicator 质量字段 (PIT ann_date <= %s)..." % latest.date())
+    fin = pd.read_parquet(FINA, columns=["ts_code", "ann_date", "bps", "roe", "profit_dedt"])
+    fin["ann_date"] = pd.to_datetime(fin["ann_date"], errors="coerce")
+    fin = fin.dropna(subset=["ann_date"])
+    fin = fin[fin["ann_date"] <= latest]
+    fin = fin.sort_values(["ts_code", "ann_date"])
+    snap = fin.groupby("ts_code").tail(1)
+    log("  PIT 快照命中 %d 只 (%ds)" % (len(snap), time.time() - t0))
+
+    specs = [
+        ("financial_bps.csv", "bps", "每股净资产"),
+        ("financial_roe.csv", "roe", "ROE"),
+        ("financial_profit_dedt.csv", "profit_dedt", "扣非净利润"),
+    ]
+    for fname, col, label in specs:
+        # 注意: 必须 set_index("ts_code") 后再取 items, 否则迭代到的是
+        # 行号(整数索引)而非股票代码, 产物 ts_code 全错 (2026-10-13 修复).
+        s = snap.set_index("ts_code")[col].dropna()
+        path = os.path.join(OUT_DIR, fname)
+        with open(path, "w", newline="", encoding="utf-8") as f:
+            w = csv.writer(f)
+            w.writerow(["ts_code", "value"])
+            for code, v in s.items():
+                w.writerow([code, "%.4f" % v])
+        n_pos = int((s > 0).sum())
+        log("  [OK] %s: %d 只 (>0 者 %d) (%s)" % (fname, len(s), n_pos, label))
+
+
+def gen_st_list(last):
+    """st_list.csv: 最新交易日 ST 股 (E1 对齐回测 exclude_st)
+
+    last = daily 最新交易日截面. is_st: 1=ST/*ST (astock 口径), 取 ==1 的代码。
+    """
+    if "is_st" not in last.columns:
+        log("  [SKIP] st_list: daily 无 is_st 列")
+        return
+    flag = pd.to_numeric(last["is_st"], errors="coerce").fillna(0)
+    st = last.index[flag > 0].tolist()
+    path = os.path.join(OUT_DIR, "st_list.csv")
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["ts_code"])
+        for code in st:
+            w.writerow([code])
+    log("  [OK] st_list.csv: %d 只 ST" % len(st))
 
 
 def gen_industry():
@@ -175,7 +240,9 @@ def gen_delist_info():
 
 def main():
     log("=== 生成 V2 策略 QMT CSV ===")
-    gen_valuation()
+    latest, last = gen_valuation()
+    gen_quality(latest)
+    gen_st_list(last)
     gen_industry()
     gen_bp_hist()
     gen_selected()

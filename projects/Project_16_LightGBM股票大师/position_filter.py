@@ -159,7 +159,8 @@ def apply_rules(cand, target_date=None, mode=None, reason_out=None):
 
 
 def fetch_ohlc(code):
-    """腾讯行情取 现价/昨收/今开/当日成交量(手)。失败返回 None（T4 低开校验用，供 rebalance 端共用）。"""
+    """腾讯行情取 现价/昨收/今开/当日成交量(手)/实时名称。失败返回 None（T4 低开校验用，供 rebalance 端共用）。
+    name（T-20261012-001）：实时证券简称（含 ST 前缀），供 st_guard 免二次请求直判。"""
     try:
         import urllib.request
         sym = code.split(".")[0]
@@ -171,7 +172,8 @@ def fetch_ohlc(code):
             f = raw.split("~")
             if len(f) > 6:
                 return {"price": float(f[3]), "pre_close": float(f[4]),
-                        "open": float(f[5]), "vol_lot": float(f[6])}
+                        "open": float(f[5]), "vol_lot": float(f[6]),
+                        "name": f[1].strip() if len(f) > 1 and f[1].strip() else None}
     except Exception:
         pass
     return None
@@ -211,6 +213,99 @@ def gap_guard(code, price, pre_close=None, open_price=None, vr=None):
         if vr is not None and vr >= GAP_VR:
             return False, None   # 低开但放量 → 强势承接，放行
         return True, "低开%.1f%%且量比不足%.1f跳过买入" % (open_pct, GAP_VR)
+    return False, None
+
+
+# ============================================================================
+# ST 风险警示剔除（T-20261012-001，诚哥拍板 2026-10-12）：三层防线
+#   背景：候选链特征快照（g2_latest_features.parquet 等）无 is_st 列，候选生成端
+#         完全看不到 ST 状态 → 2026-10-12 G2 臂实盘买入 *ST华鹏 603021.SH 实锤。
+#   L1 候选生成端（根治）：deploy_predict*.py / review_full.py 批量剔除
+#       （load_st_codes 主库 is_st 快照 + review_full 实时名称直判）
+#   L2 执行端买入拦截：rebalance_g2/ens/daily 买入循环 st_guard
+#       （主库 is_st 快照 + 腾讯实时名称双层，抓快照后新戴帽）
+#   L3 执行端强制卖出：rebalance_g2/ens 卖出循环 + rebalance_daily 成熟度循环对
+#       ST 持仓强制 SELL，不等持有期（诚哥拍板 2026-10-12：次日换仓日卖出）
+#   fail-open 哲学与 gap_guard 一致：两层都拿不到 → 放行（不因数据缺失阻塞交易）；
+#   但 L1/L2 双层叠加使漏网概率极低（主库快照滞后约 2 周由腾讯实时名称补）。
+# ============================================================================
+
+_ST_CACHE = {"codes": None, "asof": None}
+
+
+def load_st_codes(refresh=False):
+    """主库 is_st（最新数据日快照）→ ST 代码 set；读取失败返回 None（fail-open）。
+
+    主库 daily parquet 的 is_st 为日频快照（1=ST），ts_code/trade_date 为 MultiIndex
+    索引列；随供应商全量包更新（当前滞后约 2 周），快照后新戴帽由 fetch_name
+    实时层兜底（见 st_guard）。进程内缓存，重复调用零开销。
+    """
+    if _ST_CACHE["codes"] is not None and not refresh:
+        return _ST_CACHE["codes"]
+    try:
+        main = pd.read_parquet(DC.MAIN_DAILY, columns=["is_st"])
+        dates = main.index.get_level_values("trade_date")
+        asof = dates.max()
+        sub = main[dates == asof]
+        codes = set(sub.index.get_level_values("ts_code")[sub["is_st"].values == 1].astype(str))
+        _ST_CACHE["codes"] = codes
+        _ST_CACHE["asof"] = str(asof)
+        return codes
+    except Exception as e:
+        print("[position_filter] ST 名单读取失败（fail-open 放行）: %r" % (e,))
+        return None
+
+
+def fetch_name(code):
+    """腾讯行情取实时证券名称（f[1]，含 ST/*ST 前缀）。失败返回 None。
+
+    与 fetch_ohlc 同源 API（qt.gtimg.cn），名称为交易所最新简称——主库快照后
+    新戴帽/摘帽以此为准（2026-10-12 实测 *ST华鹏 603021 返回 "*ST华鹏"）。
+    """
+    try:
+        import urllib.request
+        sym = code.split(".")[0]
+        ex = code.split(".")[1].lower()
+        url = "http://qt.gtimg.cn/q=%s%s" % (ex, sym)
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        raw = urllib.request.urlopen(req, timeout=5).read().decode("gbk", errors="ignore")
+        if "~" in raw:
+            f = raw.split("~")
+            if len(f) > 1 and f[1].strip():
+                return f[1].strip()
+    except Exception:
+        pass
+    return None
+
+
+def is_st_name(name):
+    """证券名称是否含 ST 风险警示前缀（ST/*ST/S*ST 统一判 'ST' in name）。
+
+    A 股证券简称中 'ST' 仅出现在风险警示前缀，中文简称无歧义误伤。
+    """
+    return bool(name) and "ST" in str(name).upper()
+
+
+def st_guard(code, name=None):
+    """ST 风险警示买入/持仓拦截（T-20261012-001）。返回 (skip: bool, reason: str|None)。
+
+    双层判定（与 gap_guard 同 fail-open 哲学）：
+      1) 主库 is_st 名单（load_st_codes，内存批量，最新快照日，滞后约 2 周）；
+      2) 腾讯实时名称含 'ST'（name 参数已取则直用，否则现取——抓快照后新戴帽）。
+    两层都拿不到 → (False, None) 放行。
+    """
+    try:
+        st_codes = load_st_codes()
+        if st_codes is not None and code in st_codes:
+            return True, "ST风险警示剔除(主库is_st快照%s)" % (_ST_CACHE.get("asof") or "?")
+    except Exception:
+        pass
+    try:
+        nm = name if name else fetch_name(code)
+        if is_st_name(nm):
+            return True, "ST风险警示剔除(%s)" % nm
+    except Exception:
+        pass
     return False, None
 
 

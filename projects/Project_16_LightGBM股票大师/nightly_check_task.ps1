@@ -16,9 +16,15 @@ $log = Join-Path $proj "data\schedules\nightly_check_task.log"
 New-Item -ItemType Directory -Force -Path (Split-Path $log) | Out-Null
 
 # Python 探测（与 run_scheduled.ps1 Get-GoodPy 同口径：需带 numpy/lightgbm）
+# T-20261012-001：候选顺序修正，与 run_scheduled.ps1 同批修复。原候选只有
+# `Get-Command python`（本机=WindowsApps 商店 stub，exit 9009）与 $FALLBACK_PY
+# （TRAE SOLO 内置，缺 encodings 已损坏），均测不过即 exit 1；唯一可用的
+# miniqmt venv 未列入候选，故必须补为首选。
+$MINIQMT_PY = "C:\Users\Administrator\.workbuddy\binaries\python\envs\miniqmt\Scripts\python.exe"
 $FALLBACK_PY = "C:\Users\Administrator\AppData\Roaming\TRAE SOLO CN\ModularData\ai-agent\vm\tools\python\python.exe"
 $py = $null
 $cands = @()
+if (Test-Path $MINIQMT_PY) { $cands += $MINIQMT_PY }
 $p = (Get-Command python -ErrorAction SilentlyContinue).Source
 if ($p) { $cands += $p }
 if (Test-Path $FALLBACK_PY) { $cands += $FALLBACK_PY }

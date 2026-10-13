@@ -27,6 +27,10 @@
   S8 清单读失败卖出（同上）：清单路径存在但读取抛异常 → 卖出照常（修复前 return）
   S9 清单缺失+T=0（同上）：清仓信号不因清单缺失失效，全部 T0_LIQUIDATE
   S10 源码断言（同上）：清单缺失/读取失败分支内不得残留裸 return（防回归绊线）
+  S11 断流告警·缺失（T-20261009-004）：清单缺失 → _alert_selection_problem 触发
+                 （loader=none）+ plan.degraded=selection_missing
+  S12 断流告警·读失败（同上）：read_error 分支同样告警 + degraded=selection_read_error
+  S13 正常清单不告警（防误报）：清单在且可读 → 0 次告警 + degraded 为空串
 
 运行（miniqmt venv）：
   C:/Users/Administrator/.workbuddy/binaries/python/envs/miniqmt/Scripts/python.exe research/tests/test_rebalance_sell_priority.py
@@ -369,6 +373,80 @@ def test_s10_no_bare_return_in_selection_missing_block():
            not any(ln == "return" for ln in seg), [ln for ln in seg if "return" in ln])
 
 
+def test_s11_missing_selection_alerts_and_degrades():
+    """S11 T-20261009-004：清单缺失 → 断流告警触发 + plan.degraded=selection_missing。
+
+    2026-10-09 事故：清单缺失静默空仓一整天（marker 表面 executed_live=true）。
+    修复后缺失必须第一时间人工可见（飞书告警），并在 plan json 留 degraded 痕。
+    """
+    tmp = tempfile.mkdtemp(prefix="t20261009_s11_")
+    calls = []
+    orig_alert = R._alert_selection_problem
+    R._alert_selection_problem = lambda *a, **k: calls.append(a)
+    try:
+        plan = _run_dryrun(
+            tmp, "20260929", [],
+            positions={"603049.SH": 44.0},
+            sellable={"603049.SH": 900},
+            last_buy={"603049.SH": "2026-09-16"},
+            sel_mode="missing",
+        )
+    finally:
+        R._alert_selection_problem = orig_alert
+        shutil.rmtree(tmp, ignore_errors=True)
+    _check("S11 清单缺失触发断流告警（恰 1 次）", len(calls) == 1, calls)
+    if calls:
+        _check("S11 告警参数 loader=none", calls[0][2] == "none", calls[0])
+        _check("S11 告警参数含日期 20260929", calls[0][0] == "20260929", calls[0])
+    _check("S11 plan.degraded=selection_missing",
+           plan.get("degraded") == "selection_missing", plan.get("degraded"))
+    _check("S11 卖出通道不受影响（T-20261003-001 语义保持）",
+           any(s["code"] == "603049.SH" for s in plan["sell"]), plan["sell"])
+
+
+def test_s12_broken_selection_alerts_and_degrades():
+    """S12 T-20261009-004：清单读取失败 → 同样告警（loader=read_error）+ degraded=selection_read_error。"""
+    tmp = tempfile.mkdtemp(prefix="t20261009_s12_")
+    calls = []
+    orig_alert = R._alert_selection_problem
+    R._alert_selection_problem = lambda *a, **k: calls.append(a)
+    try:
+        plan = _run_dryrun(
+            tmp, "20260929", [],
+            positions={"603049.SH": 44.0},
+            sellable={"603049.SH": 900},
+            last_buy={"603049.SH": "2026-09-16"},
+            sel_mode="broken",
+        )
+    finally:
+        R._alert_selection_problem = orig_alert
+        shutil.rmtree(tmp, ignore_errors=True)
+    _check("S12 清单读失败触发断流告警（恰 1 次）", len(calls) == 1, calls)
+    if calls:
+        _check("S12 告警参数 loader=read_error", calls[0][2] == "read_error", calls[0])
+    _check("S12 plan.degraded=selection_read_error",
+           plan.get("degraded") == "selection_read_error", plan.get("degraded"))
+
+
+def test_s13_normal_selection_no_alert():
+    """S13 防误报：清单在且可读 → 0 次告警 + degraded 为空串。"""
+    tmp = tempfile.mkdtemp(prefix="t20261009_s13_")
+    calls = []
+    orig_alert = R._alert_selection_problem
+    R._alert_selection_problem = lambda *a, **k: calls.append(a)
+    try:
+        sel = [("%06d.SZ" % (300000 + i), 65.0) for i in range(5)]  # 全过红线
+        plan = _run_dryrun(
+            tmp, "20260929", sel,
+            positions={}, sellable={}, last_buy={},
+        )
+    finally:
+        R._alert_selection_problem = orig_alert
+        shutil.rmtree(tmp, ignore_errors=True)
+    _check("S13 正常清单不触发告警", len(calls) == 0, calls)
+    _check("S13 正常清单 degraded 为空串", plan.get("degraded") == "", plan.get("degraded"))
+
+
 if __name__ == "__main__":
     print("== 卖出风控优先级回归测试（T-20261002-001 + T-20261003-001）==")
     test_s1_incident_mature_sell_survives_redline_block()
@@ -381,5 +459,8 @@ if __name__ == "__main__":
     test_s8_broken_selection_mature_sell_survives()
     test_s9_missing_selection_t0_liquidate_survives()
     test_s10_no_bare_return_in_selection_missing_block()
+    test_s11_missing_selection_alerts_and_degrades()
+    test_s12_broken_selection_alerts_and_degrades()
+    test_s13_normal_selection_no_alert()
     print("\nPASS=%d FAIL=%d" % (PASS, FAIL))
     sys.exit(1 if FAIL else 0)

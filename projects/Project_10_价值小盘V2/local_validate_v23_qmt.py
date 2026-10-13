@@ -42,13 +42,14 @@ fin_data = mod._load_financial()
 delist_info = mod._load_delist_info()
 bp_hist = mod._load_bp_history()
 ind_map = mod._load_industry_map()
-print("[4] CSV: fin=%d delist=%d bp_hist=%d ind=%d (total_mv覆盖=%d)" % (
-    len(fin_data), len(delist_info), len(bp_hist), len(ind_map),
+st_set = mod._load_st_list()
+print("[4] CSV: fin=%d delist=%d bp_hist=%d ind=%d st=%d (total_mv覆盖=%d)" % (
+    len(fin_data), len(delist_info), len(bp_hist), len(ind_map), len(st_set),
     sum(1 for v in fin_data.values() if "total_mv" in v)))
 
-# 5. 评分
+# 5. 评分 (E1: 候选池已含宇宙筛选 circ_mv/pe_ttm/pb/质量排雷/非ST)
 print("[5] 评分...", end=" ", flush=True)
-scores = mod._score_stocks(ctx, pool, fin_data, bp_hist, ind_map, today)
+scores = mod._score_stocks(ctx, pool, fin_data, bp_hist, ind_map, today, st_set)
 print("候选 %d 只 (%.1fs)" % (len(scores), time.time() - t0))
 if not scores:
     print("FAIL: 无候选"); sys.exit(1)

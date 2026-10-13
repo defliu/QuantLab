@@ -288,6 +288,19 @@ def main():
     if len(pre) == 0:
         print(f"    !! 概率Top10(池{args.pool}→10)内无股票通过红线 {args.threshold} → 空仓（不落候选，rebalance 自然无买入）")
         return
+    # ---- ST 风险警示剔除（T-20261012-001，诚哥拍板 2026-10-12）：候选生成端根治 ----
+    # 背景：特征快照（g2_latest_features.parquet）无 is_st 列，候选链看不到 ST 状态，
+    # 10-12 G2 实盘买入 *ST华鹏 603021.SH 实锤。主库 is_st 快照批量剔除（快照滞后
+    # 约 2 周，新戴帽由执行端 st_guard 腾讯实时名称兜底）。
+    _st_codes = PF.load_st_codes()
+    if _st_codes:
+        _st_hit = sorted(set(pre["ts_code"]) & _st_codes)
+        if _st_hit:
+            pre = pre[~pre["ts_code"].isin(_st_codes)].copy()
+            print("    !! [ST剔除] 候选剔除 %d 只: %s" % (len(_st_hit), ",".join(_st_hit)))
+        if len(pre) == 0:
+            print("    !! ST 剔除后无候选 → 空仓（不落候选，宁缺毋滥）")
+            return
     # ---- 位置过滤（G2-V1.0，2026-09-08）----
     # 【重要修正 2026-09-08】G2 模型(g2_strong_real)口径回测验证：full 过滤有害
     # （红线60/N=10/0.1%滑点：Base +0.149% → full -0.108%），lite 亦未见增益，
@@ -423,8 +436,15 @@ def main():
                 if en_pool["SC_F2"].nunique() <= 1 or en_pool["SC_F5"].nunique() <= 1 or en_pool["main_net"].notna().sum() == 0:
                     raise SystemExit("!! FAIL-LOUD（ENS）：SC_F2/SC_F5 恒值或 main_net 全 NaN——已中止 ENS 落盘")
                 en_pool = en_pool[en_pool["total_new"] >= args.threshold].copy()
+                # ---- ST 风险警示剔除（T-20261012-001）：候选生成端根治（同 G2 主臂）----
+                _st_codes_e = PF.load_st_codes()
+                if _st_codes_e and len(en_pool) > 0:
+                    _st_hit_e = sorted(set(en_pool["ts_code"]) & _st_codes_e)
+                    if _st_hit_e:
+                        en_pool = en_pool[~en_pool["ts_code"].isin(_st_codes_e)].copy()
+                        print("    !! [ENS][ST剔除] 候选剔除 %d 只: %s" % (len(_st_hit_e), ",".join(_st_hit_e)))
                 if len(en_pool) == 0:
-                    print(f"    [ENS] 融合无候选通过红线 {args.threshold:.0f} → 空仓")
+                    print(f"    [ENS] 融合无候选通过红线 {args.threshold:.0f}/ST剔除后为空 → 空仓")
                 else:
                     en_picks = en_pool.nlargest(args.top, "ens")
                     en_rows = [{"date": target.date(), "code": s["ts_code"], "rank": rk,

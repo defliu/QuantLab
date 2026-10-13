@@ -6,6 +6,8 @@
 #         - 幂等：当日已换仓（桥 cmd/orders_<date>.json 已写 或 rebalance_g2_ens_<date>.json written=true）→ 跳过
 #         - 兜底：未换仓 → dry-run 校验（桥存活/候选新鲜/宁缺毋滥）→ --live 写桥
 #         - exit code 检查：失败不写锁 + 飞书告警（人工可重跑）
+#         - in-flight 扫描（T-20261009-001，对齐 V1.x T-20261008-009）：发现 rebalance_ens.py 仍在跑 →
+#           等待（≤20 分钟）后再判定；超时疑似挂死 → 放弃兜底 + 告警（绝不并发写桥）
 # 触发时点 10:08：TRAE 09:52 任务 ~10:02 完成，10:08 可区分已执行/未执行；避开 10:05 V13 guard、10:10 G2 DE、10:12 DE 核验。
 # ENS 候选由 Quant_P16_G2Candidates_Night（20:05，含 --ens-live 副本块）预生成 → 补跑无需实时取数。
 # 用法:
@@ -46,6 +48,32 @@ try {
     & $py "is_trade_day.py" --json *> $null
     if ($LASTEXITCODE -ne 0) { Log "非 A 股交易日，跳过 [$Date]"; exit 0 }
     Log "确认 A 股交易日，检查 ENS 09:52 换仓是否已执行 [$Date]"
+
+    # ---- in-flight 进程扫描（T-20261009-001，对齐 V1.x T-20261008-009）：标记检查看不见「正在跑」的换仓 ----
+    # 2026-10-08 V1.x 事故形态：TRAE 09:52 任务迟到时 orders/plan 标记尚未落盘，guard 按「无标记」
+    # 误判未执行 → 与 in-flight 的 TRAE run 并发写桥（重复指令）。
+    # json/orders 标记都要等 run 结束才存在，唯一可靠的「正在执行」信号是进程本身。
+    # 策略：发现 in-flight rebalance_ens.py 进程 → 轮询等其结束（最多 20 分钟）再复查标记；
+    #       超时未结束（疑似挂死）→ 放弃自动兜底 + 飞书告警人工核查（绝不并发写桥）。
+    # 注：DE 10:12 只读核验的 rebalance_ens.py dry-run（de_rebalance_guard_daily）会匹配本模式 →
+    #     极端交错下 guard 多等其 1-2 分钟，安全无害（宁等勿并发）。
+    $scanDeadline = (Get-Date).AddMinutes(20)
+    while ((Get-Date) -lt $scanDeadline) {
+        $inflight = Get-CimInstance Win32_Process -Filter "Name LIKE 'python%'" -ErrorAction SilentlyContinue |
+            Where-Object { $_.CommandLine -match 'rebalance_ens\.py' }
+        if (-not $inflight) { break }
+        Log "  检测到 in-flight ENS 换仓进程（pid=$($inflight.ProcessId -join ',')），等待其结束后再判定是否兜底"
+        Start-Sleep -Seconds 60
+    }
+    $stillInflight = Get-CimInstance Win32_Process -Filter "Name LIKE 'python%'" -ErrorAction SilentlyContinue |
+        Where-Object { $_.CommandLine -match 'rebalance_ens\.py' }
+    if ($stillInflight) {
+        $msg = "ENS $Date 换仓进程(pid=$($stillInflight.ProcessId -join ',')) 超过 20 分钟未结束（疑似挂死），guard 放弃自动兜底。请人工核查该进程与当日 orders，勿并发重跑。"
+        Log "!! $msg"
+        & $py "push_alert_card.py" --title "ENS guard: in-flight 换仓疑似挂死" --body $msg --level error 2>&1 | ForEach-Object { Log $_ }
+        Pop-Location
+        exit 1
+    }
 
     $already = $false
     # 标记1：桥 cmd/orders_<date>.json 已写（TRAE 已 live 写桥，有实际买卖）

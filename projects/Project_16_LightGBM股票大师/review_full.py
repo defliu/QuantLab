@@ -39,6 +39,7 @@
 import argparse
 import json
 import os
+import sys
 import time
 import numpy as np
 import pandas as pd
@@ -214,11 +215,35 @@ def _crosscheck_warns(cc, code):
     return warns
 
 
+def _resolve_rdate(args_date, review_date):
+    """T-20261009-004：输出日期锚 fail-closed。
+
+    优先级：--date 显式指定 > 复核 JSON 的 date > 今日墙钟。
+    背景（2026-10-09 事故）：国庆假期后 09:45 任务沿用/误写旧 tdx_review.json
+    （date=20260930）→ 本脚本照单全收 → 产物写成 20260930_selection_full.csv →
+    rebalance_daily 找 20261009 清单落空 → V1.x 静默空仓一整天（P0 断流）。
+    规则：复核 JSON 的 date 非今日且未显式传 --date → 拒绝生成（exit 2），
+    绝不静默产出错日文件；复盘/补跑场景必须显式 --date（guard 补跑已同步加传）。"""
+    today = time.strftime("%Y%m%d")
+    if args_date:
+        if str(args_date) != today:
+            print(f"[WARN] --date={args_date} 非今日({today})，按显式指示生成（复盘/补跑场景）")
+        return str(args_date)
+    rdate = str(review_date) if review_date else today
+    if rdate != today:
+        print(f"!! tdx_review.json date={rdate} 非今日({today}) —— 疑似旧数据，拒绝生成错日清单（T-20261009-004 fail-closed）")
+        print(f"   处置：更新复核 JSON 的 date 为今日后重跑；复盘/补跑请显式传 --date {rdate}")
+        sys.exit(2)
+    return rdate
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--candidates", required=True, help="deploy_predict 输出的候选 CSV 路径")
     ap.add_argument("--review", default=DEFAULT_REVIEW, help="实时复核 JSON 路径（TDX/多数据源统一格式）")
     ap.add_argument("--threshold", type=float, default=58.0, help="评分卡红线")
+    ap.add_argument("--date", default=None,
+                    help="显式指定输出日期 YYYYMMDD（复盘/补跑场景；缺省取复核 JSON 的 date，且必须=今日，否则 fail-closed 拒绝生成）")
     args = ap.parse_args()
 
     cand = pd.read_csv(args.candidates, dtype={"ts_code": str})
@@ -229,7 +254,7 @@ def main():
         review = json.load(open(args.review, encoding="utf-8"))
     else:
         review = {"date": time.strftime("%Y%m%d"), "stocks": []}
-    rdate = str(review.get("date", time.strftime("%Y%m%d")))
+    rdate = _resolve_rdate(args.date, review.get("date"))
     stocks = {s["ts_code"]: _norm_stock(s) for s in review["stocks"]}
 
     # F3 催化缓存兜底（9:25 集合竞价任务写 data/cache/review_<date>.json）
@@ -426,6 +451,18 @@ def main():
         print(f"    !! 位置过滤(lite)剔除 {len(_reasons)}/{_n_before} 只: {_reasons}")
     if len(out) == 0:
         print("    !! 位置过滤后无候选 → 空仓（宁缺毋滥）")
+        return
+    # ---- ST 风险警示剔除（T-20261012-001，诚哥拍板 2026-10-12）：候选生成端根治 ----
+    # name 为腾讯实时简称（rows 已取，含 ST 前缀）直接判；名称缺失的回退主库 is_st 快照。
+    # 背景：候选链特征快照无 is_st 列（G2 10-12 实盘买入 *ST华鹏 603021 实锤）。
+    _st_codes_r = PF.load_st_codes() or set()
+    _st_mask = out["name"].apply(PF.is_st_name) | out["ts_code"].isin(_st_codes_r)
+    if bool(_st_mask.any()):
+        _st_hit = sorted(out.loc[_st_mask, "ts_code"].tolist())
+        print(f"    !! [ST剔除] 候选剔除 {len(_st_hit)} 只: {','.join(_st_hit)}")
+        out = out[~_st_mask].reset_index(drop=True)
+    if len(out) == 0:
+        print("    !! ST 剔除后无候选 → 空仓（宁缺毋滥）")
         return
     print("[2/3] 完整版评分：")
     show = out[["ts_code", "name", "quote_pct", "model_prob", "F1", "F2", "F3", "F4", "F5", "F6", "total"]].copy()

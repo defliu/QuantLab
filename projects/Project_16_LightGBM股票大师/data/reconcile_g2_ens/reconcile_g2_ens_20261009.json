@@ -1,0 +1,84 @@
+{
+  "date": "20261009",
+  "account_id": "70180771",
+  "generated_at": "2026-10-09 16:01:41",
+  "fills": [
+    {
+      "strategy_order_id": "P16_20261009_RSK0001",
+      "code": "688651.SH",
+      "action": "SELL",
+      "vol": 700,
+      "price": 23.16,
+      "status": "FILLED",
+      "reason": "SELL_STOP"
+    },
+    {
+      "strategy_order_id": "P16_20261009_0001",
+      "code": "688117.SH",
+      "action": "BUY",
+      "vol": 1000,
+      "price": 17.62,
+      "status": "FILLED",
+      "reason": "deal confirmed"
+    }
+  ],
+  "pending": [],
+  "orphans": [],
+  "cross_strategy": [
+    {
+      "code": "605098.SH",
+      "vol": 500,
+      "hint": "账户比融合账本多 500 股（G2 持仓，同账号非融合孤儿）"
+    },
+    {
+      "code": "000607.SZ",
+      "vol": 7700,
+      "hint": "账户比融合账本多 7700 股（G2 持仓，同账号非融合孤儿）"
+    }
+  ],
+  "ledger": {
+    "000610.SZ": 2400,
+    "002841.SZ": 400,
+    "600691.SH": 6700,
+    "688117.SH": 1000
+  },
+  "asset": {
+    "account_id": "70180771",
+    "date": "20261009",
+    "updated_at": "2026-10-09 15:00:05",
+    "total_asset": 9990379.85,
+    "cash_available": 9858247.85,
+    "market_value": 132132.0
+  },
+  "issues": [],
+  "fills_total": 2,
+  "fills_by_status": {
+    "FILLED": 2
+  },
+  "pending_count": 0,
+  "account_positions": {
+    "600691.SH": 6700,
+    "605098.SH": 500,
+    "688117.SH": 1000,
+    "688651.SH": 0,
+    "000607.SZ": 7700,
+    "000610.SZ": 2400,
+    "002510.SZ": 0,
+    "002841.SZ": 400
+  },
+  "snapshot_missing": false,
+  "deltas": {
+    "605098.SH": 500,
+    "000607.SZ": 7700
+  },
+  "other_strategy_holdings": [
+    "000607.SZ",
+    "002510.SZ",
+    "605098.SH"
+  ],
+  "notes": [
+    "账户含 2 只 G2 持仓（同账号，非融合孤儿，仅提示）"
+  ],
+  "capital_prev": 96248.2,
+  "capital_rolled": 96314.02
+}

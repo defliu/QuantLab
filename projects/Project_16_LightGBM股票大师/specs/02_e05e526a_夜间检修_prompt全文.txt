@@ -15,7 +15,9 @@
 
 次日为交易日则执行：
 1. 【先确认 Windows 任务已自动体检，勿重复 --fix】读 data/schedules/nightly_check_task.log（最近一条「nightly_check exit=...」）与 data/cache/nightly_check_<今日>.md：若 Windows 计划任务 Quant_P16_NightlyCheck_0100 已成功执行（exit=0）→ 直接跳到步骤 2，不要重复运行 nightly_check.py --fix（防 01:00 并发双跑竞态：面板重刷/增量重下会互相踩）；若 Windows 任务缺失/失败/报告未生成 → 手动运行 python scripts/nightly_check.py --fix 补齐并标注「Windows 任务未跑，本会话补跑」。
-2. 核对次日所有定时任务 Active 状态：成本锚 09:00(eda9b0c3，Paused 属正常，已由 Windows Quant_P16_CfgPremarket_0900 覆盖) / 候选预生成 09:15(3c7fdd1e) / 集合竞价 09:25(b0254f11) / 开盘实时复核 09:45(15868a74) / G2换仓 09:50(30344e79) / 融合换仓 09:52(051bc2d9) / 午休持仓报告 11:35(095bbe1b) / 盘后持仓复盘 15:40(9a41d7f7) / G2日终对账 15:45(4cf3db92) / 融合日终对账 15:45(18c0c8d2) / Tushare刷新 19:30(c63cff58，Paused 属正常，已由 Windows Quant_Tushare_Moneyflow_Refresh 覆盖)；任何异常（新增 Paused/缺失/被删）记录并告警。
+2. 核对次日所有定时任务 Active 状态（按执行时点排序）：候选预生成 09:15(3c7fdd1e) / 集合竞价 09:25(b0254f11) / 融合换仓 09:31(051bc2d9) / 开盘实时复核 09:45(15868a74) / G2换仓 09:50(30344e79) / 午休持仓报告 11:35(095bbe1b) / 盘后持仓复盘 15:40(9a41d7f7) / G2日终对账 15:45(4cf3db92) / 融合日终对账 15:50(18c0c8d2)；任何异常（新增 Paused/缺失/被删）记录并告警。
+
+说明：成本锚 09:00 与 Tushare 刷新 19:30 两个已停用 TRAE 任务已于 2026-10-12 彻底删除，其功能分别由 Windows 计划任务 Quant_P16_CfgPremarket_0900 与 Quant_Tushare_Moneyflow_Refresh 承接，不在本清单内、无需核对（若发现其残留 Active 属异常，记录并告警）。
 3. 读 data/cache/nightly_check_<今日>.md 检修报告，核对 FAIL 项；已自动修的标注「已自动修复」，修复失败或无法修复的 FAIL 项如实保留。
 4. 有 FAIL 项（尤其面板未就绪/数据落后/任务异常/账户异常/moneyflow 滞后）时，推飞书 bot 私聊告警给用户（open_id=ou_bd13444d8ea53c28249c669f43f3eeff）。推送统一走项目包装器 `python lark_push.py`（首选）或稳定出口 `C:\Users\Administrator\bin\lark-cli.exe`；**禁止**硬编码 `C:\Users\Administrator\.trae-cn\plugins\trae-remote-official\lark\1.0.4\...` 这类插件版本目录路径（插件升级后即失效）。如直接用 lark-cli，推送前必须从进程环境移除 LARKSUITE_CLI_APP_ID / LARKSUITE_CLI_USER_ACCESS_TOKEN 并设 LARKSUITE_CLI_STRICT_MODE=off。
 5. 输出《盘前就绪晨报》摘要（数据/面板/任务/数据源/账户 5 项状态 + 已自动修复动作），保存到 data/real/ 下 md 文件，并推送给用户。

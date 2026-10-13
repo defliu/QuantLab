@@ -1,0 +1,61 @@
+{
+  "date": "20261008",
+  "executed_live": true,
+  "executed_at": "2026-10-08 10:49:17",
+  "tier": 2,
+  "eff_top": 5,
+  "target": [],
+  "strategy_capital": 88752.16,
+  "target_value_each": 86977.12,
+  "sell": [
+    {
+      "code": "000920.SZ",
+      "cost": 0.0,
+      "vol": 1300,
+      "reason": "MATURE"
+    },
+    {
+      "code": "603882.SH",
+      "cost": 0.0,
+      "vol": 500,
+      "reason": "MATURE"
+    },
+    {
+      "code": "600547.SH",
+      "cost": 0.0,
+      "vol": 600,
+      "reason": "MATURE"
+    },
+    {
+      "code": "000155.SZ",
+      "cost": 0.0,
+      "vol": 1500,
+      "reason": "MATURE"
+    },
+    {
+      "code": "300531.SZ",
+      "cost": 0.0,
+      "vol": 1100,
+      "reason": "MATURE"
+    }
+  ],
+  "buy": [],
+  "trim": [],
+  "hold": [],
+  "locked": [],
+  "guard_note": [
+    "卖000920.SZ:CANCELED_TIMEOUT(重试10次)",
+    "卖603882.SH:CANCELED_TIMEOUT(重试10次)",
+    "卖600547.SH:CANCELED_TIMEOUT(重试10次)",
+    "卖000155.SZ:CANCELED_TIMEOUT(重试10次)",
+    "卖300531.SZ:CANCELED_TIMEOUT(重试10次)"
+  ],
+  "selection_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20261008_selection_full.csv",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20261008_selection_full.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20261008",
+  "candidate_rows": 0,
+  "candidate_rows_raw": 9,
+  "candidate_sha256": "92ee9495b3de135f160c726c8991ce3ffa28cc3bc4a5a3657a01d6f752baf760",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\candidates_asof\\20261008_92ee9495_20261008_selection_full.csv"
+}

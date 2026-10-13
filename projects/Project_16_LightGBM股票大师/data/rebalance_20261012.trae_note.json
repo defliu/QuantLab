@@ -1,0 +1,70 @@
+{
+  "date": "20261012",
+  "updated_at": "2026-10-12 10:25:00",
+  "supersedes": "本文件早前版本（记录 Python 9009 执行失败）已被本轮实证结论取代",
+
+  "phenomenon": [
+    "09:45 主换仓任务未执行：monitor_20261012_094502.log 全程仅一行『未找到带 numpy/lightgbm 的 Python，定时任务无法运行』后 exit 1。",
+    "09:25 盘前任务同样未产出：data/cache/ 下无 review_20261012.json、无 crosscheck_20261012.json（F3 催化分缓存缺失）。",
+    "10:05 Windows 兜底任务（rebalance_daily_guard）接管，自行补跑 review + rebalance，executed_live=true。",
+    "补跑后 F3 催化分 10/10 缺失，总分 43.0~52.0 全部低于红线 58 → 过红线票数 0 → 本日 0 买入；策略无持仓 → 0 卖出。"
+  ],
+
+  "root_cause": {
+    "id": "T-20261012-001",
+    "layer": "Python 解释器查找逻辑",
+    "detail": "run_scheduled.ps1 的 Get-GoodPy 只有两个候选：(1) Get-Command python → 命中 WindowsApps 商店应用别名桩（C:\\Users\\Administrator\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe，Version 0.0.0.0），执行任意命令一律退出码 9009；(2) $FALLBACK_PY = TRAE SOLO 内置 python，实测已损坏（init_fs_encoding 失败 / No module named 'encodings'）。两者均测不过 → 返回 $null → 09:45 任务直接 exit 1。唯一实测可用的解释器 miniqmt venv（Python 3.11.15，pandas 3.0.5，numpy/lightgbm/xtquant 均 OK）从未被列入候选——而全部 *_guard.ps1 都是把它写死为首选的，故 10:05 兜底能跑、09:45 主任务不能跑。",
+    "impact_chain": "Get-GoodPy 失败 → 09:25 无 F3 缓存 + 09:45 无换仓 → 10:05 兜底降级补跑 → F3 全缺失 → 总分不过红线 → 红线空仓零单"
+  },
+
+  "fix_applied": {
+    "file": "run_scheduled.ps1",
+    "change": "Get-GoodPy 候选列表新增 $MINIQMT_PY = C:\\Users\\Administrator\\.workbuddy\\binaries\\python\\envs\\miniqmt\\Scripts\\python.exe 并列为首选（+8/-1 行，保留原 PATH / 内置回退顺序作为后续候选）。",
+    "verification": [
+      "PS 5.1 (powershell.exe，schtasks 实际环境) 语法解析 PARSE_OK，exit 0",
+      "PS 7 语法解析 PARSE_OK，exit 0",
+      "两版本均 SELECTED: miniqmt venv，中文日志『项目16 LightGBM股票大师 · 定时任务调度器』输出无乱码",
+      "BOM 已校验：编辑曾丢失 UTF-8 BOM（HEAD=EF BB BF → 编辑后=239 35 32 99 的 '# c'），已补回并复验 BOM_OK=True（AGENTS.md 教训 T-20260903-015 同款事故，本次由本任务触发并当场修复）"
+    ],
+    "note": "本修复只影响 09:25/09:45/16:30 等 run_scheduled.ps1 驱动的后续任务，不改变已完成的 20261012 换仓结果。"
+  },
+
+  "step4_verification": {
+    "4a_plan_json": "存在，未触发诊断流程",
+    "4b_candidate_sha256": "97fc680ec36df5d444e8253be2e24d62822f5ce76332c46c1272e88085ffdc1f —— 存在且非 null，PASS，未补写任何字段",
+    "4c_reconciliation": "未触发。今日 0 买入 0 卖出 0 委托；只读核对 query_positions.py 结果 = QMT 无持仓数据 + 本地 CSV 持仓 0 只，账实相符，无需 manual_reconciliation 区块。",
+    "orders": "无委托，无需反查成交/撤单状态"
+  },
+
+  "data_degradation": {
+    "tier": "沪深300 -0.23% → T=2（market_tier.py 脚本判定，eff_top=TOP_N=5）",
+    "F2": "Tushare moneyflow 快照滞后 3 天 >2 → 回退实时源 → 增量库行业自算最新 2026-10-09 不新鲜跳过 → f2_source=missing，F2=5.0 回退值",
+    "F3": "10/10 候选无催化分（9:25 缓存未覆盖 + Tushare 业绩公告缺失）→ F3=0.0",
+    "F5": "f5_source=realtime 但 selection_full.csv 的 industry_pct 列为空，F5=5.0 回退值",
+    "quote": "selection_full.csv 中 quote_pct / name 列全为空，source=miniqmt 但未取到实时涨跌幅",
+    "consequence": "总分天花板 52.0 < 红线 58，10 只候选全被拦截，candidate_rows_filtered=0（candidate_rows_raw=10）"
+  },
+
+  "guard_behavior_note": "10:05 日志第30行已自带预警：『[F3缺失] 10/10 候选无催化分 → 总分可能低于红线 58，guard 可能安全阀不换仓（宁缺毋滥，可接受）』——安全阀按设计生效，属预期防错，非脚本故障。",
+
+  "actions_taken": [
+    "复现并定位 python 9009 根因（WindowsApps 商店桩 + TRAE SOLO 损坏解释器）",
+    "读取 10:05 guard 日志、9:45 monitor 日志、plan json、selection_full、候选 CSV，还原完整事件链",
+    "修复 run_scheduled.ps1 Get-GoodPy 候选缺失（根因修复，非表面补丁）",
+    "补回编辑丢失的 UTF-8 BOM 并双版本（PS5.1/PS7）验证",
+    "只读核对账户持仓：QMT 0 + 本地 CSV 0，账实相符",
+    "核验 candidate_sha256 溯源字段（4b PASS，未补写）"
+  ],
+
+  "not_done_per_redline": [
+    "未重跑 rebalance_daily.py --live（executed_live=true，红线禁止）",
+    "未补写 plan json 任何字段（含 candidate_* / executed_live）",
+    "未写入 data/rebalance_20261012.json（4c 白名单外严禁写入）"
+  ],
+
+  "remaining": [
+    "09:25 盘前 F3 缓存任务明日需复跑确认（修复后 run_scheduled.ps1 是否覆盖 09:25 链路待实证）",
+    "F2 Tushare moneyflow 滞后 3 天 >2 的刷新链路需单独排查（refresh_tushare_moneyflow_daily.ps1 每日 19:30 应产出 T-1 数据）",
+    "本日空仓结果依赖 10:05 兜底，属降级运行，需人工确认可接受"
+  ]
+}

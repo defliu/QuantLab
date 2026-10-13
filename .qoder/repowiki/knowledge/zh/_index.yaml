@@ -62,6 +62,16 @@ modules:
             - data_layer
         related_to:
             - research_audit
+    feishu_bridge:
+        dir_name: 飞书互通桥（feishu_bridge）
+        title: 飞书互通桥（feishu_bridge）
+        scope:
+            - scripts/feishu_bridge/
+            - data/feishu_bridge/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
     mcp_services:
         dir_name: A 股 MCP 服务进程 (Ashare + tdx)
         title: A 股 MCP 服务进程 (Ashare + tdx)

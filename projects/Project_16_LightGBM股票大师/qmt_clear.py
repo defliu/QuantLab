@@ -117,8 +117,10 @@ def main():
             # 取不到才回退本轮参考价。历史根因：本行原写局部 price，取价失败即写 0.0，
             # 63 条零价 SELL 直接让 FIFO 已实现盈亏永久缺口。
             fill_px, px_src = order_guard.resolve_fill_price(r, price, s["code"])
+            # T-20261009-007：清仓 SELL 行 score 列必须写归因字符串（原 0.0 无归因，
+            # 违反「score/原因」约定——sold_forward reason join 会拿不到归因）。
             log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), s["code"], "SELL",
-                             r["traded_vol"], fill_px, 0.0, r["order_id"]])
+                             r["traded_vol"], fill_px, "CLEAR_ALL", r["order_id"]])
             # T-20261002-001：只有「非真实成交均价」才算异常需留痕。
             # fill_avg 是权威口径，不该混进异常列表造成噪声。
             if px_src != "fill_avg":

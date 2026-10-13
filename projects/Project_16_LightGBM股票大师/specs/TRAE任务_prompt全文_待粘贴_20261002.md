@@ -105,7 +105,7 @@
 
 ## 二之二、全量覆盖与验收结论（2026-10-02 收官）
 
-`Schedule list` 实测共 **13 个任务** = **10 个 A 股 Active** + 1 个非 A 股 Active（`5f2bd77c` 夸克网盘，**不需要**交易日守卫）+ 2 个 Paused（`eda9b0c3` 成本锚、`c63cff58` Tushare 刷新）。
+`Schedule list` 实测（**2026-10-12 收口**）共 **11 个任务** = **10 个 A 股 Active** + 1 个非 A 股 Active（`5f2bd77c` 夸克网盘，**不需要**交易日守卫）；原 2 个 Paused（`eda9b0c3` 成本锚、`c63cff58` Tushare 刷新）已于 2026-10-12 彻底删除（功能分别由 Windows 计划任务 `Quant_P16_CfgPremarket_0900`、`Quant_Tushare_Moneyflow_Refresh` 承接）。
 **10 个 A 股 Active 全部有守卫**：8 个强门禁（第一、二批）+ 2 个基础守卫（`3c7fdd1e`、`15868a74`）。
 
 | 批次 | ID | 名称 | cron | executions | 门禁要点 |
@@ -113,7 +113,7 @@
 | 一 | `30344e79` | G2换仓 | `50 9 * * MON-FRI` | 23 | prompt 第一条 |
 | 一 | `4cf3db92` | G2日终对账 | `45 15 * * MON-FRI` | 23 | prompt 第一条 |
 | 一 | `18c0c8d2` | 融合日终对账 | `50 15 * * MON-FRI` | 16 | prompt 第一条 |
-| 二 | `051bc2d9` | 融合换仓 | `52 9 * * MON-FRI` | 16 | prompt 第一条 + 卖出优先 + Top10 |
+| 二 | `051bc2d9` | 融合换仓 | `31 9 * * MON-FRI` | 16 | prompt 第一条 + 卖出优先 + Top10 |
 | 二 | `e05e526a` | 夜间检修 | `0 1 * * MON-FRI` | 21 | 守卫判**次日**，标记 `[SKIP-NEXT-DAY-NON-TRADING]` |
 | 二 | `b0254f11` | 集合竞价 | `25 9 * * MON-FRI` | 25 | prompt 第一条 + `--top 10` |
 | 二 | `9a41d7f7` | 盘后复盘 | `40 15 * * MON-FRI` | 25 | **绝对路径**调 `is_trade_day.py` |

@@ -41,6 +41,7 @@ from datetime import datetime, date, timedelta
 import qmt_config as C
 import strategy_capital as SC
 import position_filter as PF
+import is_trade_day as ITD
 
 # 加载 xtquant（放末尾，避免覆盖本环境的 numpy）
 sys.path.append(C.XTPACK)
@@ -104,21 +105,191 @@ def _build_last_buy_dates():
     return last
 
 
+def _load_trade_calendar():
+    """加载权威交易日历 data/ashare_trade_dates.txt（YYYY-MM-DD 每行一日）。
+
+    返回 date 集合；文件缺失/损坏返回 None（调用方回退周末近似）。
+    """
+    path = os.path.join(os.path.dirname(C.TRADE_LOG), "ashare_trade_dates.txt")
+    days = set()
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                s = line.strip()
+                if not s:
+                    continue
+                days.add(datetime.strptime(s, "%Y-%m-%d").date())
+    except Exception as e:
+        print(f"    !! 交易日历读取失败（持有天数回退周末近似）: {e!r}")
+        return None
+    return days or None
+
+
+_CAL_CACHE = None
+_CAL_LOADED = False
+
+
+def _get_trade_calendar():
+    global _CAL_CACHE, _CAL_LOADED
+    if not _CAL_LOADED:
+        _CAL_CACHE = _load_trade_calendar()
+        _CAL_LOADED = True
+        if _CAL_CACHE is None:
+            print("    !! 交易日历不可用（ashare_trade_dates.txt 缺失/损坏），"
+                  "持有天数回退周末近似（少计→卖出延迟，方向保守）")
+    return _CAL_CACHE
+
+
+def _is_trade_day(d, cal):
+    """单日是否 A 股交易日：权威日历优先，未覆盖日走 is_trade_day 法定节假日表兜底。
+
+    与 rebalance_g2.py / rebalance_ens.py 的 `_count_trade_days` 完全同口径，
+    保证三臂持有期语义一致（V1.x / G2 / ENS 可直接横向比较）。
+
+    绝不再使用「只跳周末」近似——那会把国庆/春节长假计成交易日 → MATURE 提前
+    触发 → 长假后首日把只持有 1 个交易日的持仓全部清仓（2026-10-08 实盘事故根因，
+    见 T-20261008-004；每逢春节/国庆后首个交易日必复发）。
+    """
+    try:
+        return bool(ITD.is_trade_day(d, cal or set()).get("is_trade_day"))
+    except Exception as e:
+        # 兜底模块不可用：判非交易日（少计 → 晚卖，方向保守），并 fail-loud
+        print("    !! is_trade_day 不可用（持有天数按非交易日计，到期卖出延迟）: %r" % (e,))
+        return False
+
+
 def _trading_days_between(d0, d1):
-    """d0 之后到 d1（含）的交易日数（近似：跳过周末，忽略法定假日）。
+    """d0 之后到 d1（含）的交易日数（T-20261008-004：改用权威交易日历）。
 
     买入日 d0 当日不可卖（T+1），从 d0+1 起算持有交易日；用于到期制判定
     （持仓满 HOLD_DAYS 交易日即触发到期卖出）。
+
+    判定口径（逐自然日过 `_is_trade_day`）：
+      周末 → 非交易日；权威日历命中 → 交易日；
+      日历未覆盖（如当日尚未入历）但非节假日 → 交易日；法定节假日 → 非交易日。
+    长假因此绝不被计入持有期，MATURE 只可能「按真实交易日数」触发，不再早卖。
     """
     if not d0 or not d1 or d1 <= d0:
         return 0
+    cal = _get_trade_calendar()
     n, cur = 0, d0
     one = timedelta(days=1)
     while cur < d1:
         cur += one
-        if cur.weekday() < 5:
+        if _is_trade_day(cur, cal):
             n += 1
     return n
+
+
+# ---- 2026-10-08 事故修复批：LIVE 互斥锁 / 逐笔落账 / 硬化退出 ----
+# 事故背景（详见 全局控制台 T-20261008-003/004）：TRAE 主任务迟到 + 10:05 guard 按
+# 「json 不存在」误判未执行 + TRAE agent 两次重试 → 4 个 rebalance_daily.py 并发 --live
+# → 重复卖出 + 空仓误判 + 50 笔废单 + 误报 json；且 xtquant 非守护线程挂起致 3 组进程
+# 挂死 8 小时、当日 5 笔真实卖出 0 行入账（人工对账补账）。
+_ACTIVE_LIVE_LOCK = None
+
+
+def _pid_alive(pid):
+    """Windows 下判定进程是否存活；无法判定时按存活处理（保守：宁可拒跑不并发）。"""
+    try:
+        import ctypes
+        k32 = ctypes.windll.kernel32
+        h = k32.OpenProcess(0x1000, False, int(pid))  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not h:
+            return False
+        try:
+            code = ctypes.c_ulong()
+            if k32.GetExitCodeProcess(h, ctypes.byref(code)):
+                return code.value == 259  # STILL_ACTIVE
+            return False
+        finally:
+            k32.CloseHandle(h)
+    except Exception:
+        return True
+
+
+def _acquire_live_lock():
+    """--live 互斥锁（T-20261008-005）：防多入口并发跑真实换仓。
+
+    多入口 = TRAE 09:45 主任务 / Windows 10:05 guard 兜底 / agent 手工重试。
+    锁必须放在本脚本内部（TRAE 与 guard 都是直接启动本脚本，外部锁拦不住）。
+    规则：锁文件 data/rebalance_live.lock 内容 "pid\\t日期"——他进程当日存活 →
+    拒跑（返回 None）；持锁进程已死 / 锁为隔日（挂死残留）→ 接管（挂死进程最多
+    拖到隔日自愈）。O_CREAT|O_EXCL 原子创建，避免双进程同时通过存在性检查。
+    """
+    path = os.path.join(os.path.dirname(C.TRADE_LOG), "rebalance_live.lock")
+    me = os.getpid()
+    today = today_str()
+    for _ in range(2):  # 第 2 轮仅在清理陈旧锁后重试
+        try:
+            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                f.write(f"{me}\t{today}\n")
+            return path
+        except FileExistsError:
+            try:
+                with open(path, encoding="utf-8") as f:
+                    pid_s, day_s = (f.read().strip().split("\t") + ["", ""])[:2]
+                pid = int(pid_s)
+            except Exception:
+                pid, day_s = -1, ""
+            if pid > 0 and day_s == today and _pid_alive(pid):
+                print(f"    !! [LIVE锁] 另一 LIVE 换仓进程 pid={pid} 当日运行中，"
+                      f"拒绝并发（防双卖/双买，2026-10-08 事故形态）")
+                return None
+            print(f"    !  [LIVE锁] 清理陈旧锁（pid={pid}, 锁日={day_s or '未知'}）后接管")
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+        except OSError as e:
+            print(f"    !! [LIVE锁] 加锁异常，拒绝 LIVE 执行（防并发）: {e!r}")
+            return None
+    return None
+
+
+def _release_live_lock(path):
+    """释放 LIVE 锁（只删自己写的锁，防误删他进程接管的锁）。"""
+    if not path:
+        return
+    try:
+        with open(path, encoding="utf-8") as f:
+            pid_s = f.read().strip().split("\t")[0]
+        if int(pid_s) == os.getpid():
+            os.remove(path)
+    except Exception:
+        pass
+
+
+def _book_fill_row(row):
+    """成交行逐笔即时落账（T-20261008-007）。
+
+    旧实现把成交行攒到 main() 末尾统一写：进程中途挂死/被杀（2026-10-08 实测
+    xtquant 非守护线程挂起，Run B 卖出确认后 0 行入账）→ 账实脱节只能人工补账。
+    现每确认一笔成交立即 append 落盘：挂死最多丢「等待中的未确认委托」，
+    已确认成交绝不丢。落账失败必须显式告警（记账丢失属 P0）。
+    """
+    try:
+        C.append_trade_rows([row])
+        print(f"    [记账] {row[1]} {row[2]} {row[3]}股 @{row[4]}"
+              f" -> {os.path.basename(C.TRADE_LOG)}")
+    except Exception as e:
+        print(f"    !! [记账] {row[1]} {row[2]} {row[3]}股 落账失败（P0！须人工补账）: {e!r}")
+
+
+def _hard_exit(code=0):
+    """硬化退出（T-20261008-006）：绕过解释器退出阶段的非守护线程 join。
+
+    2026-10-08 实测：xtquant 存在非守护线程，main() 正常完成后进程仍可挂死
+    （Run D 10:49 完成 main 后残留 8 小时 → 被误判「未执行」诱发后续并发）。
+    显式 flush 后 os._exit 立即终止，残留线程随进程销毁。
+    """
+    try:
+        sys.stdout.flush()
+        sys.stderr.flush()
+    except Exception:
+        pass
+    os._exit(code)
 
 
 def _candidate_meta(date, csv_path, loader):
@@ -315,6 +486,27 @@ def _mark_unresolved_price(guard, result, fill_px, px_src, ref_price, side, code
     sink.append(f"{code}({result.get('traded_vol', 0)}股/{px_src}@{fill_px})")
 
 
+def _alert_selection_problem(date_str, sel_path, loader, live_mode):
+    """T-20261009-004：候选清单缺失/不可读 → 飞书告警（best-effort，绝不影响交易路径）。
+
+    背景（2026-10-09 事故）：当日清单缺失时本脚本静默走空仓（marker executed_live=true
+    表面"成功"，candidate_loader=none 藏在 json 里无人看）→ V1.x 无候选买入一整天，
+    盘后审计才发现。T-20261003-001 的「缺失不 return、卖出照常」语义不变（卖出风控
+    优先级高于买入优化），本函数只补「第一时间人工可见」这一层。
+    """
+    problem = "缺失" if loader == "none" else "读取失败"
+    mode = "LIVE" if live_mode else "DRY-RUN"
+    msg = (f"[P16 V1.x 候选断流告警] {date_str} {mode} 清单{problem}: {os.path.basename(sel_path)}\n"
+           f"本日【不买入】，卖出风控照常执行。"
+           f"请核查 09:45 review_full 是否跑成、data/tdx_review.json 的 date 是否为今日。")
+    print("!! " + msg.replace("\n", " | "))
+    try:
+        from qmt_bridge_client import notify_feishu
+        notify_feishu(msg)
+    except Exception as e:
+        print(f"    (飞书告警发送失败，仅本地日志: {e})")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default=today_str(), help="清单日期 YYYYMMDD（默认今天）")
@@ -354,6 +546,11 @@ def main():
             _sel_text = None
             print(f"!! 当日清单读取失败: {e}")
     if _sel_text is None:
+        # T-20261009-004：清单缺失/读失败不再静默——飞书告警 + degraded 落档。
+        # （2026-10-09 事故：缺失静默空仓一整天无人知晓；卖出照常的 T-20261003-001 语义不变。）
+        _alert_selection_problem(args.date, sel_path, cand_meta.get("candidate_loader", "none"), args.live)
+        cand_meta["degraded"] = ("selection_missing" if cand_meta.get("candidate_loader") == "none"
+                                 else "selection_read_error")
         # T-20261003-001 修复（DE 审计 P1）：清单缺失/读取失败不再整段 return。
         # 旧写法的 early return 压在「持仓读取→成熟度→sell_plan」之上，MATURE/T0
         # 卖出被整体抑制，违反 AGENTS 硬红线「卖出风控优先级高于买入优化」——与
@@ -412,6 +609,19 @@ def main():
     today_d = _parse_date(args.date)
     last_buy = _build_last_buy_dates()
     for code, cost in positions.items():
+        # ---- ST 风险警示强制剔除（T-20261012-001，诚哥拍板 2026-10-12）----
+        # ST 持仓不等持有期、不进 target，下个换仓日强制卖出（特征快照无 is_st 列
+        # 致候选链盲区）；T+1 锁定则顺延次日（st_guard 每日重判）。
+        _st_skip, _st_why = PF.st_guard(code)
+        if _st_skip:
+            v = sellable.get(code, 0)
+            if v > 0:
+                sell_plan.append({"code": code, "cost": cost, "vol": v, "reason": "ST_FORCE_EXIT"})
+                print(f"    !! [ST剔除] {code} 强制卖出 {v} 股（不等持有期）: {_st_why}")
+            else:
+                locked.append(code)
+                print(f"    !! [ST剔除] {code} {_st_why} 但 T+1 锁定可卖 0，次日换仓再卖")
+            continue
         if not force_liquidate and code in target_codes:
             hold_plan.append(code)          # 仍在 top2 → 继续持有（到期也续期，避免同日卖买抖动）
             continue
@@ -546,7 +756,8 @@ def main():
                 "candidate_rows": cand_meta["candidate_rows_filtered"],
                 "candidate_rows_raw": cand_meta["candidate_rows_raw"],
                 "candidate_sha256": cand_meta["candidate_sha256"],
-                "candidate_asof": cand_meta["candidate_asof"]}
+                "candidate_asof": cand_meta["candidate_asof"],
+                "degraded": cand_meta.get("degraded", "")}   # T-20261009-004：selection_missing/read_error 断流留痕
         out = os.path.join(os.path.dirname(C.TRADE_LOG), f"rebalance_{args.date}.dryrun.json")
         with open(out, "w", encoding="utf-8") as f:
             json.dump(plan, f, ensure_ascii=False, indent=2, default=str)
@@ -554,6 +765,14 @@ def main():
         return
 
     # ---- LIVE 执行：先卖后买（等权对齐，资金池为基准，委托守护重试）----
+    # LIVE 互斥锁（T-20261008-005）：TRAE 主任务 / guard 兜底 / agent 重试多入口
+    # 并发 --live 会双卖双买（2026-10-08 事故 4 进程并发）。抢锁失败直接放弃本次执行。
+    global _ACTIVE_LIVE_LOCK
+    lock_path = _acquire_live_lock()
+    if not lock_path:
+        print("!! [LIVE锁] 获取失败，本次 LIVE 换仓放弃（防并发双卖/双买）")
+        return
+    _ACTIVE_LIVE_LOCK = lock_path
     import order_guard
     from xtquant import xtconstant
     trader, account = _connect()
@@ -571,7 +790,12 @@ def main():
             print(f"    !! {s['code']} 取价失败，跳过卖出")
             continue
         reason = s.get("reason", "MATURE")
-        remark = "planA_mature" if reason == "MATURE" else "planA_pk_out"
+        if reason == "ST_FORCE_EXIT":
+            remark = "planA_st_exit"  # T-20261012-001：ST 强制剔除卖出，独立 remark 便于对账
+        elif reason == "MATURE":
+            remark = "planA_mature"
+        else:
+            remark = "planA_pk_out"
         r = order_guard.order_with_guard(trader, account, s["code"], "SELL", s["vol"], price, remark)
         print(f"    卖出 {s['code']} {s['vol']}股 [{reason}] -> {r['note']}")
         guard_note.append(f"卖{s['code']}:{r['action']}(重试{r.get('attempts',1)}次)")
@@ -582,6 +806,7 @@ def main():
             fill_px, px_src = order_guard.resolve_fill_price(r, price, s["code"])
             log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), s["code"], "SELL",
                              r["traded_vol"], fill_px, reason, r["order_id"]])
+            _book_fill_row(log_rows[-1])  # T-20261008-007：逐笔即时落账（防挂死丢账）
             _mark_unresolved_price(order_guard, r, fill_px, px_src, price,
                                    "SELL", s["code"], unresolved)
 
@@ -597,6 +822,7 @@ def main():
             fill_px, px_src = order_guard.resolve_fill_price(r, t["price"], t["code"])
             log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), t["code"], "SELL",
                              r["traded_vol"], fill_px, "TRIM_OVR", r["order_id"]])
+            _book_fill_row(log_rows[-1])  # T-20261008-007：逐笔即时落账（防挂死丢账）
             _mark_unresolved_price(order_guard, r, fill_px, px_src, t["price"],
                                    "SELL", t["code"], unresolved)
 
@@ -638,6 +864,13 @@ def main():
         # ---- 低开校验（V1.4，T4）：极端低开(<=-5%)跳过；低开(-5~-3%)需放量承接才放行 ----
         # 与 G2（T3）同规则：003005 型（低开-10%跌停接刀）→ 跳过；601999 型（低开-4.9%放量翻红）→ 放行
         _ohlc = PF.fetch_ohlc(b["code"])
+        # ---- ST 风险警示买入拦截（T-20261012-001）：主库快照 + 腾讯实时名称双层 ----
+        # name 直用 fetch_ohlc 已取的实时简称（含 ST 前缀），免二次请求；两层皆失 fail-open。
+        _st_skip, _st_why = PF.st_guard(b["code"], name=(_ohlc or {}).get("name"))
+        if _st_skip:
+            print(f"    !! {b['code']} ST 拦截: {_st_why}")
+            guard_note.append(f"买{b['code']}:ST_BLOCK")
+            continue
         if _ohlc:
             _avg = PF.recent_avg_vol(b["code"])
             _vr = (_ohlc["vol_lot"] / _avg) if (_avg and _avg > 0) else None
@@ -675,6 +908,7 @@ def main():
             fill_px, px_src = order_guard.resolve_fill_price(r, b["price"], b["code"])
             log_rows.append([time.strftime("%Y-%m-%d %H:%M:%S"), b["code"], "BUY",
                              r["traded_vol"], fill_px, b["total"], r["order_id"]])
+            _book_fill_row(log_rows[-1])  # T-20261008-007：逐笔即时落账（防挂死丢账）
             _mark_unresolved_price(order_guard, r, fill_px, px_src, b["price"],
                                    "BUY", b["code"], unresolved)
 
@@ -685,9 +919,9 @@ def main():
               "（已落待补价队列 data/qmt_pending_fills.jsonl，需人工核对成交回报后补价；"
               "0 价仅作待补标记，不得据此结算盈亏）：" + " | ".join(unresolved))
 
-    if log_rows and C.TRADE_LOG:
-        C.append_trade_rows(log_rows)
-        print("    成交记录 ->", C.TRADE_LOG)
+    if log_rows:
+        # T-20261008-007：成交行已在三处下单点逐笔即时落账，此处仅汇总（不再统一补写）
+        print(f"    成交记录 {len(log_rows)} 笔已逐笔落账 -> {C.TRADE_LOG}")
 
     # 保存执行结果（9:45 任务 step4 要求 + 10:05 Windows 兜底任务的幂等标记，T-20260903-002）
     plan = {
@@ -711,6 +945,7 @@ def main():
         "candidate_rows_raw": cand_meta["candidate_rows_raw"],
         "candidate_sha256": cand_meta["candidate_sha256"],
         "candidate_asof": cand_meta["candidate_asof"],
+        "degraded": cand_meta.get("degraded", ""),   # T-20261009-004：selection_missing/read_error 断流留痕
     }
     out = os.path.join(os.path.dirname(C.TRADE_LOG), f"rebalance_{args.date}.json")
     with open(out, "w", encoding="utf-8") as f:
@@ -720,4 +955,20 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # T-20261008-006：硬化退出——xtquant 非守护线程会让解释器退出阶段永久挂起
+    # （2026-10-08 Run D 实测挂死 8 小时），统一在此 flush + 释放锁 + os._exit。
+    _exit_code = 0
+    try:
+        main()
+    except SystemExit as _e:
+        try:
+            _exit_code = int(_e.code)
+        except (TypeError, ValueError):
+            _exit_code = 0 if not _e.code else 1
+    except BaseException:
+        import traceback
+        traceback.print_exc()
+        _exit_code = 1
+    finally:
+        _release_live_lock(_ACTIVE_LIVE_LOCK)
+        _hard_exit(_exit_code)

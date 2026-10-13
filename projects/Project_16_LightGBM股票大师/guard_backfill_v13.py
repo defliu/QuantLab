@@ -123,7 +123,8 @@ def run_review_full(cand_path, review_path, date):
     try:
         r = subprocess.run([sys.executable, "review_full.py",
                             "--candidates", cand_path,
-                            "--review", review_path],
+                            "--review", review_path,
+                            "--date", date],  # T-20261009-004：显式日期锚（restamp 复现场景 review JSON 日期为历史日，无此项会被 fail-closed 拒绝）
                            cwd=HERE, capture_output=True, text=True, encoding="utf-8", errors="replace",
                            timeout=600)
     except subprocess.TimeoutExpired:

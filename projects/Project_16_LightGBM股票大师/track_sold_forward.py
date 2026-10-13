@@ -10,6 +10,11 @@
 产出：
   - data/real/sold_forward_live.csv（累计台账，幂等追加）
   - data/real/sold_forward_<date>.md（当日报告：近 N 笔卖出后的 T+1/3/5 表现）
+reason 归因（T-20261009-007，2026-10-09 起）：
+  - 每行带 reason 列：qmt_trade_log 源取 score 列的非数值 reason（TRAE 4c-4
+    「score/原因」约定，2026-08 旧约定前 63 行如实为空，禁止猜测归因）；
+    桥 fills 源取 fill 自带 reason 戳（SELL_STOP/SELL_TAKE_PROFIT/SELL_TRAILING/...）。
+  - KNOWN_FAKE_SELLS：已知假成交（源头已清、台账残留）合并后显式剔除，见 T-20261008-012。
 用法：python track_sold_forward.py            # 默认回填所有 SELL 并出当日报告
 """
 import collections
@@ -29,6 +34,32 @@ INCR = os.path.join(PROJ, "data_live", "incremental_daily.parquet")
 BRIDGES = ["D:/QMT_POOL/g2_bridge", "D:/QMT_POOL/p16_ensemble_bridge", "D:/QMT_POOL/p16_v13_risk"]
 OUT_CSV = os.path.join(REAL, "sold_forward_live.csv")
 
+# 已知假成交排除清单（T-20261008-012，2026-10-09 经 T-20261009-007 固化到代码）：
+#   300413.SZ 2026-10-02 09:30:00 1000股 @9.2 —— 节假日不可能成交的假 fill（源头已从桥
+#   fills 文件清除，但本台账为累计幂等追加、派生行永久残留，必须在合并后显式剔除）。
+#   匹配键：(code, time 前 10 位日期, vol, acct)。新增已知假成交时在此登记，勿删历史条目。
+KNOWN_FAKE_SELLS = [
+    ("300413.SZ", "2026-10-02", 1000, "70180771"),
+]
+
+
+def _reason_from_score(score_str):
+    """SELL 行 score 列承载 reason（TRAE 4c-4「score/原因」约定，T-20261009-007 固化）。
+
+    qmt_trade_log 的 score 列双语义：买入行=数值评分，卖出行=归因字符串
+    （MATURE / SELL_STOP / SELL_TAKE_PROFIT / SELL_TRAILING / PK_OUT / ...）。
+    非数值即 reason；数值（0.0 等）= 归因未知（2026-08 旧约定前历史行 63 条），
+    如实返回空串，禁止猜测归因。
+    """
+    s = str(score_str or "").strip()
+    if not s:
+        return ""
+    try:
+        float(s)
+        return ""
+    except ValueError:
+        return s
+
 
 def load_sells():
     """收集实盘 SELL 全集：qmt_trade_log(V1.3) + 三桥 fills(G2/ENS)。返回 list[dict]。"""
@@ -45,8 +76,9 @@ def load_sells():
                 "price": float(r.get("price", 0) or 0),
                 "acct": str(r.get("account_id", "")),
                 "src": "qmt_trade_log",
+                "reason": _reason_from_score(r.get("score", "")),
             })
-    # 三桥 fills
+    # 三桥 fills（每笔 fill 自带 reason 戳：SELL_STOP / SELL_TAKE_PROFIT / SELL_TRAILING / ...）
     for bdir in BRIDGES:
         sdir = os.path.join(bdir, "state")
         if not os.path.isdir(sdir):
@@ -68,6 +100,7 @@ def load_sells():
                     "price": float(fl.get("price", 0) or 0),
                     "acct": acct,
                     "src": "bridge_fills",
+                    "reason": str(fl.get("reason", "") or "").strip(),
                 })
     # 过滤无效（date 形如 YYYY-MM-DD）
     out = [r for r in rows if r["code"] and r["time"] and len(r["time"]) >= 10
@@ -121,6 +154,7 @@ def build_tracker(sells, daily):
         row = {
             "time": s["time"], "code": code, "vol": s["vol"],
             "price": s["price"], "acct": s["acct"], "src": s["src"],
+            "reason": s.get("reason", ""),
             "exit": round(exit_price, 4) if exit_price else None,
         }
         for n in (1, 3, 5):
@@ -143,6 +177,22 @@ def build_tracker(sells, daily):
     return pd.DataFrame(recs)
 
 
+def drop_known_fake(df):
+    """剔除已知假成交派生行（KNOWN_FAKE_SELLS，T-20261008-012 / T-20261009-007）。
+
+    累计台账是幂等追加：源 fills 文件里的假成交即使已清除，台账里的派生行仍会
+    永久残留，必须在合并后显式剔除。返回 (df, 剔除行数)。
+    """
+    if df is None or len(df) == 0 or "code" not in df.columns:
+        return df, 0
+    mask = pd.Series(False, index=df.index)
+    for fcode, fdate, fvol, facct in KNOWN_FAKE_SELLS:
+        m = (df["code"] == fcode) & (df["time"].astype(str).str[:10] == fdate) \
+            & (df["vol"].astype(str) == str(fvol)) & (df["acct"].astype(str) == str(facct))
+        mask = mask | m
+    return df[~mask].reset_index(drop=True), int(mask.sum())
+
+
 def main():
     sells = load_sells()
     daily = load_daily()
@@ -159,6 +209,14 @@ def main():
         if c in merged.columns:
             merged[c] = merged[c].astype(str)
     merged = merged.drop_duplicates(subset=["time", "code", "vol", "acct"], keep="last")
+    # 已知假成交剔除（T-20261008-012 / T-20261009-007）：源已清除但累计台账残留的派生行
+    if "reason" not in merged.columns:
+        merged["reason"] = ""
+    merged = merged.fillna({"reason": ""})
+    merged, n_fake = drop_known_fake(merged)
+    if n_fake:
+        print("[KNOWN_FAKE] 共剔除 %d 行已知假成交残留（T-20261008-012，剔除后总行数 %d）" % (
+            n_fake, len(merged)))
     merged = merged.sort_values("time").reset_index(drop=True)
     merged.to_csv(OUT_CSV, index=False, encoding="utf-8-sig")
     print("累计台账:", OUT_CSV, "总行数:", len(merged))
@@ -178,15 +236,15 @@ def main():
         if pd.isna(t3):
             continue
         n_done += 1
-        rows_md.append("| %s | %s | %d | %.2f | %+.1f%% | %+.1f%% | %+.1f%% | %s |" % (
-            r["time"][:10], r["code"], int(r["vol"]), r["exit"],
+        rows_md.append("| %s | %s | %d | %.2f | %s | %+.1f%% | %+.1f%% | %+.1f%% | %s |" % (
+            r["time"][:10], r["code"], int(r["vol"]), r["exit"], str(r.get("reason") or ""),
             (r.get("T1_close_ret") or 0) * 100, (r.get("T3_close_ret") or 0) * 100,
             (r.get("T5_close_ret") or 0) * 100, r["acct"]))
     if rows_md:
         report.append("近 40 天内卖出且已回填 T+3 的：%d 笔" % n_done)
         report.append("")
-        report.append("| 卖出日 | 代码 | 股数 | 卖出价 | T+1收盘 | T+3收盘 | T+5收盘 | 账号 |")
-        report.append("|---|---|---|---|---|---|---|---|")
+        report.append("| 卖出日 | 代码 | 股数 | 卖出价 | 归因 | T+1收盘 | T+3收盘 | T+5收盘 | 账号 |")
+        report.append("|---|---|---|---|---|---|---|---|---|")
         report += rows_md
         # 汇总统计
         vals = recent.dropna(subset=["T3_close_ret"])
@@ -211,7 +269,8 @@ def main():
                 v = t1
                 if pd.notna(t3) and (pd.isna(t1) or t3 >= 0.05):
                     tag, v = "T+3", t3
-                report.append("- %s %s 卖出 %.2f → %s %+.1f%%" % (r["time"][:10], r["code"], r["exit"], tag, v * 100))
+                report.append("- %s %s(%s) 卖出 %.2f → %s %+.1f%%" % (
+                    r["time"][:10], r["code"], str(r.get("reason") or ""), r["exit"], tag, v * 100))
     else:
         report.append("近 40 天内暂无可回填 T+3 的卖出记录。")
     out_md = os.path.join(REAL, "sold_forward_%s.md" % today.strftime("%Y-%m-%d"))

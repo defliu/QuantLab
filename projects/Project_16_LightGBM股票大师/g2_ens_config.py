@@ -36,6 +36,15 @@ MIN_ORDER_VOL = 100                  # 整手
 REDLINE = 60.0                       # 评分红线（deploy_predict_g2 --threshold 60 已过滤）
 HOLD_DAYS = 10                       # 持有期（交易日，对齐回测 N=10：满 N 个交易日到期卖出，止损/止盈优先）
 
+# ---- 大盘门控（T-20261009-008 / E-4，2026-10-10 补上）：对齐 G2/V1.3 三档 ----
+# T=0（≤-1.5%）停买 / T=1（<-1.0%）半仓 / T=2 满仓；数据缺失 fail-safe 半仓。
+# 阈值与部署比例**不在此重复定义**——rebalance_ens.py import 复用 rebalance_g2 的
+# load_hs300_pct/_calc_tier + g2_config 的 TIER_STOP_PCT/TIER_HALF_PCT/DEPLOY_PCT/
+# HALF_DEPLOY_PCT（口径同源：G2 调阈值/换数据源同步生效；测试注入环境变量同为
+# G2_HS300_PCT）。T=2 时 DEPLOY_PCT(0.98) ≡ 1-RESERVE_CASH_PCT(2%)，行为零变化。
+# 风险声明：ENS 网格寻优未含门控，纸面 ens 臂自此与实盘口径分叉（防御性偏离），
+# 季评报告需带此注记（ens_alignment_design 差异二）。
+
 # 持仓建仓日持久化（rebalance_ens 维护：{code: "YYYYMMDD"}）
 HOLD_DATES_FILE = os.path.join(DATA_DIR, "rebalance_g2_ens", "g2_ens_hold_dates.json")
 

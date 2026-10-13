@@ -91,6 +91,10 @@ data/quark_backup/
 
 # 一次性数据探针 / 临时调试脚本（2026-10-01 补，防累积）
 check_*.py
+# 例外：scripts/ 下长期健康监控脚本（三道防线·B，非一次性探针；2026-10-12 补）
+!scripts/check_scorecard_health.py
+!scripts/check_ens_health.py
+!scripts/check_v13_health.py
 scripts/_qk_*.py
 scripts/_qk_*.js
 scripts/_qk_*.ps1

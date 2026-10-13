@@ -1,13 +1,13 @@
 {
-  "last_main_date": "2026-09-11",
+  "last_main_date": "2026-09-30",
   "incremental_range": [
-    "20260914",
-    "20260930"
+    "20261008",
+    "20261012"
   ],
   "source": "miniQMT xtdata",
-  "updated_at": "2026-09-30 16:34:25",
-  "n_rows": 70068,
-  "n_stocks": 5839,
+  "updated_at": "2026-10-12 16:33:54",
+  "n_rows": 17547,
+  "n_stocks": 5849,
   "fields": [
     "open",
     "high",

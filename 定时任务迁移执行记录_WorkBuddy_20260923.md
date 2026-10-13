@@ -4,6 +4,12 @@
 > 依据：`定时任务迁移可行性评估_WorkBuddy_20260923.md`（用户选定：除 Windows 已覆盖 5 条外全建；下单三条采取"提前触发"方案）
 > 结果：**已创建 8 条**，其中 5 条 ACTIVE、3 条 PAUSED（待 TRAE 侧停用后再点亮）
 
+> ⚠️ **时效性更正（2026-10-09 核实，本文件是历史记录、不是现状）**：
+> 1. **本文件描述的是「旧 WorkBuddy home」`C:\Users\Administrator\.workbuddy` 的 2026-09-23 状态**。当前会话所在的 WorkBuddy home 是 `C:\Users\Administrator\.workbuddy-ai`，其自动化库中**没有任何 Project_16 任务**（仅 1 条无关的「飞书消息桥接：处理并回复」）。
+> 2. 只读直查旧 home 的 `automations` 表：**8 条 P16 任务仍登记在册，但已全部为 `PAUSED` 且 `next_run_at = None`（不再被调度）、`last_run_at = None`（从未运行）**；另有「模拟账号盘后监控」1 条已软删除。即上面「5 条 ACTIVE」**已不成立**。
+> 3. 因此**当前不存在双调度器重复下单风险**；下文 §二「点亮顺序」仅在将来真要迁移时才需遵守。
+> 4. 结论：以「当前 WorkBuddy home（`.workbuddy-ai`）无任何 P16 任务」为现状口径。
+
 ---
 
 ## 一、已创建的 8 条自动化

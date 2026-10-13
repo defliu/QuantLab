@@ -1,0 +1,178 @@
+{
+  "generated_at": "2026-10-13 06:07:59",
+  "panel": "feature_panel_v3.parquet",
+  "mode": "v3",
+  "n_features": 27,
+  "rules": {
+    "ALERT": "近4周|IC|<0.01 且 缺失率>5%",
+    "WATCH": "近4周|IC|<0.01 或 缺失率>5%"
+  },
+  "features": {
+    "vol_ratio_5_20": {
+      "ic_abs_mean_4w": 0.04057,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "amount_ma5": {
+      "ic_abs_mean_4w": 0.20409,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "volume_ratio": {
+      "ic_abs_mean_4w": 0.06178,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "above_ma60": {
+      "ic_abs_mean_4w": 0.01253,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "rsi6": {
+      "ic_abs_mean_4w": 0.064,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "above_ma20": {
+      "ic_abs_mean_4w": 0.06455,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "turn_ma5": {
+      "ic_abs_mean_4w": 0.25295,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "vol20": {
+      "ic_abs_mean_4w": 0.25409,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "mom_20": {
+      "ic_abs_mean_4w": 0.02401,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "rel_mom_20": {
+      "ic_abs_mean_4w": 0.02401,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "mom_10": {
+      "ic_abs_mean_4w": 0.09892,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "mom_5": {
+      "ic_abs_mean_4w": 0.1012,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "dist_250_low": {
+      "ic_abs_mean_4w": 0.22811,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "mom_60": {
+      "ic_abs_mean_4w": 0.11794,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "macd_hist": {
+      "ic_abs_mean_4w": 0.10398,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "pb": {
+      "ic_abs_mean_4w": 0.23901,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "dv_ttm": {
+      "ic_abs_mean_4w": 0.22314,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "sc_is_unlock": {
+      "ic_abs_mean_4w": 0.01624,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "pe_ttm": {
+      "ic_abs_mean_4w": 0.18143,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "fin_ocf_to_profit": {
+      "ic_abs_mean_4w": null,
+      "missing_rate_4w": 1.0,
+      "verdict": "WATCH",
+      "stale_source": true
+    },
+    "sc_days_since": {
+      "ic_abs_mean_4w": 0.05547,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "fin_dt_netprofit_yoy": {
+      "ic_abs_mean_4w": 0.05962,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "fc_days_since": {
+      "ic_abs_mean_4w": 0.07976,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "pos_250": {
+      "ic_abs_mean_4w": 0.09939,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "fin_netprofit_yoy": {
+      "ic_abs_mean_4w": 0.06901,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "log_mv": {
+      "ic_abs_mean_4w": 0.05696,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    },
+    "fc_force": {
+      "ic_abs_mean_4w": 0.05895,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false
+    }
+  },
+  "alerts": [],
+  "watches": [
+    "fin_ocf_to_profit"
+  ]
+}

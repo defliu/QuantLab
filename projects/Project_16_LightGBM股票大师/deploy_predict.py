@@ -27,6 +27,7 @@ import pandas as pd
 import lightgbm as lgb
 
 import data_config as DC
+import position_filter as PF
 
 HERE = DC.PROJECT_DIR
 DATA_DIR = DC.DATA_DIR
@@ -220,6 +221,18 @@ def main():
     day = day[day["score_total"] >= args.score_threshold].copy()
     if len(day) == 0:
         print("    !! 预选池内无股票通过评分卡红线，尝试降低 --score-threshold")
+        return
+    # ---- ST 风险警示剔除（T-20261012-001，诚哥拍板 2026-10-12）：候选生成端根治 ----
+    # 背景：特征快照无 is_st 列，候选链看不到 ST 状态（G2 10-12 实盘买入 *ST华鹏 实锤）。
+    # 主库 is_st 快照批量剔除（快照滞后约 2 周，新戴帽由 review_full 实时名称 + 执行端 st_guard 兜底）。
+    _st_codes = PF.load_st_codes()
+    if _st_codes:
+        _st_hit = sorted(set(day["ts_code"]) & _st_codes)
+        if _st_hit:
+            day = day[~day["ts_code"].isin(_st_codes)].copy()
+            print("    !! [ST剔除] 候选剔除 %d 只: %s" % (len(_st_hit), ",".join(_st_hit)))
+    if len(day) == 0:
+        print("    !! ST 剔除后无候选 → 空仓（宁缺毋滥）")
         return
     # 综合分 = 模型概率*权重 + 评分卡总分/100*(1-权重)
     day["combo"] = args.model_w * day["model_prob"] + (1 - args.model_w) * (day["score_total"] / 100.0)

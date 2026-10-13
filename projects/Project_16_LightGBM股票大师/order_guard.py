@@ -77,6 +77,44 @@ MAX_RETRY = 10             # 最大撤单重试次数（总窗口 ≈ 60s×10 = 
 _AVGPRICE_RETRIES = 3
 _AVGPRICE_RETRY_INTERVAL = 1
 
+# query_stock_trades 单次调用硬超时（T-20261008-008）：实测（2026-10-08 收盘后两度复现）
+# 该接口非交易时段会无限阻塞；包一层守护线程 + join 超时，超时按「明细不可用」降级。
+_TRADES_QUERY_TIMEOUT = 10
+
+
+def _query_trades_with_timeout(trader, account, timeout=_TRADES_QUERY_TIMEOUT):
+    """query_stock_trades 超时包裹（T-20261008-008）。
+
+    旧实现直接同步调用：接口阻塞（非交易时段/明细服务异常）→ 守护流程整体挂死
+    （2026-10-08 Run B 卖出后疑似卡死在此处 8 小时，当日成交 0 行入账）。
+    现包裹为守护线程 + join 超时：超时返回 None（按明细不可用降级，调用方走
+    参考价兜底 + 待补价队列这条已审计的受控降级路径），绝不挂死进程；
+    挂起的查询线程 daemon=True，随进程退出销毁。异常保留原路径：回到调用
+    线程按原 except 分支处理。
+    """
+    import threading
+    box = []
+
+    def _worker():
+        try:
+            box.append(trader.query_stock_trades(account))
+        except Exception as e:
+            box.append(e)
+
+    t = threading.Thread(target=_worker, daemon=True)
+    t.start()
+    t.join(timeout)
+    if t.is_alive():
+        print(f"    !! 查询成交明细阻塞超时(>{timeout}s)，按明细不可用降级"
+              f"（参考价兜底 + 待补价队列）")
+        return None
+    if not box:
+        return None
+    r = box[0]
+    if isinstance(r, Exception):
+        raise r
+    return r
+
 
 def get_limit_prices(code):
     """取涨跌停价 (up, down)。失败返回 None。"""
@@ -197,7 +235,8 @@ def _query_trade_stats(trader, account, code, oids):
         return None
     target = _norm_code(code)
     try:
-        trades = trader.query_stock_trades(account)
+        # T-20261008-008：超时包裹，防接口阻塞挂死守护流程（原直接调用）
+        trades = _query_trades_with_timeout(trader, account)
     except Exception as e:
         print(f"    !! {code} 查询成交明细异常（真实成交均价不可用）: {e!r}")
         return None

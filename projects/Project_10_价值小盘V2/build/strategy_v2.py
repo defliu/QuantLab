@@ -35,6 +35,18 @@ DELIST_MV_MAIN = 75000.0     # Ö÷°å×ÜÊĞÖµºìÏß»º³å: 5ÒÚ x 1.5 (ÍòÔª)
 DELIST_MV_GEMSTAR = 45000.0  # ´´Òµ°å/¿Æ´´°å: 3ÒÚ x 1.5 (ÍòÔª)
 DELIST_NEAR_DAYS = 30        # ¾àÍËÊĞÈÕ <= 30 ÌìÌŞ³ı (±±½»Ëù²»ÊÊÓÃÊĞÖµºìÏß)
 
+# E1 ÓîÖæÉ¸Ñ¡ (2026-10-13 ¶ÔÆë»Ø²â runner.get_candidates / config/strategy.yaml):
+#   »Ø²âºòÑ¡ = circ_mv¡Ê(min,max) ÇÒ pe_ttm>0 ÇÒ pb>0 ÇÒ ÖÊÁ¿ÅÅÀ×(bps>0 & roe>0 & profit_dedt>0)
+#             ÇÒ ·ÇST ÇÒ ·ÇÍ£ÅÆ¡£Éú²ú¾É°æ½ö pb>0 ¡ú ÊµÎª"È«ÊĞ³¡ĞĞÒµÖĞĞÔBP top80"£¬
+#   Óë»Ø²â¿Ú¾¶Æ¯ÒÆ(P0)¡£²¹ÆëºóÉú²úºòÑ¡³Ø=»Ø²â¿Ú¾¶¡£Í£ÅÆÑØÓÃÂòÈëÊ± _is_suspended ÊµÊ±ÌŞ³ı¡£
+MARKET_CAP_MAX = 300000.0    # Á÷Í¨ÊĞÖµÉÏÏŞ(ÍòÔª) = 30ÒÚ
+MARKET_CAP_MIN = 0.0         # Á÷Í¨ÊĞÖµÏÂÏŞ(ÍòÔª) >0
+PE_TTM_MIN = 0.0             # PE_TTM > 0
+PB_MIN = 0.0                 # PB > 0
+QUALITY_BPS_MIN = 0.0        # Ã¿¹É¾»×Ê²ú > 0 (ÖÊÁ¿ÅÅÀ×)
+QUALITY_ROE_MIN = 0.0        # ROE > 0 (ÖÊÁ¿ÅÅÀ×)
+QUALITY_PROFIT_DEDT_MIN = 0.0  # ¿Û·Ç¾»ÀûÈó > 0 (ÖÊÁ¿ÅÅÀ×)
+
 DATA_DIR = "D:/QMT_POOL"
 STATE_FILE = os.path.join(DATA_DIR, "v2_holdings_state.json")
 LOG_FILE = os.path.join(DATA_DIR, "strategy_log_v2.txt")
@@ -45,7 +57,7 @@ PENDING_MAX_RETRIES = 3      # µ¥Ö»×î¶àÖØÏÂ´ÎÊı£¨º¬Ê×´Î£©£¬³¬¹ıÔò·ÅÆú£¨µÈÊÕÅÌ¶ÔÕ
 RETRY_COOLDOWN_MIN = 1       # ³·µ¥ÖØÏÂµÄ×îĞ¡ÀäÈ´¼ä¸ô£¨·ÖÖÓ£©£¬·ÀÖ¹Í¬Ò»·ÖÖÓ·´¸´ÖØÏÂ
 
 # ¹¹½¨°æ±¾±ê¼Ç£ºbuild.py Ã¿´Î¹¹½¨Ê±×Ô¶¯Ìæ»»ÎªÊ±¼ä´Á£¨YYYYmmdd-HHMMSS£©
-BUILD_TAG = "20260823-223613"
+BUILD_TAG = "20261013-055319"
 
 # ============ È«¾Ö×´Ì¬ ============
 _cash = CAPITAL_INIT       # ×¨Êô×Ê½ğ³ØÏÖ½ğ£¨ÓëÕË»§ÆäËû²ßÂÔ×Ê½ğÍêÈ«¸ôÀë£©
@@ -121,9 +133,10 @@ def _load_pool(C):
         return []
 
 def _load_financial():
-    """´ÓCSV¼ÓÔØPE/PB/circ_mv/ĞĞÒµ"""
+    """´ÓCSV¼ÓÔØPE/PB/circ_mv/ĞĞÒµ/ÖÊÁ¿×Ö¶Î (E1: º¬ bps/roe/profit_dedt ÖÊÁ¿ÅÅÀ××Ö¶Î)"""
     result = {}
-    for name in ["pe_ttm", "pb", "circ_mv", "industry", "total_mv"]:
+    for name in ["pe_ttm", "pb", "circ_mv", "industry", "total_mv",
+                 "bps", "roe", "profit_dedt"]:
         path = os.path.join(DATA_DIR, "financial_%s.csv" % name)
         if not os.path.exists(path):
             continue
@@ -186,30 +199,6 @@ def _load_industry_map():
         pass
     return result
 
-def _load_st_set(C):
-    """´Ó QMT ·çÏÕ¾¯Ê¾°åÀ­È¡ ST ¹ÉÆ±Ãûµ¥£¨Ò»´ÎĞÔ£¬±ÜÃâÖğ¹É²éÃû³Æ£©
-    ½öÔÚĞèÒªµ÷²ÖÊ±µ÷ÓÃ¡£Ê§°ÜÊ±·µ»Ø¿Õ¼¯ºÏ£¨°²È«½µ¼¶£º²»¹ıÂË£©¡£"""
-    st_set = set()
-    try:
-        lst = C.get_stock_list_in_sector("·çÏÕ¾¯Ê¾°å")
-        if lst:
-            st_set = set(lst)
-    except Exception:
-        pass
-    if not st_set:
-        try:
-            lst = C.get_stock_list_in_sector("ST")
-            if lst:
-                st_set = set(lst)
-        except Exception:
-            pass
-    if not st_set:
-        _log("[st] ¾¯¸æ: ST°å¿éÃûµ¥»ñÈ¡Ê§°Ü£¬ST¹ıÂË±¾´ÎÌø¹ı£¨±£ÊØ½µ¼¶£©")
-    else:
-        _log("[st] ST¹ÉÉ¸³ı¼ÓÔØ³É¹¦: %d Ö»" % len(st_set))
-    return st_set
-
-
 def _load_delist_info():
     """´ÓCSV¼ÓÔØÍËÊĞĞÅÏ¢ (v2.3 ÍËÊĞÅÅÀ×): code -> (list_status, delist_date 'YYYY-MM-DD')"""
     path = os.path.join(DATA_DIR, "delist_info.csv")
@@ -224,6 +213,23 @@ def _load_delist_info():
                 if code:
                     result[code] = (row.get("list_status", "") or "",
                                     row.get("delist_date", "") or "")
+    except Exception:
+        pass
+    return result
+
+def _load_st_list():
+    """´ÓCSV¼ÓÔØ×îĞÂ½»Ò×ÈÕ ST ¹É¼¯ºÏ (E1 ¶ÔÆë»Ø²â exclude_st)"""
+    path = os.path.join(DATA_DIR, "st_list.csv")
+    result = set()
+    if not os.path.exists(path):
+        return result
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                code = row.get("ts_code", "")
+                if code:
+                    result.add(code)
     except Exception:
         pass
     return result
@@ -606,16 +612,42 @@ def _get_price(C, code, field="close"):
         pass
     return None
 
-def _score_stocks(C, pool, fin_data, bp_hist, ind_map, today_str):
-    """ÆÀ·Ö£ºĞĞÒµÖĞĞÔBP z-score * 0.8 + hp * 0.2"""
+def _score_stocks(C, pool, fin_data, bp_hist, ind_map, today_str, st_set=None):
+    """ÆÀ·Ö: ĞĞÒµÖĞĞÔBP z-score * Z_WEIGHT + hp * HP_WEIGHT (µ±Ç° Z=1.0 / HP=0.0)
+
+    E1 (2026-10-13): ºòÑ¡³ØÏÈ¹ı»Ø²âÍ¬¿îÓîÖæÉ¸Ñ¡ (¾µÏñ runner.get_candidates):
+      circ_mv¡Ê(MARKET_CAP_MIN, MARKET_CAP_MAX) ÇÒ pe_ttm>PE_TTM_MIN ÇÒ pb>PB_MIN
+      ÇÒ ÖÊÁ¿ÅÅÀ× (bps>0 & roe>0 & profit_dedt>0) ÇÒ ·ÇST¡£
+    ½öÍ¨¹ıÉ¸Ñ¡µÄ¹ÉÆ±½øÈë bp_vals ²ÎÓëÆÀ·Ö ¡ú Éú²úºòÑ¡³ØÓë»Ø²âÒ»ÖÂ¡£
+    (Í£ÅÆÔÚÂòÈëÊ±ÓÉ _is_suspended ÊµÊ±ÌŞ³ı; ÍËÊĞÅÅÀ×ÓÉ _delist_hit_qmt ÔÚ»»²ÖÁ÷³Ì´¦Àí¡£)
+    """
+    if st_set is None:
+        st_set = set()
     scores = {}
-    # ÊÕ¼¯BPÖµ
+    # ÊÕ¼¯BPÖµ (ÏÈ¹ıÓîÖæÉ¸Ñ¡)
     bp_vals = {}
     for code in pool:
+        if code in st_set:
+            continue  # exclude_st
         fd = fin_data.get(code, {})
+        circ_mv = fd.get("circ_mv", 0)
+        if not (circ_mv and circ_mv > MARKET_CAP_MIN and circ_mv < MARKET_CAP_MAX):
+            continue
+        pe = fd.get("pe_ttm", 0)
+        if not (pe and pe > PE_TTM_MIN):
+            continue
         pb = fd.get("pb", 0)
-        if pb and pb > 0:
-            bp_vals[code] = 1.0 / pb
+        if not (pb and pb > PB_MIN):
+            continue
+        # ÖÊÁ¿ÅÅÀ×: bps>0 and roe>0 and profit_dedt>0 (È±×Ö¶ÎÊÓÎª²»Í¨¹ı)
+        bps = fd.get("bps", 0)
+        roe = fd.get("roe", 0)
+        pdt = fd.get("profit_dedt", 0)
+        if not (bps and bps > QUALITY_BPS_MIN
+                and roe and roe > QUALITY_ROE_MIN
+                and pdt and pdt > QUALITY_PROFIT_DEDT_MIN):
+            continue
+        bp_vals[code] = 1.0 / pb
 
     if not bp_vals:
         return scores
@@ -790,19 +822,14 @@ def handlebar(C):
         bp_hist = _load_bp_history()
         ind_map = _load_industry_map()
         delist_info = _load_delist_info()   # v2.3 ÍËÊĞÅÅÀ×
+        st_set = _load_st_list()            # E1 exclude_st
 
-        scores = _score_stocks(C, pool, fin_data, bp_hist, ind_map, today_str)
+        scores = _score_stocks(C, pool, fin_data, bp_hist, ind_map, today_str, st_set)
         if not scores:
             return
 
         # v2.3 ÍËÊĞÅÅÀ×: ÌŞ³ıÍËÊĞ·çÏÕ¹É (ÒÑÍËÊĞ/ÍËÊĞÁÙ½ü/ÊĞÖµºìÏß)
         n_before = len(scores)
-        st_set = _load_st_set(C)
-        if st_set:
-            n_st_before = len(scores)
-            scores = dict((c, s) for c, s in scores.items() if c not in st_set)
-            n_st = n_st_before - len(scores)
-            _log("[st] ÌÔÌ­ ST %d Ö»" % n_st, C)
         scores = dict((c, s) for c, s in scores.items()
                       if not _delist_hit_qmt(c, fin_data, delist_info, today_str))
         n_screened = n_before - len(scores)
@@ -988,8 +1015,8 @@ def _reconcile(C):
                     acct_vol = 0
                     if pos is not None and pos is not _ACCT_QUERY_FAIL:
                         acct_vol = float(getattr(pos, "m_nVolume", 0) or 0)
-                    if pos is None or acct_vol <= 0:
-                        # ¶©µ¥²éÑ¯³É¹¦µ«ÕË»§È·ÎŞ»õ£¨º¬ÓÄÁé³Ö²Ö vol=0£¬µ±ÈÕÂô³ö²ĞÁô£©£ºÊµ¼ÊÒÑÂô³ö
+                    if pos is None:
+                        # ²éÑ¯³É¹¦µ«ÕË»§È·ÎŞ»õ£ºÊµ¼ÊÒÑÂô³ö
                         _cash += od["amount"] * od["price"]
                         _holdings.pop(code, None)
                         _entry_prices.pop(code, None)

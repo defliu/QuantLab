@@ -54,10 +54,17 @@ function Notify-Feishu($msg) {
     } catch { }
 }
 
-# ---- Python 解释器（优先 PATH，但必须带 numpy/lightgbm；否则回退内置）----
+# ---- Python 解释器（优先 miniqmt venv，但必须带 numpy/lightgbm；否则回退 PATH / 内置）----
+# T-20261012-001：候选顺序修正。原实现只看 `Get-Command python` + $FALLBACK_PY，
+# 而本机 python=WindowsApps 商店桩（退出码 9009）、$FALLBACK_PY 缺 encodings 已损坏，
+# 两者均测不过 → Get-GoodPy 返回 null → 09:45 换仓任务直接 exit 1（2026-10-12 实证：
+# monitor_20261012_094502.log 全程仅一行"未找到带 numpy/lightgbm 的 Python"）。
+# 唯一实测可用的解释器是 miniqmt venv（与全部 *_guard.ps1 一致），故列为首选。
+$MINIQMT_PY = "C:\Users\Administrator\.workbuddy\binaries\python\envs\miniqmt\Scripts\python.exe"
 $FALLBACK_PY = "C:\Users\Administrator\AppData\Roaming\TRAE SOLO CN\ModularData\ai-agent\vm\tools\python\python.exe"
 function Get-GoodPy {
     $cands = @()
+    if (Test-Path $MINIQMT_PY) { $cands += $MINIQMT_PY }
     $p = (Get-Command python -ErrorAction SilentlyContinue).Source
     if ($p) { $cands += $p }
     if (Test-Path $FALLBACK_PY) { $cands += $FALLBACK_PY }

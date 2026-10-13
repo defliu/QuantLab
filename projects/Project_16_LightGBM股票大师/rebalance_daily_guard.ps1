@@ -8,6 +8,9 @@
 #         - 告警：当日 selection_full 缺失（TRAE 整链漏触发）→ 无法自动补（需实时 F2/F3/F5 采集），飞书告警
 # 触发时点选 10:05：TRAE 09:45 任务 ~09:46 触发、约跑 12 分钟至 ~09:58，10:05 已能区分"已执行/未执行"，
 #   且避免与 TRAE 任务并发导致重复下单。
+#   T-20261008-009 补强：TRAE 迟到时（2026-10-08 实测 ~10:02 才启动）标记尚未落盘，guard 会误判
+#   「未执行」→ 已加 in-flight 进程扫描：发现 rebalance_daily.py 仍在跑 → 等待（≤20 分钟）后再判定，
+#   疑似挂死则告警人工核查，绝不并发下单。
 # 用法:
 #   powershell -NoProfile -ExecutionPolicy Bypass -File rebalance_daily_guard.ps1             # 今日
 #   powershell ... -File rebalance_daily_guard.ps1 -Date 20260903                             # 指定日
@@ -49,6 +52,30 @@ try {
     & $py "is_trade_day.py" --json *> $null
     if ($LASTEXITCODE -ne 0) { Log "非 A 股交易日，跳过 [$Date]"; exit 0 }
     Log "确认 A 股交易日，检查 09:45 换仓是否已执行 [$Date]"
+
+    # ---- in-flight 进程扫描（T-20261008-009）：标记检查看不见「正在跑」的换仓 ----
+    # 2026-10-08 事故：TRAE 09:45 任务迟到（~10:02 才启动）→ 本 guard 10:05 按「无标记」
+    # 误判未执行 → 与 in-flight 的 TRAE run 并发 --live（重复卖出 + 50 笔废单）。
+    # json/成交标记都要等 run 结束才存在，唯一可靠的「正在执行」信号是进程本身。
+    # 策略：发现 in-flight rebalance_daily.py 进程 → 轮询等其结束（最多 20 分钟）再复查标记；
+    #       超时未结束（疑似挂死）→ 放弃自动兜底 + 飞书告警人工核查（绝不并发下单）。
+    $scanDeadline = (Get-Date).AddMinutes(20)
+    while ((Get-Date) -lt $scanDeadline) {
+        $inflight = Get-CimInstance Win32_Process -Filter "Name LIKE 'python%'" -ErrorAction SilentlyContinue |
+            Where-Object { $_.CommandLine -match 'rebalance_daily\.py' }
+        if (-not $inflight) { break }
+        Log "  检测到 in-flight 换仓进程（pid=$($inflight.ProcessId -join ',')），等待其结束后再判定是否兜底"
+        Start-Sleep -Seconds 60
+    }
+    $stillInflight = Get-CimInstance Win32_Process -Filter "Name LIKE 'python%'" -ErrorAction SilentlyContinue |
+        Where-Object { $_.CommandLine -match 'rebalance_daily\.py' }
+    if ($stillInflight) {
+        $msg = "V1.3 $Date 换仓进程(pid=$($stillInflight.ProcessId -join ',')) 超过 20 分钟未结束（疑似挂死），guard 放弃自动兜底。请人工核查该进程与当日成交，勿并发重跑。"
+        Log "!! $msg"
+        & $py "push_alert_card.py" --title "V1.3 guard: in-flight 换仓疑似挂死" --body $msg --level error 2>&1 | ForEach-Object { Log $_ }
+        Pop-Location
+        exit 1
+    }
 
     $already = $false
     # 标记1：rebalance_<date>.json executed_live=true（UTF-8 读，防中文乱码）

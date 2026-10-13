@@ -103,6 +103,12 @@ CALLBACK_PORT = 9001        # 回调服务监听端口（配合内网穿透对�
 
 # ---- 账本 account_id 戳（红线 T-20260823-004，2026-08-28 补齐 P16）----
 CAPITAL_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "strategy_capital.json")
+# score 列双语义约定（T-20261009-007 固化，与 TRAE 4c-4「score/原因」一致）：
+#   买入行 = 数值评分；卖出行 = 归因字符串（MATURE / SELL_STOP / SELL_TAKE_PROFIT /
+#   SELL_TRAILING / PK_OUT / POOL_ADJ / TRIM_OVR / SELL_TRIM / CLEAR_ALL / RECON_BACKFILL...）。
+#   写入侧硬约束：每笔 SELL 行 score 列必须写归因字符串，禁止 0.0/数值
+#   （归因是止损研究基础设施：sold_forward reason join / 前向复核都从这里取）。
+#   历史缺口：2026-08 旧约定前 63 条 SELL 行 score=0.0，归因不可考、如实留空，禁止猜测回填。
 TRADE_LOG_FIELDS = ["time", "code", "side", "vol", "price", "score", "order_id", "account_id"]
 
 

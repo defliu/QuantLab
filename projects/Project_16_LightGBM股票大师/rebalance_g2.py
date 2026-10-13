@@ -141,7 +141,8 @@ def _gen_positions_cfg(date):
 
 
 def _fetch_ohlc(code):
-    """腾讯行情取 现价/昨收/今开/当日成交量(手)。失败返回 None（G2-V1.0 低开校验用）。"""
+    """腾讯行情取 现价/昨收/今开/当日成交量(手)/实时名称。失败返回 None（G2-V1.0 低开校验用）。
+    name（T-20261012-001）：实时证券简称（含 ST 前缀），供 PF.st_guard 免二次请求直判。"""
     try:
         import urllib.request
         sym = code.split(".")[0]
@@ -153,7 +154,8 @@ def _fetch_ohlc(code):
             f = raw.split("~")
             if len(f) > 6:
                 return {"price": float(f[3]), "pre_close": float(f[4]),
-                        "open": float(f[5]), "vol_lot": float(f[6])}
+                        "open": float(f[5]), "vol_lot": float(f[6]),
+                        "name": f[1].strip() if len(f) > 1 and f[1].strip() else None}
     except Exception:
         pass
     return None
@@ -438,6 +440,28 @@ def build_plan(date, capital):
 
     # ---- 卖出：持仓满 HOLD_DAYS 到期 → SELL（止损/止盈由桥内风控处理） ----
     for code, ld in ledger.items():
+        # ---- ST 风险警示强制剔除（T-20261012-001，诚哥拍板 2026-10-12）----
+        # ST 持仓不等持有期，下个换仓日强制卖出（背景：10-12 实盘买入 *ST华鹏 603021，
+        # 特征快照无 is_st 列致候选链盲区）。T+1 锁定则顺延次日换仓再卖（st_guard 每日重判）。
+        _st_skip, _st_why = PF.st_guard(code)
+        if _st_skip:
+            sellable = load_sellable(date, code)
+            vol = ld["vol"]
+            if sellable is not None:
+                vol = min(vol, sellable)
+            if vol <= 0:
+                plan["skips"].append({"code": code, "vol": ld["vol"], "reason": "ST剔除但T+1锁定可卖0(次日换仓再卖)"})
+                print("    !! %s %s 但 T+1 锁定可卖 0，次日换仓再卖" % (code, _st_why))
+                continue
+            price = fetch_price(code) or ld["cost"]
+            orders.append({
+                "action": "SELL", "code": code, "vol": vol, "price": round(price, 3),
+                "reason": "%s(强制卖出)" % _st_why, "strategy_order_id": "P16_%s_%04d" % (date, seq0 + len(orders) + 1),
+            })
+            plan["sells"].append({"code": code, "vol": vol, "cost": ld["cost"], "price": round(price, 3)})
+            sold_codes.add(code)
+            print("    !! [ST剔除] %s 强制卖出 %d 股（不等持有期）" % (code, vol))
+            continue
         since = hold_dates.get(code)
         if not since:
             # T-20260904-006①：建仓日缺失 fail-open 立即卖出 → 改 fail-safe 跳过+告警（防误清仓）
@@ -541,6 +565,13 @@ def build_plan(date, capital):
                 continue
             # ---- 低开校验（G2-V1.0，T3）：极端低开(<=-5%)跳过；低开(-5~-3%)需放量承接才放行 ----
             _ohlc = _fetch_ohlc(code)
+            # ---- ST 风险警示买入拦截（T-20261012-001）：主库快照 + 腾讯实时名称双层 ----
+            # name 直用 _fetch_ohlc 已取的实时简称（含 ST 前缀），免二次请求；两层皆失 fail-open。
+            _st_skip, _st_why = PF.st_guard(code, name=(_ohlc or {}).get("name"))
+            if _st_skip:
+                plan["skips"].append({"code": code, "reason": _st_why})
+                print(f"    !! {code} ST 拦截: {_st_why}")
+                continue
             if _ohlc:
                 _avg = _recent_avg_vol(code)
                 _vr = (_ohlc["vol_lot"] / _avg) if (_avg and _avg > 0) else None
