@@ -1,0 +1,61 @@
+{
+  "window": [
+    "2019-01-01",
+    "2026-06-30"
+  ],
+  "cash": 100000.0,
+  "params": {
+    "rebalance_freq": "quarterly",
+    "n_hold": 8,
+    "atr_win": 14,
+    "atr_pct_max": 0.06,
+    "turnover_min": 1.0,
+    "turnover_max": 8.0,
+    "quality_gate": 1,
+    "momentum_gate": 1,
+    "stop_loss": -0.08,
+    "min_history": 252,
+    "position_sizing": "equal",
+    "max_positions": 8,
+    "min_position_value": 0.0,
+    "max_price": 50.0
+  },
+  "baseline": {
+    "total_return": 2.003998,
+    "annual_return": 0.278241,
+    "cagr": 0.16499814561790416,
+    "max_drawdown": -0.247957,
+    "sharpe": 0.873658,
+    "calmar": 1.122136,
+    "cagr_calmar": 0.6654313176264265,
+    "win_rate": 0.738776,
+    "n_trades": 656,
+    "n_buy": 440,
+    "n_sell": 216,
+    "n_open": 224,
+    "avg_holding_days": 120.510204,
+    "turnover_annualized": 4.721575,
+    "excess_return": null,
+    "information_ratio": null,
+    "tracking_error": null
+  },
+  "mask": {
+    "total_return": 1.489298,
+    "annual_return": 0.206779,
+    "cagr": 0.13499121569182781,
+    "max_drawdown": -0.287126,
+    "sharpe": 0.701534,
+    "calmar": 0.720167,
+    "cagr_calmar": 0.4701464986093875,
+    "win_rate": 0.707113,
+    "n_trades": 676,
+    "n_buy": 461,
+    "n_sell": 215,
+    "n_open": 246,
+    "avg_holding_days": 102.610879,
+    "turnover_annualized": 5.00408,
+    "excess_return": null,
+    "information_ratio": null,
+    "tracking_error": null
+  }
+}

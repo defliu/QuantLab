@@ -34,7 +34,7 @@ CONFIG = {
     'strategy': {
         'name': 'ATR_LOWVOL_EW',
         'display_name': 'ATR低波动-等权不杠杆',
-        'capital_base': 1000000,
+        'capital_base': 100000,
         'account_id': '70180771',   # 2026-08-23 换新模拟账号(诚哥提供)
     },
     'screening': {

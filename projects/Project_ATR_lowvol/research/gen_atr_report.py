@@ -38,7 +38,8 @@ card_html = "".join(
     for k, v, sub in cards)
 
 year_rows = "".join(
-    f"<tr><td>{y}</td><td style='color:{'#c0392b' if r<0 else '#27ae60'}'>{r:+.2f}%</td></tr>"
+    # A 股配色惯例（2026-10-14 全局统一）：红涨绿跌 —— 正收益=红，负收益=绿（与 .pos/.neg CSS 类同口径）
+    f"<tr><td>{y}</td><td style='color:{'#27ae60' if r<0 else '#c0392b'}'>{r:+.2f}%</td></tr>"
     for y, r in zip(years, yret))
 
 reason_rows = "".join(

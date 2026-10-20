@@ -382,7 +382,7 @@ def build_html(rows):
   .metric:last-child { border-bottom:none; }
   .metric .k { color:var(--sub); }
   .metric .v { font-weight:600; }
-  .metric .v.neg { color:#dc2626; }
+  .metric .v.neg { color:#059669; }
   .panel { background:var(--card); border:1px solid var(--line); border-radius:14px;
     padding:18px 20px 12px; box-shadow:0 2px 8px rgba(17,24,39,.05); margin-bottom:18px; }
   .legend { display:flex; flex-wrap:wrap; gap:16px; margin:4px 2px 12px; font-size:13px; color:#374151; }
