@@ -1,0 +1,31 @@
+{
+  "date": "20261020",
+  "target": [
+    {
+      "code": "301536.SZ",
+      "name": "星宸科技",
+      "total": 70.0,
+      "prob": 0.6272
+    }
+  ],
+  "strategy_capital": 83663.92,
+  "target_value_each": 81990.64,
+  "tier": 5,
+  "eff_top": 5,
+  "sell": [],
+  "buy": [],
+  "trim": [],
+  "hold": [
+    "301536.SZ"
+  ],
+  "locked": [],
+  "selection_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20261020_selection_full.csv",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20261020_selection_full.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20261020",
+  "candidate_rows": 1,
+  "candidate_rows_raw": 3,
+  "candidate_sha256": "13f578d47126b6f8d5340b45bf84a71733240eafbfc3e5fbcd1b542cd0eaba2f",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\candidates_asof\\20261020_13f578d4_20261020_selection_full.csv",
+  "degraded": ""
+}

@@ -1,0 +1,68 @@
+P16 盘中成交明细采集验证（2026-10-20）
+=====================================
+
+采集时间：2026-10-20 13:08:20（连续竞价时段，午后 13:00-15:00 内）
+执行脚本：qmt_account_metrics.py（未传 --date，自动取当日）
+解释器：C:\Users\Administrator\.workbuddy\binaries\python\envs\miniqmt\Scripts\python.exe
+环境：PYTHONPATH / PYTHONHOME 均为空；退出码 0
+留档：data/account_metrics/qmt_account_metrics_20261020.json
+基线备份：本次为当日首次采集（今日此前无留档 JSON），故未生成 _midday.bak
+
+一、双账号采集结果
+------------------
+账号 67014907（V13 + V2）
+  connected = true
+  现金 cash        = 9,975,193.03
+  市值 market_value = 112,600.00
+  总资产 total      = 10,080,814.03（冻结 0）
+  持仓数 positions  = 29
+  成交数 deals      = 0
+  委托数 orders     = 1
+
+账号 70180771（G2 / ENS / ATR 等）
+  connected = true
+  asset = null（查询无返回）
+  持仓数 positions  = 0
+  成交数 deals      = 0
+  委托数 orders     = 0
+
+二、策略维度（strategies）
+--------------------------
+V13 : 买 0 / 卖 0 / hold 1   build 20261017-235319
+V2  : 买 0 / 卖 0 / hold 28  build 20261016-075943
+G2  : 买 0 / 卖 0 / hold None（无持仓、无委托）
+ENS : 买 0 / 卖 0 / hold None
+ATR : 买 0 / 卖 0 / hold None
+
+FormulaOutput 日志：存在，builds={V2: 20261016-075943, V13: 20261017-235319}，心跳 1 条，Foribdden 行 0
+
+三、盘中唯一委托（orders 明细）
+-------------------------------
+301536.SZ  order_id=1082136808  委托 800 / 已成交 800  status=56（全部成交）
+           价格 101.51  remark=planA_new_top  归属=V13（成交金额约 8.12 万元）
+
+四、补充探针（13:12，只读，未写任何文件）
+-----------------------------------------
+67014907：query_stock_trades 阻塞 >12 秒仍未返回（守护线程判定 HANG）
+70180771：query_stock_trades 0.01 秒返回空列表 len=0
+（主脚本 13:08 整轮耗时 16.4 秒，与「67014907 成交查询吃满 10 秒超时降级」完全吻合）
+
+五、核心结论（明确）
+--------------------
+连续竞价时段 deals 仍然为空 —— 且是「超时降级为空」，不是「返回空列表」。
+本次与 2026-10-16 盘后、2026-10-19 午休（11:47 / 11:54）三次采样现象一致，
+但此前推测的「只是非连续竞价时段挂起」被本次实测否定：
+
+  1) 今日 67014907 确有真实成交（301536.SZ 800 股，status=56，traded_vol=800，约 8.12 万元）；
+  2) 同一账户在同一时点 query_stock_orders 0.02 秒正常返回，唯独 query_stock_trades 无限阻塞；
+  3) 空账户 70180771 的 query_stock_trades 却能立即返回空列表。
+
+=> 判定为 API 级限制/挂起（账户维度差异），非时段问题，非采集脚本逻辑问题。
+
+处置建议：成交明细改为用 query_stock_orders 中 status=56 的委托反推成交
+（traded_vol 作成交量、m_dPrice 作参考价），不要继续等待 query_stock_trades。
+注意事项：traded_vol 为累计成交量、不含分笔与真实成交均价；市价单/分批成交场景
+价格需标注为「委托价口径」，不可当作成交均价使用。
+
+红线遵守：全程只读。未下单、未撤单、未修改任何策略源码 / 配置 / 构建产物 / 定时任务，
+未绕过脚本内的 10 秒超时保护。

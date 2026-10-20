@@ -85,11 +85,14 @@
   ],
   "label_col": "label",
   "fwd_ret_col": "fwd_ret",
+  "entry_blocked_col": "entry_blocked",
   "fwd_days": 1,
-  "n_rows": 4851981,
-  "n_stocks": 4315,
+  "label_mode": "close",
+  "label_hold_days": null,
+  "n_rows": 4865977,
+  "n_stocks": 4319,
   "date_range": [
     "2019-01-10 00:00:00",
-    "2026-10-13 00:00:00"
+    "2026-10-20 00:00:00"
   ]
 }

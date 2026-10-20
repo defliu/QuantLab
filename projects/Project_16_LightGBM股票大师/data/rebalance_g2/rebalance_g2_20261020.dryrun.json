@@ -1,0 +1,68 @@
+{
+  "date": "20261020",
+  "account_id": "70180771",
+  "capital": 95399.82,
+  "pool": [
+    {
+      "code": "000960.SZ",
+      "total": 60.5
+    }
+  ],
+  "ledger": {
+    "000607.SZ": {
+      "vol": 7700,
+      "cost": 3.9034,
+      "src": "cfg"
+    }
+  },
+  "note": "g2 候选池 1 只（红线 60）",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\g2\\20261020_g2_top10.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20261020",
+  "candidate_rows": 1,
+  "candidate_rows_raw": 1,
+  "candidate_sha256": "770d74ef88c0affad532794244dceb057b3939c876af7c4b5516cf1af90e626e",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\rebalance_g2\\candidates_asof\\20261020_770d74ef_20261020_g2_top10.csv",
+  "hold_days": 15,
+  "hold_dates": {
+    "000607.SZ": "20260929",
+    "000960.SZ": "20261016"
+  },
+  "sells": [],
+  "buys": [
+    {
+      "code": "000960.SZ",
+      "vol": 1200,
+      "price": 25.44,
+      "held": 0,
+      "target_vol": 1200,
+      "total": 60.5
+    }
+  ],
+  "skips": [
+    {
+      "code": "000607.SZ",
+      "vol": 7700,
+      "reason": "持有未满15日(20260929起,已10日,日历OK)"
+    }
+  ],
+  "hs300_pct": -0.5157,
+  "tier": 2,
+  "deploy_pct": 0.98,
+  "target_value": 31163.94,
+  "written": false,
+  "hold_dates_preview": {
+    "000607.SZ": "20260929",
+    "000960.SZ": "20261016"
+  },
+  "orders": [
+    {
+      "action": "BUY",
+      "code": "000960.SZ",
+      "vol": 1200,
+      "price": 25.44,
+      "reason": "g2选股Top1(total=60.5)",
+      "strategy_order_id": "P16_20261020_0001"
+    }
+  ]
+}

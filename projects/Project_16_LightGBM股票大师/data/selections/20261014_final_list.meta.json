@@ -1,0 +1,29 @@
+{
+  "generated_at": "2026-10-14 20:20:42",
+  "signal_date": "20261014",
+  "spec": "specs/V13口径对齐方案B落地_SPEC_20260930.md",
+  "pool": "model_prob top10 (engine per_day)",
+  "redline": 58.0,
+  "top": 5,
+  "model": {
+    "path": "D:/QuantLab/models\\lgb_model_v3.txt",
+    "sha256_16": "3b87330aeee4c8c9"
+  },
+  "snapshot": {
+    "path": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data_live\\latest_features.parquet",
+    "sha256_16": "ab8e7696cf226e25"
+  },
+  "data_max_date": {
+    "incremental": "2026-10-14",
+    "daily_basic": "2026-10-14",
+    "moneyflow": "2026-10-14"
+  },
+  "f2_source_counts": {
+    "sina": 10,
+    "tushare_mf": 0,
+    "": 0
+  },
+  "f5_source": "incr_eqw(stock_basic.industry)",
+  "f6_source": "daily_basic",
+  "paper_phase": true
+}

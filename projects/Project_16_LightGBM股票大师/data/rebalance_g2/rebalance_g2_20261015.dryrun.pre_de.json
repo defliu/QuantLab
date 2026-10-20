@@ -1,0 +1,90 @@
+{
+  "date": "20261015",
+  "account_id": "70180771",
+  "capital": 96120.87,
+  "pool": [
+    {
+      "code": "000960.SZ",
+      "total": 60.5
+    }
+  ],
+  "ledger": {
+    "000607.SZ": {
+      "vol": 7700,
+      "cost": 3.9034,
+      "src": "cfg"
+    },
+    "605098.SH": {
+      "vol": 500,
+      "cost": 54.8899,
+      "src": "cfg"
+    }
+  },
+  "note": "g2 候选池 1 只（红线 60）",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\g2\\20261015_g2_top10.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20261015",
+  "candidate_rows": 1,
+  "candidate_rows_raw": 1,
+  "candidate_sha256": "6721824a3085ec56802a61877c52fef81fbcda241f8257c6b02edf3daab9f6cb",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\rebalance_g2\\candidates_asof\\20261015_6721824a_20261015_g2_top10.csv",
+  "hold_days": 15,
+  "hold_dates": {
+    "605098.SH": "20260916",
+    "000607.SZ": "20260929",
+    "000960.SZ": "20261014"
+  },
+  "sells": [
+    {
+      "code": "605098.SH",
+      "vol": 500,
+      "cost": 54.8899,
+      "price": 56.05
+    },
+    {
+      "code": "000607.SZ",
+      "vol": 4000,
+      "cost": 3.9034,
+      "price": 4.26,
+      "note": "等权减仓"
+    }
+  ],
+  "buys": [],
+  "skips": [
+    {
+      "code": "000607.SZ",
+      "vol": 7700,
+      "reason": "持有未满15日(20260929起,已7日,日历OK)"
+    },
+    {
+      "code": "000960.SZ",
+      "reason": "低开-4.0%且量比不足2.0跳过买入"
+    }
+  ],
+  "hs300_pct": -1.3484,
+  "tier": 1,
+  "deploy_pct": 0.5,
+  "target_value": 16020.14,
+  "written": false,
+  "hold_dates_preview": {
+    "000607.SZ": "20260929"
+  },
+  "orders": [
+    {
+      "action": "SELL",
+      "code": "605098.SH",
+      "vol": 500,
+      "price": 56.05,
+      "reason": "g2持有到期(满15日)",
+      "strategy_order_id": "P16_20261015_0001"
+    },
+    {
+      "action": "SELL",
+      "code": "000607.SZ",
+      "vol": 4000,
+      "price": 4.26,
+      "reason": "动态等权超配减仓(目标市值16020)",
+      "strategy_order_id": "P16_20261015_0002"
+    }
+  ]
+}

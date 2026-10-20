@@ -3,22 +3,22 @@
   "G2": {
     "frozen": false,
     "since": "",
-    "n": 45,
-    "mean_excess": 0.006970945731334998,
+    "n": 63,
+    "mean_excess": 0.00038236133949463933,
     "note": ""
   },
   "V1.3": {
     "frozen": false,
     "since": "",
-    "n": 32,
-    "mean_excess": 0.02640354508281651,
+    "n": 64,
+    "mean_excess": 0.007827024753681265,
     "note": ""
   },
   "ENS": {
-    "frozen": false,
-    "since": "",
-    "n": 13,
-    "mean_excess": -0.020407500483341685,
-    "note": ""
+    "frozen": true,
+    "since": "2026-10-19 16:52:11",
+    "n": 43,
+    "mean_excess": -0.006252157597253859,
+    "note": "自动触发：n=39 超额均值 -0.01257 < -0.00020"
   }
 }

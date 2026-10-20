@@ -1,0 +1,31 @@
+{
+ "date": "20261014",
+ "written_by": "traje-session-open-review",
+ "written_at": "2026-10-14 10:02",
+ "anomalies": [
+  {
+   "item": "候选文件过期",
+   "detail": "data/selections/D_model_top10.csv 停留在 20260929（9/29 16:43 后未再更新，已落后数据最新日 20261013 共 10 个交易日）。未直接使用该过期文件，现场运行 deploy_predict.py --model v3 --top-k 10 重新生成，产出 data/selections/20261013_model_top10.csv（7 只，trade_date=20261013）。",
+   "action": "用新生成的 20261013_model_top10.csv 作为本次 review_full 候选输入",
+   "followup": "D_model_top10.csv 疑似 16:30 管道近期未更新（9/29 后断更），需人工核查盘后 deploy 管道为何停更"
+  },
+  {
+   "item": "F5 板块数据降级单源",
+   "detail": "sina 板块源不可用、悟道熔断 OPEN、东财 push2 对 python urllib 拒连且 PowerShell 拉行业榜后限流（Remote end closed / ResponseEnded）。东货行业榜仅覆盖 100 板块，7 只候选中仅 002011.SZ（制冷空调设备+0.29%）与 603186.SH（元件+1.84%）有东财口径，其余 5 只 industry_pct 缺失；review_full 最终用申万一级行业 T-1 自算（20261013）作 F5 主源覆盖 7/7，tdx_review.json 的东财字段为参考。",
+   "action": "交叉验证已按单源如实标注（7 只候选均提示 F5 仅东财单源，无法双源对拍）",
+   "followup": "无阻断；悟道熔断恢复后可复核 F5 口径"
+  },
+  {
+   "item": "红线空仓（0/7 过红线 58 分）",
+   "detail": "review_full 完整版评分最高 603997.SH=51.0、002011.SZ=51.0，全部低于红线 58。候选 rows=0（raw=7）。rebalance_daily.py 按 T-20261002-001 买入拦截：本日不买入，卖出链路照常可达（本次 sell=[] 无到期/调出持仓）。当前持仓 002011.SZ 仍在候选内且未满 HOLD_DAYS=5，继续持有。",
+   "action": "零委托执行，plan json 正常落盘（executed_live=true）",
+   "followup": "无"
+  }
+ ],
+ "notes": [
+  "环境：PATH 内 python 为 WindowsApps 空壳（9009），全程使用 miniqmt venv (C:/Users/Administrator/.workbuddy/binaries/python/envs/miniqmt/Scripts/python.exe)。",
+  "大盘：market_tier.py 判 T=2 满仓（沪深300 +0.064%，腾讯行情实时，fail-safe 未触发）。",
+  "plan json 溯源字段 candidate_sha256=fa1ff43d... 已存在非 null（step4b PASS）；账实零委托、hold 与持仓一致，未触发 4c 对账协议。",
+  "data/tdx_review.json date=20261014（写后自查通过，未沿用旧档日期）。"
+ ]
+}

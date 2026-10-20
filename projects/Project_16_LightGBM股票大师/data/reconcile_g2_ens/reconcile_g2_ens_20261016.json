@@ -1,0 +1,61 @@
+{
+  "date": "20261016",
+  "account_id": "70180771",
+  "generated_at": "2026-10-16 15:51:56",
+  "fills": [],
+  "pending": [],
+  "orphans": [
+    {
+      "code": "605098.SH",
+      "vol": 500,
+      "hint": "账户比融合账本多 500 股（孤儿/重复建仓，融合不主动处理，仅预警）"
+    }
+  ],
+  "cross_strategy": [
+    {
+      "code": "000607.SZ",
+      "vol": 7700,
+      "hint": "账户比融合账本多 7700 股（G2 持仓，同账号非融合孤儿）"
+    }
+  ],
+  "ledger": {
+    "002841.SZ": 400,
+    "600691.SH": 6700,
+    "688758.SH": 600
+  },
+  "asset": {
+    "account_id": "70180771",
+    "date": "20261016",
+    "updated_at": "2026-10-16 14:00:55",
+    "total_asset": 9981265.11,
+    "cash_available": 9871808.11,
+    "market_value": 112323.0
+  },
+  "issues": [
+    "持仓差额: 605098.SH 账户比账本多 500 股",
+    "发现 1 只持仓超额（孤儿/重复），融合不主动处理，仅预警"
+  ],
+  "fills_total": 0,
+  "fills_by_status": {},
+  "pending_count": 0,
+  "account_positions": {
+    "600691.SH": 6700,
+    "605098.SH": 500,
+    "688758.SH": 600,
+    "000607.SZ": 7700,
+    "002841.SZ": 400
+  },
+  "snapshot_missing": false,
+  "deltas": {
+    "000607.SZ": 7700,
+    "605098.SH": 500
+  },
+  "other_strategy_holdings": [
+    "000607.SZ"
+  ],
+  "notes": [
+    "账户含 1 只 G2 持仓（同账号，非融合孤儿，仅提示）"
+  ],
+  "capital_prev": 88414.58,
+  "capital_rolled": 87533.58
+}

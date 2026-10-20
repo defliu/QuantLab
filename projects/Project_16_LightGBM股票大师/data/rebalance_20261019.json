@@ -1,0 +1,46 @@
+{
+  "date": "20261019",
+  "executed_live": true,
+  "executed_at": "2026-10-19 10:05:35",
+  "tier": 2,
+  "eff_top": 5,
+  "target": [],
+  "strategy_capital": 86229.26,
+  "target_value_each": 84504.67,
+  "sell": [],
+  "buy": [],
+  "trim": [],
+  "hold": [
+    "002011.SZ"
+  ],
+  "locked": [],
+  "guard_note": [],
+  "selection_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20261019_selection_full.csv",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20261019_selection_full.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20261019",
+  "candidate_rows": 0,
+  "candidate_rows_raw": 3,
+  "candidate_sha256": "2a3260680c5f19872d7288b9bf18a3417fc1c6f593c1b320217a973e815a65ca",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\candidates_asof\\20261019_2a326068_20261019_selection_full.csv",
+  "degraded": "",
+  "manual_reconciliation": {
+    "reconciled_at": "2026-10-19 12:05 post-skip readonly audit (4c)",
+    "reason": "plan json 记 hold=[002011.SZ]（持仓来源=成交记录估算 7600 股），但只读账户核查显示该票已被 QMT 内置风控策略 P16_V13_RISK.py 于 09:53:51 SELL_STOP 止损卖出并于 09:53:52 全成交（成本 11.569×0.93=10.76 止损位，现价 10.75 触发，P16 -7% 口径）——风控版零文件交互不回写外部账本，故 guard 10:05 回退成交记录估算时读到旧持仓。本区块为只读对账后的人工校正，脚本原始判断（含 guard_note、hold）保留在原位未删改。",
+    "corrections": [
+      {
+        "code": "002011.SZ",
+        "side": "SELL",
+        "vol": 7600,
+        "price": 10.78,
+        "order_id": "4456932500288399800",
+        "script_action": "hold（估算持仓 7600 股，未满 HOLD_DAYS=5 不卖）",
+        "actual_action": "FILLED",
+        "delta": "脚本视角仍持有 → 实际 09:53:52 已被 QMT 内置风控 SELL_STOP 全部成交 7600 股；已补记入 qmt_trade_log.csv（2026-10-19 09:53:52 行）",
+        "evidence": "只读账户委托查询：002011.SZ 卖单 order_status=56 成交 m_nVolumeTraded=7600 m_dTradedPrice=10.78 m_dTradeAmount=81928；FormulaOutput_20261019.log 09:53:51 [P16V13][RISK] SELL_STOP P16_20261019_RSK0001 现价10.75 跌破止损位10.76、09:53:52 [FILLED] deal=7600；09:54:42 风控 HEART positions=0 risk_count=1 fills=1。另：300439.SZ 今日 10:08:33 卖出 100 股属 Project_10 V2 自持仓（v2_reconcile_20261016 cross_strategy 标注 002011 才是 V1.3 的），非 V1.3 账本范围，未补记。"
+      }
+    ],
+    "trade_log_backfilled": true,
+    "no_reorder_rule": "状态歧义期严禁重下；本轮未重跑 rebalance_daily.py --live，未对 002011.SZ / 300439.SZ 再发任何委托"
+  }
+}

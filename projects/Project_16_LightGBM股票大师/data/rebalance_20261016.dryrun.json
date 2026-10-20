@@ -1,0 +1,41 @@
+{
+  "date": "20261016",
+  "target": [
+    {
+      "code": "603217.SH",
+      "name": "元利科技",
+      "total": 60.0,
+      "prob": 0.6777
+    }
+  ],
+  "strategy_capital": 84481.26,
+  "target_value_each": 82791.63,
+  "tier": 5,
+  "eff_top": 5,
+  "sell": [],
+  "buy": [
+    {
+      "code": "603217.SH",
+      "vol": 3500,
+      "held_vol": 0,
+      "held_value": 0.0,
+      "price": 23.14,
+      "total": 60.0,
+      "action": "新晋"
+    }
+  ],
+  "trim": [],
+  "hold": [
+    "002011.SZ"
+  ],
+  "locked": [],
+  "selection_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20261016_selection_full.csv",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20261016_selection_full.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20261016",
+  "candidate_rows": 1,
+  "candidate_rows_raw": 3,
+  "candidate_sha256": "be226490adb66cf2e689aa07870287ffe6a2bd21094f460b86b2724b7e51a7c8",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\candidates_asof\\20261016_be226490_20261016_selection_full.csv",
+  "degraded": ""
+}

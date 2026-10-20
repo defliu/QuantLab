@@ -1,0 +1,18 @@
+{
+ "generated_at": "2026-10-19 16:10:00",
+ "baseline_date": "20261019",
+ "purpose": "G2I/ENSI 信号内产版业绩切片起点（内产版 BUILD_TAG=20261017-235317/235319 首次全天跑信号为 10-19）",
+ "note": "基线口径 = reconcile 滚动 capital（含本金 10 万 + 历史 realized + 浮动）。内产版业绩 = 当前 capital − 本基线。此前累计亏损归入文件桥版历史，不混入内产版评价。",
+ "G2I": {
+  "capital": 95399.82,
+  "date": "20261019",
+  "source": "D:/QMT_POOL/g2_bridge/g2_strategy_capital.json (updated_at 2026-10-19 15:46:55, note: reconcile 滚动 realized=-6499 float=1899)",
+  "build": "20261017-235317"
+ },
+ "ENSI": {
+  "capital": 87239.58,
+  "date": "20261019",
+  "source": "D:/QMT_POOL/p16_ensemble_bridge/ens_strategy_capital.json (updated_at 2026-10-19 15:52:22, note: reconcile 滚动 realized=-8889 float=-3871)",
+  "build": "20261017-235319"
+ }
+}

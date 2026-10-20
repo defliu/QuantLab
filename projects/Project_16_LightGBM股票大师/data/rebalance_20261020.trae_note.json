@@ -1,0 +1,40 @@
+{
+  "date": "20261020",
+  "written_by": "traje-session-open-review",
+  "written_at": "2026-10-20 10:05",
+  "anomalies": [
+    {
+      "item": "候选文件 D_model_top10.csv 持续断更（第 4+ 日）",
+      "detail": "data/selections/D_model_top10.csv 仍停留在 20260929（9/29 16:43 后未更新）。未使用该过期文件，改用 16:30 盘后管道产出的 data/selections/20261019_model_top10.csv（3 只，trade_date=20261019 = 面板最新日 D=2026-10-19）作候选输入，collect/review 全流程 trade_date 校验通过。",
+      "action": "scripts/collect_v13_review_20261020.py EXPECT_DATE=20261019 硬校验通过；review_full --candidates data/selections/20261019_model_top10.csv",
+      "followup": "D_model_top10.csv 16:30 盘后管道停更问题仍待人工核查（与 10-14/10-15/10-16 trae_note 同一遗留问题）"
+    },
+    {
+      "item": "成交明细查询阻塞超时 → 参考价记账 + 待补价（真实成交均价已只读核实）",
+      "detail": "rebalance_daily 执行时 query_stock_deals/trades 连续 3 次阻塞超时(>10s)，按受控降级以参考价 101.51 记账并落 data/qmt_pending_fills.jsonl（order_id=1082136808）。事后只读核对：query_stock_orders 显示 order_status=56 全成交 800/800、traded_price=101.145、remark=planA_new_top；query_stock_positions 显示 vol=800、open_price=101.145、market_value=80608、can_use_volume=0（T+1）。两路只读证据一致 → 真实成交均价 = 101.145，与账本参考价 101.51 差 -0.365 元/股 ≈ -292 元（账本成本偏高）。",
+      "action": "仅只读取证，未修改 qmt_trade_log.csv、未改写 plan json（plan json 只读红线）；待补价队列记录保留",
+      "followup": "需人工按成交回报补价：把该笔 BUY 301536.SZ 800 股的记账价 101.51 校正为 101.145 并清理待补价队列；未补价前 strategy_capital 的成本/盈亏口径偏保守约 292 元"
+    },
+    {
+      "item": "F5 板块双源行业命名不一致（3/3 候选）",
+      "detail": "review_full 交叉验证报 301060/300394/301536 均为「sina 传统行业 vs 东财三级行业」无同名板块可严格对拍 → ok=false 仅分源备注。F5 主源走申万一级 T-1 自算（20261019）：301060=医药生物-0.60%、300394=通信+0.22%、301536=电子-0.28%。",
+      "action": "如实分源备注，未强行对拍；F2 主源仍为 Tushare moneyflow 本地 T-1（2026-10-19，lag=1 ≤2）",
+      "followup": "属分类口径差异非数据缺失，不影响打分"
+    },
+    {
+      "item": "仅 1 只候选过红线，零卖出（无持仓）",
+      "detail": "完整版评分：301536.SZ 星宸科技 70.0 ✅过红线58；300394.SZ 天孚通信 57.5 ✗（差 0.5）；301060.SZ 兰卫医学 42.0 ✗（F3 催化=0、F6=1、PE 106）。market_tier T=2（沪深300 -0.5177%，腾讯实时，fail-safe 未触发），eff_top=5。策略当前持仓 0 只（10-19 由 QMT 内置风控止损卖出后账实已对齐）→ sell=[] 属正常，本日只做买入。",
+      "action": "rebalance_daily --date 20261020 --top 2 --live 正常执行，buy=[301536.SZ 800股]，guard_note=[买301536.SZ:FILLED(重试1次)]",
+      "followup": "300394 天孚通信 57.5 分仅差 0.5 未买，属宁缺毋滥设计内行为"
+    }
+  ],
+  "notes": [
+    "门禁：is_trade_day.py --json 退出码 0（交易日 2026-10-20，默认交易日主库未覆盖且非节假日）。",
+    "幂等前置检查：data/rebalance_20261020.json 与 data/schedules/rebalance_daily_guard_20261020.lock 均不存在 → 放行正常流程；本次执行后 plan json executed_live=true（executed_at=2026-10-20 09:53:23），10:05 兜底不会再跑。",
+    "环境：PATH 内 python 为 WindowsApps 空壳（9009），全程使用 miniqmt venv (C:/Users/Administrator/.workbuddy/binaries/python/envs/miniqmt/Scripts/python.exe)。",
+    "取数：腾讯基础行情 3/3、东财扩展 3/3、东财 F5 板块 3/3、东财 F3 新闻 3/3 全成功，router 无熔断、errors=0；data/tdx_review.json date=20261020 写后自查通过（未沿用旧档日期），data_date=20261019。",
+    "step4b 溯源核验 PASS：candidate_sha256=13f578d47126b6f8d5340b45bf84a71733240eafbfc3e5fbcd1b542cd0eaba2f（非 null），candidate_asof=data/candidates_asof/20261020_13f578d4_20261020_selection_full.csv，candidate_rows=1/rows_raw=3，degraded=\"\"。",
+    "买入：301536.SZ 星宸科技 800 股 @参考价 101.51（真实 101.145），约 81,208 元；资金池 83,663.92 元，每只目标市值 81,990.64 元（×98%），未超当日买入上限；账户可用资金 10,056,120.49 元但严格按策略资金池下单，未动用账户全量资金。",
+    "方案B 纸面并行产物（*_final_list.csv / v13_paper_parallel_*）本任务未读写。"
+  ]
+}

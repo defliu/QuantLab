@@ -1,0 +1,105 @@
+{
+  "date": "20261019",
+  "account_id": "70180771",
+  "capital": 87533.58,
+  "pool": [
+    {
+      "code": "002762.SZ",
+      "total": 64.0
+    },
+    {
+      "code": "688758.SH",
+      "total": 63.0
+    }
+  ],
+  "ledger": {
+    "002841.SZ": {
+      "vol": 400,
+      "cost": 43.7394,
+      "src": "cfg"
+    },
+    "600691.SH": {
+      "vol": 6700,
+      "cost": 2.693,
+      "src": "cfg"
+    },
+    "688758.SH": {
+      "vol": 600,
+      "cost": 27.4326,
+      "src": "cfg"
+    }
+  },
+  "note": "融合候选池 2 只（红线 60）",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\g2_ens\\20261019_g2_top10.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20261019",
+  "candidate_rows": 2,
+  "candidate_rows_raw": 2,
+  "candidate_sha256": "7b7f29dcedacb7c8d606db1b182ea26dccb05a61513a564f67861f38e66982c3",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\rebalance_g2_ens\\candidates_asof\\20261019_7b7f29dc_20261019_g2_top10.csv",
+  "hold_days": 10,
+  "hold_dates": {
+    "600691.SH": "20260928",
+    "002841.SZ": "20260929",
+    "002762.SZ": "20261012",
+    "688758.SH": "20261013"
+  },
+  "sells": [
+    {
+      "code": "600691.SH",
+      "vol": 6700,
+      "cost": 2.693,
+      "price": 2.47
+    }
+  ],
+  "buys": [
+    {
+      "code": "002762.SZ",
+      "vol": 2100,
+      "price": 7.9,
+      "held": 0,
+      "target_vol": 2100,
+      "total": 64.0
+    }
+  ],
+  "skips": [
+    {
+      "code": "002841.SZ",
+      "vol": 400,
+      "reason": "持有未满10日(20260929起,已9日,日历OK)"
+    },
+    {
+      "code": "688758.SH",
+      "vol": 600,
+      "reason": "持有未满10日(20261013起,已4日,日历OK)"
+    }
+  ],
+  "hs300_pct": -0.0405,
+  "tier": 2,
+  "deploy_pct": 0.98,
+  "target_value": 17156.58,
+  "written": false,
+  "hold_dates_preview": {
+    "002841.SZ": "20260929",
+    "002762.SZ": "20261012",
+    "688758.SH": "20261013"
+  },
+  "orders": [
+    {
+      "action": "SELL",
+      "code": "600691.SH",
+      "vol": 6700,
+      "price": 2.47,
+      "reason": "融合持有到期(满10日)",
+      "strategy_order_id": "P16_20261019_0001"
+    },
+    {
+      "action": "BUY",
+      "code": "002762.SZ",
+      "vol": 2100,
+      "price": 7.9,
+      "reason": "融合选股Top1(total=64.0)",
+      "strategy_order_id": "P16_20261019_0002"
+    }
+  ]
+}

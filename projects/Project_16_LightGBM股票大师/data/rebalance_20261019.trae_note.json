@@ -1,0 +1,59 @@
+{
+  "date": "20261019",
+  "note_type": "readonly_reconciliation_and_4c",
+  "created_at": "2026-10-19 12:05:00",
+  "task_path": "换仓幂等前置检查命中（已执行跳过）→ 只读核对 → 4c 账实不符对账",
+  "idempotency_markers": {
+    "marker1_plan_json": "data/rebalance_20261019.json 存在且 executed_live=true（executed_at=2026-10-19 10:05:35，10:05 兜底任务 rebalance_daily_guard 执行）",
+    "marker2_guard_lock": "data/schedules/rebalance_daily_guard_20261019.lock 存在（10:05:35）",
+    "action": "判定今日换仓已执行：未运行任何 --live，未跑 step1/2 取数生成，仅只读核对"
+  },
+  "phenomenon": "plan json 记 hold=[002011.SZ]（持仓来源=成交记录估算 7600 股），但只读账户核查显示 002011.SZ 现持仓 vol=0——账本与账户实际不一致（4c 触发）。另发现 300439.SZ 今日被卖出 100 股（该票从未出现在 V1.3 成交记录中，属 Project_10 V2 自持仓，非本策略账本范围，不补记）。",
+  "readonly_evidence": {
+    "account_query_time": "2026-10-19 11:55~12:00（miniQMT query_stock_positions / query_stock_orders 只读）",
+    "today_orders_on_account": [
+      {
+        "code": "002011.SZ",
+        "side": "SELL",
+        "order_time": "2026-10-19 09:53:48",
+        "order_type": 24,
+        "limit_price": 10.75,
+        "traded_price": 10.78,
+        "traded_volume": "7600/7600",
+        "order_status": 56,
+        "order_ref": "4456932500288399800",
+        "order_sysid": "153",
+        "cash_amount": 81928.0
+      },
+      {
+        "code": "300439.SZ",
+        "side": "SELL",
+        "order_time": "2026-10-19 10:08:33",
+        "order_type": 24,
+        "limit_price": 9.13,
+        "traded_price": 9.33,
+        "traded_volume": "100/100",
+        "order_status": 56,
+        "note": "Project_10 V2 自持仓（v2 账本 entry_date=2026-10-13），非 V1.3 账本"
+      }
+    ],
+    "formula_output_log": "D:\\国金QMT交易端模拟\\userdata\\log\\XtClient_FormulaOutput_20261019.log",
+    "attribution_002011": "QMT 内置风控策略 P16_V13_RISK.py 于 09:53:51 触发 [RISK] SELL_STOP P16_20261019_RSK0001：现价 10.75 跌破止损位 10.76（成本 11.569 × (1-7%) = 10.76，P16 止损口径 -7%），09:53:52 全成交 FILLED；09:54:42 该策略 HEART positions=0 risk_count=1 fills=1。属 QMT 端自闭环风控设计内行为（零文件交互，故不会回写外部 qmt_trade_log.csv，外部账本因此滞后）。",
+    "attribution_300439": "QMT 内置 STRATEGY_V2.py（Project_10 价值小盘V2，build 20261016-075943）10:08:33 卖出自有持仓 100 股，10:12 全成交，与 V1.3 无关。",
+    "guard_log": "data/schedules/rebalance_daily_guard_20261019_100501_957.log（10:05:35 持仓来源=成交记录(估算)，因当时 QMT 内 V1.3 持仓已被风控卖空 → 策略持仓交集为空 → 回退日志估算出 002011=7600 股；002011 买入日 10-13 未满 HOLD_DAYS=5 → 判 hold，sell=[] 属脚本视角的正确推断，但对账户已滞后）",
+    "v2_reconcile_cross_check": "Project_10 data/reconcile_v2/reconcile_v2_20261016.json 明确标注 002011 为 cross_strategy（V1.3 持仓，同账号非 V2 孤儿），v2 账本不含该票 → 排除 V2 卖出 002011 的可能"
+  },
+  "actions_executed": [
+    "步骤1 只读核查完成（无任何写账户/委托动作）",
+    "步骤2 备份 data/rebalance_20261019.json → data/rebalance_20261019.json.scriptorig（原样复制）",
+    "步骤3 plan json 顶层追加 manual_reconciliation 区块（脚本原始字段含 guard_note 一字未改）",
+    "步骤4 账本补记：qmt_trade_log.csv 追加 SELL 002011.SZ 7600 股（time=2026-10-19 09:53:52 按风控策略 FILL 打点时间取值，柜台精确成交时间不可得；price=10.78 取账户委托 m_dTradedPrice 真实成交均价，风控日志 px=10.75 为 ref_price 参考价；order_id=4456932500288399800 取 m_strOrderRef；account_id=67014907），写后只读校验通过",
+    "步骤6 推送飞书告警卡（账实不符已对账 warn + 换仓已执行跳过 warn）"
+  ],
+  "not_reordered": "状态歧义期未对 002011.SZ / 300439.SZ 发任何委托，未重跑 rebalance_daily.py --live（幂等由 10:05 guard 负责）",
+  "leftovers": [
+    "V1.3 外部账本（qmt_trade_log.csv）与 QMT 内置风控之间的回写链路天然断开（风控版零文件交互）→ 每次风控卖出都需要 4c 式人工/agent 补记，建议后续评估由旁路观察者（schtasks 读 FormulaOutput 日志）自动回写",
+    "今日换仓为零买入（3 只候选 total 49.5/49.5/43.0 全低于红线 58，F3 催化全缺）：plan buy=[] 属宁缺毋滥设计内行为，无需干预",
+    "补记后 V1.3 策略持仓=0，资金池 86,229 元；下一次换仓日将按正常流程从零建仓"
+  ]
+}

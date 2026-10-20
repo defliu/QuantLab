@@ -1,0 +1,371 @@
+{
+  "generated_at": "2026-10-19 17:00:45",
+  "panel": "G2 训练面板口径（feature_panel_v3 + _enh asof + g2 增强）",
+  "mode": "g2",
+  "n_features": 43,
+  "rules": {
+    "ALERT": "近4周|IC|<0.01 且 缺失率>5%",
+    "WATCH": "近4周|IC|<0.01 或 缺失率>5%"
+  },
+  "features": {
+    "vol_ratio_5_20": {
+      "ic_abs_mean_4w": 0.0328,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "amount_ma5": {
+      "ic_abs_mean_4w": 0.18393,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "volume_ratio": {
+      "ic_abs_mean_4w": 0.05755,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "above_ma60": {
+      "ic_abs_mean_4w": 0.02989,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "rsi6": {
+      "ic_abs_mean_4w": 0.0667,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "above_ma20": {
+      "ic_abs_mean_4w": 0.07149,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "turn_ma5": {
+      "ic_abs_mean_4w": 0.22855,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "vol20": {
+      "ic_abs_mean_4w": 0.23316,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "mom_20": {
+      "ic_abs_mean_4w": 0.03571,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "rel_mom_20": {
+      "ic_abs_mean_4w": 0.03571,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "mom_10": {
+      "ic_abs_mean_4w": 0.10682,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "mom_5": {
+      "ic_abs_mean_4w": 0.10084,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "dist_250_low": {
+      "ic_abs_mean_4w": 0.19084,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "mom_60": {
+      "ic_abs_mean_4w": 0.1147,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "macd_hist": {
+      "ic_abs_mean_4w": 0.10387,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "pb": {
+      "ic_abs_mean_4w": 0.21585,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "dv_ttm": {
+      "ic_abs_mean_4w": 0.20094,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "sc_is_unlock": {
+      "ic_abs_mean_4w": 0.01594,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "pe_ttm": {
+      "ic_abs_mean_4w": 0.15661,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "fin_ocf_to_profit": {
+      "ic_abs_mean_4w": null,
+      "missing_rate_4w": 1.0,
+      "verdict": "WATCH",
+      "stale_source": true,
+      "group": "v3基础"
+    },
+    "sc_days_since": {
+      "ic_abs_mean_4w": 0.06062,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "fin_dt_netprofit_yoy": {
+      "ic_abs_mean_4w": 0.05799,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "fc_days_since": {
+      "ic_abs_mean_4w": 0.07674,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "pos_250": {
+      "ic_abs_mean_4w": 0.10744,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "fin_netprofit_yoy": {
+      "ic_abs_mean_4w": 0.06745,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "log_mv": {
+      "ic_abs_mean_4w": 0.04785,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "fc_force": {
+      "ic_abs_mean_4w": 0.04956,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "v3基础"
+    },
+    "dv_year_sum": {
+      "ic_abs_mean_4w": 0.03516,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "enh慢变量"
+    },
+    "ex_days_since": {
+      "ic_abs_mean_4w": 0.03661,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "enh慢变量"
+    },
+    "ex_yoy": {
+      "ic_abs_mean_4w": 0.01952,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "enh慢变量"
+    },
+    "fc_pchange": {
+      "ic_abs_mean_4w": 0.05034,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "enh慢变量"
+    },
+    "industry_mom20": {
+      "ic_abs_mean_4w": 0.05176,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "enh慢变量"
+    },
+    "turnover_rank": {
+      "ic_abs_mean_4w": 0.2288,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "enh慢变量"
+    },
+    "lhb_net": {
+      "ic_abs_mean_4w": 0.03,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "g2增强"
+    },
+    "lhb_count": {
+      "ic_abs_mean_4w": 0.02112,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "g2增强"
+    },
+    "north_chg": {
+      "ic_abs_mean_4w": null,
+      "missing_rate_4w": 1.0,
+      "verdict": "WATCH",
+      "stale_source": true,
+      "group": "g2增强"
+    },
+    "rc_rating": {
+      "ic_abs_mean_4w": 0.20614,
+      "missing_rate_4w": 0.99788,
+      "verdict": "WATCH",
+      "stale_source": true,
+      "group": "g2增强"
+    },
+    "rc_num": {
+      "ic_abs_mean_4w": 0.01195,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "g2增强"
+    },
+    "mf_main_net": {
+      "ic_abs_mean_4w": 0.02906,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "g2增强"
+    },
+    "mf_elg_net": {
+      "ic_abs_mean_4w": 0.04628,
+      "missing_rate_4w": 0.0,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "g2增强"
+    },
+    "mf_main_ratio": {
+      "ic_abs_mean_4w": 0.01022,
+      "missing_rate_4w": 0.00013,
+      "verdict": "OK",
+      "stale_source": false,
+      "group": "g2增强"
+    },
+    "ind_pct_ths": {
+      "ic_abs_mean_4w": 0.03595,
+      "missing_rate_4w": 0.5,
+      "verdict": "WATCH",
+      "stale_source": false,
+      "group": "g2增强"
+    },
+    "ind_net_ths": {
+      "ic_abs_mean_4w": 0.03456,
+      "missing_rate_4w": 0.5,
+      "verdict": "WATCH",
+      "stale_source": false,
+      "group": "g2增强"
+    }
+  },
+  "alerts": [],
+  "watches": [
+    "fin_ocf_to_profit",
+    "north_chg",
+    "rc_rating",
+    "ind_pct_ths",
+    "ind_net_ths"
+  ],
+  "g2_extra_source_freshness": {
+    "lhb/top_list.parquet": {
+      "features": [
+        "lhb_net",
+        "lhb_count"
+      ],
+      "max_date": "2026-10-12",
+      "lag_days": 4
+    },
+    "northbound/hk_hold_full.parquet": {
+      "features": [
+        "north_chg"
+      ],
+      "max_date": "2026-10-12",
+      "lag_days": 4
+    },
+    "research/report_rc_daily.parquet": {
+      "features": [
+        "rc_rating",
+        "rc_num"
+      ],
+      "max_date": "2026-09-30",
+      "lag_days": 16
+    },
+    "moneyflow/moneyflow.parquet": {
+      "features": [
+        "mf_main_net",
+        "mf_elg_net",
+        "mf_main_ratio"
+      ],
+      "max_date": "2026-10-16",
+      "lag_days": 0
+    },
+    "board/ths_daily.parquet": {
+      "features": [
+        "ind_pct_ths",
+        "ind_net_ths"
+      ],
+      "max_date": "2026-09-30",
+      "lag_days": 16
+    },
+    "board_fundflow/moneyflow_ind_ths.parquet": {
+      "features": [
+        "ind_pct_ths",
+        "ind_net_ths"
+      ],
+      "max_date": "2026-09-30",
+      "lag_days": 16
+    }
+  }
+}

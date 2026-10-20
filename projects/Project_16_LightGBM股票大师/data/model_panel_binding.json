@@ -10,10 +10,10 @@
     "test_ic":  0.044499,
     "icir":  0.355192,
     "gate_rejected":  {
-                          "at":  "2026-10-13 07:30:41",
+                          "at":  "2026-10-19 18:22:31",
                           "layer":  "strategy",
-                          "candidate":  "lgb_model_v3_retrain_20261013.txt",
+                          "candidate":  "lgb_model_v3_retrain_20261019.txt",
                           "reason":  "V1.4策略层门禁FAIL（excess差\u003e容差0.0002）",
-                          "next_retrain":  "2026-10-19"
+                          "next_retrain":  "2026-10-26"
                       }
 }

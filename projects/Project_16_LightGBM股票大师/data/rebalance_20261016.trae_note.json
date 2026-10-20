@@ -1,0 +1,33 @@
+{
+ "date": "20261016",
+ "written_by": "traje-session-open-review",
+ "written_at": "2026-10-16 10:00",
+ "anomalies": [
+  {
+   "item": "候选文件 D_model_top10.csv 持续断更（第 3 日）",
+   "detail": "data/selections/D_model_top10.csv 仍停留在 20260929（9/29 16:43 后未更新，与 10-14/10-15 两日 trae_note 记录的同一遗留问题）。未使用该过期文件，改用 16:30 盘后管道产出的 data/selections/20261015_model_top10.csv（3 只，trade_date=20261015 = 面板最新日 D=2026-10-15）作候选输入。",
+   "action": "用 20261015_model_top10.csv 作 review_full 候选输入，全流程 trade_date 校验通过",
+   "followup": "D_model_top10.csv 16:30 盘后管道停更问题仍待人工核查（连续第 3 日记录）"
+  },
+  {
+   "item": "F5 板块双源缺失（数据源降级）",
+   "detail": "review_full 交叉验证报 3/3 只候选 F5 板块双源均缺失：sina 板块接口不可用、eastmoney_curl 熔断(404)、eastmx 板块查询空返回(连试2次 data=[])、wudao=OPEN 熔断、iFind 板块工具返回无效结果；仅 iFind 盘前热点新闻定性参考。F5 主源走申万一级 T-1 自算（20261015）：603275=机械设备-3.57%、603217=基础化工-3.19%、603897=电力设备-3.03%，三只 F5 均只得 2 分。",
+   "action": "取数环节已按 router 规则 record fail；F2 走 Tushare T-1 本地权威主源（2026-10-15，lag=1）不受影响；基础行情腾讯 3/3、东财扩展 3/3（含量比）、F3 新闻 3/3 成功",
+   "followup": "板块实时双源恢复后可复核 F5 是否低估"
+  },
+  {
+   "item": "红线过 1 只但买入被资金池校验 POOL_BLOCK 拦截（零委托）",
+   "detail": "review_full 完整版评分 603217.SH=60.0 过红线 58（603275.SH=53.5、603897.SH=45.5 未过）。market_tier T=2 满仓（沪深300 +0.5226%），eff_top=TOP_N=5。rebalance_daily 执行时保留持仓 002011.SZ 市值≈84,892 元（掉出目标但未满 HOLD_DAYS=5，保留不卖）+ 本单 81,690 > 单日买入上限 82,792 元（策略资金池 84,481×98%）→ [T-20260907-003-存量校验] 拒绝买入，guard_note=[买603217.SH:POOL_BLOCK]。sell=[]、buy 实际零委托，脚本正常写 plan json（executed_live=true，candidate_sha256=be226490...）。",
+   "action": "零委托执行完毕；只读核对 QMT 持仓 002011.SZ 7600 股在账、603217/603275/603897 均不在持仓，账实一致，未触发 4c 对账协议",
+   "followup": "资金池仅 8.4 万且存量持仓市值已贴近上限，后续换仓持续受此约束——如需恢复买入需等 002011.SZ 到期卖出释放额度（HOLD_DAYS=5 由脚本判定），或人工复核资金池参数"
+  }
+ ],
+ "notes": [
+  "环境：PATH 内 python 为 WindowsApps 空壳（9009），全程使用 miniqmt venv (C:/Users/Administrator/.workbuddy/binaries/python/envs/miniqmt/Scripts/python.exe)。",
+  "门禁：is_trade_day.py 退出码 0（交易日 2026-10-16）；幂等前置检查 data/rebalance_20261016.json 与 guard lock 均不存在后放行。",
+  "大盘：market_tier.py 判 T=2 正常满仓（沪深300 +0.5226%，腾讯行情实时，fail-safe 未触发），--top 2。",
+  "plan json 溯源字段 candidate_sha256=be226490adb66cf2e689aa07870287ffe6a2bd21094f460b86b2724b7e51a7c8 已存在非 null（step4b PASS）；零委托、hold=[002011.SZ] 与 QMT 实读持仓一致。",
+  "data/tdx_review.json date=20261016（写后自查通过，未沿用旧档日期）；F3 催化 3 只由 9:25 缓存回填。",
+  "take：候选 3 只中 603217.SH 元利科技（-0.26% 盘中）过红线，但因资金池上限未买入；无任何真实下单，无需人工核对委托。"
+ ]
+}

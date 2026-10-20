@@ -1,0 +1,754 @@
+{
+ "date": "20261016",
+ "generated_at": "2026-10-16 11:47:55",
+ "source": "xtquant sandbox-external read-only + FormulaOutput log",
+ "accounts": [
+  {
+   "account_id": "67014907",
+   "connected": true,
+   "asset": {
+    "cash": 9971374.99,
+    "frozen_cash": 0.0,
+    "market_value": 115953.0,
+    "total_asset": 10083796.99
+   },
+   "positions": [
+    {
+     "code": "600051.SH",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 6.19505,
+     "market_value": 1238.0,
+     "cost": 1239.01,
+     "float_pnl": -1.01,
+     "strategy": "V2"
+    },
+    {
+     "code": "600419.SH",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 8.9601,
+     "market_value": 891.0,
+     "cost": 896.01,
+     "float_pnl": -5.01,
+     "strategy": "V2"
+    },
+    {
+     "code": "603041.SH",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 11.0601,
+     "market_value": 1101.0,
+     "cost": 1106.01,
+     "float_pnl": -5.01,
+     "strategy": "V2"
+    },
+    {
+     "code": "603585.SH",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 10.5801,
+     "market_value": 1043.0,
+     "cost": 1058.01,
+     "float_pnl": -15.01,
+     "strategy": "V2"
+    },
+    {
+     "code": "603617.SH",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 6.4901,
+     "market_value": 652.0,
+     "cost": 649.01,
+     "float_pnl": 2.99,
+     "strategy": "V2"
+    },
+    {
+     "code": "603700.SH",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 11.3301,
+     "market_value": 1152.0,
+     "cost": 1133.01,
+     "float_pnl": 18.99,
+     "strategy": "V2"
+    },
+    {
+     "code": "603797.SH",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 4.56505,
+     "market_value": 924.0,
+     "cost": 913.01,
+     "float_pnl": 10.99,
+     "strategy": "V2"
+    },
+    {
+     "code": "605166.SH",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 8.1101,
+     "market_value": 806.0,
+     "cost": 811.01,
+     "float_pnl": -5.01,
+     "strategy": "V2"
+    },
+    {
+     "code": "000153.SZ",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 5.855,
+     "market_value": 1188.0,
+     "cost": 1171.0,
+     "float_pnl": 17.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002011.SZ",
+     "vol": 7600,
+     "can_use": 7600,
+     "open_price": 11.561565789473683,
+     "market_value": 85728.0,
+     "cost": 87867.9,
+     "float_pnl": -2139.9,
+     "strategy": "V13"
+    },
+    {
+     "code": "002054.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 6.9,
+     "market_value": 684.0,
+     "cost": 690.0,
+     "float_pnl": -6.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002144.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 10.7,
+     "market_value": 1064.0,
+     "cost": 1070.0,
+     "float_pnl": -6.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002391.SZ",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 5.165,
+     "market_value": 1020.0000000000001,
+     "cost": 1033.0,
+     "float_pnl": -13.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002398.SZ",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 4.215,
+     "market_value": 844.0,
+     "cost": 843.0,
+     "float_pnl": 1.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002442.SZ",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 5.215,
+     "market_value": 1020.0000000000001,
+     "cost": 1043.0,
+     "float_pnl": -23.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002566.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 6.85,
+     "market_value": 698.0,
+     "cost": 685.0,
+     "float_pnl": 13.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002615.SZ",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 6.275,
+     "market_value": 1194.0,
+     "cost": 1255.0,
+     "float_pnl": -61.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002666.SZ",
+     "vol": 300,
+     "can_use": 300,
+     "open_price": 4.096666666666667,
+     "market_value": 1236.0,
+     "cost": 1229.0,
+     "float_pnl": 7.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002753.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 6.67,
+     "market_value": 666.0,
+     "cost": 667.0,
+     "float_pnl": -1.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002852.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 8.52,
+     "market_value": 810.0,
+     "cost": 852.0,
+     "float_pnl": -42.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002863.SZ",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 4.675,
+     "market_value": 944.0,
+     "cost": 935.0,
+     "float_pnl": 9.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002996.SZ",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 5.955,
+     "market_value": 1184.0,
+     "cost": 1191.0,
+     "float_pnl": -7.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "300230.SZ",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 4.325,
+     "market_value": 862.0000000000001,
+     "cost": 865.0,
+     "float_pnl": -3.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "300335.SZ",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 5.375,
+     "market_value": 1070.0,
+     "cost": 1075.0,
+     "float_pnl": -5.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "300384.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 11.77,
+     "market_value": 1166.0,
+     "cost": 1177.0,
+     "float_pnl": -11.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "300407.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 10.31,
+     "market_value": 1027.0,
+     "cost": 1031.0,
+     "float_pnl": -4.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "300439.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 10.08,
+     "market_value": 997.0000000000001,
+     "cost": 1008.0,
+     "float_pnl": -11.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "300636.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 7.0,
+     "market_value": 691.0,
+     "cost": 700.0,
+     "float_pnl": -9.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "300650.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 11.15,
+     "market_value": 1109.0,
+     "cost": 1115.0,
+     "float_pnl": -6.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "300771.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 11.42,
+     "market_value": 1175.0,
+     "cost": 1142.0,
+     "float_pnl": 33.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "301032.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 9.95,
+     "market_value": 1012.0000000000001,
+     "cost": 995.0,
+     "float_pnl": 17.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "301332.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 7.67,
+     "market_value": 757.0,
+     "cost": 767.0,
+     "float_pnl": -10.0,
+     "strategy": "V2"
+    }
+   ],
+   "deals": [],
+   "orders": [],
+   "error": ""
+  },
+  {
+   "account_id": "70180771",
+   "connected": true,
+   "asset": null,
+   "positions": [],
+   "deals": [],
+   "orders": [],
+   "error": ""
+  }
+ ],
+ "strategies": {
+  "V13": {
+   "fills": [],
+   "orders": [],
+   "positions": [
+    {
+     "code": "002011.SZ",
+     "vol": 7600,
+     "can_use": 7600,
+     "open_price": 11.561565789473683,
+     "market_value": 85728.0,
+     "cost": 87867.9,
+     "float_pnl": -2139.9,
+     "strategy": "V13"
+    }
+   ],
+   "buy": 0,
+   "sell": 0,
+   "hold": 1,
+   "build": "20261015-021840",
+   "heart": null,
+   "cost": 87867.9,
+   "float_pnl": -2139.9,
+   "market_value": 85728.0
+  },
+  "V2": {
+   "fills": [],
+   "orders": [],
+   "positions": [
+    {
+     "code": "600051.SH",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 6.19505,
+     "market_value": 1238.0,
+     "cost": 1239.01,
+     "float_pnl": -1.01,
+     "strategy": "V2"
+    },
+    {
+     "code": "600419.SH",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 8.9601,
+     "market_value": 891.0,
+     "cost": 896.01,
+     "float_pnl": -5.01,
+     "strategy": "V2"
+    },
+    {
+     "code": "603041.SH",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 11.0601,
+     "market_value": 1101.0,
+     "cost": 1106.01,
+     "float_pnl": -5.01,
+     "strategy": "V2"
+    },
+    {
+     "code": "603585.SH",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 10.5801,
+     "market_value": 1043.0,
+     "cost": 1058.01,
+     "float_pnl": -15.01,
+     "strategy": "V2"
+    },
+    {
+     "code": "603617.SH",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 6.4901,
+     "market_value": 652.0,
+     "cost": 649.01,
+     "float_pnl": 2.99,
+     "strategy": "V2"
+    },
+    {
+     "code": "603700.SH",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 11.3301,
+     "market_value": 1152.0,
+     "cost": 1133.01,
+     "float_pnl": 18.99,
+     "strategy": "V2"
+    },
+    {
+     "code": "603797.SH",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 4.56505,
+     "market_value": 924.0,
+     "cost": 913.01,
+     "float_pnl": 10.99,
+     "strategy": "V2"
+    },
+    {
+     "code": "605166.SH",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 8.1101,
+     "market_value": 806.0,
+     "cost": 811.01,
+     "float_pnl": -5.01,
+     "strategy": "V2"
+    },
+    {
+     "code": "000153.SZ",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 5.855,
+     "market_value": 1188.0,
+     "cost": 1171.0,
+     "float_pnl": 17.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002054.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 6.9,
+     "market_value": 684.0,
+     "cost": 690.0,
+     "float_pnl": -6.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002144.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 10.7,
+     "market_value": 1064.0,
+     "cost": 1070.0,
+     "float_pnl": -6.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002391.SZ",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 5.165,
+     "market_value": 1020.0000000000001,
+     "cost": 1033.0,
+     "float_pnl": -13.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002398.SZ",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 4.215,
+     "market_value": 844.0,
+     "cost": 843.0,
+     "float_pnl": 1.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002442.SZ",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 5.215,
+     "market_value": 1020.0000000000001,
+     "cost": 1043.0,
+     "float_pnl": -23.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002566.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 6.85,
+     "market_value": 698.0,
+     "cost": 685.0,
+     "float_pnl": 13.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002615.SZ",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 6.275,
+     "market_value": 1194.0,
+     "cost": 1255.0,
+     "float_pnl": -61.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002666.SZ",
+     "vol": 300,
+     "can_use": 300,
+     "open_price": 4.096666666666667,
+     "market_value": 1236.0,
+     "cost": 1229.0,
+     "float_pnl": 7.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002753.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 6.67,
+     "market_value": 666.0,
+     "cost": 667.0,
+     "float_pnl": -1.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002852.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 8.52,
+     "market_value": 810.0,
+     "cost": 852.0,
+     "float_pnl": -42.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002863.SZ",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 4.675,
+     "market_value": 944.0,
+     "cost": 935.0,
+     "float_pnl": 9.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "002996.SZ",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 5.955,
+     "market_value": 1184.0,
+     "cost": 1191.0,
+     "float_pnl": -7.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "300230.SZ",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 4.325,
+     "market_value": 862.0000000000001,
+     "cost": 865.0,
+     "float_pnl": -3.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "300335.SZ",
+     "vol": 200,
+     "can_use": 200,
+     "open_price": 5.375,
+     "market_value": 1070.0,
+     "cost": 1075.0,
+     "float_pnl": -5.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "300384.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 11.77,
+     "market_value": 1166.0,
+     "cost": 1177.0,
+     "float_pnl": -11.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "300407.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 10.31,
+     "market_value": 1027.0,
+     "cost": 1031.0,
+     "float_pnl": -4.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "300439.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 10.08,
+     "market_value": 997.0000000000001,
+     "cost": 1008.0,
+     "float_pnl": -11.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "300636.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 7.0,
+     "market_value": 691.0,
+     "cost": 700.0,
+     "float_pnl": -9.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "300650.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 11.15,
+     "market_value": 1109.0,
+     "cost": 1115.0,
+     "float_pnl": -6.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "300771.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 11.42,
+     "market_value": 1175.0,
+     "cost": 1142.0,
+     "float_pnl": 33.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "301032.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 9.95,
+     "market_value": 1012.0000000000001,
+     "cost": 995.0,
+     "float_pnl": 17.0,
+     "strategy": "V2"
+    },
+    {
+     "code": "301332.SZ",
+     "vol": 100,
+     "can_use": 100,
+     "open_price": 7.67,
+     "market_value": 757.0,
+     "cost": 767.0,
+     "float_pnl": -10.0,
+     "strategy": "V2"
+    }
+   ],
+   "buy": 0,
+   "sell": 0,
+   "hold": 31,
+   "build": "20261015-021841",
+   "heart": null,
+   "cost": 30344.08,
+   "float_pnl": -119.08,
+   "market_value": 30225.0
+  },
+  "G2": {
+   "fills": [],
+   "orders": [],
+   "positions": [],
+   "buy": 0,
+   "sell": 0,
+   "hold": null,
+   "build": "",
+   "heart": null,
+   "cost": 0.0,
+   "float_pnl": 0.0,
+   "market_value": 0.0
+  },
+  "ENS": {
+   "fills": [],
+   "orders": [],
+   "positions": [],
+   "buy": 0,
+   "sell": 0,
+   "hold": null,
+   "build": "",
+   "heart": null,
+   "cost": 0.0,
+   "float_pnl": 0.0,
+   "market_value": 0.0
+  },
+  "ATR": {
+   "fills": [],
+   "orders": [],
+   "positions": [],
+   "buy": 0,
+   "sell": 0,
+   "hold": null,
+   "build": "",
+   "heart": null,
+   "cost": 0.0,
+   "float_pnl": 0.0,
+   "market_value": 0.0
+  }
+ },
+ "log": {
+  "path": "D:\\国金QMT交易端模拟\\userdata\\log\\XtClient_FormulaOutput_20261016.log",
+  "exists": true,
+  "builds": {
+   "V13": "20261015-021840",
+   "V2": "20261015-021841"
+  },
+  "hearts": {},
+  "forbidden_io": 228
+ },
+ "unattributed": {
+  "deals": [],
+  "positions": []
+ }
+}

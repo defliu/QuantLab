@@ -1,0 +1,33 @@
+{
+ "date": "20261015",
+ "written_by": "traje-session-open-review",
+ "written_at": "2026-10-15 10:02",
+ "anomalies": [
+  {
+   "item": "候选文件 D_model_top10.csv 持续断更",
+   "detail": "data/selections/D_model_top10.csv 仍停留在 20260929（9/29 16:43 后未更新，与昨日 trae_note 记录的同一遗留问题）。未使用该过期文件，改用今日 09:15 预生成任务产出的 data/selections/20261014_model_top10.csv（4 只，trade_date=20261014 = 面板最新日 D）作候选输入。",
+   "action": "用 20261014_model_top10.csv 作 review_full 候选输入，全流程 trade_date 校验通过",
+   "followup": "D_model_top10.csv 16:30 盘后管道停更问题仍待人工核查（连续第 2 日记录）"
+  },
+  {
+   "item": "东财扩展源全败（数据源降级）",
+   "detail": "collect_v13_review_20261015.py 东财 push2 stock/get 4/4 全部 Remote end closed without response（em_ext 失败，量比 liangbi 缺失）；东财 F3/F5 经同一 host 的 search-api/push2 slist 成功。腾讯基础行情 4/4 成功。",
+   "action": "已按 router 规则 record fail；F2 走 Tushare T-1 本地权威主源（2026-10-14，lag=1）不受影响；F5 走申万一级 T-1 自算主源；liangbi 缺失使 F2 分档中量比条件取保守分支（仅 603275 等按净额档）。",
+   "followup": "无阻断；东财源限流恢复后可复核 liangbi"
+  },
+  {
+   "item": "红线空仓（0/3 过红线 58 分）",
+   "detail": "review_full 完整版评分最高 002011.SZ=51.0、603275.SH=47.5、301060.SZ=34.0，全部低于红线 58（603216.SH 另被位置过滤 lite R2高位剔除）。candidate_rows=0（raw=3）。rebalance_daily 按 T-20261002-001 买入拦截：本日不买入，卖出链路照常执行且 sell=[]（持仓 002011.SZ 掉出目标但未满 HOLD_DAYS=5，保留）。",
+   "action": "零委托执行，plan json 正常落盘（executed_live=true，candidate_sha256=66871e4e...）",
+   "followup": "无"
+  }
+ ],
+ "notes": [
+  "环境：PATH 内 python 为 WindowsApps 空壳（9009），全程使用 miniqmt venv (C:/Users/Administrator/.workbuddy/binaries/python/envs/miniqmt/Scripts/python.exe)。",
+  "门禁：is_trade_day.py 退出码 0（交易日）；幂等前置检查 data/rebalance_20261015.json 与 guard lock 均不存在后放行。",
+  "大盘：market_tier.py 判 T=1 半仓（沪深300 -1.4726%，腾讯行情实时，fail-safe 未触发），--top 1。",
+  "plan json 溯源字段 candidate_sha256=66871e4e60ecbeb96da1503ffe9ac4cddb7cf359641898fd5104393d99bd3591 已存在非 null（step4b PASS）；零委托、hold=[002011.SZ] 与 QMT 实读持仓一致，未触发 4c 对账协议。",
+  "data/tdx_review.json date=20261015（写后自查通过，未沿用旧档日期）；F3 催化 4 只由 9:25 缓存回填。",
+  "持仓 002011.SZ 盾安环境盘中 -5.86%，仍在候选第 1 位但总分 51.0 未过红线，未买入新票；到期卖出以 HOLD_DAYS=5 脚本判定为准（本次 sell=[]）。"
+ ]
+}

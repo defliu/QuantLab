@@ -1,1 +1,2 @@
 {"time": "2026-10-13 10:10:42", "account_id": "67014907", "code": "002011.SZ", "side": "BUY", "vol": 7600, "order_id": 1098914113, "order_ids": [1098914113], "ref_price": 11.57, "note": "rebalance_daily:ref_price"}
+{"time": "2026-10-20 09:53:23", "account_id": "67014907", "code": "301536.SZ", "side": "BUY", "vol": 800, "order_id": 1082136808, "order_ids": [1082136808], "ref_price": 101.51, "note": "rebalance_daily:ref_price"}
