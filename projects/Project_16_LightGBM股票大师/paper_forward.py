@@ -57,6 +57,24 @@ def _append_live_dedup(log_csv, rows):
     os.replace(tmp, log_csv)
 
 
+def _net_ret(o_buy, o_exit, code, slip=0.001, invest=50000.0):
+    """单笔净收益估算（2026-10-19 新增，审计 C1）。
+
+    原实现 ret = exit/entry-1 是**毛收益**，但报告文案写着「含佣金/印花税/过户费」，
+    属口径不实。这里复用 scan_rotate_cost_real 的实盘费用函数按单笔 invest 元估算：
+    双边佣金（最低 5 元）+ 卖出印花税万5 + 沪深双边过户费 + 双边滑点。
+    """
+    try:
+        if not (o_buy and o_exit and o_buy > 0):
+            return np.nan
+        amt_buy = float(invest)
+        amt_sell = amt_buy * float(o_exit) / float(o_buy)
+        return (amt_sell - BT.sell_fee(amt_sell, code, slip)) / \
+               (amt_buy + BT.buy_fee(amt_buy, code, slip)) - 1.0
+    except Exception:
+        return np.nan
+
+
 def load_open_panel():
     """主库 + data_live 增量合并（增量优先）的 open 面板。
 
@@ -124,7 +142,7 @@ def backfill_live(hold):
     daily, main_last, inc_last = load_open_panel()
     trades = sorted(set(daily.index.get_level_values(0)))
     open_map = daily["open"].to_dict()
-    for col in ("entry", "exit", "ret", "hold"):
+    for col in ("entry", "exit", "ret", "ret_net", "hold"):
         if col not in df.columns:
             df[col] = np.nan
 
@@ -149,6 +167,7 @@ def backfill_live(hold):
             df.at[i, "entry"] = entry
             df.at[i, "exit"] = exit_p
             df.at[i, "ret"] = exit_p / entry - 1
+            df.at[i, "ret_net"] = _net_ret(entry, exit_p, r["code"], slip=0.001)
             df.at[i, "hold"] = hold
             newly += 1
         elif old_ret is not None and not (isinstance(old_ret, float) and np.isnan(old_ret)):
@@ -272,7 +291,8 @@ def main():
             std_ret = df["ret"].std()
             md = [f"# 前向纸面台账（g2 + 真实F2/F5 + 红线60 + 持仓{args.top} + 持有{args.hold}天）", "",
                   f"> 生成：{datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}",
-                  f"> 口径：open→open 可执行，滑点0.1%，成本：佣金万2/印花税万5/过户费", "",
+                  f"> 口径：open→open 可执行；ret 为毛收益（未扣成本），ret_net 为按单笔5万估算的净收益"
+                  f"（双边佣金最低5元 + 印花税万5 + 双边过户费 + 滑点0.1%）", "",
                   f"- 交易笔数：{n}", f"- 胜率：{win:.1%}", f"- 单笔平均收益：{mean_ret:.3%}",
                   f"- 单笔收益标准差：{std_ret:.3%}", f"- 首笔：{df['buy_date'].min()} ~ 末笔：{df['buy_date'].max()}",
                   "> 注：持仓2只、持有10天，单笔复利不能直接视为组合收益；组合口径见回测（+0.149%/0.1%滑点）。", "",

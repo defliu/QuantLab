@@ -148,8 +148,9 @@ def main():
     ap.add_argument("--split-train", default="2020-01-01/2023-06-30")
     ap.add_argument("--split-valid", default="2023-07-01/2024-06-30")
     ap.add_argument("--split-test", default="2024-07-01/2026-08-14")
-    ap.add_argument("--embargo-days", type=int, default=1,
-                    help="训练/验证边界隔离交易日数（>= 标签 horizon），0=旧口径不隔离")
+    ap.add_argument("--embargo-days", type=int, default=4,
+                    help="训练/验证边界隔离交易日数（必须 >= 标签 horizon，默认 4 = N3 标签 T+1..T+4；"
+                         "1 日标签可显式传 1）；0=旧口径不隔离")
     ap.add_argument("--rolling", action="store_true", help="附加季度滚动重训评估")
     ap.add_argument("--rolling-folds", type=int, default=6, help="滚动折数")
     ap.add_argument("--fine-lr", type=float, default=0.02, help="精调学习率")
@@ -182,6 +183,19 @@ def main():
         # （audit T-20260925-001 O3；对齐 train_g2.py build_panel 的做法）。
         df = df.sample(n=args.limit_rows, random_state=0).sort_values("trade_date")
     print(f"    行数: {len(df):,}  特征数: {len(feat_cols)}")
+
+    # 2026-10-19 修复（审计 B5 / A1）：
+    #   ① 面板最后一日没有标签（fwd_ret 为 NaN），原实现被 astype(int) 隐式当成 0；
+    #   ② T+1 开盘即涨停 / 停牌无量的样本实盘买不进，留在训练集会让模型去追
+    #      "买不到的票"（实测实盘 Top2 中 30.1% 属此类）。
+    # 二者都在训练与 IC 评估前排除。
+    _n0 = len(df)
+    _lab_ok = df["label"].notna() & df["fwd_ret"].notna()
+    _blk_ok = (df["entry_blocked"].fillna(0).astype("int64") == 0) \
+        if "entry_blocked" in df.columns else pd.Series(True, index=df.index)
+    df = df.loc[_lab_ok & _blk_ok].reset_index(drop=True)
+    print(f"    可用样本 {len(df):,} / {_n0:,}"
+          f"（剔除无标签 {int((~_lab_ok).sum()):,} + 入场不可执行 {int((_lab_ok & ~_blk_ok).sum()):,}）")
 
     y = df["label"].astype(int).values
     fwd = df["fwd_ret"].astype(float).values

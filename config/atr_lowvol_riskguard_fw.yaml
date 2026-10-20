@@ -23,7 +23,9 @@ execution:
   price: next_open
   slippage: 0.001
   commission_rate: 0.00025
-  tax_rate: 0.0001
+  commission_min: 5.0        # 单笔最低佣金（元）
+  transfer_fee: 0.00001     # 过户费（沪深双边，万0.1）
+  tax_rate: 0.0005          # 印花税（仅卖出，万5；2023-08-28 后现行税率）
 
 strategy: atr_lowvol
 trading_model: next_open

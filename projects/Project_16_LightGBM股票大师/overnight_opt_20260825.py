@@ -190,7 +190,17 @@ def train_var(name, extra_feat, save=True):
     X = d[feat].astype("float32").values
     y = d["label3"].astype(int).values
     fwd = d["fwd_ret3"].astype(float).values
-    m_tr = (d["trade_date"] >= "2020-01-01") & (d["trade_date"] <= "2023-06-30")
+    # 2026-10-19 修复（审计 B4）：标签 label3 = open(T+4)/open(T+1)-1，训练样本最远
+    # 用到 T+4 的开盘价。原实现训练上界直接取 2023-06-30，其 T+4 已落在 valid 期
+    # （2023-07-03 起），构成 3~4 个交易日的边界泄漏。按 train_g2 同款做法回缩
+    # EMBARGO=4 个交易日。
+    _EMBARGO = 4
+    _cal = sorted(pd.Series(pd.to_datetime(d["trade_date"])).dropna().unique())
+    _tr_hi = pd.Timestamp("2023-06-30")
+    _le = [t for t in _cal if t <= _tr_hi]
+    _cut_tr = _le[-1 - min(_EMBARGO, len(_le) - 1)] if _le else _tr_hi
+    log(f"[{name}] embargo={_EMBARGO} 交易日，训练上界 {pd.Timestamp(_cut_tr).date()}（名义 2023-06-30）")
+    m_tr = (d["trade_date"] >= "2020-01-01") & (d["trade_date"] <= _cut_tr)
     m_va = (d["trade_date"] >= "2023-07-01") & (d["trade_date"] <= "2024-06-30")
     m_te = (d["trade_date"] >= "2024-07-01") & (d["trade_date"] <= "2026-08-14")
     params = dict(objective="binary", metric="auc", learning_rate=0.02, n_estimators=12000,

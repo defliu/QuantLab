@@ -60,7 +60,7 @@ def run_one(dates, per_day, market_daily, open_map, N, slip, mode, k1, k2):
     BT.SELL_DELIST[0] = 0
     BT.EXIT_REASON_CNT.clear()
     trades, daily_ret, n_skip = BT.simulate(dates, per_day, N, slip, open_map, exec_ok=True)
-    s = BT.stats(trades, daily_ret, market_daily)
+    s = BT.stats(trades, daily_ret, market_daily, N)
     hold_days = [t[1] - t[0] - 1 for t in trades]
     fwd = pd.Series([t[2] for t in trades]) if trades else pd.Series(dtype=float)
     mdd = abs(float(s["max_drawdown"])) or 1e-9

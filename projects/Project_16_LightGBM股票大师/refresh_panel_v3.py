@@ -51,11 +51,13 @@ def build_merged():
     if len(incr) == 0:
         print("  !! 增量无完整收盘日，仅用主库")
         return None
-    incr = incr.rename(columns={"volume": "vol"})
+    # preClose → pre_close：否则下面的「main 列缺失则用 main_last 填充」会把增量日
+    # 的前收覆盖成主库最后一天的旧值（entry_blocked / 涨跌停判断会失真）。
+    incr = incr.rename(columns={"volume": "vol", "preClose": "pre_close"})
     incr["close"] = incr["close"].astype(float)
     incr["vol"] = incr["vol"].astype(float)
     incr["amount"] = incr["amount"].astype(float)
-    pre = incr["preClose"].astype(float).replace(0, np.nan)
+    pre = incr["pre_close"].astype(float).replace(0, np.nan)
     incr["pct_chg"] = (incr["close"] / pre - 1.0) * 100.0
     for c in SLOW:
         if c in main_last.columns:
@@ -99,6 +101,10 @@ def main():
             df = df.merge(merged[["ts_code", "trade_date", "turnover_rank"]], on=["ts_code", "trade_date"], how="left")
             cols.append("turnover_rank")
         if "industry_mom20" in missing:
+            # 已知口径缺陷（审计 B2，未修）：行业成分用的是单一静态快照
+            # （行业板块成分汇总_同花顺，文件名为「全量更新到20260814」），
+            # 却被映射到 2019 年起全历史 → 轻度前视。修法需历史行业成分表，
+            # 当前数据源不提供，故保留并在报告中标注。
             td = pd.read_parquet(os.path.join(DC.ASTOCK_DIR, "board", "ths_daily.parquet")).reset_index()
             td["trade_date"] = pd.to_datetime(td["trade_date"])
             td["ts_code"] = td["ts_code"].astype(str)
@@ -117,7 +123,12 @@ def main():
             merged["industry_mom20"] = ind_map.reindex(pd.MultiIndex.from_frame(sub[["ts_code", "trade_date"]])).values
             df = df.merge(merged[["ts_code", "trade_date", "industry_mom20"]], on=["ts_code", "trade_date"], how="left")
             cols.append("industry_mom20")
-    df = df[cols + ["trade_date", "ts_code", "label", "fwd_ret"]]
+    # 2026-10-19：entry_blocked（T+1 开盘即涨停/停牌，实盘买不进）必须随面板下传，
+    # 否则训练侧无法排除不可成交样本。
+    _extra = ["trade_date", "ts_code", "label", "fwd_ret"]
+    if "entry_blocked" in df.columns:
+        _extra.append("entry_blocked")
+    df = df[cols + _extra]
     df.to_parquet(os.path.join(DATA, "feature_panel_v3.parquet"))
     print(f"  v3 面板已切片 | 最新日 {pd.to_datetime(df['trade_date']).max().date()} | "
           f"特征 {len(cols)}/{len(feat_all)}")

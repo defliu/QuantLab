@@ -74,6 +74,10 @@ def main():
 
     live_csv = os.path.join(REAL, "paper_forward_live.csv")
     df = pd.read_csv(live_csv, encoding="utf-8-sig")
+    # 2026-10-19：若台账含 ret_net（扣费净收益），统计改用净收益；毛收益保留为 ret_gross。
+    if "ret_net" in df.columns:
+        df["ret_gross"] = df["ret"]
+        df["ret"] = df["ret_net"].where(df["ret_net"].notna(), df["ret"])
     done = df[df["ret"].notna()].copy()
     if len(done) == 0:
         print("尚无已回填样本（ret 为空）。先跑 paper_forward.py --backfill --hold 10")

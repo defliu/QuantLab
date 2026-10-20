@@ -19,6 +19,16 @@ Model: next_open.
     a buy whose target_cash exceeds (prev-day amount * max_adv_pct) is
     rejected as 'capacity_exceeded' (see fill_buy).
 
+Cost model (2026-10-19 修复，审计 P1-C1):
+  - commission  : max(commission_min, amount * commission_rate)，默认万2.5 / 最低 5 元
+  - transfer_fee: amount * transfer_fee（沪深双边，默认万0.1，并入 commission 列）
+  - tax         : amount * tax_rate（仅卖出，默认万5 = 0.05%，2023-08-28 后现行税率）
+  修复前默认 tax_rate=0.0001（万1）且无最低佣金/过户费，每笔卖出少算约 0.04%。
+
+Funding (2026-10-19 修复，审计 P1-C3):
+  - fill_buy 接受 available_cash；现金不足时按可用资金缩量，<=0 直接拒单，
+    杜绝"卖出被跌停挡住、买入照成、cash 转负"的无息杠杆。
+
 Pure-ish: no IO, no randomness, no global mutable state. Returns trade dicts
 matching the trades.csv column schema.
 """
@@ -127,7 +137,9 @@ def fill_sell(decision, position, market_window, fill_date, exec_cfg, run_id):
 
     slippage = float(exec_cfg.get("slippage", 0.001))
     commission_rate = float(exec_cfg.get("commission_rate", 0.00025))
-    tax_rate = float(exec_cfg.get("tax_rate", 0.0001))
+    commission_min = float(exec_cfg.get("commission_min", 5.0))
+    tax_rate = float(exec_cfg.get("tax_rate", 0.0005))
+    transfer_fee = float(exec_cfg.get("transfer_fee", 0.00001))
 
     price = round(open_price * (1.0 - slippage), 6)
     # 部分减仓：rebalance 层可传 target_cash 指定卖出金额（整数手向下取整）。
@@ -144,7 +156,10 @@ def fill_sell(decision, position, market_window, fill_date, exec_cfg, run_id):
         volume = avail
     amount = round(price * volume, 6)
     slippage_amt = round(open_price * slippage * volume, 6)
-    commission = round(amount * commission_rate, 6)
+    # 佣金（含最低 5 元）+ 过户费（沪深双边）合并记入 commission 列，
+    # 保持 trades.csv 列契约不变；tax 仅卖出收取（印花税万5）。
+    commission = round(max(commission_min, amount * commission_rate)
+                       + amount * transfer_fee, 6)
     tax = round(amount * tax_rate, 6)
 
     trade = {
@@ -165,10 +180,12 @@ def fill_sell(decision, position, market_window, fill_date, exec_cfg, run_id):
     return (trade, None)
 
 
-def fill_buy(candidate, market_window, fill_date, exec_cfg, run_id):
+def fill_buy(candidate, market_window, fill_date, exec_cfg, run_id,
+             available_cash=None):
     """Match a buy candidate against the next_open bar.
 
     target_cash from candidate is converted to lot-floored volume here.
+    available_cash: 若提供，则按「含费后不超过可用现金」缩量；<=0 直接拒单。
     Returns (trade_dict_or_None, unfilled_reason_or_None).
     """
     code = candidate["code"]
@@ -185,11 +202,26 @@ def fill_buy(candidate, market_window, fill_date, exec_cfg, run_id):
 
     slippage = float(exec_cfg.get("slippage", 0.001))
     commission_rate = float(exec_cfg.get("commission_rate", 0.00025))
+    commission_min = float(exec_cfg.get("commission_min", 5.0))
+    transfer_fee = float(exec_cfg.get("transfer_fee", 0.00001))
 
     price = round(open_price * (1.0 + slippage), 6)
     target_cash = float(candidate.get("target_cash", 0.0))
     if target_cash <= 0 or price <= 0:
         return (None, "no_target_cash")
+
+    # 现金约束（审计 P1-C3）：卖出失败时不能靠"透支"完成买入。
+    if available_cash is not None:
+        if available_cash <= 0:
+            return (None, "insufficient_cash")
+        # 预留手续费：amount + max(min, amount*rate) + amount*transfer <= cash
+        fee_rate = commission_rate + transfer_fee
+        max_notional = max(0.0, (available_cash - commission_min) / (1.0 + fee_rate)) \
+            if available_cash > commission_min else 0.0
+        if max_notional <= 0:
+            return (None, "insufficient_cash")
+        if target_cash > max_notional:
+            target_cash = max_notional
 
     # 流动性容量上限（可选）：以前一交易日成交额为代理，避免使用当日
     # 容量造成前视。max_adv_pct=0（默认）关闭本约束，行为与旧版一致。
@@ -208,7 +240,20 @@ def fill_buy(candidate, market_window, fill_date, exec_cfg, run_id):
         return (None, "below_min_lot")
     amount = round(price * volume, 6)
     slippage_amt = round(open_price * slippage * volume, 6)
-    commission = round(amount * commission_rate, 6)
+    # 佣金（含最低 5 元）+ 过户费（沪深双边）合并记入 commission 列。
+    commission = round(max(commission_min, amount * commission_rate)
+                       + amount * transfer_fee, 6)
+
+    # 逐手回退兜底：最低佣金可能使「含费总额」略超可用现金。
+    if available_cash is not None:
+        while volume > 0 and (amount + commission) > available_cash + 1e-9:
+            volume -= _LOT_SIZE
+            if volume <= 0:
+                return (None, "insufficient_cash")
+            amount = round(price * volume, 6)
+            slippage_amt = round(open_price * slippage * volume, 6)
+            commission = round(max(commission_min, amount * commission_rate)
+                               + amount * transfer_fee, 6)
 
     trade = {
         "run_id":       run_id,

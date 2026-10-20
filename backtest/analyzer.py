@@ -133,13 +133,16 @@ def compute_metrics(equity_rows, trades, trading_calendar,
     else:
         end_total = float(initial_cash)
     total_return = (end_total / float(initial_cash)) - 1.0 if initial_cash > 0 else 0.0
-    annual_return = total_return * _annualize_factor(n_days)
-    # CAGR（复利年化）：保留 annual_return 线性口径不动（下游兼容），新增 cagr
-    # 以复利为准。total_return <= -1 或样本过短时退化为线性口径兜底。
+    annual_return_linear = total_return * _annualize_factor(n_days)
+    # 2026-10-19 修复（审计 P1-6）：主字段 annual_return 改为复利（CAGR）。
+    # 原实现 total_return * 252/n 在正收益时系统性虚高（6 年 +100% → 线性 16.7%
+    # vs CAGR 12.2%），负收益时又低估亏损幅度，属"让数据好看"的口径。
+    # 线性值保留为 annual_return_linear 供历史对照。
     if n_days > 0 and (1.0 + total_return) > 0:
         cagr = (1.0 + total_return) ** (252.0 / n_days) - 1.0
     else:
-        cagr = annual_return
+        cagr = annual_return_linear
+    annual_return = cagr
 
     equity_series = [float(r["total_asset"]) for r in equity_rows]
     daily_returns = [float(r["daily_return"]) for r in equity_rows[1:]]  # skip day 0
@@ -147,7 +150,7 @@ def compute_metrics(equity_rows, trades, trading_calendar,
     mdd = _max_drawdown(equity_series)
     sharpe = _sharpe(daily_returns, n_days)
     if mdd != 0:
-        calmar = annual_return / abs(mdd)
+        calmar = cagr / abs(mdd)
         cagr_calmar = cagr / abs(mdd)
     else:
         calmar = None
@@ -219,7 +222,8 @@ def compute_metrics(equity_rows, trades, trading_calendar,
 
     perf = {
         "total_return":     round(total_return, 6),
-        "annual_return":    round(annual_return, 6),
+        "annual_return":    round(annual_return, 6),          # = CAGR（复利）
+        "annual_return_linear": round(annual_return_linear, 6),  # 旧口径，仅对照
         "cagr":             cagr,
         "max_drawdown":     round(mdd, 6),
         "sharpe":           round(sharpe, 6),

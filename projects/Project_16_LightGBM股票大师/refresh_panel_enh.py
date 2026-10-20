@@ -235,6 +235,8 @@ def main():
         shutil.copy2(ENH_PANEL, bak)
         log(f"    旧面板已备份: {os.path.basename(bak)}")
     out_cols = base27 + ["trade_date", "ts_code", "label", "fwd_ret"] + ENH6
+    if "entry_blocked" in df.columns:
+        out_cols = out_cols + ["entry_blocked"]
     df = df[out_cols]
     df.to_parquet(ENH_PANEL, index=False)
     meta["n_rows"] = len(df)

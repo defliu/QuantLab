@@ -70,6 +70,7 @@ W = {"F1": 0.25, "F2": 0.20, "F3": 0.20, "F4": 0.15, "F5": 0.10, "F6": 0.10}
 
 # 卖出侧可执行性过滤（审计 P1-3）：一字跌停卖不掉 + 停牌/退市不冻结市值
 _DOWN_LIMIT_MAP = {}  # (date, code) -> 当日跌停价，build_per_day 填充
+MKT_O2O = {}          # N -> 每日全市场 N 日 open→open 横截面均值（同口径基准，build_per_day 填充）
 DELIST_DAYS = int(os.environ.get("BT_DELIST_DAYS", "60"))   # 连续无价天数视为退市
 DELIST_LOSS = float(os.environ.get("BT_DELIST_LOSS", "0.5"))  # 退市损失假设（按最后估值×(1-loss) 清仓）
 SELL_SKIP_DOWN = [0]  # 卖出被一字跌停挡住的次数（审计量级统计）
@@ -133,13 +134,14 @@ def is_sh(code):
 
 
 def sell_fee(amt, code, slip):
+    # 过户费沪深双边（2026-10-19 修正，审计 C1）
     comm = max(C.COMM_MIN, amt * COMM_RATE)
-    return comm + amt * STAMP_RATE + (amt * TRANS_RATE if is_sh(code) else 0.0) + amt * slip
+    return comm + amt * STAMP_RATE + amt * TRANS_RATE + amt * slip
 
 
 def buy_fee(amt, code, slip):
     comm = max(C.COMM_MIN, amt * COMM_RATE)
-    return comm + (amt * TRANS_RATE if is_sh(code) else 0.0) + amt * slip
+    return comm + amt * TRANS_RATE + amt * slip
 
 
 def build_per_day():
@@ -182,6 +184,20 @@ def build_per_day():
         "suspend_next": g["suspend_timing"].shift(-1),
     }, index=daily.index)
     daily = pd.concat([daily, nxt], axis=1)
+
+    # ---- 同口径基准（2026-10-19 修复，审计 C2）----
+    # 策略日收益是 open→open（simulate 用 open_map 逐日盯市），而原 market_daily
+    # 取的是面板 fwd_ret（close→close），分子分母不同段，日均超额含系统性偏差。
+    # 这里预计算「同日全市场 N 日 open→open 横截面均值」，供 stats 做同口径配对。
+    global MKT_O2O
+    MKT_O2O = {}
+    for _N in sorted(set(N_LIST) | {1}):
+        _f = g["open"].shift(-(_N + 1)) / g["open"].shift(-1) - 1.0
+        _f = _f.replace([np.inf, -np.inf], np.nan)
+        _s = _f.groupby(daily["trade_date"]).mean()
+        MKT_O2O[_N] = _s.dropna()
+    print("    同口径基准已构建: N=%s" % ",".join(str(k) for k in sorted(MKT_O2O)))
+
     daily = daily.set_index(["trade_date", "ts_code"])
     open_map = daily["open"].to_dict()  # 全市场 open，(date, code) -> open，供持仓收益取价
     global _DOWN_LIMIT_MAP, _ATR_MAP, _HIGH_MAP, _MA5_MAP
@@ -221,7 +237,8 @@ def build_per_day():
         pre = day.nlargest(PRE_POOL, "prob")[["ts_code", "total_new", "fwd_ret", "prob", "open_next",
                                               "up_limit_next", "vol_next", "suspend_next"]].set_index("ts_code")
         per_day[d] = pre.nlargest(TOP10, "prob")
-    return dates, per_day, pd.Series(market_avgs), open_map
+    valid_dates = [d for d in dates if d in per_day]
+    return valid_dates, per_day, pd.Series(market_avgs, index=valid_dates), open_map
 
 
 def simulate(dates, per_day, N, slip, open_map, exec_ok=True):
@@ -274,7 +291,9 @@ def simulate(dates, per_day, N, slip, open_map, exec_ok=True):
                     if h["missing_days"] >= DELIST_DAYS:
                         amt = h["value"]
                         cash += amt * (1 - DELIST_LOSS) - sell_fee(amt, c, slip)
-                        trades.append((h["buy_i"], i, amt * (1 - DELIST_LOSS) / h["buy_val"] - 1))
+                        trades.append((h["buy_i"], i,
+                                       (amt * (1 - DELIST_LOSS) - sell_fee(amt, c, slip))
+                                       / h["buy_val"] - 1))
                         del hold[c]
                         SELL_DELIST[0] += 1
                     continue
@@ -363,13 +382,17 @@ def simulate(dates, per_day, N, slip, open_map, exec_ok=True):
                     EXIT_REASON_CNT[reason] = EXIT_REASON_CNT.get(reason, 0) + 1
                     amt = h["value"]
                     cash += amt - sell_fee(amt, c, slip)
-                    trades.append((h["buy_i"], i, h["value"] / h["buy_val"] - 1))
+                    # 2026-10-19 修复（审计 C1）：单笔收益改为「扣卖出费」净额。
+                    # 原实现用毛市值/buy_val，胜率与盈亏比系统性偏高。
+                    trades.append((h["buy_i"], i,
+                                   (amt - sell_fee(amt, c, slip)) / h["buy_val"] - 1))
                     del hold[c]
             else:
                 if h["value"] / h["buy_val"] - 1 <= STOP or h["value"] / h["buy_val"] - 1 >= TP or (i - h["buy_i"]) >= N:
                     amt = h["value"]
                     cash += amt - sell_fee(amt, c, slip)
-                    trades.append((h["buy_i"], i, h["value"] / h["buy_val"] - 1))
+                    trades.append((h["buy_i"], i,
+                                   (amt - sell_fee(amt, c, slip)) / h["buy_val"] - 1))
                     del hold[c]
         # 买入：补足到 TOP
         while len(hold) < TOP:
@@ -404,13 +427,14 @@ def simulate(dates, per_day, N, slip, open_map, exec_ok=True):
         total_now = cash + sum(h["value"] for h in hold.values())
         daily_ret.append(total_now / prev_total - 1 if prev_total > 0 else 0.0)
         prev_total = total_now
-    # 期末清仓（不计费，仅补 trades）
+    # 期末清仓（按期末价扣卖出费计入，原实现"不计费"会略微高估）
     for c, h in hold.items():
-        trades.append((h["buy_i"], M, h["value"] / h["buy_val"] - 1))
-    return trades, pd.Series(daily_ret), n_skip
+        _amt = h["value"]
+        trades.append((h["buy_i"], M, (_amt - sell_fee(_amt, c, slip)) / h["buy_val"] - 1))
+    return trades, pd.Series(daily_ret, index=dates[:len(daily_ret)]), n_skip
 
 
-def stats(trades, daily_ret, market_daily):
+def stats(trades, daily_ret, market_daily, N=None):
     rets = [t[2] for t in trades]
     fwd = pd.Series(rets)
     win = float((fwd > 0).mean()) if len(fwd) else np.nan
@@ -419,9 +443,29 @@ def stats(trades, daily_ret, market_daily):
     pr = float(aw / abs(al)) if al and al != 0 else np.nan
     nav = (1 + daily_ret).cumprod()
     mdd = float((nav / nav.cummax() - 1).min())
+    # 旧口径：策略 open→open 日收益 − 市场 close→close 日收益（非同段，仅留作对照）
     excess = float(daily_ret.mean() - market_daily.mean())
+    # 同口径（2026-10-19 修复，审计 C2）：策略日收益 − 同日全市场 N 日 open→open 均值
+    excess_matched, excess_t = np.nan, np.nan
+    if N is not None and N in MKT_O2O:
+        _m = MKT_O2O[N].reindex(daily_ret.index)
+        _d = (daily_ret - _m).dropna()
+        if len(_d) > 10 and _d.std(ddof=1) > 0:
+            excess_matched = float(_d.mean())
+            excess_t = float(_d.mean() / (_d.std(ddof=1) / np.sqrt(len(_d))))
     return {"n_trades": len(trades), "win_rate": win, "profit_loss_ratio": pr,
-            "max_drawdown": mdd, "daily_excess": excess}
+            "max_drawdown": mdd, "daily_excess": excess,
+            "daily_excess_matched": excess_matched, "excess_t": excess_t}
+
+
+def _fmt_matched(s):
+    """同口径超额的可读串（NaN 显示 n/a）。"""
+    m = s.get("daily_excess_matched")
+    t = s.get("excess_t")
+    if m is None or m != m:
+        return "同口径n/a"
+    ts = "n/a" if (t is None or t != t) else "%.2f" % t
+    return "同口径%+.3f%%(t=%s)" % (m * 100, ts)
 
 
 def main():
@@ -441,17 +485,19 @@ def main():
         for slip in SLIPS:
             if do_naive:
                 trades, daily_ret, _ = simulate(dates, per_day, N, slip, open_map, exec_ok=False)
-                s = stats(trades, daily_ret, market_daily)
+                s = stats(trades, daily_ret, market_daily, N)
                 rows.append({"N": N, "slip": slip, "口径": "close→close(原)", **s})
-                print(f"    N={N} 滑点{slip:.1%} [原口径]: 超额{s['daily_excess']:.3%} 胜率{s['win_rate']:.1%} "
-                      f"盈亏比{s['profit_loss_ratio']:.2f} 回撤{s['max_drawdown']:.1%} 交易{s['n_trades']}")
+                print(f"    N={N} 滑点{slip:.1%} [原口径]: 超额{s['daily_excess']:.3%} {_fmt_matched(s)} "
+                      f"胜率{s['win_rate']:.1%} 盈亏比{s['profit_loss_ratio']:.2f} "
+                      f"回撤{s['max_drawdown']:.1%} 交易{s['n_trades']}")
             if do_exec:
                 EXIT_REASON_CNT.clear()
                 trades, daily_ret, n_skip = simulate(dates, per_day, N, slip, open_map, exec_ok=True)
-                s = stats(trades, daily_ret, market_daily)
+                s = stats(trades, daily_ret, market_daily, N)
                 rows.append({"N": N, "slip": slip, "口径": "open→open(可执行)", **s})
-                print(f"    N={N} 滑点{slip:.1%} [可执行]: 超额{s['daily_excess']:.3%} 胜率{s['win_rate']:.1%} "
-                      f"盈亏比{s['profit_loss_ratio']:.2f} 回撤{s['max_drawdown']:.1%} 交易{s['n_trades']} 跳过{n_skip}")
+                print(f"    N={N} 滑点{slip:.1%} [可执行]: 超额{s['daily_excess']:.3%} {_fmt_matched(s)} "
+                      f"胜率{s['win_rate']:.1%} 盈亏比{s['profit_loss_ratio']:.2f} "
+                      f"回撤{s['max_drawdown']:.1%} 交易{s['n_trades']} 跳过{n_skip}")
                 reasons = " ".join("%s=%d" % (k, v) for k, v in sorted(EXIT_REASON_CNT.items()))
                 if reasons:
                     print(f"      出场原因: {reasons}")
@@ -462,17 +508,25 @@ def main():
     lines = [
         "# 含真实交易成本的轮动回测 —— 真实评分卡版（F2/F5 真实数据）",
         "",
-        f"> 测试期 {START} ~ {END} | 前10池+红线{THRESHOLD}+top{TOP} | 成本：佣金万2(双边,最低5元) + 印花税万5(卖出) + 过户费万0.1(沪市) | 滑点敏感性 0/0.1%/0.2%",
+        f"> 测试期 {START} ~ {END} | 前10池+红线{THRESHOLD}+top{TOP} | 成本：佣金万2(双边,最低5元) + 印花税万5(卖出) + 过户费万0.1(沪深双边) | 滑点敏感性 0/0.1%/0.2%",
         "",
         "> **评分差异**：F2 = RF.score_f2(真实主力净额, 量比)、F5 = RF.score_f5(真实行业当日涨幅)、F6 = RF.score_f6(PE,换手)；F1/F3/F4 沿用 DP 代理分。",
         "",
-        "| 口径 | 持有期 | 滑点/边 | 交易数 | 胜率 | 盈亏比 | 最大回撤 | 日均超额 |",
-        "|---|---|---|---|---|---|---|---|",
+        "> **口径说明（2026-10-19）**：单笔收益已扣买卖双边费用；「日均超额(旧)」= 策略 open→open − 市场 close→close（非同段，仅对照）；"
+        "「日均超额(同口径)」= 策略 open→open − 同日全市场 N 日 open→open 均值，附配对 t 值。**判读以同口径为准**。",
+        "",
+        "| 口径 | 持有期 | 滑点/边 | 交易数 | 胜率 | 盈亏比 | 最大回撤 | 日均超额(旧) | 日均超额(同口径) | t值 |",
+        "|---|---|---|---|---|---|---|---|---|---|",
     ]
     for r in res.to_dict("records"):
+        _m = r.get("daily_excess_matched")
+        _t = r.get("excess_t")
+        _ms = ("n/a" if _m is None or _m != _m else f"{_m:.3%}")
+        _ts = ("n/a" if _t is None or _t != _t else f"{_t:.2f}")
         lines.append(
             f"| {r['口径']} | {r['N']}天 | {r['slip']:.1%} | {r['n_trades']} | {r['win_rate']:.1%} "
-            f"| {r['profit_loss_ratio']:.2f} | {r['max_drawdown']:.1%} | {r['daily_excess']:.3%} |"
+            f"| {r['profit_loss_ratio']:.2f} | {r['max_drawdown']:.1%} | {r['daily_excess']:.3%} "
+            f"| {_ms} | {_ts} |"
         )
     with open(OUT_MD, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))

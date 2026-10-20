@@ -35,13 +35,18 @@ META_V3 = os.path.join(DC.DATA_DIR, "features_v3.json")
 OUT = os.path.join(LIVE_DIR, "latest_features.parquet")
 
 RAW_COLS = ["close", "pct_chg", "vol", "amount", "turnover_rate", "volume_ratio",
-            "pe_ttm", "pb", "dv_ttm", "circ_mv", "is_st"]
+            "pe_ttm", "pb", "dv_ttm", "circ_mv", "is_st", "adj_factor"]
 
 
 def compute_price_features(df):
     """对合并行情 df(已按 ts_code,trade_date 排序) 重算量价特征（复用 build_features_v2 逻辑）。"""
     gkey = df["ts_code"]
-    close = df["close"].astype(float)
+    # 2026-10-19 修复（审计 E3）：面板侧 build_features_v2 自 2026-08-22 起用
+    # adj_close = close * adj_factor 计算量价特征，本脚本此前仍用未复权 close，
+    # 一旦 deploy_predict 切到 latest_features 快照就会与训练分布不一致。
+    # 现统一为复权口径（增量行 adj_factor 由主库最后值填充，除权日外与真值一致）。
+    _adj = df["adj_factor"].astype(float) if "adj_factor" in df.columns else 1.0
+    close = df["close"].astype(float) * _adj
 
     def gshift(s, n):
         return s.groupby(gkey).shift(n)
@@ -114,7 +119,8 @@ def main():
     main_last = main_df.sort_values(["ts_code", "trade_date"]).groupby("ts_code").tail(1).set_index("ts_code")
     # 构造增量行：真实 OHLCV + 主库最后值填充其他字段
     incr_full = incr.copy()
-    fill_cols = ["pct_chg", "turnover_rate", "volume_ratio", "pe_ttm", "pb", "dv_ttm", "circ_mv", "is_st"]
+    fill_cols = ["pct_chg", "turnover_rate", "volume_ratio", "pe_ttm", "pb", "dv_ttm",
+                 "circ_mv", "is_st", "adj_factor"]
     fill_map = {c: main_last[c] for c in fill_cols if c in main_last.columns}
     for c, s in fill_map.items():
         incr_full[c] = incr_full["ts_code"].map(s)

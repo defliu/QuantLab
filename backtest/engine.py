@@ -124,9 +124,14 @@ def _slice_window_up_to(market_data, today):
 
 
 def _build_cut_index(market_data, calendar):
-    """Precompute, per code, the row-count with date <= each calendar day.
+    """Precompute, per code, the row-COUNT with date <= each calendar day.
 
     One-time O(codes * days) searchsorted so the daily slice is an O(1) iloc view.
+
+    2026-10-19 修复（审计 P1-B1）：原实现取 `searchsorted(..., side="right") - 1`
+    （= 当日所在行号），再由 `_slice_window_fast` 做 `iloc[:c]`，导致窗口**不含当日**
+    ——策略在 T 日拿到的是 T-1 的数据，比实盘晚一天。现改为直接取「<= 当日的行数」，
+    `iloc[:count]` 即为含当日的窗口。
     """
     import numpy as np
     cal_arr = np.asarray(calendar, dtype=object)
@@ -136,13 +141,18 @@ def _build_cut_index(market_data, calendar):
         if len(dates) == 0:
             cut[code] = np.zeros(len(calendar), dtype=np.int64)
             continue
-        idx = np.searchsorted(dates, cal_arr, side="right") - 1
+        idx = np.searchsorted(dates, cal_arr, side="right")  # count of rows <= day
         cut[code] = idx.astype(np.int64)
     return cut
 
 
 def _slice_window_fast(market_data, day_index, cut):
-    """O(1)-per-code daily window using precomputed cut indices (no leak)."""
+    """O(1)-per-code daily window using precomputed cut counts (no leak).
+
+    Window = rows with date <= current calendar day (T close is visible on T,
+    matching the live after-close signal convention). Fills still happen on
+    T+1 open, so this does not introduce look-ahead.
+    """
     out = {}
     for code, df in market_data.items():
         c = int(cut[code][day_index])
@@ -365,8 +375,11 @@ def run_backtest(
                                       % (today, code, unfilled))
                     unfilled_order_count += 1
             for cand in pending.get("buy_candidates", []):
+                # 2026-10-19 修复（审计 P1-C3）：传入实时可用现金，避免卖出被
+                # 跌停/停牌挡住时买入照成、cash 转负形成无息杠杆。
                 trade, unfilled = fill_buy(cand, market_data, today,
-                                           execution_cfg, run_id)
+                                           execution_cfg, run_id,
+                                           available_cash=pf.cash)
                 if trade is not None:
                     pf.apply_trade(trade)
                     trades.append(trade)

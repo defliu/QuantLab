@@ -41,7 +41,7 @@ OUT_PANEL = os.path.join(OUT_DIR, "feature_panel_v2.parquet")
 OUT_META = os.path.join(OUT_DIR, "features_v2.json")
 
 RAW_COLS = [
-    "close", "pct_chg", "vol", "amount", "turnover_rate", "volume_ratio",
+    "close", "open", "pre_close", "pct_chg", "vol", "amount", "turnover_rate", "volume_ratio",
     "pe_ttm", "pb", "dv_ttm", "circ_mv", "is_st", "adj_factor",
 ]
 
@@ -81,6 +81,14 @@ def main():
     ap.add_argument("--start", default="2018-01-01")
     ap.add_argument("--panel_start", default="2019-01-01")
     ap.add_argument("--fwd", type=int, default=1)
+    # 2026-10-19 新增（审计 A1）：可成交标签口径开关。默认 close 保持现网行为，
+    # 切到 open 后标签 = open(T+1) → open(T+1+hold)，与实盘「T 收盘出信号、T+1 开盘买」
+    # 一致。切换后必须重训并过门禁，不可直接替换生产模型。
+    ap.add_argument("--label-mode", default="close", choices=["close", "open"],
+                    help="close=close(T)->close(T+fwd)（旧口径，含不可成交隔夜跳空）；"
+                         "open=open(T+1)->open(T+1+hold)（可成交口径）")
+    ap.add_argument("--hold", type=int, default=0,
+                    help="label-mode=open 的持有交易日数；0 表示沿用 --fwd")
     ap.add_argument("--limit", type=int, default=0)
     args = ap.parse_args()
     os.makedirs(OUT_DIR, exist_ok=True)
@@ -298,9 +306,43 @@ def main():
     # ---------- 5. 标签 + 保存 ----------
     print("[5/6] 构造标签并过滤 ...")
     # R2：fwd_ret 用复权价计算（adj_close），除权日不再产生假跳空标签
-    fwd_ret = gshift(adj_close, -args.fwd) / adj_close - 1.0
+    if args.label_mode == "open":
+        # 可成交口径：入场 = T+1 开盘（实盘执行时点），出场 = T+1+hold 开盘。
+        # 复权后开盘价（open * adj_factor）保证除权日不产生假跳空。
+        _hold = args.hold or args.fwd
+        _o_adj = df["open"].astype(float) * adj
+        fwd_ret = gshift(_o_adj, -(1 + _hold)) / gshift(_o_adj, -1) - 1.0
+        print(f"    标签口径: open(T+1)->open(T+{1 + _hold})（可成交）")
+    else:
+        fwd_ret = gshift(adj_close, -args.fwd) / adj_close - 1.0
+        print(f"    标签口径: close(T)->close(T+{args.fwd})（旧口径，含隔夜跳空）")
     feats["fwd_ret"] = fwd_ret
-    feats["label"] = (fwd_ret > 0.0).astype("int8")
+    # 2026-10-19 修复（审计 B5）：fwd_ret 为 NaN 时 (NaN > 0) 为 False，原实现会把
+    # 面板最后一个交易日全部标成 label=0（实测 2840 行，约占最后一日全样本），
+    # 等于把"未知"当成"下跌"喂进训练。改为保留 NaN，由训练侧 dropna 排除。
+    feats["label"] = np.where(fwd_ret.isna(), np.nan,
+                              (fwd_ret > 0.0).astype("float64"))
+
+    # 入场可执行性（2026-10-19 新增，审计 A1/P0）：
+    # 实盘 T 日收盘出信号 → T+1 开盘买入。若 T+1 开盘即涨停（open >= up_limit）
+    # 或停牌/无量，实盘根本买不进；这类样本若留在训练集，模型会被优化成
+    # "追买不到的票"（实测实盘模型 Top2 中 30.1% 开盘即涨停）。
+    # 该列由训练脚本与 IC 评估统一排除，不参与预测。
+    # 用 pre_close + 板块规则推涨停价（不用 up_limit：增量区无该字段，会被主库
+    # 最后一日旧值 ffill，导致最近两周判断失真）。
+    _o_n = gshift(df["open"].astype(float), -1)
+    _pc_n = gshift(df["pre_close"].astype(float), -1)
+    _v_n = gshift(df["vol"].astype(float), -1)
+    _code6 = df["ts_code"].astype(str).str.split(".").str[0]
+    _is_st = df["is_st"].astype(float).fillna(0.0)
+    _lim = np.where(_is_st > 0, 0.05,
+                    np.where(_code6.str.startswith(("300", "688")), 0.20,
+                             np.where(_code6.str.startswith("8"), 0.30, 0.10)))
+    _up = _pc_n * (1.0 + _lim)
+    _blocked = (_o_n.isna()) | (_v_n.isna()) | (_v_n <= 0)
+    _blocked = _blocked | ((_up.notna()) & (_o_n.notna()) & (_o_n >= _up - 0.005))
+    feats["entry_blocked"] = _blocked.astype("int8")
+
     feats["trade_date"] = df["trade_date"]
     feats["ts_code"] = df["ts_code"]
 
@@ -320,7 +362,10 @@ def main():
         "event_features": EVENT_FEATURES,
         "label_col": "label",
         "fwd_ret_col": "fwd_ret",
+        "entry_blocked_col": "entry_blocked",
         "fwd_days": args.fwd,
+        "label_mode": args.label_mode,
+        "label_hold_days": (args.hold or args.fwd) if args.label_mode == "open" else None,
         "n_rows": len(panel),
         "n_stocks": int(panel["ts_code"].nunique()),
         "date_range": [str(panel["trade_date"].min()), str(panel["trade_date"].max())],

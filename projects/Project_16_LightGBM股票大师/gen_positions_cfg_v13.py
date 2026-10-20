@@ -36,11 +36,12 @@ def _is_sh(code):
 
 
 def _buy_fee(amt, code):
-    return max(COMM_MIN, amt * COMM_RATE) + (amt * TRANS_RATE if _is_sh(code) else 0.0)
+    # 过户费沪深双边（2026-10-19 修正，审计 C1）
+    return max(COMM_MIN, amt * COMM_RATE) + amt * TRANS_RATE
 
 
 def _sell_fee(amt, code):
-    return max(COMM_MIN, amt * COMM_RATE) + amt * STAMP_RATE + (amt * TRANS_RATE if _is_sh(code) else 0.0)
+    return max(COMM_MIN, amt * COMM_RATE) + amt * STAMP_RATE + amt * TRANS_RATE
 
 
 def _adj_series(code):
