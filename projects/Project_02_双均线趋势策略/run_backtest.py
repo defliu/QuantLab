@@ -293,7 +293,8 @@ def generate_report(equity_df, trades_df, sl_df, metrics):
     recent_trades = trades_df.tail(20)
     trades_html = ""
     for _, row in recent_trades.iterrows():
-        color = "green" if row.get("pnl_pct", 0) > 0 else "red" if row.get("pnl_pct", 0) < 0 else "black"
+        # A 股配色惯例（2026-10-14 全局统一）：红涨绿跌 —— 盈利=红，亏损=绿
+        color = "red" if row.get("pnl_pct", 0) > 0 else "green" if row.get("pnl_pct", 0) < 0 else "black"
         trades_html += f"""<tr>
             <td>{row['date']}</td>
             <td>{row['code']}</td>

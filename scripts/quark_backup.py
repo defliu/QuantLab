@@ -10,7 +10,8 @@
 方案：
   - manifest（state.json）记录每个纳入文件的 (size, mtime_ns)，跨次运行做差分
   - full 模式：打包全部纳入文件（约 1.0 GB）+ git bundle，锚点快照；首次运行强制 full
-  - auto 模式：周日走 full，其余工作日走 increment（只打包新增/修改文件，不含 git bundle）
+  - auto 模式：每月走一次 full（判据=state 的 last_full 是否落在当月），其余日走
+    increment（只打包新增/修改文件，不含 git bundle）
   - 每次归档内含 MANIFEST.txt（文件清单 + git HEAD + 归档类型），保证可还原可校验
   - 上传成功后原子推进 manifest（失败不动 state，避免丢变更）
 
@@ -35,7 +36,7 @@ CLI 契约（quarkclouddrive skill 硬约束）：
   之后复用 create-folder 返回的真实 FID。--session-input/--session-id 仅用于质量追踪。
 
 用法：
-  python quark_backup.py                    # auto：按星期自动选 full/increment
+  python quark_backup.py                    # auto：本月未全量则 full，否则 increment
   python quark_backup.py --full             # 强制全量快照
   python quark_backup.py --increment        # 强制增量
   python quark_backup.py --dry-run          # 只列出将要打包/上传的内容，不落盘不上传
@@ -351,7 +352,7 @@ def build_archive(kind, changed, stamp, with_bundle):
                     os.remove(bundle_path)
                     bundle_state = "included (%.1f MB)" % bundle_mb
             else:
-                log("增量归档：不含 git bundle（历史由每周 full 快照保全）")
+                log("增量归档：不含 git bundle（历史由每月 full 快照保全）")
             manifest = [
                 "QuantLab backup archive",
                 "kind      : %s" % kind,
@@ -543,13 +544,18 @@ def main():
         log("   [凭据排除] %s  (%s)" % (rel, reason))
 
     # 模式选择：首次运行强制 full（避免把首次全量误标为增量）
-    is_sunday = time.localtime().tm_wday == 6
+    # 全量节奏 = 每月一次。判据用 state 的 last_full 是否落在当月，而非「今天是 1 号」：
+    # 1 号掉线/关机/任务未跑时，「是否 1 号」会让整月没有全量锚点，且缺口不可自愈；
+    # 「当月是否已全量」则下次运行自动补上，最坏只晚一天。
+    cur_month = time.strftime("%Y%m")
+    month_done = (state.get("last_full") or "")[:6] == cur_month
+
     if args.full or first_run:
         kind = "full"
     elif args.increment:
         kind = "increment"
     else:
-        kind = "full" if is_sunday else "increment"
+        kind = "full" if not month_done else "increment"
 
     if kind == "increment":
         changed = {k: v for k, v in cur.items()
