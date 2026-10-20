@@ -52,7 +52,7 @@ strategies:
     config_file: "config/atr_lowvol_equalweight_config.yaml"
 ```
 
-当前在册（2026-10-13）：`atr_lowvol_equalweight` 10万/8只、`value_smallcap_v2` 10万/80只（账号 67014907）、`huang529_breakout` 10万/12只、`g2_bridge` 10万/3只、`p16_ensemble_bridge` 10万/5只、`all_weather` 10万/5只，合计 60 万 ≤ 账户 1000 万。
+当前在册（2026-10-14）：`atr_lowvol_equalweight` 10万/8只、`value_smallcap_v2` 10万/30只（账号 67014907；2026-10-14 由 80 调至 30，见看板 T-20261014-007）、`huang529_breakout` 10万/12只、`g2_bridge` 10万/3只、`p16_ensemble_bridge` 10万/5只、`all_weather` 10万/5只，合计 60 万 ≤ 账户 1000 万。
 
 硬规则：
 
