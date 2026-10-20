@@ -36,6 +36,17 @@ G2_NAME = "g2_strong_real"
 AUTO_THRESHOLD = 0.0005   # 深度劣化阈值：前向均值低于基线 >0.05pp 才自动回退（防微差抖动）
 AUTO_STREAK_DAYS = 3      # 连续 3 个交易日深度劣化才自动回退（M3 规格：防单日极端触发，2026-09-13 DE P2-1 对齐）
 STREAK_FILE = os.path.join(DC.DATA_DIR, "rollback_streak.json")
+# ---- 2026-10-18（T-20261018-003）加固：次级样本源 + 样本不足宽限期 fail-loud ----
+# 背景：主源 paper_forward_live.csv 的 ret 列依赖 16:45 纸面管道的 --backfill；该管道
+# 2026-10-12 起因解释器损坏（paper_forward_daily.ps1 硬编码已损坏的内置 python）每天
+# BUILD-ALERT 退出 → ret 停在 09-16 → 本脚本永远打印"样本不足（<3 笔），暂不判定"，
+# 而外层 run_scheduled 统一打印"OK"，使 0915 模型的观察期回滚保护实际空转（09-17 起
+# 其实已可算出的候选一笔都没回填）。加固三条：①次级源兜底；②超宽限期仍不足 → exit 3
+# （调度告警，不再无限"继续观察"）；③输出机器可读 VERDICT 供外层分支打印。
+EXIT_CSV = os.path.join(DC.DATA_DIR, "real", "paper_forward_exit_live.csv")
+MIN_SAMPLES = 3           # 判定所需最少已到期样本
+GRACE_DAYS = 10           # 观察期结束后额外宽限交易日数，超期仍不足则 ALERT
+EXIT_ALARM = 3            # 超出宽限期仍样本不足（供调度感知）
 
 
 def load_streak():
@@ -74,6 +85,33 @@ def trading_days_since(day_str):
         return len(after)
     except Exception:
         return None
+
+
+def _fallback_samples(promoted_at):
+    """次级样本源：paper_forward_exit_live.csv 的 live_trail_ret（rank<=3 实盘口径）。
+
+    T-20261018-003：主源 ret 依赖纸面管道 --backfill，管道断更时会整段停更（且外层看不出），
+    出场验证台账由 paper_forward_exit.py 按价格独立逐笔计算，可作为交叉兜底。
+    返回 (list[float] 或 None, 来源/原因说明)。
+    """
+    if not os.path.exists(EXIT_CSV):
+        return None, "无 %s" % os.path.basename(EXIT_CSV)
+    try:
+        df = pd.read_csv(EXIT_CSV, encoding="utf-8-sig")
+    except Exception as e:
+        return None, "次级源读取失败: %s" % e
+    need = {"entry_day", "live_trail_ret"}
+    if not need.issubset(set(df.columns)):
+        return None, "次级源缺列 %s" % sorted(need - set(df.columns))
+    df["entry_day"] = pd.to_datetime(df["entry_day"], errors="coerce")
+    t0 = pd.Timestamp(promoted_at[:10])
+    sub = df[df["entry_day"] > t0]
+    if "rank" in sub.columns:
+        sub = sub[pd.to_numeric(sub["rank"], errors="coerce") <= 3]
+    v = pd.to_numeric(sub["live_trail_ret"], errors="coerce").dropna()
+    if len(v) == 0:
+        return None, "次级源（%s live_trail_ret）暂无到期样本" % os.path.basename(EXIT_CSV)
+    return v.tolist(), "%s live_trail_ret（rank<=3）" % os.path.basename(EXIT_CSV)
 
 
 def _notify(text):
@@ -137,6 +175,7 @@ def main():
     if not trial:
         print(f"当前 live（{os.path.basename(ptr['model_path'])}）无观察期记录（trial 字段为空）。")
         print("  说明：可能是手动回退/旧格式指针；无需检查。")
+        print("VERDICT=no_trial")
         return 0
 
     promoted_at = ptr.get("promoted_at", "")
@@ -149,6 +188,7 @@ def main():
     print(f"观察期: 需 {trial['ends_after_days']} 交易日，promoted 后已过 {ndays} 交易日")
     if ndays < trial["ends_after_days"]:
         print(f">> 观察期未结束（还需 {trial['ends_after_days'] - ndays} 交易日），继续观察。")
+        print("VERDICT=in_window")
         return 0
 
     # 统计观察期内候选的前向收益（真实 CSV schema：date,code,total_new,prob,entry,exit,ret,hold,rank）
@@ -160,22 +200,41 @@ def main():
         print("paper_forward_live.csv 无 ret 列，无法对比")
         return 1
     fwd = pd.to_numeric(after["ret"], errors="coerce").dropna()
-    fwd_mean = float(fwd.mean()) if len(fwd) else None
 
     prev_ret = float(trial["prev_top2_ret"])
-    print(f"观察期候选 {len(fwd)} 笔，前向 ret 均值 = {fwd_mean if fwd_mean is not None else 'N/A'}")
+    src = "paper_forward_live.csv ret"
+    print(f"观察期候选 {len(fwd)} 笔，前向 ret 均值 = {float(fwd.mean()) if len(fwd) else 'N/A'}（源: {src}）")
+
+    # T-20261018-003：主源样本不足时改用次级源（出场验证台账），防单管道断更使 G4 空转
+    if len(fwd) < MIN_SAMPLES:
+        alt, why = _fallback_samples(promoted_at)
+        if alt:
+            fwd = pd.Series(alt, dtype="float64")
+            src = why
+            print(f">> 主源样本不足（<{MIN_SAMPLES} 笔），改用次级源: {src}，n={len(fwd)}")
+        else:
+            print(f">> 次级源不可用: {why}")
+    fwd_mean = float(fwd.mean()) if len(fwd) else None
     print(f"基线 prev_top2_ret = {prev_ret:+.4f}（上一模型同窗口 TOP2 模拟）")
 
-    if fwd_mean is None or len(fwd) < 3:
-        print(">> 样本不足（<3 笔），暂不判定，继续观察。")
+    if fwd_mean is None or len(fwd) < MIN_SAMPLES:
+        print(f">> 样本不足（<{MIN_SAMPLES} 笔），暂不判定。")
+        if ndays >= trial["ends_after_days"] + GRACE_DAYS:
+            print(f"!! [ALERT] 观察期已结束 {ndays} 个交易日、超宽限期 {GRACE_DAYS} 日仍无足够到期样本 "
+                  f"—— 前向纸面管道疑似断更（详见 data/real/g2_pipeline_daily.log），G4 无法判定，需人工核查")
+            print("VERDICT=insufficient_alarm")
+            return EXIT_ALARM
+        print(">> 仍在宽限期内，继续观察。")
+        print("VERDICT=insufficient_grace")
         return 0
 
     worse = fwd_mean < prev_ret
     deep_worse = worse and (prev_ret - fwd_mean) > AUTO_THRESHOLD
     verdict = "建议回退" if worse else "通过观察期"
-    print(">> 判定: 前向 %+.4f %s 基线 %+.4f -> %s%s" % (
+    print(">> 判定: 前向 %+.4f %s 基线 %+.4f -> %s%s（源: %s）" % (
         fwd_mean, "< 劣于" if worse else ">= 不劣于", prev_ret, verdict,
-        "（深度劣化 %.4f > %.4f）" % (prev_ret - fwd_mean, AUTO_THRESHOLD) if deep_worse else ""))
+        "（深度劣化 %.4f > %.4f）" % (prev_ret - fwd_mean, AUTO_THRESHOLD) if deep_worse else "", src))
+    print("VERDICT=%s" % ("deep_worse" if deep_worse else ("worse" if worse else "pass")))
 
     # ---- 深度劣化连续计数（M3 规格：连续 3 日才自动回退，防单日极端触发）----
     # 注意：只有在"观察期已结束"且"样本充足"到达此处才更新 streak；观察期内不累计。
@@ -190,14 +249,17 @@ def main():
             _notify("【G4 观察期自动回退】G2 live %s 前向 %+.4f 连续%d日深度劣于基线 %+.4f（>%.4f），已自动回退到 prev_model %s" % (
                 os.path.basename(ptr["model_path"]), fwd_mean, streak, prev_ret, AUTO_THRESHOLD,
                 os.path.basename(newptr["model_path"])))
+            print("VERDICT=auto_rollback")
             return 0
         _notify("【G4 观察期自动回退失败】G2 live %s 前向 %+.4f 连续%d日深度劣于基线 %+.4f，但回退执行失败（prev_model 缺失/写入异常），需人工处理" % (
             os.path.basename(ptr["model_path"]), fwd_mean, streak, prev_ret))
         print("!! [回滚] 自动回退失败，人工介入（exit 2 供调度感知）")
+        print("VERDICT=auto_rollback_failed")
         return 2
 
     if worse and args.apply:
         _do_rollback(ptr, promoted_at, fwd_mean, prev_ret)
+        print("VERDICT=manual_rollback")
         return 0
 
     if not worse:
@@ -208,10 +270,12 @@ def main():
         with open(POINTER, "w", encoding="utf-8") as f:
             json.dump(newptr, f, ensure_ascii=False, indent=2)
         print("[已更新] 观察期通过，trial 字段已清除")
+        print("VERDICT=pass")
         return 0
 
     # worse 且未 --apply/--auto：建议回退（退出码 2，供 run_scheduled daily 调度告警）
     print(">> 提示: 人工确认后执行 python rollback_check_g2.py --apply 完成回退（或 --auto 深度劣化自动回退）")
+    print("VERDICT=suggest_rollback")
     return 2
 
 
