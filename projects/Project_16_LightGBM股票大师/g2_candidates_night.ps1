@@ -7,6 +7,10 @@
 #    筛实盘口径，30 笔目标更快达成。此前缺失该开关：v3_enh/融合臂自 09-08 手动跑后未再累积新信号，纸面前向验证停滞。
 #    --ens-live（2026-09-14 P2 补传）：融合实盘候选落盘 data/selections/g2_ens/<date>_g2_top10.csv
 #    （rebalance_ens 消费）；此前夜间只出纸面融合臂，融合实盘候选无夜间兜底，09:25 TRAE 失效日即断链。
+# 4) 次日副本新鲜度闸（2026-10-20 T-20261020-002）：本轮 deploy 若因「红线无候选→空仓」未写产物，
+#    Test-Path 会命中上一轮「次日副本」残留的同名旧文件 → 被当作本轮产物继续改 trade_date 后传
+#    （实测 10-12 的 000960.SZ 一路复制到 10-20）。现以本轮 deploy 起点 $depStart 判 mtime，
+#    旧文件 → 打 [SKIP-STALE] 并跳过副本（G2 top10/top3、_g2_selection.md、ens top10 四处同闸）。
 $py = "C:/Users/Administrator/.workbuddy/binaries/python/envs/miniqmt/Scripts/python.exe"
 $dir = "D:/QuantLab/projects/Project_16_LightGBM股票大师"
 $log = "$dir/data/schedules/g2_candidates_night.log"
@@ -25,6 +29,8 @@ if (0 -ne $dbRc -or ("$($dbOut -join ' ')" -match 'daily/daily_basic\] 失败|da
 & $py "$dir/build_g2_daily.py" *>> $log
 $rc1 = $LASTEXITCODE
 Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] build_g2_daily exit=$rc1" -Encoding UTF8
+# 产物新鲜度打点（2026-10-20 修复 T-20261020-002）：记录本轮 deploy 起点
+$depStart = Get-Date
 & $py "$dir/deploy_predict_g2.py" --threshold 60 --top 10 --pool 100 --ab --ensemble --ens-live *>> $log
 $rc2 = $LASTEXITCODE
 Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] deploy top10 (+AB+ENS+ENSLIVE) exit=$rc2" -Encoding UTF8
@@ -85,26 +91,37 @@ if ($null -ne $nextDay -and $nextDay -ne $runDay) {
     foreach ($n in @("top10", "top3")) {
         $src = "$dir\data\selections\g2\${targetDay}_g2_${n}.csv"
         $dst = "$dir\data\selections\g2\${nextDay}_g2_${n}.csv"
-        if (Test-Path $src) {
+        # 新鲜度闸（T-20261020-002）：Test-Path 会命中上一轮「次日副本」留下的同名旧文件
+        # （实测 10-12 的 000960.SZ 被逐日改 trade_date 复制到 10-20），必须按 mtime 判本轮产物。
+        $srcOk = (Test-Path $src) -and ((Get-Item -LiteralPath $src).LastWriteTime -ge $depStart)
+        if ($srcOk) {
             & $py -c "import pandas as pd,sys; df=pd.read_csv(sys.argv[1],encoding='utf-8-sig'); df['trade_date']=sys.argv[3]; df.to_csv(sys.argv[2],index=False,encoding='utf-8-sig')" $src $dst $nextDay *>> $log
             if ($LASTEXITCODE -ne 0) { $copyFail = 1 }
             Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] 次日副本 ${targetDay}_g2_${n}.csv -> ${nextDay}_g2_${n}.csv exit=$LASTEXITCODE" -Encoding UTF8
+        } elseif (Test-Path $src) {
+            Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] [SKIP-STALE] ${targetDay}_g2_${n}.csv 是本轮 deploy 之前的旧文件（mtime=$((Get-Item -LiteralPath $src).LastWriteTime.ToString('MM-dd HH:mm:ss'))），本轮红线无候选 → 不生成次日副本（防陈旧候选逐日改日期后传）" -Encoding UTF8
         } else {
             Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] [INFO] 产物日(targetDay) ${targetDay}_g2_${n}.csv 不存在（红线无候选属设计内宁缺毋滥），跳过次日副本" -Encoding UTF8
         }
     }
     $srcMd = "$dir\data\selections\g2\${targetDay}_g2_selection.md"
     $dstMd = "$dir\data\selections\g2\${nextDay}_g2_selection.md"
-    if (Test-Path $srcMd) { Copy-Item -LiteralPath $srcMd -Destination $dstMd -Force }
+    # 报告同受陈旧副本影响（实测 10-13~10-20 的 _g2_selection.md 全是 10-12 20:08 的旧档）→ 同闸
+    if ((Test-Path $srcMd) -and ((Get-Item -LiteralPath $srcMd).LastWriteTime -ge $depStart)) {
+        Copy-Item -LiteralPath $srcMd -Destination $dstMd -Force
+    }
     # ---- 融合（ens）次日候选副本（2026-09-14 P2，与 G2 副本同因）----
     # --ens-live 产物名 = 运行日，与 G2 同样存在"次日 freshness 闸拒收"断链；不复制则本修复只对
     # G2 生效、融合腿次日仍断（09-25 TRAE 失效日融合会重演 09-14 的 NOOP）。列结构含 trade_date，改写方式同上。
     $srcEns = "$dir\data\selections\g2_ens\${targetDay}_g2_top10.csv"
     $dstEns = "$dir\data\selections\g2_ens\${nextDay}_g2_top10.csv"
-    if (Test-Path $srcEns) {
+    $srcEnsOk = (Test-Path $srcEns) -and ((Get-Item -LiteralPath $srcEns).LastWriteTime -ge $depStart)
+    if ($srcEnsOk) {
         & $py -c "import pandas as pd,sys; df=pd.read_csv(sys.argv[1],encoding='utf-8-sig'); df['trade_date']=sys.argv[3]; df.to_csv(sys.argv[2],index=False,encoding='utf-8-sig')" $srcEns $dstEns $nextDay *>> $log
         if ($LASTEXITCODE -ne 0) { $copyFail = 1 }
         Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] 次日副本(ens) ${targetDay}_g2_top10.csv -> ${nextDay}_g2_top10.csv exit=$LASTEXITCODE" -Encoding UTF8
+    } elseif (Test-Path $srcEns) {
+        Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] [SKIP-STALE] ens ${targetDay}_g2_top10.csv 是本轮 deploy 之前的旧文件（mtime=$((Get-Item -LiteralPath $srcEns).LastWriteTime.ToString('MM-dd HH:mm:ss'))），本轮红线无融合候选 → 不生成 ens 次日副本" -Encoding UTF8
     } else {
         Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] [INFO] 产物日(targetDay) ens ${targetDay}_g2_top10.csv 不存在（红线无融合候选属设计内宁缺毋滥），跳过 ens 次日副本" -Encoding UTF8
     }

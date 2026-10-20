@@ -140,6 +140,27 @@ if ((Test-Path $outFile) -and ((Get-Item $outFile).LastWriteTime.Date -eq (Get-D
 }
 Write-Log "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] deveco exit=$rc"
 
+# ---- 各策略经营指标卡片（2026-10-14）：close 任务单独推一张账户全景卡片 ----
+# 独立于主报告：有自己的同日幂等标记（de_metrics_card_<date>.pushed），推送失败不影响主报告退出码。
+if ($Task -eq "close") {
+    $metricsSent = Join-Path $sched ("de_metrics_card_" + $date + ".pushed")
+    if ($DryRun) {
+        Write-Log "[$(Get-Date -Format 'HH:mm:ss')] -DryRun：跳过经营指标卡片发送"
+    } elseif ((Test-Path $metricsSent) -and (-not $ForcePush)) {
+        Write-Log "[$(Get-Date -Format 'HH:mm:ss')] 经营指标卡片同日已推过，跳过（-ForcePush 可强制重发）"
+    } else {
+        $mOut = (& $py "$proj\push_strategy_metrics_card.py" 2>&1 | Out-String).Trim()
+        $mRc = $LASTEXITCODE
+        if ($mOut) { Write-Log "[$(Get-Date -Format 'HH:mm:ss')] 经营指标卡片日志: $mOut" }
+        if ($mRc -eq 0) {
+            [System.IO.File]::WriteAllText($metricsSent, ((Get-Date -Format "yyyy-MM-dd HH:mm:ss") + " metrics card pushed"), $utf8)
+            Write-Log "[$(Get-Date -Format 'HH:mm:ss')] 经营指标卡片推送成功"
+        } else {
+            Write-Log "[$(Get-Date -Format 'HH:mm:ss')] 经营指标卡片推送失败 exit=$mRc（不影响主报告）"
+        }
+    }
+}
+
 # 推送幂等（2026-09-28）：此前只对 DE 重跑做了幂等，推送没有。
 # 日志可见同日 16:12 与 16:20 重复收到同一条降级消息。
 if ((Test-Path $sentFile) -and (-not $ForcePush)) {

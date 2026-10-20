@@ -135,7 +135,8 @@ def _build_card(data, date):
     t10_lines = ["| 排名 | 代码 | 名称 | 昨分 | 今涨跌% |", "|---|---|---|---|---|"]
     for i, r in enumerate(data["top10"], 1):
         p = pct(r["code"])
-        mark = "🟢" if (p is not None and hs is not None and p >= hs) else ("🔴" if (p is not None and hs is not None) else "")
+        # A 股配色惯例（2026-10-14 全局统一）：红涨绿跌 —— 跑赢（正）=🔴，跑输（负）=🟢
+        mark = "🔴" if (p is not None and hs is not None and p >= hs) else ("🟢" if (p is not None and hs is not None) else "")
         t10_lines.append("| %d | %s | %s | %s | %s %s |" % (
             i, r["code"], r["name"] or "—", _fmt(r.get("total"), 1),
             _fmt_pct(p) if p is not None else "—", mark))
@@ -145,7 +146,7 @@ def _build_card(data, date):
         elements.append({"tag": "markdown", "content": "**G2 候选池今日表现**"})
         elements.append({"tag": "markdown", "content": "\n".join(g2_lines)})
     if data["top10"]:
-        elements.append({"tag": "markdown", "content": "**TOP10 今日表现**　<font color='grey'>🟢跑赢大盘 🔴跑输</font>"})
+        elements.append({"tag": "markdown", "content": "**TOP10 今日表现**　<font color='grey'>🔴跑赢大盘 🟢跑输</font>"})
         elements.append({"tag": "markdown", "content": "\n".join(t10_lines)})
     elements.append({
         "tag": "markdown",

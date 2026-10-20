@@ -259,17 +259,35 @@ def read_asset(date=None):
 
 def read_heart(date=None):
     """读心跳。date 缺省时读 state 目录最新 heart_<date>.json（桥每天写新心跳，
-    跨日运行时"数据日期(date)"≠"桥运行日"，存活判断应看最新心跳，避免误判桥死）。"""
+    跨日运行时"数据日期(date)"≠"桥运行日"，存活判断应看最新心跳，避免误判桥死）。
+
+    ★ 自闭环回退（2026-10-20，T-20261020-001）：ENS 自 2026-10-16 起「自闭环信号内产（零文件）」，
+    heart_<date>.json 不再写，唯一通道是 print `[P16ENS][HEART]` → FormulaOutput 日志。
+    ⚠ 必须取「文件心跳 vs 日志心跳」中较新者——残留的旧 heart_*.json 会掩盖新鲜日志心跳
+    （2026-10-20 实测导致 rebalance_ens `[ABORT] 桥心跳异常`，当日换仓全灭）。"""
+    file_heart = None
     if not date:
         try:
             files = [f for f in os.listdir(STATE_DIR) if f.startswith("heart_") and f.endswith(".json")]
             if files:
                 files.sort(reverse=True)  # YYYYMMDD 字典序 = 日期序
-                return _read_json(os.path.join(STATE_DIR, files[0]))
+                file_heart = _read_json(os.path.join(STATE_DIR, files[0]))
         except Exception:
-            pass
-        return None
-    return _read_json(_heart_path(date))
+            file_heart = None
+    else:
+        file_heart = _read_json(_heart_path(date))
+
+    log_heart = None
+    try:
+        import qmt_bridge_client as _G2C
+        log_heart = _G2C.read_heart_from_log(date, tag="P16ENS")
+    except Exception:
+        log_heart = None
+    if file_heart is None:
+        return log_heart
+    if log_heart is None:
+        return file_heart
+    return log_heart if str(log_heart.get("last_heartbeat", "")) > str(file_heart.get("last_heartbeat", "")) else file_heart
 
 
 def notify_feishu(text, chunk_limit=None):
@@ -309,10 +327,11 @@ def wait_fill(strategy_order_id, timeout=300, poll=2, date=None):
 
 
 def is_bridge_alive(max_age=300, date=None):
-    """内置桥心跳检查：last_heartbeat 距今 < max_age 秒 视为存活。"""
+    """内置桥心跳检查：last_heartbeat 距今 < max_age 秒 视为存活。
+    自闭环模式下心跳来自 FormulaOutput 日志（read_heart 已回退），msg 里标注 source 便于诊断。"""
     heart = read_heart(date)
     if not heart:
-        return False, "无心跳文件"
+        return False, "无心跳（文件与 FormulaOutput 日志均无 [HEART]）"
     ts = str(heart.get("last_heartbeat", ""))
     try:
         import datetime
@@ -322,8 +341,9 @@ def is_bridge_alive(max_age=300, date=None):
         return False, "心跳时间解析失败: %s" % ts
     if age > max_age:
         return False, "心跳过期 %.0f 秒前" % age
-    return True, "心跳正常(%.0fs前, build=%s, pending=%s)" % (
-        age, heart.get("build_tag", "?"), heart.get("pending_count", 0))
+    return True, "心跳正常(%.0fs前, build=%s, pending=%s, source=%s)" % (
+        age, heart.get("build_tag", "?"), heart.get("pending_count", 0),
+        heart.get("source", "file"))
 
 
 # ============================================================

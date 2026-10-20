@@ -1124,7 +1124,7 @@ ollback_streak.json 计数，连续 3 交易日才触发；方法论第七节同
   ③**分级告警**：Tushare 主源（确定性口径）不一致 = **error 告警**（当日运行时主源失效/数据扰动/代码回退）；新浪当日兜底（盘中实时盘后不可复现）= **仅记录差异不告警**（deploy stdout 打印 `F2 主源=Tushare每日快照(主源)` / `新浪当日(兜底,Tushare滞后)` 可自动区分）；无留档快照 = 降级用当前快照仅健康校验（单源结论 + warn，快照缺失本身提示留档步骤故障）。**通知口径（2026-09-20 诚哥拍板「失败成功都通知」）**：PASS/新浪兜底差异推 info 成功蓝卡，error 推红卡，warn 推橙卡；SKIP（非交易日）不推避免噪音，降级路径已推 warn 不重复。
   ④**调度**：schtasks `Quant_P16_G2RerunCompare_Daily` 周一~五 20:10（紧随 20:05 候选、赶在次日快照覆盖前）。退出码 0=PASS / 1=error / 2=warn。
 - **验证**：20260918 历史复跑全流程 PASS——F2 主源=Tushare，10 只 ts_code 排序 / SC_F2 / SC_F5 逐位一致，exit=0（当前快照最新日恰=20260918，Copy 为 snapshot_g2_20260918.parquet 模拟留档）。复跑对 paper_forward_live.csv 幂等（按 (date,code) 去重，不产生重复行）。
-- **注意**：`de_g2_compare_daily.ps1`（10:05 dry-run 换仓核验 rebalance_g2）与本机制不同，勿混淆勿删。
+- **注意**：`de_g2_compare_daily.ps1`（10:05 dry-run 换仓核验 rebalance_g2）与本机制不同，勿混淆勿删。**2026-10-15 推送优化（T-20261015-003，诚哥「我要在飞书看到内容」）**：原推送只有一行报告路径；现在 prompt 强制 DE 报告以「## 飞书推送摘要」节收尾（核验结论/卖出/买入/跳过/风险 5 行表格），脚本末尾抽取该节正文推飞书（抽取失败回退推路径），不再只有路径。同型「仅推路径」问题存在于 `de_rebalance_guard_daily.ps1`（G2/融合/V13 三任务），待确认是否同法优化。
 - **看板**：T-20260920-001；repowiki `QMT架构集成.md` 故障排查表已追加「运行时执行偏差盲区」行。
 - **2026-09-20 晚间扩展 ENS/V1.3 覆盖（诚哥「只是g2吗，融合的，v1.3的没有吗」）**：
   - **V1.3 留档**：`g2_candidates_night.ps1`（20:05）追加 `Copy-Item latest_features.parquet → data_live/snapshot_v13_<runDay>.parquet`（latest_features 为 16:30 merge 产物，夜间脚本不改动；留档失败置 snapFail13 并入 exit）。
@@ -1611,4 +1611,67 @@ DE 运行约 25 分钟，**无 `SCOPE_ACK`、无报告正文、CPU 长时间几�
 - **关联**：T-20261012-001（解释器切换引入的连带回归，本源）、T-20261012-003（同批 ST 剔除）。
 
 
+## 2026-10-18 · 评分卡层消融：内产版 18.8% vs 官方 113.6% 的 6 倍差距拆解（T-20261018-001）
 
+- **动机**：诚哥追问 B21 内产版（沙箱特征 + 简化红线 prob≥0.60）年化 +18.8% 与官方口径 G2 +110.1%/+113.6% 差 6 倍，差在哪没拆过。
+- **方法**：官方引擎 `scan_rotate_cost_real.py`（可执行 open→open）2×2 消融 = **模型档（0825_1964t / 0915_1522t 现役）× 评分卡层（ON / OFF）**。`scorecard_OFF` 把 per_day 帧内 `total_new` 换成 `prob*100`（帧内含 prob 列，**引擎零改动**），等价沙箱内产版简化红线语义。窗口 2024-07-01~2026-08-14 / N15 / live_trail / 红线60 / TOP2 / 滑点0.1% / deploy0.95 / 单源 astock。
+- **校验档 PASS**：0825+评分卡ON = 总收益 357.41% / 年化 110.12% / 夏普 2.278 / 回撤 -16.71% / 78 笔，与官方锚点**逐项一致**。
+- **结果**（总收益/年化/夏普/回撤/交易）：**0825+ON 357.41%/110.12%/2.28/-16.7%/78**；0825+OFF 43.86%/19.43%/0.70/-34.8%/74；**0915+ON 191.82%/68.71%/1.84/-19.6%/81**；0915+OFF 72.09%/30.36%/1.00/-22.0%/75。
+- **分解**：**评分卡层 = 最大单一因素**（0825 -90.7pp / 0915 -38.4pp）；**模型档（有评分卡）0915 比 0825 低 41.4pp**（无评分卡时反高 +10.9pp）→ 评分卡增益随模型差异极大，不可当常数外推。风险面：拿掉评分卡回撤 -16.7%→-34.8%、盈亏比 2.70→1.17（评分卡同时供收益与风控）；执行跳过 37→81。
+- **结论**：①内产版 18.8% 与官方 113.6% 的差距主体 = **沙箱砍掉评分卡层（F2/F5/F6 不可内移）**，非模型退化；②**待核查新发现（未改任何生产配置）**：现役 0915 模型官方口径仅 +68.71%，低于 0825 的 +110.12% 达 41.4pp，暗示 09-15 换版在官方口径下可能是降级（与 09-10 门禁记录 08-25=+0.213%/日 方向一致）——是否回退属策略变更，须单独实证 + 拍板；③无评分卡口径（19.43%/30.36%）与 B21 报告 18.79% 同量级 → 两 harness 互证；④**附注不一致**：B21 报告「现役43f 臂」6.59% 低于本消融同模型同红线 30.36% 约 24pp，原因未定位（TOP3+tier+gap+窗口差异），建议后续核查该 harness。
+- **产物**：报告 `results/评分卡层消融_20261018.md`｜脚本 `research/ablation_scorecard_20261018.py`｜指标 `research/results/ablation_scorecard_20261018.json`｜日志 `data/real/ablation_scorecard_20261018.log`。
+- **登记**：本卡 + 全局控制台 T-20261018-001 + engram。**引擎零改动、未 commit**。
+- **关联**：T-20261017-002（B21 内产版策略级回测，本消融的上游疑问）、G2/ENS 信号内产版重训验收（评分卡不可内移的拍板背景）、2026-10-15 架构红线（沙箱唯一合法模式）。
+
+
+## 2026-10-18 · 独立模型回退实证：0825_1964t vs 0915_1522t（三轴，T-20261018-002）
+
+- **缘起**：承接 T-20261018-001 的新发现（现役 0915 官方口径 +68.71% < 0825 +110.12%，差 41.4pp），但该结论只来自单窗口单配置 → 诚哥指令做独立实证。**预注册判定**：主口径（N15/TOP2/d95）下 0825 在**全部窗口**都不低于 0915 且实盘对齐口径（TOP3/d98）同向 = 「0915 为降级」；否则「证据不足」。
+- **轴 A 模型层（官方门禁 harness，同面板同窗 test 2024-07+，0825 首次测）**：0825 ic 0.08101 / tail_ic 0.11592 / top2_ret +0.01411(n=106) vs 0915 **0.08111 / 0.12267 / +0.01975(n=105，+40%）→ 0915 三项**全面不劣于** 0825，**模型层无降级**。
+- **轴 B 策略层（官方引擎评分卡链）**：主口径全窗 0825 **+110.12%**(2.28/-16.7%/78笔) vs 0915 +68.71%(1.84/-19.6%/81笔) = +41.4pp；分窗 2024H2 +80.96 vs **+83.86**（0915 反超）/ 2025 +96.97 vs +93.68 / 2026 至 08-14 **+198.76 vs +132.72**（+66pp）→ **差距集中于 2026 小样本段**；实盘对齐口径 TOP3/d98：0825 **+76.30%**(1.97/-16.2%) vs 0915 +46.11%(1.47/-23.7%)，+30.2pp 同向。
+- **轴 C 前向纸面（弱轴）**：0825 年代（08-18~09-14，52 笔全平）live_trail 均 **+0.72%**/胜率 42.3% vs 0915 年代（09-15~10-08，20 笔平）**-5.07%**/15.0%。
+- **轴 D 池诊断**：过线候选相当（3.82 vs 3.86 只/日），0825 Top2(total_new) 日均 fwd_ret **+19bps** vs 0915 +11bps；Top10(prob) 池 +0.0015 vs +0.0011 → 差异在**池被评分卡加工后的选择质量**（-8bps/日 ≈ 复利 41pp 量级）。
+- **判定：「证据不足」**（2024H2 反超，预注册条件未满足）。正确画像 = **模型层 0915 持平略优 + 评分卡链层全窗 0825 明显优且差距集中于 2026**（模型层与策略层背离）。
+- **三条硬限制**：①功效不足（分窗 22~36 笔、2026 段 66pp 由 22 vs 23 笔决定，P12 单票运气教训）；②非同训练数据对照（0825 用 08-25 vintage 面板、0915 用 09 月刷新面板）；③test 窗选择偏差（周更门禁用 2024-07+ 筛模型，同窗再比收益有自我确认风险）。
+- **建议（未改生产）**：①不动 live 指针、不回退；②**立纸面双轨 A/B**（复用 `deploy_predict_g2.py --ab` 基建，同快照/评分卡/红线每日同跑 0825+0915，累积 15~20 交易日 forward mean_excess，判定线「候选 ≥ 现役 −0.02pp」）；③可选：2026 段逐笔 Welch t 检验 + 剔除单票影响。
+- **产物**：报告 `results/模型回退实证_0825_vs_0915_20261018.md`｜脚本 `research/model_rollback_0825_vs_0915_20261018.py`（--axis model|strategy|forward）｜json `research/results/model_rollback_0825_vs_0915_20261018.json`。**引擎/门禁零改动、未 commit**。
+- **登记**：本卡 + 全局控制台 T-20261018-002 + repowiki + engram。**关联**：T-20261018-001（纠正其"0915 疑似降级"初判）、周更门禁 harness（T-20260910-003/T-20261013-001）。
+
+
+## 2026-10-18 · G4 观察期回滚闸修复 + 0915 回退裁决（T-20261018-003）
+
+- **现象**：G2 live（0915_1522t）自带 10 交易日观察期 trial，但 `rollback_check_g2.py --auto` 每天只打「样本不足（<3 笔），暂不判定」，外层 `run_scheduled.ps1` 统一打印「…OK」→ 观察期回滚保护**空转**（纸面降级闸同样吃不到样本）。
+- **根因（三层，实测）**：①`paper_forward_daily.ps1` 把 `$py` **硬编码**为已损坏的 TRAE SOLO 内置解释器（`init_fs_encoding ... No module named 'encodings'`）——它是 **T-20261012-001 漏修的第 4 个脚本**；②16:45 纸面管道里**每个步骤都直接崩**（日志该致命错 **40 次**），ps1 在全部步骤跑完后 exit 2 → `paper_forward.py --backfill` **压根没产出**（**非**「覆写」亦**非**「静默空产」；候选行仍涨到 10-12 是 20:05 的 `g2_candidates_night` 腿在追加）；③`ret` 停在 09-16 → G4 永远样本不足。日志证据：`BUILD-ALERT build_g2_daily 异常退出 (exit=1)` 出现在 **09-28 与 10-12~10-16**，与「最后成功回填 10-09」吻合（内置解释器损坏是**间歇性**的，09-30~10-09 又能跑通）。数据源 `merged_daily_full`/`incremental_daily` 均新鲜到 10-16 → **非行情断更**。
+- **修复（4 项）**：①ps1 改用与 `run_scheduled.ps1` 同口径的 `Get-GoodPy`（miniqmt venv 首选、实测 `import numpy, lightgbm` 通过、再 PATH、再内置；全崩 `PY-ALERT` exit 1）；②`rollback_check_g2.py`：**次级样本源兜底**（主源 <3 笔时读 `paper_forward_exit_live.csv` 的 `live_trail_ret`，rank≤3）+ **宽限期 fail-loud**（观察期满再宽限 10 交易日仍无样本 → `[ALERT]` + `exit 3`）+ 输出 `VERDICT=` 机读标记；③`run_scheduled.ps1` G4 分支加 exit 3 ALERT、exit 0 不再笼统打 OK；④两 ps1 **补回 UTF-8 BOM**（编辑剥 BOM 教训第三次命中）。
+- **验证**：新单测 `research/tests/test_rollback_check_g2.py` **22/22 PASS**；`py_compile` OK；两 ps1 **PS 5.1 BOM=True / PARSE_ERRORS=0** 且抽出解析块实跑选中 miniqmt venv；**回填恢复 133/225 → 198/224 笔**（备份 `.bak_20261018`）。
+- **G4 真实裁决（只读，未 --auto/--apply）**：观察期候选 67 笔前向均值 **-7.75%** vs 基线 +0.95% → **`VERDICT=deep_worse`（深度劣化 8.71pp >> 0.05pp）**，`rollback_streak.json` 记 `streak=1/3`。**⏳ 待诚哥拍板**：若后续两个交易日续判 deep_worse，约 10-21 `--auto` 会**自动回退 live→0825_1964t** 并推飞书（设计内行为）。选项：A 放行（推荐，与 T-20261018-002 策略层结论同向）/ B 先暂停等纸面 A/B / C 立即人工 `--apply`。
+- **产物**：报告 `results/G4观察期闸修复与0915回退裁决_20261018.md`、单测、看板 T-20261018-003。**未动 live 指针、未 commit**。**同型遗留**：`start_card_webhook.ps1` 仍硬编码同一损坏解释器。
+- **关联**：T-20261018-002（上游实证）、T-20261012-001（解释器缺陷本源，漏修第 4 脚本）、T-20260913-001 M3（G4 自动化落地）、DE 2026-09-29 §4-1（追加污染 P2，仍未定位，但不解释本次断档）。
+
+
+## 2026-10-19 · B21 干净对比收尾：生产评分卡 sc-mode 双口径稳健劣于红线/B21 + tier 口径分叉发现（T-20261019-003）
+
+- **做了什么**：把生产评分卡语义（deploy_predict_g2：top100→评分卡红线60→total_new 排序；F2=元/mf_main_net×1e4、F5=ind_pct_ths、F6=est pe_ttm/turnover 池级命中<50% 回退）完整移植进 `backtest_b21_strategy.py`（`_sc_scores()` 向量化 np.select；`sel_mode=sc/sc_wan`；`--sc` 5 配置含第 5 臂「万元退化 F2 对照」`mn_scale=1.0` 直传元阈值=官方引擎行为；fail-loud 万元单位自校验：退化档 1/8/10 必为 0 否则 SystemExit）。退化 F 分布 2:58.1%/5:2.1%/6:39.8% 精确复现官方 {2:60.2%,5:2.2%,6:37.6%}。
+- **⚠️ tier 口径混杂发现（决定性）**：并行审计 T-20261019-002 修复 #18 改了本脚本 tier 门控（T+1 开盘跳空→T 日自身涨跌），落点在旧基线跑数后、首次 sc 跑数前 → 跨口径混杂。定位方法=**tier_cnt 指纹**（旧 [7,16,525] vs 新 [39,26,483]）。全量双口径重跑，tier=off 锚点两口径同值 +18.20% 自洽（唯一变量=tier）。新增 `--tier-caliber {t0_close,t1_open}` + 输出分流（t1_open 仅 json：`bt_b21_result_t1open.json`/`bt_b21_sc_result_t1open.json`，不覆盖报告）。
+- **双口径核心数字（slip0.1%，G2 臂，2024-07~2026-09）**：t0_close——B21 +5.84% / 现役43f 红线 +12.26% / 生产 SC60 **-3.87%** / 退化F2 -5.12%；t1_open——B21 +18.79% / 现役 +6.59% / SC60 +4.79% / 退化F2 +4.67%。
+- **双口径稳健结论**：①生产评分卡均劣于同口径 prob 红线（评分卡层 -16.1pp/-1.8pp）且均劣于 B21（-9.7pp/-14.0pp）→「沙箱解除后原方案不更优」对 tier 稳健；②官方消融 +38.4pp 双口径×双 F2 语义均不可复现（F2 语义差仅 -1.3pp/-0.1pp）→ 主因=官方 harness，T-20261018-001「红线降级主因」假设**证伪**；③**B21 vs 现役相对强弱随 tier 口径反转**（gap +12.2pp vs -6.4pp）——t1_open 是 live「09:50 看当日跳空+09:50 市价成交」的忠实同刻镜像（非严格前视），t0_close（审计默认）保守但偏离 live 语义，**取舍待诚哥拍板**。
+- **工程坑（新）**：①write_report 硬编码结论在新数字下自相矛盾 → 改符号自适应（内产版优劣/滑点/ tier 贡献/红线甜点四条）；②**--all 再生成会冲掉报告手工段** → 手工内容（口径边界/历史对照表/差异主因）全部下沉 write_report 源码（静态带日期，regeneration-safe）；③%-格式串里嵌套三元 `%s` 实参字符串中的 `%%` 不被格式化（渲染成双百分号）——内层字符串直接写单 `%`；④PowerShell 控制台 GBK 乱码但 UTF-8 文件正常，勿按控制台字面修文件。
+- **产物**：`results/B21_干净对比_生产评分卡口径_20261018.md`（双口径）、`results/B21信号内产版_策略级回测报告_20261017.md`（双口径重建）、json×4（含 tier_caliber 字段）、备份×3（`*.tier_old_20261019.bak.json`/`*.run1_20261019.bak.json`/`*.md.pre_tierfix_20261019.bak`）。确定性：sc 三轮全同、--all 两轮全同、F 分布六轮全同。
+- **遗留**：未 commit；tier 口径拍板；SC58 t1_open +14.78% 反常高值仅记录；周一 17:00 周更（净化面板）后需同口径复跑验证。
+- **关联**：T-20261018-001（消融，本任务证伪其主因假设）、T-20261019-002（审计 #18 即 tier 变更源）、T-20261017-004（B21 回测本体）。
+
+
+
+
+## 2026-10-20 · P16 体检 + 自闭环监控层对齐（T-20261020-003，发现 2 个真缺陷）
+
+- **任务**：诚哥「给 p16 项目做个体检，发现问题直接修复」。范围=夜间体检 33 项 + 23 个单测套件 + QMT 实机日志交叉核对。
+- **【P0 真缺陷①】G2/ENS 今日盘中全程停跑，且监控层看不见**：`D:\QMT交易端模拟` 上 `STRATEGY_P16_G2_BRIDGE.py` / `STRATEGY_P16_ENS_BRIDGE.py` 于 **08:52:30 被 `python formula destructed` 卸载**（同批 `QMT_SANDBOX_PROBE.py` 抛 `KeyboardInterrupt:策略被手动停止`），此后至收盘**零输出**。直接后果：10:07 G2 guard、10:08 ENS guard 双双 `[ABORT] 桥心跳异常，拒绝写单` → **当日 G2 买入（000960.SZ 1200股@25.27）与 ENS 两笔到期卖出（002841.SZ / 600691.SH）全部未执行**。**监控为何没报**：①`nightly_check.py` E2 用 48h 阈值 → 停跑 4h 仍判 PASS；②`check_bridge_heartbeat.py` 虽在 12:00 抓到了，但它读的是**文件心跳**（heart_20261016.json，83h 前），告警文字误导为「桥心跳超时」而非「策略已停」。**修复**：`nightly_check.py` 新增 **E2b 盘中存活检查**——交易日且过 10:00 时，当日最新 `[HEART]` 落在 09:30 之前或当天无心跳 → **FAIL**（区分「停跑」与「心跳旧」）；`_log_heart` 加 `latest_trade_date` 参数支持「锁当日」严格判定。**实测**：修复后体检正确报 `E2b 盘中存活 G2/ENS FAIL 最新心跳停在 08:51`、V13 PASS（11:29）。**⚠️ 未修复项（需人工）**：策略本身仍停着，**必须重启 QMT 客户端并重载 G2/ENS 策略**（沙箱/策略进程不可由外部脚本拉起）。
+- **【P0 根因②】心跳通道自闭环化后，外部判定全断**：G2/ENS/V13 自 2026-10-15~16 起「自闭环零文件」，`heart_<date>.json` **永久停写**，唯一通道是 print `[P16xx][HEART]` → `XtClient_FormulaOutput_<date>.log`。但外部 5 处仍在读文件心跳：`qmt_bridge_client.read_heart` / `qmt_bridge_client_ens.read_heart` / `check_bridge_heartbeat.py` / `nightly_check.py` E2 / `rebalance_g2|ens` 的 `is_bridge_alive`。**⚠️ 关键坑（不是「文件不存在才回退」）**：10-16 的旧 `heart_*.json` **一直在盘上**，`if heart: return heart` 会直接返回 83h 前的死心跳，把日志里的新鲜心跳完全掩盖 → 回退形同虚设。**正确做法 = 两源都读、按 `last_heartbeat` 字符串取较新者**。**修复**：`qmt_bridge_client.py` 新增 `read_heart_from_log()`（解析 `[P16G2|P16ENS|P16V13][HEART]` 行 → 同构 dict，含 `source="formula_log"`）+ `QMT_PATH/QMT_PATH_ALT` 双客户端扫描；`read_heart`（G2/ENS 两客户端）改为双源取最新；`is_bridge_alive` msg 增 `source=` 便于诊断。
+- **【P1 真缺陷③】G2/ENS 成交记录彻底消失**：`_write_fill` 末尾只调 `_add_or_update_fill` → `_atomic_write_json`，而后者在自闭环版是**空壳 `return`**（沙箱禁 open）→ **G2/ENS 自 10-16 起所有成交记录无任何落点**（V13 早有 `[P16V13][FILL]`，G2/ENS 漏了）。影响：`reconcile_g2/ens`（读 fills json 恒 0 条）、`push_fill_card.py`、`track_sold_forward`、`analyze_sell_timing` 全部断供；且因当日无成交未能暴露。**修复**：两 src 的 `_write_fill` 在 `_add_or_update_fill` 前补 `[P16G2|P16ENS][FILL]` print，**字段/格式与 V13 逐字对齐**（date sid code action vol px src status ref slip gap retry oids | reason），外部解析器可复用同一正则。**实测**：单测跑通输出 `[P16G2][FILL] 20261020 s1 300413.SZ SELL vol=1000 px=9.4000 src=fill_avg status=FILLED ref=9.500 slip=1.05% gap=0.00% retry=0 oids=1001 | stop_loss`。
+- **【噪声清理】C1 白名单过期**：`nightly_check.py` `EXPECTED_TASKS` 仍列 `Quant_Monitor_0945`，该任务及同族 6 个已于 10-17 经诚哥拍板删除（T-20261017-001）→ 10-17~10-20 每天固定 FAIL 1 项。已移出白名单（保留注释说明来龙去脉）。**修复后 C1 PASS**。
+- **【陈旧单测批量修复，5 个套件 / 原 6 红 → 全绿】**：根因统一为「源码自闭环化、测试仍按文件桥语义断言」。①`test_v13_state_machine` / `test_v13_deal_fill_slippage`：`_add_or_update_fill` 已删除 → 改为包装 `_write_fill` 捕获返回 rec（**只包一次**，重复 reset 嵌套叠加会让一次调用追加多条、断言假失败）；②`test_g2|ens_state_machine` T19 改为断言 print 心跳字段（`[P16G2][HEART]` 含 date/pending/positions/risk_sold/risk_count/fills/slippage/passive + 60s 节流 + `[HOLD]` 明细）；T20 从「heart json 恢复 pending/alert_count」改写为「账户即账本：当日 order 反查重建 risk_sold/RSK 水位，pending 不从文件恢复」（旧语义已废止，保留必红）；T21 前置显式 `_g_passive=False`（前一用例的桩 init 因缺 `get_market_data_ex` 转被动会早退）；③`test_build_p16_hardening`：行数守恒断言未考虑 `# __VENDOR__` 注入 → 改为「含 vendor 则产物行数 > 源码行数，无 vendor 则严格相等」（V13 仍严格）；④`test_corr_diag_io` H9/H12/H14：H9 北交所 `.BJ` 不在申万一级映射（数据源事实，改判「沪深 100% 覆盖」）；H12/H14 候选 <`min_candidates=5` 时核心走 `_skip` 提前 return、`section_status` 未构建（改判 `sections._skip.status` / `overall==FAIL and date.status==FAIL`）。
+- **验证**：**23/23 单测套件 rc=0**（含 build 40/40、G2 状态机 100/100、ENS 状态机 100/100、V13 状态机 55/55、V13 fill 87/87、corr_diag_io 153/153）；`check_py36_compat` exit 0；两产物 `check_build_bridge_artifact` 全 PASS（首行 `# coding=gbk`、GBK 可编解码、BUILD_TAG 恰 3 处、AST 可解析）；夜间体检 **FAIL 由 1→2（新增 E2b 真告警）→ 准确反映 G2/ENS 停跑**，WARN 仅剩 B2（门禁拒绝后设计内等待，非故障）。
+- **产物**：`build/strategy_p16_g2_bridge.py` BUILD_TAG=**20261020-122656**（4183 行/544032 B）、`build/strategy_p16_ens_bridge.py` BUILD_TAG=**20261020-122659**（4187 行/544548 B）。源码 `strategy/strategy_p16_{g2,ens}_bridge_src.py` 各补 1 处 FILL print。
+- **⏳ 待人工**：①**重启 QMT 客户端 + 重载 G2/ENS 策略**（今日盘中仍停跑，新 build 需粘贴部署，BUILD_TAG 核对 20261020-1226xx）；②新 build 首次实跑需核对日志出现 `[P16G2][FILL]` 与 `[P16G2][HEART]` 且 `passive=False`；③B2 WARN 待 10-26 周更自动恢复。
+- **关联**：T-20261015-004（沙箱自闭环改造，本任务即其监控层收尾）、T-20261017-001（Quant_Monitor 六任务删除，C1 白名单源）、T-20261018-003（G4 观察期闸，同为「监控层没跟上架构变更」形态）。

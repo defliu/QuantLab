@@ -19,6 +19,7 @@ $env:PYTHONIOENCODING = "utf-8"
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
 $proj = "D:\QuantLab\projects\Project_16_LightGBM股票大师"
+$v2proj = "D:\QuantLab\projects\Project_10_价值小盘V2"
 $sched = "D:\QuantLab\data\schedules"
 New-Item -ItemType Directory -Force -Path $sched | Out-Null
 
@@ -102,6 +103,19 @@ switch ($Mode) {
         } else {
             $hits += "V1.3 对账产物缺失（16:30 daily 未跑？）"
         }
+        # 价值小盘V2（15:55 Quant_V2_Reconcile）：输出 projects/Project_10_价值小盘V2/data/reconcile_v2/
+        $v2 = "$v2proj\data\reconcile_v2\reconcile_v2_$date.json"
+        if (-not (Test-Path $v2)) {
+            Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] 价值小盘V2 对账产物缺失，自动补跑 reconcile_v2.py" -Encoding UTF8
+            $o = (& $py "$v2proj\reconcile_v2.py" --date $date 2>&1 | Out-String)
+            Add-Content -Path $log -Value $o -Encoding UTF8
+        }
+        if (Test-Path $v2) {
+            $txt = Get-Content $v2 -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+            if ($txt -match '"issues"\s*:\s*\[\s*[^\]]') { $hits += "价值小盘V2 对账有 issues" }
+        } else {
+            $hits += "价值小盘V2 对账补跑后仍无产物（reconcile_v2.py 失败？）"
+        }
         if ($hits.Count -gt 0) {
             $triggerInfo = "对账核查：" + ($hits -join "；")
         }
@@ -160,8 +174,8 @@ switch ($Mode) {
     "reconcile" {
         $prompt = @"
 你是 Project_16 日终对账异常复核助手（DE 保障，只读，绝不下单）。工作目录：D:\QuantLab。
-触发：当日（$dateDash）对账报告含 issues（G2/融合/V1.3；价值小盘V2 无对账 json，参考 strategy_log_v2.txt 的 reconcile 行）。允许读取：data\reconcile_g2\reconcile_g2_$date.json、data\reconcile_$date.json（V1.3，若存在）、data\reconcile_ens\ 下当日 json（若存在）、D:/QMT_POOL/ 三桥 state（fills/positions/heart/asset）、D:/QMT_POOL/v2_holdings_state.json 与 strategy_log_v2.txt（价值小盘V2）。
-任务：对每个异常项（持仓差额/孤儿/未终态 fills/pending/资产异常）独立排查根因：①对照 fills 与 positions_cfg 推导账本 vs 账户持仓；②判断紧急度 P0/P1/P2；③给出处理建议（人工操作/脚本修复/仅观察）；④标注是否与昨日对账同源（历史遗留还是新发）。
+触发：当日（$dateDash）对账报告含 issues（G2/融合/V1.3/价值小盘V2）。允许读取：data\reconcile_g2\reconcile_g2_$date.json、data\reconcile_$date.json（V1.3，若存在）、data\reconcile_ens\ 下当日 json（若存在）、D:\QuantLab\projects\Project_10_价值小盘V2\data\reconcile_v2\reconcile_v2_$date.json（价值小盘V2）、D:/QMT_POOL/ 三桥 state（fills/positions/heart/asset）、D:/QMT_POOL/v2_holdings_state.json 与 strategy_log_v2.txt（价值小盘V2）。
+任务：对每个异常项（持仓差额/孤儿/未终态 fills/pending/资产异常）独立排查根因：①对照 fills 与 positions_cfg 推导账本 vs 账户持仓（注意 V2 账本与同账号 67014907 的 V1.3 持仓已隔离，cross_strategy 项属对方策略持仓、非孤儿）；②判断紧急度 P0/P1/P2；③给出处理建议（人工操作/脚本修复/仅观察）；④标注是否与昨日对账同源（历史遗留还是新发）。
 输出：写报告到 $outFile（markdown：异常清单/逐项根因/紧急度/处理建议）。
 硬约束：禁止 --live、禁止下单/改仓、禁止修改任何文件、禁止 commit；数据缺失如实标注。
 "@

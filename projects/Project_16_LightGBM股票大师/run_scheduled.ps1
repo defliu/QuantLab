@@ -185,10 +185,13 @@ try {
             Run-Py "rollback_check_g2.py --auto"
             if ($LASTEXITCODE -eq 2) {
                 Log "!! [G4观察期] 观察期结束且前向轻度劣于基线 —— 建议人工回退（python rollback_check_g2.py --apply；深度劣化已自动处理）"
+            } elseif ($LASTEXITCODE -eq 3) {
+                # T-20261018-003：超宽限期仍样本不足（前向纸面管道断更）不再伪装成 OK，显式告警
+                Log "!! [G4观察期] ALERT 观察期已超宽限期但到期样本仍不足（前向纸面管道疑似断更）—— 核查 data/real/g2_pipeline_daily.log 的 paper_forward --backfill 段"
             } elseif ($LASTEXITCODE -eq 0) {
-                Log "[G4观察期] 无待观察 trial / 观察期通过 / 深度劣化已自动回退，OK"
+                Log "[G4观察期] exit=0（情形见上方输出与 VERDICT 标记：no_trial / in_window / pass / auto_rollback）"
             } else {
-                Log "[G4观察期] 检查跳过（exit=$LASTEXITCODE，无 trial 字段或数据不足）"
+                Log "[G4观察期] 检查异常（exit=$LASTEXITCODE），见上方脚本输出"
             }
         }
         "monitor" {

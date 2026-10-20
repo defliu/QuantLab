@@ -45,11 +45,14 @@ BRIDGES = [
     ("V13", "D:/QMT_POOL/p16_v13_risk/state", "heart_v13_"),
 ]
 # P1-3: 三策略每日链路关键计划任务白名单（缺失/禁用即 FAIL）
+# 2026-10-20（T-20261020-001）：移除 `Quant_Monitor_0945` —— 该任务及同族
+# 1030/1100/1330/1400/1430 已于 2026-10-17 经诚哥拍板彻底删除（T-20261017-001，
+# 盘中盯盘功能由 QMT 内置 tick 风控接管，XML 备份在 data/schedules/_task_xml_backup/）。
+# 白名单未同步导致 10-17~10-20 每天固定 FAIL 1 项（假警报噪声，会淹没真故障）。
 EXPECTED_TASKS = [
     "Quant_P16_NightlyCheck_0100",
     "Quant_P16_CfgPremarket_0900",
     "Quant_V13_Rebalance_Guard",
-    "Quant_Monitor_0945",
     "Quant_P16_DE_V13_Compare",
     "Quant_P16_DE_G2_Compare",
     "Quant_P16_DE_ENS_Compare",
@@ -356,6 +359,57 @@ def check_d(fix):
 
 
 # ---------------- E QMT / 账户 / 执行层 ----------------
+# 自闭环心跳（2026-10-20，T-20261020-001）：G2/ENS/V13 自 2026-10-15~16 起「零文件」运行，
+# heart_*.json 全部停写（沙箱禁 open），唯一心跳通道是策略 print `[P16xx][HEART]`
+# → QMT `userdata/log/XtClient_FormulaOutput_<date>.log`。E2 必须读日志，否则恒判「桥可能停」。
+# 双客户端并存（AGENTS.md）：G2/ENS 在 D:\QMT交易端模拟，V13 在 D:\国金QMT交易端模拟。
+QMT_LOG_ROOTS = [r"D:\国金QMT交易端模拟", r"D:\QMT交易端模拟"]
+HEART_LOG_TAGS = {"G2": "P16G2", "ENS": "P16ENS", "V13": "P16V13"}
+
+
+def _log_heart(tag, latest_trade_date):
+    """从 FormulaOutput 日志解析该策略最新 [HEART] 行。
+    返回 (ts_str, 距今秒, kv_dict) 或 (None, None, None)。
+    latest_trade_date 给定时优先只读该日日志（E2b 判「今天有没有心跳」必须严格按日，
+    否则会被前一日的更晚心跳污染）；同时扫最近 3 个日志文件兜底历史判定。"""
+    import re as _re
+    pat = _re.compile(r"\[%s\]\[HEART\]\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})(.*)$" % _re.escape(tag))
+    kv_pat = _re.compile(r"(\w+)=(\S+)")
+    best = None
+    want = (latest_trade_date or "").replace("-", "")
+    for root in QMT_LOG_ROOTS:
+        d = os.path.join(root, "userdata", "log")
+        if not os.path.isdir(d):
+            continue
+        try:
+            logs = [f for f in os.listdir(d)
+                    if f.startswith("XtClient_FormulaOutput_") and f.endswith(".log")]
+        except OSError:
+            continue
+        if want:
+            pinned = [f for f in logs if want in f]
+            logs = pinned if pinned else sorted(logs, reverse=True)[:3]
+        else:
+            logs = sorted(logs, reverse=True)[:3]
+        for fn in logs:
+            try:
+                with open(os.path.join(d, fn), "r", encoding="utf-8", errors="replace") as f:
+                    for line in f:
+                        m = pat.search(line)
+                        if m and (best is None or m.group(1) > best[0]):
+                            best = (m.group(1), dict(kv_pat.findall(m.group(2) or "")), os.path.join(d, fn))
+            except Exception:
+                continue
+    if not best:
+        return None, None, None
+    ts = best[0]
+    try:
+        age = (datetime.datetime.now() - datetime.datetime.strptime(ts, "%Y-%m-%d %H:%M:%S")).total_seconds()
+    except Exception:
+        age = None
+    return ts, age, best[1]
+
+
 def _bridge_heart(state_dir, prefix):
     """返回 (最新心跳文件名, 距今秒, 内容dict或None, 坏标记)。P0-2。"""
     if not os.path.isdir(state_dir):
@@ -391,6 +445,8 @@ def check_e():
     except Exception as e:
         log("E", "E1 QMT 进程", "WARN", repr(e))
     # E2 桥心跳（P0-2 三桥化 + JSON 内容校验 + 交易日感知阈值）
+    # 2026-10-20（T-20261020-001）：优先读 FormulaOutput 日志 [HEART]（自闭环唯一通道），
+    # 文件心跳仅作历史兜底。二者取「较新者」，避免 10-16 残留的旧 heart json 恒判桥死。
     latest = recent_trade_date()
     try:
         days_since = (datetime.date.today() - datetime.date.fromisoformat(latest)).days
@@ -399,16 +455,60 @@ def check_e():
     threshold = 96 * 3600 if days_since > 2 else 48 * 3600  # 长假 96h / 正常 48h
     for name, st_dir, prefix in BRIDGES:
         lh, age, data, bad = _bridge_heart(st_dir, prefix)
+        # E2 判「最新心跳有多旧」→ 不锁日期（传 None 扫最近 3 个日志），否则会漏掉当日日志；
+        # E2b 判「今天有没有心跳」→ 必须锁当日（见下）。
+        lts, lage, lkv = _log_heart(HEART_LOG_TAGS.get(name, ""), None)
+        if lage is not None and (age is None or lage < age):
+            # 日志心跳更新 → 以日志为准
+            if lage < threshold:
+                log("E", "E2 桥心跳 %s" % name, "PASS", "日志心跳 %s 距今 %.0fh passive=%s pending=%s" % (
+                    lts, lage / 3600, (lkv or {}).get("passive", "?"), (lkv or {}).get("pending", "?")))
+            else:
+                log("E", "E2 桥心跳 %s" % name, "WARN", "日志心跳 %s 距今 %.0fh（>阈值 %dh，策略可能已停/未启动）" % (
+                    lts, lage / 3600, threshold / 3600))
+            continue
         if bad:
             log("E", "E2 桥心跳 %s" % name, "FAIL", "心跳文件损坏/内容空（最近 %s，需查桥进程）" % (lh or "无"))
         elif not lh:
-            log("E", "E2 桥心跳 %s" % name, "WARN", "无心跳文件")
+            log("E", "E2 桥心跳 %s" % name, "WARN", "无心跳（文件与 FormulaOutput 日志均无）")
         elif age is not None and age < threshold:
             log("E", "E2 桥心跳 %s" % name, "PASS", "最近 %s 距今 %.0fh build=%s" % (
                 lh, age / 3600, (data or {}).get("build_tag", "?")))
         else:
             log("E", "E2 桥心跳 %s" % name, "WARN", "最近 %s 距今 %.0fh（>阈值 %dh，桥可能停）" % (
                 lh, (age or 0) / 3600, threshold / 3600))
+    # E2b 盘中静默停跑（2026-10-20 T-20261020-001 新增，覆盖今日实测事故形态）
+    # 事故：G2/ENS 在 08:52 初始化完成后被手动停止，直到收盘无任何输出；
+    # E2 用「48h 阈值」判 PASS，夜间体检完全看不见「当天盘中死了 4 小时」。
+    # 判据：今天是交易日 且 已过 10:00 且 当天日志心跳落在 09:30 之前（或当天无心跳）
+    #       → 说明策略在开盘前/开盘时即停，盘中全程无风控。
+    # 注：心跳 60s 节流 + 非交易时段也打印，故「开盘后应有 ≥1 条心跳」是硬事实。
+    # ⚠ 不能用 latest（recent_trade_date 是「已收盘的最近交易日」锚），必须用日历判今天。
+    _is_td_today = False
+    try:
+        sys.path.insert(0, PROJ)
+        import is_trade_day as _ITD
+        _is_td_today = _ITD.is_trade_day(datetime.date.today(), _ITD.load_calendar())["is_trade_day"]
+    except Exception:
+        _is_td_today = False
+    if _is_td_today and datetime.datetime.now().hour >= 10:
+        _today8 = datetime.date.today().strftime("%Y%m%d")
+        for name in ("G2", "ENS", "V13"):
+            lts, lage, lkv = _log_heart(HEART_LOG_TAGS.get(name, ""), _today8)
+            if lts is None:
+                log("E", "E2b 盘中存活 %s" % name, "FAIL",
+                    "今日无任何 [HEART] 日志（策略未启动或已停，盘中无风控）")
+                continue
+            if lts[:10].replace("-", "") != _today8:
+                log("E", "E2b 盘中存活 %s" % name, "FAIL",
+                    "最新心跳 %s 不是今天的（策略今日未启动/已停，盘中无风控）" % lts)
+                continue
+            hhmm = lts[11:16]
+            if hhmm < "09:30":
+                log("E", "E2b 盘中存活 %s" % name, "FAIL",
+                    "最新心跳停在 %s（早于开盘 09:30），盘中全程无心跳 → 策略已停，需重启客户端/重载策略" % hhmm)
+            else:
+                log("E", "E2b 盘中存活 %s" % name, "PASS", "最新心跳 %s" % hhmm)
     # E3 账本戳（P1-6：V1.3/V2/G2/ENS 四资金池 account_id 校验）
     caps = [("V13", os.path.join(DATA, "strategy_capital.json")),
             ("V2", "D:/QMT_POOL/v2_holdings_state.json"),

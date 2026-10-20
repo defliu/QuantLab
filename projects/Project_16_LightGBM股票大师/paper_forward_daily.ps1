@@ -24,9 +24,41 @@
 # （与 nightly_check_task 同口径，T-20260910-006 教训）；退出码逐步显式检查。
 $ErrorActionPreference = "Continue"
 $proj = $PSScriptRoot
-$py = "C:\Users\Administrator\AppData\Roaming\TRAE SOLO CN\ModularData\ai-agent\vm\tools\python\python.exe"
 $stamp = Get-Date -Format "yyyyMMdd_HHmmss"
 $log = Join-Path $proj "data\real\g2_pipeline_daily.log"
+
+# ---- Python 解释器解析（T-20261018-003 修复）----
+# 原实现把 $py 硬编码为 TRAE SOLO 内置解释器，而该解释器 2026-10-12 前后已损坏
+# （`Fatal Python error: init_fs_encoding ... No module named 'encodings'`），且本脚本是
+# T-20261012-001 修复时漏掉的第 4 个脚本 → 16:45 纸面管道自 10-12 起每天
+# `BUILD-ALERT build_g2_daily 异常退出 (exit=1)` 直接退出，paper_forward.py --backfill
+# 停摆 → paper_forward_live.csv 的 ret 停在 09-16 → rollback_check_g2.py 永远
+# 「样本不足（<3 笔），暂不判定」→ G4 观察期回滚闸对 0915 模型空转。
+# 与 run_scheduled.ps1 同口径：miniqmt venv 首选（必须实测带 numpy/lightgbm），再 PATH，再内置。
+$MINIQMT_PY = "C:\Users\Administrator\.workbuddy\binaries\python\envs\miniqmt\Scripts\python.exe"
+$FALLBACK_PY = "C:\Users\Administrator\AppData\Roaming\TRAE SOLO CN\ModularData\ai-agent\vm\tools\python\python.exe"
+$REQUIRED_IMPORTS = "numpy, lightgbm"
+function Get-GoodPy {
+    param([string]$Imports = "numpy, lightgbm")
+    $cands = @()
+    if (Test-Path $MINIQMT_PY) { $cands += $MINIQMT_PY }
+    $p = (Get-Command python -ErrorAction SilentlyContinue).Source
+    if ($p) { $cands += $p }
+    if (Test-Path $FALLBACK_PY) { $cands += $FALLBACK_PY }
+    foreach ($c in $cands) {
+        try {
+            $v = & $c -c "import $Imports; print('OK')" 2>$null | Select-Object -Last 1
+            if ($v -eq 'OK') { return $c }
+        } catch { }
+    }
+    return $null
+}
+$py = Get-GoodPy -Imports $REQUIRED_IMPORTS
+if (-not $py) {
+    Add-Content -Path $log -Value "[$stamp] PY-ALERT 未找到带 $REQUIRED_IMPORTS 的 Python，纸面管道无法运行"
+    exit 1
+}
+Add-Content -Path $log -Value "[$stamp] 使用 Python: $py"
 try {
     Push-Location $proj
     & $py -u build_g2_daily.py *>> $log

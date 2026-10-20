@@ -18,16 +18,23 @@ TODAY = datetime.date.today().strftime("%Y%m%d")
 CACHE = os.path.join(HERE, "data", "cache")
 os.makedirs(CACHE, exist_ok=True)
 
-# 标的池
-G2_CANDIDATES = ["605098.SH", "688029.SH", "688528.SH"]
-G2_HOLDINGS = ["300475.SZ", "603332.SH"]
-ENS_HOLDINGS = ["300138.SZ", "600409.SH"]
-ALL_STOCKS = G2_CANDIDATES + G2_HOLDINGS + ENS_HOLDINGS
+# 标的池（2026-10-20 盘前按当日真实候选/持仓刷新）
+# G2 候选：data/selections/g2/20261020_g2_top10.csv（夜间 20:05 任务 10-19 20:08 产出，数据日 20261019）
+# V1.3 候选：data/selections/20261019_model_top10.csv（数据最新日 D=20261019，panel max 同日）
+# 持仓：g2_bridge/state/positions_20261016.json + p16_v13_risk/cmd/positions_cfg_v13_20261020.json（今日 cfg 空仓）
+G2_CANDIDATES = ["000960.SZ"]
+V13_CANDIDATES = ["301060.SZ", "300394.SZ", "301536.SZ"]
+G2_HOLDINGS = ["600691.SH", "605098.SH", "688758.SH", "000607.SZ", "002841.SZ"]
+ENS_HOLDINGS = ["002841.SZ", "600691.SH", "688758.SH"]  # ENS 持仓 ⊂ G2 持仓
+V13_HOLDINGS = []  # 今日 positions_cfg_v13_20261020.json = 空仓（10-19 曾持 002011）
+CANDIDATES = G2_CANDIDATES + V13_CANDIDATES
+ALL_STOCKS = list(dict.fromkeys(CANDIDATES + G2_HOLDINGS + V13_HOLDINGS))
 
 NAME_MAP = {
-    "605098.SH": "行动教育", "688029.SH": "南微医学", "688528.SH": "秦川物联",
-    "300475.SZ": "香农芯创", "603332.SH": "苏州龙杰",
-    "300138.SZ": "晨光生物", "600409.SH": "三友化工",
+    "000960.SZ": "锡业股份",
+    "301060.SZ": "兰卫医学", "300394.SZ": "天孚通信", "301536.SZ": "星宸科技",
+    "600691.SH": "阳煤化工", "605098.SH": "行动教育", "688758.SH": "赛分科技",
+    "000607.SZ": "华塑控股", "002841.SZ": "视源股份",
 }
 
 
@@ -132,7 +139,7 @@ def fetch_eastmoney_curl_news():
     """东财网页接口取个股新闻/公告（兜底 F3）。"""
     import urllib.request
     results = {}
-    for ts_code in G2_CANDIDATES:
+    for ts_code in CANDIDATES:
         code = ts_code.split(".")[0]
         market = ts_code.split(".")[1]
         secid = ("1." if market == "SH" else "0.") + code
@@ -164,9 +171,16 @@ def fetch_eastmoney_curl_news():
 def main():
     out = {"date": TODAY, "collected_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "stocks": {}}
 
+    # 0. 数据源路由门控：OPEN = 熔断中，直接跳过该源
+    gates = {}
+    for src in ("tencent", "tushare", "eastmoney_curl"):
+        gates[src] = router.check(src)
+        print("[ROUTER] %s => %s" % (src, gates[src]))
+    out["router_gates"] = gates
+
     # 1. 腾讯行情
     print("=== 1. 腾讯行情 ===")
-    quotes = fetch_tencent_quotes()
+    quotes = {} if gates.get("tencent") == "OPEN" else fetch_tencent_quotes()
     out["quotes"] = quotes
     for sym, d in quotes.items():
         print("  %s %s 价=%s 涨跌=%s%% 开=%s 高=%s 低=%s 量比=%s" % (
@@ -174,17 +188,23 @@ def main():
 
     # 2. Tushare F2 主力资金
     print("\n=== 2. Tushare F2 主力资金 ===")
-    mf, mf_date = fetch_tushare_moneyflow()
+    if gates.get("tushare") == "OPEN":
+        mf, mf_date = {}, None
+    else:
+        mf, mf_date = fetch_tushare_moneyflow()
     out["moneyflow"] = mf
     out["moneyflow_date"] = mf_date
     for tc, d in mf.items():
         net = d.get("net_mf_amount")
-        net_str = ("%d万" % (net / 10000)) if net is not None else "N/A"
+        net_str = ("%.1f万" % net) if net is not None else "N/A"  # moneyflow 单位即万元
         print("  %s 净额=%s (date=%s)" % (tc, net_str, d.get("trade_date")))
 
     # 3. 东财新闻/公告（F3）
     print("\n=== 3. 东财公告(F3) ===")
-    news = fetch_eastmoney_curl_news()
+    if gates.get("eastmoney_curl") == "OPEN":
+        news = {}
+    else:
+        news = fetch_eastmoney_curl_news()
     out["news"] = {}
     for tc, items in news.items():
         out["news"][tc] = items[:5]
