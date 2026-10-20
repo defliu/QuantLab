@@ -19,9 +19,11 @@ with open(STRATEGY_SRC, "r", encoding="utf-8") as f:
 _mock_order_log = []
 
 class _MockPos:
-    def __init__(self, inst, vol):
+    def __init__(self, inst, vol, can_use=None, cost=0.0):
         self.m_strInstrumentID = inst
         self.m_nVolume = vol
+        self.m_nCanUseVolume = vol if can_use is None else can_use
+        self.m_dOpenPrice = cost
 
 class _MockOrder:
     def __init__(self, inst, opt_name, remark, order_id, vol_traded=0):
@@ -33,6 +35,7 @@ class _MockOrder:
 
 _mock_positions = {}  # inst -> _MockPos
 _mock_orders = []     # list of _MockOrder
+_mock_cancel_log = [] # 官方 cancel() 调用记录 (oid, acct, mtype)
 
 def _mock_passorder(*args):
     _mock_order_log.append(args)
@@ -43,6 +46,19 @@ def _mock_get_trade_detail_data(acct, mtype, dtype):
     if dtype == "order":
         return list(_mock_orders)
     return []
+
+def _mock_can_cancel_order(oid, acct, mtype):
+    """官方撤单预检（2026-10-13 _cancel_order_by 走此入口）。MOCK 恒可撤。"""
+    return True
+
+def _mock_cancel(oid, acct, mtype, C):
+    """官方撤单入口 cancel(oid, acct, 'stock', C)。
+    撤单成功后订单从委托列表消失 -> _confirm_cancelled 轮询判死透返回 True。"""
+    _mock_cancel_log.append((oid, acct, mtype))
+    oid_s = str(oid)
+    _mock_orders[:] = [o for o in _mock_orders
+                       if str(getattr(o, "m_nOrderID", "")) != oid_s]
+    return True
 
 class MockC:
     def __init__(self, ts=1723171200):
@@ -78,6 +94,8 @@ _ns = {
     "__name__": "strategy_v2_mock",
     "passorder": _mock_passorder,
     "get_trade_detail_data": _mock_get_trade_detail_data,
+    "can_cancel_order": _mock_can_cancel_order,
+    "cancel": _mock_cancel,
     "math": __import__("math"),
     "csv": __import__("csv"),
     "json": __import__("json"),
@@ -88,6 +106,12 @@ _ns = {
 }
 
 exec(compile(_src, STRATEGY_SRC, "exec"), _ns)
+
+# 遥测重定向：MOCK 测试会经由 _execute_buy/_execute_sell/handlebar 触发 _telemetry，
+# 必须把落盘路径指向临时目录，绝不可污染生产 D:/QMT_POOL 的真实经营指标产物。
+import tempfile as _tempfile
+import shutil as _shutil
+_TEL_TMPDIR = _tempfile.mkdtemp(prefix="v2_mock_tel_")
 
 def _gs(name):
     return _ns[name]
@@ -122,7 +146,14 @@ def reset_state():
     _ss("_suspended_sells", [])
     _ss("_last_pending_min", -1)
     _ss("_last_reconcile_date", "")
+    # 2b 自闭环后 STATE_FILE/LOG_FILE/LOCK_FILE/遥测路径已随文件链路废止（策略运行期零文件IO，
+    # 无生产文件可污染）；2026-10-14 P0「MOCK 覆盖生产 state」事故根因（文件落盘）已结构性消除。
+    _ss("_passive", False)
+    _ss("_passive_reason", "")
+    _ss("_g_running", False)
+    _ss("_last_heart_at", 0.0)
     _mock_order_log.clear()
+    _mock_cancel_log.clear()
     _mock_positions.clear()
     _mock_orders.clear()
 
@@ -408,10 +439,10 @@ def test_rollback_cancels_live_order():
     })
 
     _mock_order_log.clear()
+    _mock_cancel_log.clear()
     _ns["_check_pending_orders"](C)
 
-    cancel_calls = [a for a in _mock_order_log if len(a) > 0 and a[0] == 24]
-    _assert(len(cancel_calls) >= 1, "live order cancelled before rollback (passorder(24) called)")
+    _assert(len(_mock_cancel_log) >= 1, "live order cancelled before rollback (官方 cancel() 被调用)")
     _assert("688121.SH" not in _gs("_pending_orders"), "pending removed after rollback")
     _assert(_gs("_holdings").get("688121.SH") == 100, "holding restored after sell rollback")
 
@@ -511,10 +542,10 @@ def test_full_rollback_scenario():
     _mock_orders.clear()
     _mock_orders.append(_MockOrder("688121", "卖出", "V2卖出", 1004, vol_traded=0))
     _mock_order_log.clear()
+    _mock_cancel_log.clear()
     _ns["_check_pending_orders"](C)
 
-    cancel_calls = [a for a in _mock_order_log if len(a) > 0 and a[0] == 24]
-    _assert(len(cancel_calls) >= 1, "step3 回滚前已撤 QMT 活单(撤单passorder(24)被调用)")
+    _assert(len(_mock_cancel_log) >= 1, "step3 回滚前已撤 QMT 活单(官方 cancel() 被调用)")
     _assert("688121.SH" not in _gs("_pending_orders"), "step3 pending 已清理")
     _assert(_gs("_holdings").get("688121.SH") == 100, "step3 持仓已恢复")
     _assert("688121.SH" in _gs("_suspended_sells"), "step3 跌停 -> 进暂缓队列(无管理空窗)")
@@ -533,6 +564,112 @@ def test_full_rollback_scenario():
     _assert(len(_mock_order_log) == 1, "step4 补卖单已下(自动补卖)")
     _assert(_gs("_pending_orders").get("688121.SH", {}).get("type") == "sell",
             "step4 补卖进入 pending 跟踪")
+
+# ============ Test 16 ============
+def test_heartbeat_native():
+    print("\n[Test 16] _heart: 打印化心跳（遥测 json 落盘已废止）")
+    reset_state()
+    C = MockC(1723171200)  # 2024-08-09 13:20
+    C.set_price("TEST.SH", 8.0)
+    _ss("_cash", 99000.0)
+    _ss("_holdings", {"TEST.SH": 100})
+    _ss("_entry_prices", {"TEST.SH": 10.0})
+    _ss("_nav_peak", 1.0)
+    _ss("_last_heart_at", 0.0)
+    # 2b 心跳=print 通道（C++ 侧落 FormulaOutput 日志），不再写 json；
+    # 结构断言：_telemetry 已废止、_heart 可调用、节流变量在位。
+    _assert("_telemetry" not in _ns, "Test16 _telemetry 已随文件链路废止")
+    _assert(callable(_ns.get("_heart")), "Test16 _heart 心跳函数在位")
+    _assert(isinstance(_gs("_last_heart_at"), float), "Test16 心跳节流变量 _last_heart_at 在位")
+    try:
+        _ns["_heart"](C)
+        _assert(_gs("_last_heart_at") > 0, "Test16 _heart 调用后节流时间戳已更新")
+    except Exception as e_hb:
+        _assert(False, "Test16 _heart 调用异常: %r" % (e_hb,))
+
+# ============ Test 17: SNAPSHOT 空 -> 预检失败 -> 被动 ============
+def test_io_preflight_snapshot_empty():
+    print("\n[Test 17] _io_preflight: SNAPSHOT/PERIOD_LEDGER 空 -> 转被动 fail-safe")
+    reset_state()
+    _ss("SNAPSHOT", {})
+    _ss("PERIOD_LEDGER", {})
+    _ss("_passive", False)
+    _ss("_passive_reason", "")
+    ok = _ns["_io_preflight"]()
+    _assert(ok is False, "Test17 预检: 空占位块 -> False")
+    # init 路径: 预检失败 -> 被动
+    C = MockC(1723171200)
+    _ss("_inited", False)
+    _ns["init"](C)
+    _assert(_gs("_passive") is True, "Test17 init: 预检失败 -> 被动（不盲跑）")
+    _assert("预检" in _gs("_passive_reason"), "Test17 被动原因标注预检失败")
+    _assert(len(_gs("_holdings")) == 0, "Test17 被动下 holdings 保持空")
+
+# ============ Test 18: 账户接口异常 -> 预检失败 -> 被动 ============
+def test_io_preflight_position_api_broken():
+    print("\n[Test 18] _io_preflight: 账户 position 接口异常 -> 转被动 fail-safe")
+    reset_state()
+    _ss("SNAPSHOT", {"600000.SH": {}})
+    _ss("PERIOD_LEDGER", {"account_id": _gs("ACCOUNT_ID"), "cash_hint": 50000.0,
+                           "holdings": {}})
+    _ss("_passive", False)
+    _ss("_passive_reason", "")
+    # 模拟接口不可用（沙箱/断连）
+    _ns["get_trade_detail_data"] = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("api down"))
+    try:
+        ok = _ns["_io_preflight"]()
+        _assert(ok is False, "Test18 接口异常 -> 预检 False")
+        C = MockC(1723171200)
+        _ss("_inited", False)
+        _ns["init"](C)
+        _assert(_gs("_passive") is True, "Test18 init: 接口异常 -> 被动")
+    finally:
+        _ns["get_trade_detail_data"] = _mock_get_trade_detail_data
+
+# ============ Test 19: 正常路径 -> 活跃 + 期初账本重建 ============
+def test_init_normal_rebuild():
+    print("\n[Test 19] init: 正常路径 -> 活跃实例，期初账本∩账户position 重建")
+    reset_state()
+    C = MockC(1723171200)
+    C.set_price("600000.SH", 10.5)
+    C.set_price("000001.SZ", 12.0)
+    # 账户 position（L2 真相）: 600000.SH 100股@10.0；000858.SZ 200股@50.0 属他策略（不在账本白名单）
+    _mock_positions.clear()
+    _mock_positions["600000"] = _MockPos("600000.SH", 100, cost=10.0)
+    _mock_positions["000858"] = _MockPos("000858.SZ", 200, cost=50.0)
+    _ss("SNAPSHOT", {"600000.SH": {}, "000858.SZ": {}})
+    _ss("PERIOD_LEDGER", {
+        "account_id": _gs("ACCOUNT_ID"),
+        "cash_hint": 50000.0,
+        "holdings": {"600000.SH": {"vol": 100, "entry_date": "2026-10-13"},
+                     "000001.SZ": {"vol": 200, "entry_date": "2026-10-13"}},  # 000001 账户无 -> 不入账
+        "suspended_sells": ["000001.SZ"],
+        "last_rebal_month": 10,
+        "nav_peak": 1.05,
+    })
+    _ss("_inited", False)
+    _ss("_passive", False)
+    _ss("_passive_reason", "")
+    _ss("_g_running", False)
+    _mock_orders.clear()
+    _ns["init"](C)
+    _assert(_gs("_passive") is False, "Test19 正常路径 -> 活跃实例")
+    _assert(_gs("_holdings") == {"600000.SH": 100},
+            "Test19 白名单∩账户重建 holdings={600000.SH:100} 实得 %r" % _gs("_holdings"))
+    _assert(_gs("_entry_prices").get("600000.SH") == 10.0,
+            "Test19 成本=position.m_dOpenPrice=10.0 实得 %r" % _gs("_entry_prices"))
+    _assert(_gs("_cash") == 50000.0, "Test19 cash=ledger.cash_hint")
+    _assert(_gs("_suspended_sells") == ["000001.SZ"], "Test19 暂缓队列来自账本")
+    _assert(_gs("_last_rebal_month") == 10, "Test19 last_rebal_month 来自账本")
+    _assert(abs(_gs("_nav_peak") - 1.05) < 1e-9, "Test19 nav_peak 来自账本")
+    _assert("000858" not in str(list(_gs("_holdings").keys())),
+            "Test19 他策略持仓(000858)不在账本白名单 -> 不纳管（资金红线）")
+    # 账号戳不匹配 -> 被动
+    _ss("_g_running", False)
+    _ss("PERIOD_LEDGER", dict(_gs("PERIOD_LEDGER"), account_id="99999999"))
+    _ss("_inited", False)
+    _ns["init"](C)
+    _assert(_gs("_passive") is True, "Test19b 账号戳不匹配 -> 被动（拿错账本不交易）")
 
 # ============ Run ============
 if __name__ == "__main__":
@@ -554,6 +691,11 @@ if __name__ == "__main__":
     test_rollback_limitdown_enters_suspended()
     test_rollback_no_limitdown_not_suspended()
     test_full_rollback_scenario()
+    test_heartbeat_native()
+    test_io_preflight_snapshot_empty()
+    test_io_preflight_position_api_broken()
+    test_init_normal_rebuild()
+    _shutil.rmtree(_TEL_TMPDIR, ignore_errors=True)
     print("\n" + "=" * 60)
     print("Results: %d passed, %d failed" % (passed, failed))
     print("=" * 60)

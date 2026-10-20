@@ -27,10 +27,10 @@ strategies:
   - key: value_smallcap_v2
     name: "价值小盘V2(退市排雷+buffer)"
     capital_base: 100000
-    max_hold: 80
+    max_hold: 30
     account_id: "67014907"
     config_file: "config/value_smallcap_v2_config.yaml"
-    note: "纯行业中性BP+质量排雷+退市排雷+buffer160；双月调仓80只；虚拟子账户，绝不抢占他人资金/持仓。账本 D:/QMT_POOL/v2_holdings_state.json(account_id=67014907)，与同号 V1.3(Project_16) 独立互不纳管"
+    note: "纯行业中性BP+质量排雷+退市排雷+buffer160；双月调仓30只（2026-10-14 由80调至30，诚哥拍板：10万本金下单只预算1250→3333元、资金利用率56.4%→89.1%；回测N=30年化16.6%/回撤-26.5%/夏普0.65 vs N=80年化18.1%/回撤-29.7%/夏普0.71，降档代价有限且实盘可实现收益更优）；虚拟子账户，绝不抢占他人资金/持仓。账本 D:/QMT_POOL/v2_holdings_state.json(account_id=67014907)，与同号 V1.3(Project_16) 独立互不纳管"
 
   - key: huang529_breakout
     name: "黄氏529主升浪(ATR低波top16)"

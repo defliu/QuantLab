@@ -33,7 +33,7 @@ scoring:
   factors: {}               # P0-2 附加因子权重, 如 {atr_rank: 0.3, turnover_rank: 0.1}
 
 portfolio:
-  n_stocks: 80              # 持仓数量
+  n_stocks: 30              # 持仓数量 (2026-10-14: 80->30, 10万本金下单只预算1250->3333元, 资金利用率56.4%->89.1%; 回测N=30年化16.6%/回撤-26.5%/夏普0.65 vs N=80年化18.1%/回撤-29.7%/夏普0.71, 降档代价有限且实盘可实现收益更优)
   weight_method: "equal"    # 等权
   rebalance_freq: "2M"      # 双月换仓
 

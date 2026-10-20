@@ -38,7 +38,7 @@ cards = [
 ]
 cards_html = "".join(
     '<div class="card"><div class="k">%s</div><div class="v">%s</div><div class="sub">%s</div></div>'
-    % (k, v, s) for k, v, s in cards)
+    % (k, sign_span(v), s) for k, v, s in cards)
 
 # ---------- 变体对比表 ----------
 def vrow(label, st, hl=False):
@@ -79,7 +79,16 @@ years = sorted({int(y) for y in set(list(yearly["benchmark"].keys()) + list(year
 def ycell(v):
     if v is None:
         return "<td>-</td>"
-    return '<td style="color:%s">%+.1f%%</td>' % ("#3fb950" if v >= 0 else "#f85149", v)
+    # A 股配色惯例（2026-10-14 全局统一）：红涨绿跌 —— 上涨/盈利=红，下跌/亏损=绿
+    return '<td style="color:%s">%+.1f%%</td>' % ("#f85149" if v >= 0 else "#3fb950", v)
+
+def sign_span(txt):
+    # KPI 卡片数值红涨绿跌（踩坑日志 #58：净值/回撤/KPI 数字全部红涨绿跌）
+    if isinstance(txt, str) and txt[:1] == "-":
+        return '<span style="color:#3fb950">%s</span>' % txt
+    if isinstance(txt, str) and txt[:1] == "+":
+        return '<span style="color:#f85149">%s</span>' % txt
+    return txt
 year_rows = "".join(
     "<tr><td>%d</td>%s%s%s</tr>" % (y, ycell(yearly["benchmark"].get(str(y))),
                                     ycell(yearly["baseline"].get(str(y))), ycell(yearly["v23"].get(str(y))))
@@ -98,7 +107,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI','Microsoft YaHei',s
 .cards{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:22px}
 .card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:16px;text-align:center}
 .card .k{color:#8b949e;font-size:12px;margin-bottom:6px}
-.card .v{font-size:23px;font-weight:700;color:#3fb950}
+.card .v{font-size:23px;font-weight:700;color:#c9d1d9}
 .card .sub{color:#6b7785;font-size:11px;margin-top:4px}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{background:#21262d;color:#58a6ff;padding:9px 11px;text-align:left;border-bottom:2px solid #30363d}
