@@ -106,6 +106,18 @@ def reset_deal_probe(m):
     m._g_deal_err_count = 0
     m._g_deal_no_oid = False
     m._g_slippage_alert_count = 0
+    # 自闭环（2026-10-15 T-20261015-004）：_add_or_update_fill / fills 文件回写已删除，
+    # 留痕改由 _write_fill 内部 print 承担。测试改为包装 _write_fill 捕获返回的 rec，
+    # 与生产同一对象，断言语义不变（只包一次，避免重复 reset 嵌套叠加）。
+    if not hasattr(m, "_write_fill_orig"):
+        m._write_fill_orig = m._write_fill
+
+        def _capture(*a, **kw):
+            rec = m._write_fill_orig(*a, **kw)
+            m.written.append((a[1] if len(a) > 1 else "?", rec))
+            return rec
+        m._write_fill = _capture
+    m.written = []
 
 
 # ---------------------------------------------------------------- A. 可用性三态
@@ -454,8 +466,8 @@ def test_g_alert(m):
 # ---------------------------------------------------------------- H. 统一出口
 def test_h_write_fill(m):
     reset_deal_probe(m)
-    written = []
-    m._add_or_update_fill = lambda date, rec: written.append((date, rec))
+    # 自闭环：_write_fill 内部不再调 _add_or_update_fill（该函数已删除），
+    # 改用 reset_deal_probe 里安装的 _write_fill 包装捕获（m.written）。
 
     info = {
         "code": "300413.SZ",
@@ -477,6 +489,7 @@ def test_h_write_fill(m):
     rec = m._write_fill(types.SimpleNamespace(), "20261002", "s1", info,
                         "300413.SZ", "SELL", 1000, "FILLED", "sys1",
                         "deal confirmed", matched=Order(avg=9.0))
+    written = m.written
     check("H1 已写入一条", len(written) == 1, len(written))
     d, r = written[0]
     check("H1 日期一致", d == "20261002", d)
@@ -503,7 +516,6 @@ def test_h_write_fill(m):
 
     # H3 order_id 未进 order_ids 时自动补
     reset_deal_probe(m)
-    written[:] = []
     info2 = dict(info)
     info2["order_ids"] = []
     info2["order_id"] = "7777"
@@ -516,7 +528,6 @@ def test_h_write_fill(m):
 
     # H4 跳空破位时 reason 带告警尾
     reset_deal_probe(m)
-    written[:] = []
     info3 = {
         "code": "300413.SZ", "bridge_code": "300413.SZ", "action": "SELL",
         "trigger_price": 8.50, "cost_price": 10.00, "order_id": "1001",

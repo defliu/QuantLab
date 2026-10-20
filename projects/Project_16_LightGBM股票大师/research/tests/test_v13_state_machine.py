@@ -137,7 +137,19 @@ def reset(m):
     m.written = []
     m.orders = []
     m.cancels = []
-    m._add_or_update_fill = lambda date, rec: m.written.append(rec)
+    # 自闭环（2026-10-15 T-20261015-004）：V13 的 _add_or_update_fill / fills 文件回写
+    # 已删除，唯一留痕出口是 _write_fill 内部的 print。测试通过包装 _write_fill
+    # 捕获其返回的 rec（与生产同一对象），保持断言语义不变。
+    # 注意：只包装一次——重复 reset 若基于「已被包装的 _write_fill」再包一层，
+    # 一次调用会追加多条，断言（statuses == ["FILLED"] 等）会假失败。
+    if not hasattr(m, "_write_fill_orig"):
+        m._write_fill_orig = m._write_fill
+
+        def _capture(*a, **kw):
+            rec = m._write_fill_orig(*a, **kw)
+            m.written.append(rec)
+            return rec
+        m._write_fill = _capture
     m._do_passorder = lambda C, action, code, v, price, prtype=None: (
         m.orders.append((action, code, v, price)) or "retry-oid-%d" % len(m.orders))
     m._cancel_order_by_id = lambda C, code, oid, sysid: (

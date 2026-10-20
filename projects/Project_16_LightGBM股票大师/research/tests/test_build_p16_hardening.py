@@ -126,7 +126,19 @@ def main():
         _check("B_%s_tag_format" % builder_py, re.match(r"^\d{8}-\d{6}$", t) is not None, str(t))
         _check("B_%s_tag_once" % builder_py, back.count('BUILD_TAG = "%s"' % t) == 1, "tag 出现次数 != 1")
         _check("B_%s_first_line" % builder_py, back.startswith("# coding=gbk"), back.split("\n")[0])
-        _check("B_%s_linecount" % builder_py, len(back.split("\n")) == len(src_text.split("\n")), "行数不守恒")
+        # 行数守恒（T-20261020-001 修正）：G2/ENS 自 s4-5d「信号内产版」起会做
+        # `# __VENDOR__:<键>` 占位替换（模型 blob/特征/快照注入），产物行数必然 > 源码行数，
+        # 旧断言「产物行数 == 源码行数」对这些脚本恒假。V13 无 vendor 注入，保持严格守恒。
+        # 正确不变量：产物行数 ≥ 源码行数，且无 vendor 注入的脚本必须严格相等。
+        n_back = len(back.split("\n"))
+        n_src = len(src_text.split("\n"))
+        has_vendor = "__VENDOR__:" in src_text
+        if has_vendor:
+            _check("B_%s_linecount" % builder_py, n_back > n_src,
+                   "含 vendor 注入但行数未增长: out=%d src=%d" % (n_back, n_src))
+        else:
+            _check("B_%s_linecount" % builder_py, n_back == n_src,
+                   "行数不守恒: out=%d src=%d" % (n_back, n_src))
         stripped = back.replace('BUILD_TAG = "%s"' % t, "")
         _check("B_%s_placeholder_gone" % builder_py,
                re.search(r'BUILD_TAG\s*=\s*"\d{8}-\d{6}"', stripped) is None, "疑似残留旧 tag")

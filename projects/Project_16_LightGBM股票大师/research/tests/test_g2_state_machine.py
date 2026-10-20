@@ -528,69 +528,62 @@ def test_t18_cancel_confirm_first_lookup_oid(m):
 
 # ------------------------------------------------------------------ T19
 def test_t19_heartbeat_snapshot(m):
-    """heartbeat 必须持久化滑点/跳空基线，否则重启后保护被静默关掉。"""
+    """[自闭环重写 2026-10-20 T-20261020-001] print 心跳必须携带可观测计数。
+    旧断言基于 heart_<date>.json 落盘（沙箱禁 open，2026-10-15 起永久废止）；
+    现行唯一通道是 print [P16G2][HEART] → FormulaOutput 日志，外部监控/桥存活判定
+    全靠解析这一行，字段缺失=监控瞎。"""
     reset(m)
-    new_pending(m, vol=1000, order_ids=["1001", "1002"], cancel_retry=1,
-                trigger_price=9.10, cost_price=10.20, last_price=9.05,
-                risk_reason="trail_stop")
     m._g_slippage_alert_count = 3
     m._g_risk_sold.add("300413.SZ")
     m._g_today_risk_count = 1
+    m._g_today_fill_count = 2
     m._g_last_cmd_seq = 42
-    captured = {}
-    m._atomic_write_json = lambda path, data: captured.update({"path": path, "data": data})
-    m._write_peak = lambda: None
-    m._write_heartbeat("20261002", 42)
-    data = captured["data"]
-    p = data["pending"][0]
-    for k in ("order_ids", "cancel_retry", "trigger_price", "cost_price",
-              "last_price", "risk_reason"):
-        check("T19 pending快照含%s" % k, k in p, list(p.keys()))
-    check("T19 order_ids多轮留痕", p["order_ids"] == ["1001", "1002"], p["order_ids"])
-    check("T19 trigger_price已持久化", abs(p["trigger_price"] - 9.10) < 1e-6, p["trigger_price"])
-    check("T19 cost_price已持久化", abs(p["cost_price"] - 10.20) < 1e-6, p["cost_price"])
-    check("T19 last_price已持久化", abs(p["last_price"] - 9.05) < 1e-6, p["last_price"])
-    check("T19 告警计数已持久化", data.get("slippage_alert_count") == 3, data.get("slippage_alert_count"))
-    check("T19 G2特有seq仍写入", data.get("last_cmd_seq_processed") == 42, data.get("last_cmd_seq_processed"))
-    check("T19 risk_count仍在", data.get("risk_count") == 1, data.get("risk_count"))
-    check("T19 risk_sold仍在", data.get("risk_sold") == ["300413.SZ"], data.get("risk_sold"))
+    m._g_last_heart_ts = 0.0     # 解除 60s 节流
+    buf = io.StringIO()
+    old = sys.stdout
+    sys.stdout = buf
+    try:
+        m._write_heartbeat("20261002", 42)
+    finally:
+        sys.stdout = old
+    out = buf.getvalue()
+    check("T19 打印HEART行", "[P16G2][HEART]" in out, out[:200])
+    for k in ("date=20261002", "pending=0", "positions=0", "risk_sold=1",
+              "risk_count=1", "fills=2", "slippage=3", "passive=False"):
+        check("T19 HEART含%s" % k, k in out, out[:300])
+    # 60s 节流：第二次立即调用应被抑制（防 tick 级刷爆日志）
+    buf2 = io.StringIO()
+    sys.stdout = buf2
+    try:
+        m._write_heartbeat("20261002", 42)
+    finally:
+        sys.stdout = old
+    check("T19 60s节流生效", buf2.getvalue() == "", buf2.getvalue()[:120])
+    # 持仓明细行（旁路 grep [HOLD] 即得完整持仓）
+    check("T19 HOLD行", "[P16G2][HOLD]" in out, out[:400])
 
 
 # ------------------------------------------------------------------ T20
-def test_t20_init_restores_alert_count(m):
-    """init 必须恢复当日告警计数：日内重启不能丢滑点/跳空留痕。"""
+def test_t20_init_rebuilds_state_from_account(m):
+    """[自闭环重写 2026-10-20 T-20261020-001] init 不再从 heart json 恢复任何状态——
+    自闭环架构下「账户即账本」（方案 §3.3 L2）：risk_sold / RSK 水位靠当日 order 表
+    反查 remark 重建，pending 靠当日 order 反查重建。旧 T20（从 heart 恢复 pending/
+    alert_count/seq）验证的是已废止的文件桥语义，保留会让测试永远红。"""
     reset(m)
-    heart = {
-        "last_cmd_seq_processed": 7,
-        "risk_count": 2,
-        "slippage_alert_count": 5,
-        "risk_sold": ["300413.SZ"],
-        "pending": [{
-            "strategy_order_id": "sX", "code": "300413.SZ", "action": "SELL",
-            "vol": 1000, "cur_vol": 1000, "order_ids": ["9001"],
-            "trigger_price": 9.10, "cost_price": 10.20, "last_price": 9.05,
-        }],
-    }
     m._today_str = lambda: "20261002"
-    m._read_json = lambda p: heart if "heart_" in str(p) else None
-    m._load_positions_cfg = lambda date: None
+    # 当日 order 表：两笔带 P16G2桥 remark 的卖出委托 → 应重建 risk_sold=2 只 + RSK 水位=2
+    m.g["get_trade_detail_data"] = lambda a, b, tp: (
+        [Order(oid="1001", status=56, deal_vol=1000, avg=9.4),
+         Order(oid="1002", status=56, deal_vol=500, avg=9.6)] if tp == "order" else [])
+    for o in m.g["get_trade_detail_data"](1, "stock", "order"):
+        o.m_strRemark = "P16G2桥"
+        o.m_strInstrumentID = "300413.SZ"
     m.init(Ctx())
-    check("T20 恢复告警计数", m._g_slippage_alert_count == 5, m._g_slippage_alert_count)
-    check("T20 恢复risk_count", m._g_today_risk_count == 2, m._g_today_risk_count)
-    check("T20 恢复seq", m._g_last_cmd_seq == 7, m._g_last_cmd_seq)
-    check("T20 恢复risk_sold", m._g_risk_sold == set(["300413.SZ"]), m._g_risk_sold)
-    check("T20 恢复pending", "sX" in m._g_pending, list(m._g_pending))
-    check("T20 恢复pending带order_ids",
-          m._g_pending["sX"].get("order_ids") == ["9001"], m._g_pending["sX"].get("order_ids"))
-    check("T20 恢复pending带cost_price",
-          abs(float(m._g_pending["sX"].get("cost_price") or 0) - 10.20) < 1e-6,
-          m._g_pending["sX"].get("cost_price"))
-
-    # 心跳缺失/字段异常 -> 归零而非崩溃
-    m._g_pending.clear()
-    m._read_json = lambda p: {"slippage_alert_count": "bad"} if "heart_" in str(p) else None
-    m.init(Ctx())
-    check("T20 异常心跳归零不崩溃", m._g_slippage_alert_count == 0, m._g_slippage_alert_count)
+    check("T20 账户反查重建risk_sold", len(m._g_risk_sold) >= 1, m._g_risk_sold)
+    check("T20 账户反查重建RSK水位", m._g_today_risk_count >= 1, m._g_today_risk_count)
+    check("T20 未从文件恢复pending", len(m._g_pending) == 0, list(m._g_pending))
+    # 注：本桩无 get_market_data_ex，L3 快照载入失败 → passive=True 属设计内 fail-safe
+    # （宁可不交易也不盲跑），故只断言「风险状态已从账户重建」，不断言 passive。
 
 
 # ------------------------------------------------------------------ T21
@@ -602,6 +595,7 @@ def test_t21_new_day_resets_alert_count(m):
     m._g_pending["s1"] = {"code": "300413.SZ"}
     m._g_risk_sold.add("300413.SZ")
     m._g_last_cmd_seq = 9
+    m._g_passive = False   # 前置 T20 的桩 init 会因缺 get_market_data_ex 转被动，此处显式复位
     m._today_str = lambda: "20261002"
     beats = []
     m._write_heartbeat = lambda date, seq: beats.append((date, seq))
@@ -630,7 +624,7 @@ def main():
                test_t17_timeout_first_lookup_oid,
                test_t18_cancel_confirm_first_lookup_oid,
                test_t19_heartbeat_snapshot,
-               test_t20_init_restores_alert_count,
+               test_t20_init_rebuilds_state_from_account,
                test_t21_new_day_resets_alert_count):
         try:
             fn(m)

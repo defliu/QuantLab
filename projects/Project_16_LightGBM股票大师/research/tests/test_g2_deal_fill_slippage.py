@@ -109,7 +109,9 @@ def reset(m):
     m._g_deal_no_oid = False
     m._g_slippage_alert_count = 0
     m.written = []
-    # 拦截统一出口：本组测试只验协议字段，不落盘
+    # 拦截统一出口：本组测试只验协议字段，不落盘。
+    # 自闭环（2026-10-20 T-20261020-001）：_write_fill 内部同时 print [P16G2][FILL] 并调
+    # _add_or_update_fill；此处只拦落盘入口，print 照常（正是新增的可观测通道）。
     m._add_or_update_fill = lambda date, rec: m.written.append(rec)
 
 

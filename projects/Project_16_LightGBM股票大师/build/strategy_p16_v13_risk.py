@@ -1,31 +1,44 @@
 # coding=gbk
 """
-V1.3 QMT 内置风控策略（Python 3.6.8 单文件源码）· 裁剪自 g2 桥风控模块
+V13 纯风控自闭环版（Python 3.6.8 单文件源码）· QMT 沙箱合规改造 2026-10-15
 
-职责：仅做止损/止盈/追盈的风控卖出（tick 级），不管理换仓（换仓由外部 rebalance_daily.py 负责）。
-数据流：
-    外部(选股/换仓, Python3.10)                内置风控(大QMT, Python3.6)
-            | 写 cmd/positions_cfg_v13_<date>.json  -->  成本锚（FIFO 含费成本，外部生成）
-            | <-- 写 state/fills_v13_<date>.json    委托/成交/失败回写（外部 reconcile 并入 qmt_trade_log）
-            | <-- 写 state/heart_v13_<date>.json    心跳+防重复标记
-            | <-- 写 state/peak_v13.json            追盈历史最高价（跨日延续）
+职责：仅做止损/止盈/追盈的风控卖出（tick 级），不管理换仓（换仓由外部 rebalance 负责）。
+本版为零文件读写自闭环：QMT 沙箱（m_nPythonOpFile=1）下策略 open() 已存在文件一律被拒，
+positions_cfg / peak_v13.json / heart / fills 文件桥架构自 2026-10-15 起永久废止
+（AGENTS.md「QMT 策略模式长期架构红线」+ specs/QMT沙箱自闭环改造方案_20261015.md §4.1）。
+状态三层模型（方案 §3.1）：
+    L1 会话内存   全局变量：pending 委托、追盈峰值、当日风控计数（重启丢失，由 L2+L3 重建）
+    L2 账户即账本 get_trade_detail_data：position（成本锚=m_dOpenPrice，持仓唯一真相）+
+                  当日 order（remark 反查重建 risk_sold 去重 + RSK 序号水位）
+    L3 期初快照   源码硬编码字面量：V13_CODES（持仓归属白名单）+ PEAK_SNAPSHOT（追盈峰值），
+                  人工粘贴部署时更新；白名单外持仓绝不触碰（资金红线）
+日志一律 print（C++ 侧落 XtClient_FormulaOutput 日志，不受沙箱限制）；
+监控 = 沙箱外 schtasks 旁路 grep 日志关键行（策略进程零外部交互，方案 §3.4）。
 追盈语义为 2026-09-07 修复版（T-20260907-002）：激活阈值+8% + 保本底线 + T+1 不评估不并峰。
+风控逻辑与文件桥版零改动：三规则阈值、pending 管理（300s/3次重试）、状态码口径、
+passorder 调用全部保留；仅状态数据源从「文件」替换为「账户即账本 + 源码快照」。
 """
-import json
-import os
 import time
 import traceback
 
 # ============================================================
 # 常量
 # ============================================================
-BUILD_TAG = "20261002-193451"
-
-BRIDGE_DIR = "D:/QMT_POOL/p16_v13_risk"
-CMD_DIR = os.path.join(BRIDGE_DIR, "cmd")
-STATE_DIR = os.path.join(BRIDGE_DIR, "state")
+BUILD_TAG = "20261020-163502"
 
 ACCOUNT_ID = "67014907"
+
+# ---- L3 期初快照（源码硬编码字面量，人工粘贴部署时更新；op 部署前必填） ----
+# 持仓归属白名单：V13 实际持仓代码，支持 '600522.SH' / 'SH.600522' / '600522' 格式。
+# 账号 67014907 上 V13 与 V2 共存，白名单用于圈定 V13 纳管范围：
+#   白名单 ∩ 账户 position = 纳管集；白名单外的持仓绝不触碰（资金分配红线）。
+# 白名单为空 = 部署未填 = 完全被动模式（不评估不下单）。
+V13_CODES = ("301536.SZ",)
+
+# 追盈历史峰值快照（跨日延续，T-20260910 只升不降语义）：
+#   {代码: 峰值}，代码格式同 V13_CODES；快照缺失的票运行中以当日 high 重锚（偏保守，方案 §5.6）。
+# 2026-10-15 peak_v13.json 实测 peaks={}（追盈未激活）→ 留空，运行中走成本底+当日重锚即可。
+PEAK_SNAPSHOT = {}
 
 # passorder 常量（对齐 ATR 战备模板：prType=5最新价，第8参=remark对账标识，第9参=2，第11参=C）
 OP_BUY = 23
@@ -66,7 +79,7 @@ LOOKUP_RETRIES = 6
 LOOKUP_INTERVAL = 0.25
 
 # ============================================================
-# 全局状态
+# 全局状态（L1 会话内存；quickTrade=2 官方要求委托状态存全局变量，不存 ContextInfo）
 # ============================================================
 _g_pending = {}
 _g_today = ""
@@ -76,8 +89,11 @@ _g_today_abandon_count = 0
 _g_today_risk_count = 0
 _g_positions = {}
 _g_risk_sold = set()
-_g_last_cfg_load = 0.0   # 孤儿自校准节流（cost=0 持仓重读当日成本表的时间戳，T-20260908）
-_g_cfg_fallback_logged = False   # 成本表回退提示只打一次（T-20260910）
+_g_passive = False          # 被动模式：True 时 handlebar 顶部直接 return（绝不「活跃+状态缺失」盲跑）
+_g_whitelist = set()        # V13_CODES 归一化缓存（QMT 代码格式，init 重建）
+_g_peak_snap = {}           # PEAK_SNAPSHOT 归一化缓存（QMT 代码格式，init 重建）
+_g_last_heart_ts = 0.0      # print 心跳节流（60秒，tick 级 handlebar 全量打印会刷爆日志）
+_g_last_passive_ts = 0.0    # 被动模式心跳节流（300秒）
 _g_diag_printed = False
 _g_deal_ok = None   # deal 明细接口可用性探测缓存：None=未探测 True=可用 False=不可用（降级只用订单对象价）
 _g_deal_err_count = 0   # deal 接口连续异常计数（达 DEAL_QUERY_MAX_ERR 才永久降级，单次异常可能只是瞬时抖动）
@@ -88,40 +104,6 @@ _g_slippage_alert_count = 0   # 当日不利滑点/跳空超限次数（日终日志留痕）
 # ============================================================
 # 工具函数
 # ============================================================
-def _atomic_write_json(path, data):
-    """临时文件 + rename，避免内置桥读到半个 JSON。
-    2026-09-01 教训：外部进程（监控轮询 Get-Content）短暂持有目标文件时 os.replace 会抛
-    PermissionError(WinError 5) → 必须重试（最多 5 次×0.2s），且调用方需 try/except 兜底防崩溃。
-    2026-09-09 教训：目标父目录(state/)缺失时 open(tmp) 抛 FileNotFoundError，写前先确保目录存在（自愈）。
-    """
-    d = os.path.dirname(path)
-    if d:
-        try:
-            os.makedirs(d, exist_ok=True)
-        except Exception:
-            pass
-    tmp = path + ".tmp"
-    for attempt in range(5):
-        try:
-            with open(tmp, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
-            os.replace(tmp, path)
-            return
-        except OSError as e:
-            if attempt < 4:
-                time.sleep(0.2)
-                continue
-            raise e
-
-
-def _read_json(path):
-    try:
-        with open(path, encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return None
-
-
 def _today_str():
     return time.strftime("%Y%m%d")
 
@@ -145,8 +127,40 @@ def _to_qmt_code(code):
     return None
 
 
+def _to_qmt_code_any(code):
+    """L3 快照代码归一化：'600522.SH' / 'SH.600522' / '600522' 均转 QMT 代码 '600522.SH'。
+    裸数字按 6 开头=SH、0/3 开头=SZ 补后缀（与 _check_risk_signals 持仓代码补后缀口径一致）；
+    无法归一化返回 None（调用方打印 WARN，不猜）。"""
+    c = str(code or "").strip()
+    if not c:
+        return None
+    num = ""
+    ex = ""
+    parts = c.split(".")
+    if len(parts) == 2:
+        a, b = parts[0], parts[1]
+        if b in ("SH", "SZ"):
+            num, ex = a, b
+        elif a in ("SH", "SZ"):
+            num, ex = b, a
+    elif len(parts) == 1:
+        num, ex = c, ""
+    if num and not ex:
+        if num.startswith("6"):
+            ex = "SH"
+        elif num.startswith("0") or num.startswith("3"):
+            ex = "SZ"
+    if not num or not ex:
+        return None
+    if ex == "SH" and (num.startswith("6") or num.startswith("688")):
+        return "%s.SH" % num
+    if ex == "SZ" and (num.startswith("0") or num.startswith("3")):
+        return "%s.SZ" % num
+    return None
+
+
 def _to_bridge_code(code):
-    """QMT代码(SH.600522) 转回桥协议代码(600522.SH)，供 fills 回写外部对账。"""
+    """QMT代码(SH.600522) 转回桥协议代码(600522.SH)，供日志/记录对账展示。"""
     if "." in code:
         ex, num = code.split(".", 1)
         if ex == "SH" and num.startswith("6"):
@@ -164,98 +178,6 @@ def _norm_code(code):
     if "." in c:
         return c.split(".")[0]
     return c
-
-
-def _valid_bridge_code(code):
-    """桥协议代码是否可转为QMT代码。"""
-    parts = code.split(".")
-    if len(parts) != 2:
-        return False
-    num, ex = parts[0], parts[1]
-    if ex == "SH" and (num.startswith("6") or num.startswith("688")):
-        return True
-    if ex == "SZ" and (num.startswith("0") or num.startswith("3")):
-        return True
-    return False
-
-
-def _fills_path(date):
-    return os.path.join(STATE_DIR, "fills_v13_%s.json" % date)
-
-
-def _heart_path(date):
-    return os.path.join(STATE_DIR, "heart_v13_%s.json" % date)
-
-
-def _positions_cfg_path(date):
-    return os.path.join(CMD_DIR, "positions_cfg_v13_%s.json" % date)
-
-
-def _find_latest_cfg():
-    """扫描 cmd 目录找最近一份 positions_cfg_v13_*.json（按文件名日期倒序，T-20260910）。"""
-    try:
-        names = [n for n in os.listdir(CMD_DIR)
-                 if n.startswith("positions_cfg_v13_") and n.endswith(".json")]
-        if not names:
-            return None
-        names.sort(reverse=True)
-        return _read_json(os.path.join(CMD_DIR, names[0]))
-    except Exception:
-        return None
-
-
-def _load_positions_cfg(date):
-    """优先读当日成本表；缺失/账号不符时回退最近一份历史表（T-20260910 兜底）。
-    背景：成本表由外部任务生成，若当日表尚未生成（定时任务缺失/延迟）→ 孤儿校准打空 →
-    cost=0 风控全天静默（peak_v13.json=0.0）。持仓未变时历史成本仍有效，回退可恢复风控。
-    回退提示每个进程只打一次，避免刷屏。"""
-    global _g_cfg_fallback_logged
-    cfg = _read_json(_positions_cfg_path(date))
-    if cfg and str(cfg.get("account_id", "") or "") == ACCOUNT_ID:
-        return cfg
-    fb = _find_latest_cfg()
-    if fb and str(fb.get("account_id", "") or "") == ACCOUNT_ID:
-        if not _g_cfg_fallback_logged:
-            _g_cfg_fallback_logged = True
-            print("[P16V13][CFG-FALLBACK] 当日成本表缺失，回退最近表 date=%s（持仓未变时成本仍有效）"
-                  % str(fb.get("date", "")))
-        return fb
-    return None
-
-
-def _peak_path():
-    return os.path.join(STATE_DIR, "peak_v13.json")
-
-
-# ============================================================
-# fills 回写
-# ============================================================
-def _read_fills(date):
-    return _read_json(_fills_path(date)) or {"account_id": ACCOUNT_ID, "date": date, "updated_at": "", "fills": []}
-
-
-def _write_fills(date, fills_data):
-    fills_data["account_id"] = ACCOUNT_ID
-    fills_data["date"] = date
-    fills_data["updated_at"] = _now_str()
-    _atomic_write_json(_fills_path(date), fills_data)
-
-
-def _add_or_update_fill(date, fill_info):
-    """向fills中追加或更新一条记录。同一strategy_order_id只保留最新状态。"""
-    data = _read_fills(date)
-    existing = None
-    for i, f in enumerate(data.get("fills", [])):
-        if f.get("strategy_order_id") == fill_info.get("strategy_order_id"):
-            existing = i
-            break
-    if existing is not None:
-        data["fills"][existing] = fill_info
-    else:
-        if "fills" not in data:
-            data["fills"] = []
-        data["fills"].append(fill_info)
-    _write_fills(date, data)
 
 
 # ============================================================
@@ -432,7 +354,7 @@ def _resolve_fill_avg(C, code, oids, expect_vol):
 
 def _order_obj_price(matched):
     """从订单对象取价格（多字段兜底）。注意：m_dPrice 语义未实测（可能是委托价而非成交均价），
-    因此这里的取值只作为 deal 明细不可用时的次级降级，且会在 fills 里标注 px_source。"""
+    因此这里的取值只作为 deal 明细不可用时的次级降级，且会在留痕里标注 px_source。"""
     if matched is None:
         return 0.0
     for attr in ("m_dAvgPrice", "m_dPrice"):
@@ -457,7 +379,7 @@ def _adverse_slippage(action, ref_price, fill_price):
 
 def _resolve_px(C, code, action, oids, expect_vol, matched, ref_price):
     """统一成交价协议：fill_avg(真实成交均价) → order_obj(订单对象价) → ref_price(触发/最新价)。
-    返回 (price, px_source, adverse_slip)。price 恒 > 0 时才可被 fills 消费方记账。"""
+    返回 (price, px_source, adverse_slip)。price 恒 > 0 时才可被留痕消费方记账。"""
     avg = _resolve_fill_avg(C, code, oids, expect_vol)
     if avg > 0:
         return avg, "fill_avg", _adverse_slippage(action, ref_price, avg)
@@ -483,7 +405,7 @@ def _gap_pct(cost_price, trigger_price):
 
 def _slippage_alert(sid, code, action, px_source, ref_price, fill_price, adverse, gap=0.0):
     """不利滑点 / 跳空破位告警：**只告警留痕，绝不拦单**（卖出风控优先级高于一切优化）。
-    返回可写入 fills 的告警文本（空串=正常）。
+    返回可追加到留痕尾部的告警文本（空串=正常）。
     注意 %-格式化与 * 的优先级：必须写成 "%s" % (adverse * 100)，写成 "%s" % adverse * 100
     会先格式化再重复 100 次（2026-10-02 修复）。"""
     global _g_slippage_alert_count
@@ -534,11 +456,11 @@ def _acc_order_id(info, oid):
 
 def _write_fill(C, date, sid, info, code, action, vol, status, sysid, reason,
                 matched=None, extra=None):
-    """统一写 fills 收尾记录（成交价协议 + 跳空/滑点留痕的唯一出口）。
+    """统一成交收尾留痕（成交价协议 + 跳空/滑点留痕的唯一出口，print 通道）。
     价源优先级：deal明细真实均价(fill_avg) → 订单对象价(order_obj) → 触发/参考价(ref_price)。
     参考价=触发时现价（_resolve_px 传入 info['trigger_price']），滑点基准必须用它而非委托价，
     否则市价单的「委托价=触发价」会把真实跳空亏损算成 0 滑点（掩盖问题）。
-    返回写入记录的 dict（调用方可继续打日志）。"""
+    返回记录 dict（调用方可继续打日志）。"""
     ref_price = float(info.get("trigger_price", 0) or info.get("price", 0) or 0)
     oids = list(info.get("order_ids", []))
     oid_now = info.get("order_id", "")
@@ -567,7 +489,10 @@ def _write_fill(C, date, sid, info, code, action, vol, status, sysid, reason,
     }
     if extra:
         rec.update(extra)
-    _add_or_update_fill(date, rec)
+    # 自闭环版：fills 文件回写已废止（沙箱禁 open），统一 print 留痕（C++ 侧落 FormulaOutput 日志）
+    print("[P16V13][FILL] %s %s %s %s vol=%d px=%.4f src=%s status=%s ref=%.3f slip=%.2f%% gap=%.2f%% retry=%d oids=%s | %s" % (
+        date, sid, info.get("bridge_code", code), action, vol, price, px_source, status,
+        ref_price, adverse * 100, gap * 100, rec.get("retry", 0), ",".join(oids), reason))
     return rec
 
 
@@ -838,7 +763,7 @@ def _handle_cancel_confirm(C, date, sid, info, now):
     """撤单已发后确认终态（2026-09-01 实锤定稿）。
     已成(status56/deal>=cur_vol)→FILLED；已撤(53/54)→CANCELED；废单(55/57)→REJECTED；
     仍活跃→撤单未生效，保留 pending + 90s 重发（绝不假写 CANCELED，fail-loud）；
-    查不到订单→状态未知，写 UNCONFIRMED（外部以 positions 兜底，绝不写假 CANCELED）。"""
+    查不到订单→状态未知，写 UNCONFIRMED（绝不写假 CANCELED）。"""
     global _g_today_fill_count
     code = info["code"]
     action = info["action"]
@@ -888,11 +813,11 @@ def _handle_cancel_confirm(C, date, sid, info, now):
             _cancel_order_by_id(C, code, _extract_order_id(m) or info.get("order_id", ""), info.get("sysid", ""))
             print("[P16V13][CANCEL-RETRY] %s %s 重发撤单 %d/2" % (sid, code, info["cancel_retry"]))
         return
-    # m is None：查不到订单（可能已撤/已成交/列表过期）→ UNCONFIRMED，外部以 positions 兜底
-    print("[P16V13][CANCEL-UNKNOWN] %s %s 撤单后订单查不到，状态未知，写UNCONFIRMED（外部以positions兜底）" % (sid, code))
+    # m is None：查不到订单（可能已撤/已成交/列表过期）→ UNCONFIRMED（绝不写假终态）
+    print("[P16V13][CANCEL-UNKNOWN] %s %s 撤单后订单查不到，状态未知，写UNCONFIRMED" % (sid, code))
     _write_fill(C, date, sid, info, code, action, filled_so_far, "UNCONFIRMED",
                 info.get("sysid", ""),
-                "cancel state unknown (may be canceled or filled), rely on positions")
+                "cancel state unknown (may be canceled or filled)")
     _g_pending.pop(sid, None)
 
 
@@ -967,7 +892,7 @@ def _check_pending_orders(C, date):
                         matched=matched)
             _g_pending.pop(sid, None)
             continue
-        # 1d) 有成交未满 → PARTIAL_FILLED 进度回写（filled_so_far不变，deal_vol是累计值）
+        # 1d) 有成交未满 → PARTIAL_FILLED 进度留痕（filled_so_far不变，deal_vol是累计值）
         # 注意：部成也必须走超时判断（否则停滞单永不撤/永不重报，挂到日终被 NEW-DAY 清掉）
         if deal_vol > 0:
             print("[P16V13][PARTIAL] %s %s deal=%d/%d" % (sid, code, total_deal, vol))
@@ -989,62 +914,14 @@ def _check_pending_orders(C, date):
 
 
 # ============================================================
-# 内置实时风控（自 qmt_monitor.py 迁移：止损/止盈/追盈，纯行情驱动）
+# 内置实时风控（止损/止盈/追盈，纯行情驱动；逻辑与文件桥版零改动，仅数据源替换）
 # ============================================================
-def _write_peak():
-    """持久化追盈历史最高价（跨日延续，重启不丢）。"""
-    try:
-        data = {"account_id": ACCOUNT_ID, "updated_at": _now_str(),
-                "peaks": {c: round(float(v.get("peak", 0.0) or 0.0), 4) for c, v in _g_positions.items()}}
-        _atomic_write_json(_peak_path(), data)
-    except Exception:
-        pass
-
-
-def _reload_positions_cfg(date):
-    """孤儿持仓自校准（T-20260908，防部署时序缺陷）：
-    成本表 positions_cfg_v13_<date>.json 若晚于策略 init 生成，孤儿持仓 cost=0 会被 _check_risk_signals 跳过、
-    风控静默失效（peak=0.0 即症状）。存在孤儿时重读当日成本表填充 cost/peak。
-    节流：距上次读取 <30 秒不重复读文件。"""
-    global _g_last_cfg_load
-    has_orphan = False
-    for info in _g_positions.values():
-        if info.get("cost", 0) <= 0:
-            has_orphan = True
-            break
-    if not has_orphan:
-        return
-    now = time.time()
-    if now - _g_last_cfg_load < 30:
-        return
-    _g_last_cfg_load = now
-    cfg = _load_positions_cfg(date)
-    if not cfg:
-        return
-    for p in cfg.get("positions", []):
-        try:
-            bcode = str(p.get("code", "") or "")
-            cost = float(p.get("cost", 0) or 0)
-            if not bcode or cost <= 0:
-                continue
-            qcode = _to_qmt_code(bcode) or bcode
-            info = _g_positions.get(qcode)
-            if info is not None and info.get("cost", 0) <= 0:
-                info["cost"] = cost
-                if not info.get("vol"):
-                    info["vol"] = int(p.get("vol", 0) or 0)
-                if not info.get("peak", 0) or info.get("peak", 0) <= 0:
-                    info["peak"] = cost
-                print("[P16V13][CFG-RELOAD] %s 孤儿校准 cost=%.4f vol=%d" % (qcode, cost, info.get("vol", 0)))
-        except Exception:
-            pass
-
-
 def _check_risk_signals(C, date):
-    """内置实时风控：账户持仓全量纳管（防孤儿）→ get_full_tick → 三规则判断 → 触发即卖出走pending。
-    成本锚=外部成本表(positions_cfg)；峰值=state/peak.json 持久化。"""
+    """内置实时风控（自闭环版）：白名单∩账户position纳管（成本锚=position.m_dOpenPrice，逐tick自愈）
+    → get_full_tick → 三规则判断 → 触发即卖出走pending。
+    白名单外持仓绝不纳管绝不触碰（资金红线）；持仓消失自动出管。"""
     global _g_today_risk_count
-    # 1) 账户持仓全量纳管（AGENTS 红线：孤儿持仓=止损永不触发，必须纳管）
+    # 1) 账户持仓纳管（白名单过滤：白名单外持仓绝不触碰——资金分配红线）
     f_get = globals().get("get_trade_detail_data")
     if f_get is None:
         f_get = getattr(C, "get_trade_detail_data", None)
@@ -1063,17 +940,36 @@ def _check_risk_signals(C, date):
                         code = "%s.SH" % code
                     else:
                         code = "%s.SZ" % code
+                if code not in _g_whitelist:
+                    continue
                 vol = int(getattr(p, "m_nVolume", 0) or 0)
                 can_use = int(getattr(p, "m_nCanUseVolume", 0) or 0)
-                if vol > 0:
-                    acct_pos[code] = {"vol": vol, "can_use": can_use}
+                if vol <= 0:
+                    continue
+                cost = 0.0
+                for attr in ("m_dOpenPrice", "m_dCostPrice", "m_dPrice"):
+                    v = float(getattr(p, attr, 0) or 0)
+                    if v > 0:
+                        cost = v
+                        break
+                acct_pos[code] = {"vol": vol, "can_use": can_use, "cost": cost}
         for code, info in acct_pos.items():
             if code in _g_positions:
                 _g_positions[code]["vol"] = info["vol"]
                 _g_positions[code]["can_use"] = info["can_use"]
+                # 成本锚自愈：position 成本价逐tick刷新（外部换仓/成本变化自动跟进；取不到不覆盖）
+                if info["cost"] > 0:
+                    _g_positions[code]["cost"] = info["cost"]
             else:
-                # 孤儿持仓：成本未知不触发（避免误杀），但纳管待外部成本表校准
-                _g_positions[code] = {"cost": 0.0, "vol": info["vol"], "can_use": info["can_use"], "peak": 0.0}
+                # 白名单内新持仓（外部换仓买入等）：入账；峰值=快照或成本底，运行中 tick high 重锚
+                snap_peak = float(_g_peak_snap.get(code, 0) or 0)
+                peak0 = info["cost"] if info["cost"] > 0 else 0.0
+                if snap_peak > peak0:
+                    peak0 = snap_peak
+                _g_positions[code] = {"cost": info["cost"], "vol": info["vol"],
+                                      "can_use": info["can_use"], "peak": peak0}
+                print("[P16V13][POS-NEW] %s 入账 cost=%.4f vol=%d can_use=%d peak=%.4f（白名单内新持仓）" % (
+                    code, info["cost"], info["vol"], info["can_use"], peak0))
         for code in list(_g_positions.keys()):
             if code not in acct_pos:
                 _g_positions.pop(code, None)
@@ -1081,11 +977,6 @@ def _check_risk_signals(C, date):
     except Exception as e:
         print("[P16V13][RISK-POS-ERR] %s" % e)
         return
-    # 孤儿自校准（T-20260908）：cost=0 持仓重读当日成本表，防"成本表晚于init生成→风控静默失效"
-    try:
-        _reload_positions_cfg(date)
-    except Exception:
-        print("[P16V13][RISK-CFG-ERR] %s" % traceback.format_exc())
     if not _g_positions:
         return
     # 2) 逐持仓评估（三规则照搬 qmt_monitor.evaluate）
@@ -1151,7 +1042,7 @@ def _check_risk_signals(C, date):
             "filled_so_far": 0,
             "price": last,
             # 滑点/跳空基线（T-20261002）：trigger_price=触发时现价（滑点基准，市价单委托价=触发价，
-            # 用委托价会把真实跳空亏损算成 0 滑点从而掩盖问题）；cost_price=含费成本（跳空基准）。
+            # 用委托价会把真实跳空亏损算成 0 滑点从而掩盖问题）；cost_price=持仓成本（跳空基准）。
             # 注意：止损/止盈/追盈三种触发都要留 cost_price，否则跳空幅度无法计算。
             "trigger_price": last,
             "cost_price": cost,
@@ -1164,147 +1055,181 @@ def _check_risk_signals(C, date):
             "status": "PENDING",
             "risk_reason": action,
         }
-        # 立即回写一条 RISK 触发记录，外部可实时感知（后续 FILLED/CANCELED 覆盖同 sid）
-        _add_or_update_fill(date, {
-            "strategy_order_id": sid,
-            "code": _to_bridge_code(code),
-            "action": "SELL",
-            "vol": can_use,
-            "price": last,
-            "status": "RISK_%s" % action,
-            "sysid": "",
-            "reason": note,
-            "ts": _now_str(),
-        })
 
 
 # ============================================================
-# 心跳
+# 状态重建（L2 账户即账本 + L3 源码快照，方案 §4.1）
 # ============================================================
-def _write_heartbeat(date):
-    """写心跳文件（含pending快照，供重启恢复孤儿单）。"""
-    pendings = []
-    for sid in _g_pending.keys():
-        info = _g_pending[sid]
-        pendings.append({
-            "strategy_order_id": sid,
-            "code": info.get("code", ""),
-            "bridge_code": info.get("bridge_code", ""),
-            "action": info.get("action", ""),
-            "vol": info.get("vol", 0),
-            "cur_vol": info.get("cur_vol", info.get("vol", 0)),
-            "filled_so_far": info.get("filled_so_far", 0),
-            "price": info.get("price", 0),
-            "time": info.get("time", time.time()),
-            "retry": info.get("retry", 0),
-            "order_id": info.get("order_id", ""),
-            "order_ids": info.get("order_ids", []),
-            "sysid": info.get("sysid", ""),
-            "status": info.get("status", "PENDING"),
-            "cancel_requested": info.get("cancel_requested", False),
-            "cancel_retry": info.get("cancel_retry", 0),
-            # 滑点/跳空基线必须持久化（T-20261002）：重启后若丢失，_write_fill 会拿不到
-            # trigger_price/cost_price → 滑点恒算 0、跳空无法归因，等于把保护静默关掉。
-            "trigger_price": info.get("trigger_price", info.get("price", 0)),
-            "cost_price": info.get("cost_price", 0.0),
-            "last_price": info.get("last_price", info.get("price", 0)),
-            "risk_reason": info.get("risk_reason", ""),
-        })
-    data = {
-        "account_id": ACCOUNT_ID,
-        "date": date,
-        "last_heartbeat": _now_str(),
-        "build_tag": BUILD_TAG,
-        "pending_count": len(_g_pending),
-        "pending": pendings,
-        "risk_sold": sorted(_g_risk_sold),
-        "risk_count": _g_today_risk_count,
-        "slippage_alert_count": _g_slippage_alert_count,
-    }
-    _atomic_write_json(_heart_path(date), data)
-    _write_peak()
+def _rebuild_state(C):
+    """init 状态重建四步（任一步异常由 init 捕获转被动，绝不「活跃+状态缺失」盲跑）：
+    1) 预检：position 接口可调用且返回 list（探针从文件改为接口，沙箱合规）；
+    2) 白名单归一化（V13_CODES；空 = 完全被动）；「白名单 ∩ 账户position」= 纳管集
+       （成本锚=m_dOpenPrice 多字段兜底；白名单外持仓绝不触碰——资金红线）；
+    3) L3 PEAK_SNAPSHOT 初始化各票追盈峰值（只升不降，T-20260910 语义）；
+    4) 当日 order 表反查 remark=ORDER_REMARK → 重建 risk_sold 去重 + RSK 序号水位（防重启重复卖出）。"""
+    global _g_passive, _g_risk_sold, _g_today_risk_count, _g_whitelist, _g_peak_snap
+    f_get = globals().get("get_trade_detail_data")
+    if f_get is None:
+        f_get = getattr(C, "get_trade_detail_data", None)
+    if f_get is None:
+        raise RuntimeError("无 get_trade_detail_data 接口")
+    # 1) 预检：position 接口可调用且返回 list
+    positions = f_get(ACCOUNT_ID, "stock", "position")
+    if positions is None or not isinstance(positions, list):
+        raise RuntimeError("position 探针失败（接口不可用或返回非 list）: %r" % type(positions))
+    # 2) 白名单归一化；白名单为空 = 部署未填 = 完全被动（不评估不下单）
+    _g_whitelist = set()
+    for c in V13_CODES:
+        qc = _to_qmt_code_any(c)
+        if qc:
+            _g_whitelist.add(qc)
+        else:
+            print("[P16V13][WARN] 白名单代码无法归一化，已忽略: %r" % (c,))
+    if not _g_whitelist:
+        _g_passive = True
+        print("[P16V13][WARN] V13_CODES 白名单为空，完全被动模式（不评估不下单）；"
+              "部署前人工填入 V13 实际持仓代码")
+        return
+    # 纳管集 = 白名单 ∩ 账户 position（白名单外绝不纳管）
+    managed = 0
+    for p in positions:
+        code = str(getattr(p, "m_strInstrumentID", "") or getattr(p, "m_strSecurityCode", "") or "")
+        if not code:
+            continue
+        if "." not in code:
+            if code.startswith("6") or code.startswith("688"):
+                code = "%s.SH" % code
+            else:
+                code = "%s.SZ" % code
+        if code not in _g_whitelist:
+            continue
+        vol = int(getattr(p, "m_nVolume", 0) or 0)
+        can_use = int(getattr(p, "m_nCanUseVolume", 0) or 0)
+        if vol <= 0:
+            continue
+        cost = 0.0
+        for attr in ("m_dOpenPrice", "m_dCostPrice", "m_dPrice"):
+            v = float(getattr(p, attr, 0) or 0)
+            if v > 0:
+                cost = v
+                break
+        _g_positions[code] = {"cost": cost, "vol": vol, "can_use": can_use, "peak": cost}
+        managed += 1
+        if cost <= 0:
+            print("[P16V13][WARN] %s 成本字段缺失(m_dOpenPrice<=0)，该票风控暂跳过待逐tick自愈" % code)
+    if managed <= 0:
+        # 交集为空：非故障（可能空仓/外部尚未买入），保持只监控，白名单内持仓出现即自动纳管
+        print("[P16V13][WARN] 白名单(%d只) ∩ 账户position 交集为空，进入只监控模式"
+              "（白名单内持仓出现即自动纳管）" % len(_g_whitelist))
+    else:
+        print("[P16V13][INIT] 白名单∩position 纳管 %d/%d 只" % (managed, len(_g_whitelist)))
+    # 3) L3 追盈峰值快照（只升不降：快照仅更高时采纳，防 0 污染把成本底覆盖回 0，T-20260910）
+    for sc, sp in PEAK_SNAPSHOT.items():
+        qc = _to_qmt_code_any(sc)
+        if not qc:
+            continue
+        try:
+            pv = float(sp or 0.0)
+        except Exception:
+            continue
+        _g_peak_snap[qc] = pv
+        if qc in _g_positions and pv > float(_g_positions[qc].get("peak", 0.0) or 0.0):
+            _g_positions[qc]["peak"] = pv
+    # 4) 当日 order 反查 remark=ORDER_REMARK → 重建 risk_sold + RSK 序号水位
+    orders = f_get(ACCOUNT_ID, "stock", "order")
+    risk_orders = 0
+    if orders:
+        for o in orders:
+            try:
+                remark = str(getattr(o, "m_strRemark", "") or "")
+                if ORDER_REMARK not in remark:
+                    continue
+                ocode = str(getattr(o, "m_strInstrumentID", "") or "")
+                if not ocode:
+                    continue
+                if "." not in ocode:
+                    if ocode.startswith("6") or ocode.startswith("688"):
+                        ocode = "%s.SH" % ocode
+                    else:
+                        ocode = "%s.SZ" % ocode
+                _g_risk_sold.add(ocode)
+                risk_orders += 1
+            except Exception:
+                continue
+    if risk_orders > 0:
+        _g_today_risk_count = risk_orders
+        print("[P16V13][INIT] 当日order反查重建 risk_sold=%d只 RSK水位=%d" % (
+            len(_g_risk_sold), _g_today_risk_count))
+
+
+# ============================================================
+# 心跳（print 通道，方案 §3.4：沙箱外旁路 grep [HEART] 检测超时告警）
+# ============================================================
+def _print_heartbeat(date):
+    """print 心跳（节流60秒，tick 级 handlebar 全量打印会刷爆日志）。
+    替代原 heart_v13_*.json 文件心跳；pending 快照不再持久化（重启由 risk_sold 水位防重复）。"""
+    global _g_last_heart_ts
+    now = time.time()
+    if now - _g_last_heart_ts < 60:
+        return
+    _g_last_heart_ts = now
+    print("[P16V13][HEART] %s date=%s pending=%d positions=%d risk_sold=%d risk_count=%d fills=%d slippage_alerts=%d passive=%s" % (
+        _now_str(), date, len(_g_pending), len(_g_positions), len(_g_risk_sold),
+        _g_today_risk_count, _g_today_fill_count, _g_slippage_alert_count, _g_passive))
+    _print_holdings()
+
+
+def _print_holdings():
+    """[自闭环] 持仓代码明细（旁路 grep [HOLD] 即得完整持仓，无需读盘）。
+    格式：code=vol@cost，按 code 排序保证稳定输出；空仓打印 n=0 -。"""
+    parts = []
+    for code in sorted(_g_positions.keys()):
+        info = _g_positions.get(code) or {}
+        try:
+            parts.append("%s=%d@%.3f" % (code, int(info.get("vol", 0) or 0),
+                                         float(info.get("cost", 0) or 0)))
+        except Exception:
+            parts.append("%s=?" % code)
+    print("[P16V13][HOLD] %s n=%d %s" % (
+        _now_str(), len(_g_positions), " ".join(parts) if parts else "-"))
 
 
 # ============================================================
 # QMT 生命周期
 # ============================================================
 def init(C):
-    """策略初始化。首部set_account确保主推推送；从心跳恢复pending/risk_sold；读外部成本表与peak。"""
-    global _g_today, _g_risk_sold, _g_today_risk_count, _g_slippage_alert_count
+    """策略初始化（自闭环版）：预检 + 四步重建（position→白名单→峰值快照→当日order反查）。
+    任一步异常 → 被动模式（不评估不下单，绝不「活跃+状态缺失」盲跑，2026-10-14 形态禁令）。"""
+    global _g_today, _g_passive
     try:
         C.set_account(ACCOUNT_ID)
     except Exception:
         pass
     _g_today = _today_str()
-    # 恢复pending孤儿单 + risk_sold（防重复卖出）
-    heart = _read_json(_heart_path(_g_today))
-    if heart:
-        pendings = heart.get("pending", [])
-        for p in pendings:
-            try:
-                sid = p.get("strategy_order_id", "")
-                if not sid or sid in _g_pending:
-                    continue
-                _g_pending[sid] = p
-            except Exception:
-                pass
-        if pendings:
-            print("[P16V13][INIT] 从心跳恢复pending %d条" % len(pendings))
-        rs = heart.get("risk_sold", [])
-        if rs:
-            _g_risk_sold = set(str(x) for x in rs)
-            print("[P16V13][INIT] 恢复risk_sold %d只" % len(_g_risk_sold))
-    # 恢复当日 risk_count（心跳有写、init 忽略 → 重启后 RSK sid 撞号覆盖 pending/fills）
     try:
-        _g_today_risk_count = int(heart.get("risk_count", 0) or 0) if heart else 0
-        if _g_today_risk_count:
-            print("[P16V13][INIT] 恢复risk_count=%d" % _g_today_risk_count)
+        _rebuild_state(C)
     except Exception:
-        _g_today_risk_count = 0
-    # 恢复当日滑点/跳空告警计数（重启后继续累加当日，不清零否则日内重启会丢告警留痕）
-    try:
-        _g_slippage_alert_count = int(heart.get("slippage_alert_count", 0) or 0) if heart else 0
-    except Exception:
-        _g_slippage_alert_count = 0
-    # 读外部成本表（外部每日写 cmd/positions_cfg_v13_<date>.json，FIFO 含费成本；缺失回退最近表）
-    cfg = _load_positions_cfg(_g_today)
-    if cfg and str(cfg.get("account_id", "") or "") == ACCOUNT_ID:
-        n = 0
-        for p in cfg.get("positions", []):
-            try:
-                bcode = str(p.get("code", "") or "")
-                cost = float(p.get("cost", 0) or 0)
-                vol = int(p.get("vol", 0) or 0)
-                if not bcode or cost <= 0:
-                    continue
-                qcode = _to_qmt_code(bcode) or bcode
-                _g_positions[qcode] = {"cost": cost, "vol": vol, "peak": cost}
-                n += 1
-            except Exception:
-                pass
-        if n:
-            print("[P16V13][INIT] 外部成本表 %d 条" % n)
-    # 恢复追盈历史最高价（state/peak_v13.json，跨日延续）
-    # 只升不降（T-20260910）：peak 已有成本底（上面成本表 peak=cost），持久化值仅在更高时采纳，
-    # 防 peak_v13.json 被 0.0 污染（风控静默日写入）后把成本底覆盖回 0 → 追盈历史丢失。
-    pk = _read_json(_peak_path())
-    if pk and str(pk.get("account_id", "") or "") == ACCOUNT_ID:
-        for code, peak in pk.get("peaks", {}).items():
-            try:
-                if code in _g_positions:
-                    pv = float(peak or 0.0)
-                    if pv > float(_g_positions[code].get("peak", 0.0) or 0.0):
-                        _g_positions[code]["peak"] = pv
-            except Exception:
-                pass
-    print("[P16V13][BUILD] BUILD_TAG=%s account=%s dir=%s" % (BUILD_TAG, ACCOUNT_ID, BRIDGE_DIR))
-    print("[P16V13][INIT] date=%s pending=%d positions=%d risk_sold=%d" % (
-        _g_today, len(_g_pending), len(_g_positions), len(_g_risk_sold)))
+        _g_passive = True
+        print("[P16V13][INIT-REBUILD-ERR] 状态重建异常，转被动模式（不评估不下单），"
+              "疑似沙箱/接口异常，请重启客户端并确认交易账号登录成功后重载策略: %s" % traceback.format_exc())
+    print("[P16V13][BUILD] BUILD_TAG=%s account=%s mode=自闭环纯风控(零文件)" % (BUILD_TAG, ACCOUNT_ID))
+    print("[P16V13][INIT] date=%s passive=%s pending=%d positions=%d risk_sold=%d whitelist=%d" % (
+        _g_today, _g_passive, len(_g_pending), len(_g_positions), len(_g_risk_sold), len(_g_whitelist)))
 
 
 def handlebar(C):
-    """每次触发（部署时按 tick 级/高频设置）：内置实时风控(止损/止盈/追盈) → pending状态机 → 心跳。"""
-    global _g_today, _g_slippage_alert_count
+    """每次触发（部署时按 tick 级/高频设置）：被动守卫 → 内置实时风控(止损/止盈/追盈)
+    → pending状态机 → print心跳。"""
+    global _g_today, _g_slippage_alert_count, _g_last_passive_ts
+
+    # 被动守卫（红线：绝不活跃盲跑）：直接 return，仅节流打印被动心跳供沙箱外旁路监控可见
+    if _g_passive:
+        now = time.time()
+        if now - _g_last_passive_ts >= 300:
+            _g_last_passive_ts = now
+            print("[P16V13][PASSIVE] %s 被动模式运行中（不评估不下单），"
+                  "查上方 WARN/ERR 行定位真实原因" % _now_str())
+        return
 
     # 日期切换重置（pending 清空：隔日委托已失效；risk_sold 清空：新一天允许重新触发）
     today = _today_str()
@@ -1326,9 +1251,8 @@ def handlebar(C):
     in_session = ("09:30" <= hour_min <= "11:30") or ("13:00" <= hour_min <= "15:00")
 
     if not in_session:
-        # 2026-09-01 教训：此分支必须 try/except 兜底——心跳写失败（文件锁）若不捕获会崩溃整个策略
         try:
-            _write_heartbeat(_g_today)
+            _print_heartbeat(_g_today)
         except Exception:
             print("[P16V13][HANDLEBAR-ERR-HEART] %s" % traceback.format_exc())
         return
@@ -1345,21 +1269,16 @@ def handlebar(C):
     except Exception:
         print("[P16V13][HANDLEBAR-ERR-PENDING] %s" % traceback.format_exc())
 
-    # 3) 心跳
+    # 3) print 心跳（旁路监控主通道）
     try:
-        _write_heartbeat(_g_today)
+        _print_heartbeat(_g_today)
     except Exception:
         print("[P16V13][HANDLEBAR-ERR-HEART] %s" % traceback.format_exc())
 
 
 def exit(C):
-    """日终摘要。"""
+    """日终摘要（print 通道）。"""
     pending_count = len(_g_pending)
-    print("[P16V13][EXIT] date=%s 委托=%d 成交=%d 放弃=%d 最终pending=%d 滑点/跳空超限=%d" % (
+    print("[P16V13][EXIT] date=%s 委托=%d 成交=%d 放弃=%d 最终pending=%d 滑点/跳空超限=%d passive=%s" % (
         _g_today, _g_today_order_count, _g_today_fill_count,
-        _g_today_abandon_count, pending_count, _g_slippage_alert_count))
-    # 写心跳
-    try:
-        _write_heartbeat(_g_today)
-    except Exception:
-        pass
+        _g_today_abandon_count, pending_count, _g_slippage_alert_count, _g_passive))

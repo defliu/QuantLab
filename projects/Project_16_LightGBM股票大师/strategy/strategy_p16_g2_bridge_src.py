@@ -54,6 +54,17 @@ TRAILING_PCT = 0.08
 TRAIL_ACTIVATE_PCT = 0.08   # 追盈激活阈值（2026-09-07 修复，T-20260907-002）：峰值≥成本×(1+阈值)才追踪，防"追盈=追跌"
 PEAK_STALE_HOURS = 24.0     # peak.json 距上次写盘超过此小时数视为 stale，init 跳过恢复（T-20260928-002：防桥宕机多日后拿陈旧 peak 判追盈→追认止损）
 
+# ===== 自闭环纯风控版（2026-10-16，QMT 沙箱 m_nPythonOpFile=1 下零文件读写，方案 §4.2 Step 1）=====
+# 持仓白名单：白名单 ∩ 账户 position = 纳管集；白名单外持仓绝不触碰（资金分配红线）。
+# 空 = 部署未填 = 完全被动模式（不评估不下单）。op 部署前按当日实际持仓填入。
+G2_CODES = ("605098.SH", "000607.SZ")
+
+# 追盈历史峰值快照（跨日延续，T-20260910 只升不降语义）：{代码: 峰值}。
+# PEAK_SNAPSHOT_DATE = 快照取数日（YYYYMMDD）；距今 > PEAK_STALE_HOURS 不恢复（T-20260928-002 防追认止损）。
+# 快照缺失/过期的票运行中以当日 high 重锚（偏保守，方案 §5.6）。
+PEAK_SNAPSHOT = {}
+PEAK_SNAPSHOT_DATE = "20261015"
+
 # 反查参数
 LOOKUP_RETRIES = 6
 LOOKUP_INTERVAL = 0.25
@@ -86,6 +97,10 @@ _g_risk_sold = set()
 _g_last_cfg_load = 0.0   # 孤儿自校准节流（cost=0 持仓重读当日成本表的时间戳，T-20260908）
 _g_cfg_fallback_logged = False   # 成本表回退提示只打一次（T-20260910）
 _g_diag_printed = False
+_g_passive = False         # IO 预检失败后转被动（T-20261015-004，防沙箱下活跃实例盲跑）
+_g_whitelist = set()       # 自闭环白名单（G2_CODES 归一化，init 填充；空=被动）
+_g_peak_snap = {}          # L3 追盈峰值快照（PEAK_SNAPSHOT 归一化）
+_g_last_heart_ts = 0.0      # print 心跳节流（60秒，tick 级 handlebar 全量打印会刷爆日志）
 
 # deal 明细接口三态可用性 + 当日滑点/跳空告警计数（2026-10-02 第3项）
 _g_deal_ok = None          # None=尚未探测 / True=可用 / False=永久不可用
@@ -95,40 +110,83 @@ _g_slippage_alert_count = 0
 
 
 # ============================================================
+# [信号内产版 s4-5d] 静态常量与全局状态
+#   方案 §4.2 Step2：信号引擎内移到 handlebar 时间闸门（09:50 对齐原换仓时点），
+#   取数 -> 21 特征 -> 模型打分 -> 目标持仓 diff -> 既有订单执行链。
+#   全部输入来自 QMT 内部 API + 源码内嵌快照（_g2_signal_snapshots.py 构建期生成）。
+# ============================================================
+# 信号时点（HH:MM，对齐原 09:50 G2 换仓任务）与执行窗口
+SIGNAL_HM = "09:50"
+SIGNAL_DEADLINE_HM = "09:58"      # 过点未跑则当日放弃（防盘中重复触发）
+# 简化红线（拍板：内移版只带 prob + 简化红线；F2/F5/F6 沙箱内不可得）
+# 依据：门禁 _top2_sim(train_g2.py:239) 用 score=prob*100 >= 60 即 prob>=0.60，
+#       B21 k=1500 的 top2_ret=+0.04095 即该口径；与现役 total_new>=60 的外部红线
+#       相比漏掉评分卡 F2/F5/F6 加成，属拍板接受的口径差（s4-5e 信号对齐 diff 验证）。
+SIGNAL_REDLINE_PROB = 0.60
+SIGNAL_TOP_N = 3                  # g2_config.TOP_N（等权目标只数）
+SIGNAL_SELECT_TOP = 10             # 候选池（prob TopN，对齐 g2_config.SELECT_TOP）
+SIGNAL_HOLD_DAYS = 15              # g2_config.HOLD_DAYS 持有期
+SIGNAL_MIN_VOL = 100               # 整手
+SIGNAL_DEPLOY_PCT = 0.98           # 满仓部署（保留 2% 现金）
+SIGNAL_HALF_DEPLOY_PCT = 0.50      # 半仓（T=1）
+SIGNAL_TIER_STOP_PCT = -1.5        # T=0 停买线
+SIGNAL_TIER_HALF_PCT = -1.0        # T=1 半仓线
+SIGNAL_TRADE_HOURS = 5             # 换仓交易日历按 5 小时/日折算（原 is_trade_day 由行情日历替代）
+SIGNAL_MIN_BARS = 250              # dist_250_low 需 250 根
+SIGNAL_BATCH = 200                 # get_market_data_ex 分批（对齐 ATR 实现）
+SIGNAL_HS300_SYMS = ("000300.SH", "399300.SZ")   # 沪深300（QMT 内部行情，交替兜底）
+
+# 信号版全局状态
+_g_snap = None             # 解压后的快照字典（init 构建一次）
+_g_signal_done = False     # 当日信号是否已执行（新交易日重置）
+_g_signal_stage = ""       # 当日信号阶段标记（用于日志/诊断）
+_g_signal_prob = {}        # 当日打分 {code: prob}（TopN 缓存，供日志）
+_g_hold_dates = {}         # L3 期初持仓建仓日 {code: YYYYMMDD}（快照 init 载入）
+_g_oppo_blocked = set()    # 对方策略持仓（买入互斥，替代原读对方账本文件；快照 OPPONENT_HOLDS）
+_g_signal_capital = 0.0    # 资金池（L3 快照；运行中以 position 推算更新）
+_g_fs_map = None           # float_share 快照 {code: 万股}（每日信号前构建一次）
+_g_st_codes = set()        # ST 名单（SNAP_BLOB 尾块，_snap_load 填充）
+_g_signal_bars = None      # 当日 bars 缓存（_compute_scores 填充，供低开量比校验/取价）
+_g_signal_bought = set()   # 当日信号已买 code（同日重启防重复，order 反查重建）
+_g_signal_seq = 0          # 当日信号订单序号水位（sid = P16_<date>_<seq>）
+_g_trade_dates = None      # 近期交易日集合（持有期计数，init 取行情日历）
+
+# ★ QMT 嵌入安全（AGENTS 红线：import 必须 try/except）：信号引擎依赖 numpy/pandas
+#   （白名单内置库），缺失时置 None -> 信号段调用期抛 AttributeError -> 转被动 fail-safe。
+try:
+    import numpy as np
+except Exception:
+    np = None
+try:
+    import pandas as pd
+except Exception:
+    pd = None
+
+# ---- vendor 注入占位（build_p16_g2.py 构建期替换为文件全文）----
+# __VENDOR__:snapshot
+# __VENDOR__:features
+# __VENDOR__:model
+
+
+# ============================================================
 # 工具函数
 # ============================================================
 def _atomic_write_json(path, data):
-    """临时文件 + rename，避免内置桥读到半个 JSON。
-    2026-09-01 教训：外部进程（监控轮询 Get-Content）短暂持有目标文件时 os.replace 会抛
-    PermissionError(WinError 5) → 必须重试（最多 5 次×0.2s），且调用方需 try/except 兜底防崩溃。
-    2026-09-09 教训（与 V1.3 同源）：目标父目录(state/)缺失时 open(tmp) 抛 FileNotFoundError，
-    写前先确保目录存在（自愈）。"""
-    d = os.path.dirname(path)
-    if d:
-        try:
-            os.makedirs(d, exist_ok=True)
-        except Exception:
-            pass
-    tmp = path + ".tmp"
-    for attempt in range(5):
-        try:
-            with open(tmp, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
-            os.replace(tmp, path)
-            return
-        except OSError as e:
-            if attempt < 4:
-                time.sleep(0.2)
-                continue
-            raise e
+    """[自闭环] 文件写已废止（QMT 沙箱 m_nPythonOpFile=1：open 已存在文件被拒，
+    新建可写但读回被拒、不可依赖，方案 §1.1）。保留空壳供旧调用点安全通过；
+    真实监控走 print → XtClient_FormulaOutput 日志（沙箱外旁路 grep）。"""
+    return
+
+
+def _write_cmd_alert(date, kind, path):
+    """[自闭环] 告警落盘已废止 → 改 print（桥无推送能力，唯一通道是 QMT 日志）。"""
+    print("[P16G2][ALERT] kind=%s path=%s (文件落盘已废止，走print通道)" % (kind, path))
 
 
 def _read_json(path):
-    try:
-        with open(path, encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return None
+    """[自闭环] 文件读已废止（沙箱下 open 已存在文件必拒）。恒返回 None；
+    调用方（cmd 消费/heart/peak/cfg）在纯风控版中已全部停用或改为账户接口。"""
+    return None
 
 
 def _today_str():
@@ -273,6 +331,32 @@ def _archive_cmd(path, date, seq, prefix):
             pass
     try:
         os.rename(path, dest)
+    except Exception:
+        pass
+
+
+def _scan_stale_orders():
+    """启动时扫描未归档的 orders/cancel 命令文件（只告警不补执行：
+    价格可能已 stale，宁可丢单不可重复。供人工/外部监控处置）。"""
+    try:
+        if not os.path.isdir(CMD_DIR):
+            return
+        for name in sorted(os.listdir(CMD_DIR)):
+            if not name.endswith(".json"):
+                continue
+            if "_done_" in name:
+                continue
+            if not (name.startswith("orders_") or name.startswith("cancel_")):
+                continue
+            full = os.path.join(CMD_DIR, name)
+            print("[P16G2][STALE-CMD] 未归档命令文件: %s" % full)
+            try:
+                _atomic_write_json(
+                    os.path.join(STATE_DIR, "stale_cmd_alert.json"),
+                    {"file": full, "time": _now_str(), "account_id": ACCOUNT_ID},
+                )
+            except Exception:
+                pass
     except Exception:
         pass
 
@@ -617,6 +701,13 @@ def _write_fill(C, date, sid, info, code, action, vol, status, sysid, reason,
     }
     if extra:
         rec.update(extra)
+    # 自闭环版（2026-10-20，T-20261020-001）：fills 文件回写已废止（沙箱禁 open，
+    # _atomic_write_json 是空壳），若不在此 print，成交记录会**彻底消失**——
+    # 外部 sync_*/对账/飞书成交卡全部断供（V13 早已有 [P16V13][FILL]，G2/ENS 漏了）。
+    # 格式与 V13 逐字段对齐，外部解析器可复用同一正则。
+    print("[P16G2][FILL] %s %s %s %s vol=%d px=%.4f src=%s status=%s ref=%.3f slip=%.2f%% gap=%.2f%% retry=%d oids=%s | %s" % (
+        date, sid, rec.get("code", code), action, vol, price, px_source, status,
+        ref_price, adverse * 100, gap * 100, rec.get("retry", 0), ",".join(oids), reason))
     _add_or_update_fill(date, rec)
     return rec
 
@@ -767,6 +858,10 @@ def _execute_order(C, order, date):
     ret = _do_passorder(C, action, qmt_code, vol, price, prtype)
     print("[P16G2][ORDER] %s %s %s %d股 @%.3f prtype=%d ret=%s" % (action, strategy_order_id, qmt_code, vol, price, prtype, ret))
     _g_today_order_count += 1
+    # 信号内产版：新买入票立即纳入白名单（否则成交后 _check_risk_signals 按
+    # 白名单过滤不纳管 -> 止损/止盈永不触发 = 孤儿持仓，实盘红线）。
+    if action == "BUY" and qmt_code:
+        _g_whitelist.add(qmt_code)
 
     # 反查确认（同tick内撤单需要 sysid=柜台合同号；m_strOrderSysID 优先，与 _check_pending_orders 一致）
     oid, matched = _lookup_order(C, qmt_code, vol, action, sid=strategy_order_id)
@@ -1233,10 +1328,11 @@ def _reload_positions_cfg(date):
 
 
 def _check_risk_signals(C, date):
-    """内置实时风控：账户持仓全量纳管（防孤儿）→ get_full_tick → 三规则判断 → 触发即卖出走pending。
-    成本锚=外部成本表(positions_cfg)；峰值=state/peak.json 持久化。"""
+    """内置实时风控（自闭环版）：白名单∩账户position纳管（成本锚=position.m_dOpenPrice，逐tick自愈）
+    → get_full_tick → 三规则判断 → 触发即卖出走pending。
+    白名单外持仓绝不纳管绝不触碰（资金红线）；持仓消失自动出管。"""
     global _g_today_risk_count
-    # 1) 账户持仓全量纳管（AGENTS 红线：孤儿持仓=止损永不触发，必须纳管）
+    # 1) 账户持仓纳管（白名单过滤：白名单外持仓绝不触碰——资金分配红线）
     f_get = globals().get("get_trade_detail_data")
     if f_get is None:
         f_get = getattr(C, "get_trade_detail_data", None)
@@ -1255,17 +1351,36 @@ def _check_risk_signals(C, date):
                         code = "%s.SH" % code
                     else:
                         code = "%s.SZ" % code
+                if code not in _g_whitelist:
+                    continue
                 vol = int(getattr(p, "m_nVolume", 0) or 0)
                 can_use = int(getattr(p, "m_nCanUseVolume", 0) or 0)
-                if vol > 0:
-                    acct_pos[code] = {"vol": vol, "can_use": can_use}
+                if vol <= 0:
+                    continue
+                cost = 0.0
+                for attr in ("m_dOpenPrice", "m_dCostPrice", "m_dPrice"):
+                    v = float(getattr(p, attr, 0) or 0)
+                    if v > 0:
+                        cost = v
+                        break
+                acct_pos[code] = {"vol": vol, "can_use": can_use, "cost": cost}
         for code, info in acct_pos.items():
             if code in _g_positions:
                 _g_positions[code]["vol"] = info["vol"]
                 _g_positions[code]["can_use"] = info["can_use"]
+                # 成本锚自愈：position 成本价逐tick刷新（外部换仓/成本变化自动跟进；取不到不覆盖）
+                if info["cost"] > 0:
+                    _g_positions[code]["cost"] = info["cost"]
             else:
-                # 孤儿持仓：成本未知不触发（避免误杀），但纳管待外部成本表校准
-                _g_positions[code] = {"cost": 0.0, "vol": info["vol"], "can_use": info["can_use"], "peak": 0.0}
+                # 白名单内新持仓（外部换仓买入等）：入账；峰值=快照或成本底，运行中 tick high 重锚
+                snap_peak = float(_g_peak_snap.get(code, 0) or 0)
+                peak0 = info["cost"] if info["cost"] > 0 else 0.0
+                if snap_peak > peak0:
+                    peak0 = snap_peak
+                _g_positions[code] = {"cost": info["cost"], "vol": info["vol"],
+                                      "can_use": info["can_use"], "peak": peak0}
+                print("[P16G2][POS-NEW] %s 入账 cost=%.4f vol=%d can_use=%d peak=%.4f（白名单内新持仓）" % (
+                    code, info["cost"], info["vol"], info["can_use"], peak0))
         for code in list(_g_positions.keys()):
             if code not in acct_pos:
                 _g_positions.pop(code, None)
@@ -1273,11 +1388,6 @@ def _check_risk_signals(C, date):
     except Exception as e:
         print("[P16G2][RISK-POS-ERR] %s" % e)
         return
-    # 孤儿自校准（T-20260908）：cost=0 持仓重读当日成本表，防"成本表晚于init生成→风控静默失效"
-    try:
-        _reload_positions_cfg(date)
-    except Exception:
-        print("[P16G2][RISK-CFG-ERR] %s" % traceback.format_exc())
     if not _g_positions:
         return
     # 2) 逐持仓评估（三规则照搬 qmt_monitor.evaluate）
@@ -1459,48 +1569,32 @@ def _refresh_asset(C, date):
 # 心跳
 # ============================================================
 def _write_heartbeat(date, cmd_seq):
-    """写心跳文件（含pending快照，供重启恢复孤儿单）。"""
-    pendings = []
-    for sid in _g_pending.keys():
-        info = _g_pending[sid]
-        pendings.append({
-            "strategy_order_id": sid,
-            "code": info.get("code", ""),
-            "bridge_code": info.get("bridge_code", ""),
-            "action": info.get("action", ""),
-            "vol": info.get("vol", 0),
-            "cur_vol": info.get("cur_vol", info.get("vol", 0)),
-            "filled_so_far": info.get("filled_so_far", 0),
-            "price": info.get("price", 0),
-            "time": info.get("time", time.time()),
-            "retry": info.get("retry", 0),
-            "order_id": info.get("order_id", ""),
-            "order_ids": info.get("order_ids", []),
-            "sysid": info.get("sysid", ""),
-            "status": info.get("status", "PENDING"),
-            "cancel_requested": info.get("cancel_requested", False),
-            "cancel_retry": info.get("cancel_retry", 0),
-            # 滑点/跳空基线必须持久化（T-20261002）：重启后若丢失，_write_fill 会拿不到
-            # trigger_price/cost_price → 滑点恒算 0、跳空无法归因，等于把保护静默关掉。
-            "trigger_price": info.get("trigger_price", info.get("price", 0)),
-            "cost_price": info.get("cost_price", 0.0),
-            "last_price": info.get("last_price", info.get("price", 0)),
-            "risk_reason": info.get("risk_reason", ""),
-        })
-    data = {
-        "account_id": ACCOUNT_ID,
-        "date": date,
-        "last_heartbeat": _now_str(),
-        "build_tag": BUILD_TAG,
-        "pending_count": len(_g_pending),
-        "last_cmd_seq_processed": cmd_seq,
-        "pending": pendings,
-        "risk_sold": sorted(_g_risk_sold),
-        "risk_count": _g_today_risk_count,
-        "slippage_alert_count": _g_slippage_alert_count,
-    }
-    _atomic_write_json(_heart_path(date), data)
-    _write_peak()
+    """[自闭环] print 心跳（节流60秒，方案 §3.4：沙箱外旁路 grep [HEART] 检测超时告警）。
+    替代原 heart json + peak json 文件写；pending 快照不再持久化（重启由当日 order 反查重建）。"""
+    global _g_last_heart_ts
+    now = time.time()
+    if now - _g_last_heart_ts < 60:
+        return
+    _g_last_heart_ts = now
+    print("[P16G2][HEART] %s date=%s pending=%d positions=%d risk_sold=%d risk_count=%d fills=%d slippage=%d passive=%s" % (
+        _now_str(), date, len(_g_pending), len(_g_positions), len(_g_risk_sold),
+        _g_today_risk_count, _g_today_fill_count, _g_slippage_alert_count, _g_passive))
+    _print_holdings()
+
+
+def _print_holdings():
+    """[自闭环] 持仓代码明细（旁路 grep [HOLD] 即得完整持仓，无需读盘）。
+    格式：code=vol@cost，按 code 排序保证稳定输出；空仓打印 n=0 -。"""
+    parts = []
+    for code in sorted(_g_positions.keys()):
+        info = _g_positions.get(code) or {}
+        try:
+            parts.append("%s=%d@%.3f" % (code, int(info.get("vol", 0) or 0),
+                                         float(info.get("cost", 0) or 0)))
+        except Exception:
+            parts.append("%s=?" % code)
+    print("[P16G2][HOLD] %s n=%d %s" % (
+        _now_str(), len(_g_positions), " ".join(parts) if parts else "-"))
 
 
 # ============================================================
@@ -1526,8 +1620,13 @@ def _process_orders_cmd(C, date):
     先持久化seq到heart再执行（宁可丢单不可重复：防下单后写heart前崩溃→重启重复下单）。"""
     global _g_last_cmd_seq
     path = _orders_cmd_path(date)
+    if not os.path.exists(path):
+        return 0
     data = _read_json(path)
     if data is None:
+        # 文件存在但读取失败：10-14 丢单即此路径（静默吞异常无法定位）
+        print("[P16G2][CMD-READ-FAIL] %s exists but read failed" % path)
+        _write_cmd_alert(date, "orders", path)
         return 0
 
     # 账号防呆
@@ -1558,8 +1657,13 @@ def _process_cancel_cmd(C, date):
     """读取并处理cancel指令文件。返回已处理的seq(用于归档)。"""
     global _g_last_cmd_seq
     path = _cancel_cmd_path(date)
+    if not os.path.exists(path):
+        return 0
     data = _read_json(path)
     if data is None:
+        # 文件存在但读取失败：10-14 丢单即此路径（静默吞异常无法定位）
+        print("[P16G2][CMD-READ-FAIL] %s exists but read failed" % path)
+        _write_cmd_alert(date, "cancel", path)
         return 0
 
     file_acct = str(data.get("account_id", "") or "")
@@ -1588,97 +1692,694 @@ def _process_cancel_cmd(C, date):
 # ============================================================
 # QMT 生命周期
 # ============================================================
+def _io_preflight():
+    """预检（自闭环接口探针版，2026-10-16）：原「peak/orders 文件可读」探针随文件链路废止。
+    实际探针在 _rebuild_state 内（需 C 实例）：position 接口返回 list + G2_CODES 白名单非空。
+    任一失败 → 转被动防盲跑（恢复=重启QMT客户端确认登录后重载）。保留本函数供诊断调用。"""
+    return True
+
+
+def _to_qmt_code_any(c):
+    """代码归一化：6开头→.SH，否则→.SZ（已有后缀原样）。"""
+    if not c:
+        return ""
+    c = str(c)
+    if "." in c:
+        return c
+    if c.startswith("6") or c.startswith("688"):
+        return "%s.SH" % c
+    return "%s.SZ" % c
+
+
+def _rebuild_state(C):
+    """init 状态重建四步（任一步异常由 init 捕获转被动，绝不「活跃+状态缺失」盲跑）：
+    1) 预检：position 接口可调用且返回 list；
+    2) 白名单归一化（G2_CODES；空 = 完全被动）；「白名单 ∩ 账户position」= 纳管集
+       （成本锚=m_dOpenPrice 多字段兜底；白名单外持仓绝不触碰——资金红线）；
+    3) L3 PEAK_SNAPSHOT 初始化各票追盈峰值（只升不降 + stale 检测 T-20260928-002）；
+    4) 当日 order 表反查 remark=ORDER_REMARK → 重建 risk_sold 去重 + RSK 序号水位（防重启重复卖出）。"""
+    global _g_passive, _g_risk_sold, _g_today_risk_count, _g_whitelist, _g_peak_snap
+    f_get = globals().get("get_trade_detail_data")
+    if f_get is None:
+        f_get = getattr(C, "get_trade_detail_data", None)
+    if f_get is None:
+        raise RuntimeError("无 get_trade_detail_data 接口")
+    # 1) 预检：position 接口可调用且返回 list
+    positions = f_get(ACCOUNT_ID, "stock", "position")
+    if positions is None or not isinstance(positions, list):
+        raise RuntimeError("position 探针失败（接口不可用或返回非 list）: %r" % type(positions))
+    # 2) 白名单归一化；白名单为空 = 部署未填 = 完全被动（不评估不下单）
+    _g_whitelist = set()
+    for c in G2_CODES:
+        qc = _to_qmt_code_any(c)
+        if qc:
+            _g_whitelist.add(qc)
+        else:
+            print("[P16G2][WARN] 白名单代码无法归一化，已忽略: %r" % (c,))
+    # 信号内产版：L3 hold_dates 持票并入白名单（重启后风控必须纳管信号持仓）
+    for c in list(_g_hold_dates.keys()):
+        qc = _to_qmt_code_any(c)
+        if qc:
+            _g_whitelist.add(qc)
+    if not _g_whitelist:
+        _g_passive = True
+        print("[P16G2][WARN] G2_CODES 白名单为空且 L3 账本无持票，完全被动模式（不评估不下单）")
+        return
+    print("[P16G2][INIT] 白名单合并 G2_CODES+L3 hold_dates = %d 只" % len(_g_whitelist))
+    # 纳管集 = 白名单 ∩ 账户 position（白名单外绝不纳管）
+    managed = 0
+    for p in positions:
+        code = str(getattr(p, "m_strInstrumentID", "") or getattr(p, "m_strSecurityCode", "") or "")
+        if not code:
+            continue
+        code = _to_qmt_code_any(code)
+        if code not in _g_whitelist:
+            continue
+        vol = int(getattr(p, "m_nVolume", 0) or 0)
+        can_use = int(getattr(p, "m_nCanUseVolume", 0) or 0)
+        if vol <= 0:
+            continue
+        cost = 0.0
+        for attr in ("m_dOpenPrice", "m_dCostPrice", "m_dPrice"):
+            v = float(getattr(p, attr, 0) or 0)
+            if v > 0:
+                cost = v
+                break
+        _g_positions[code] = {"cost": cost, "vol": vol, "can_use": can_use, "peak": cost}
+        managed += 1
+        if cost <= 0:
+            print("[P16G2][WARN] %s 成本字段缺失(m_dOpenPrice<=0)，该票风控暂跳过待逐tick自愈" % code)
+    if managed <= 0:
+        print("[P16G2][WARN] 白名单(%d只) ∩ 账户position 交集为空，进入只监控模式"
+              "（白名单内持仓出现即自动纳管）" % len(_g_whitelist))
+    else:
+        print("[P16G2][INIT] 白名单∩position 纳管 %d/%d 只" % (managed, len(_g_whitelist)))
+    # 3) L3 追盈峰值快照（只升不降 + stale 检测 T-20260928-002：快照超 PEAK_STALE_HOURS 不恢复）
+    _pk_stale = False
+    try:
+        if PEAK_SNAPSHOT_DATE:
+            _snap_dt = datetime.strptime(str(PEAK_SNAPSHOT_DATE), "%Y%m%d")
+            _age_h = (datetime.now() - _snap_dt).total_seconds() / 3600.0
+            if _age_h > PEAK_STALE_HOURS:
+                _pk_stale = True
+                print("[P16G2][INIT] PEAK_SNAPSHOT STALE %.1fh ago (>%gh), skip restore "
+                      "to avoid retroactive trailing (T-20260928-002)" % (_age_h, PEAK_STALE_HOURS))
+    except Exception:
+        _pk_stale = True
+    if not _pk_stale:
+        for sc, sp in PEAK_SNAPSHOT.items():
+            qc = _to_qmt_code_any(sc)
+            if not qc:
+                continue
+            try:
+                pv = float(sp or 0.0)
+            except Exception:
+                continue
+            _g_peak_snap[qc] = pv
+            if qc in _g_positions and pv > float(_g_positions[qc].get("peak", 0.0) or 0.0):
+                _g_positions[qc]["peak"] = pv
+    # 4) 当日 order 反查 remark=ORDER_REMARK → 重建 risk_sold + RSK 序号水位
+    orders = f_get(ACCOUNT_ID, "stock", "order")
+    risk_orders = 0
+    if orders:
+        for o in orders:
+            try:
+                remark = str(getattr(o, "m_strRemark", "") or "")
+                if ORDER_REMARK not in remark:
+                    continue
+                ocode = str(getattr(o, "m_strInstrumentID", "") or "")
+                if not ocode:
+                    continue
+                ocode = _to_qmt_code_any(ocode)
+                _g_risk_sold.add(ocode)
+                risk_orders += 1
+            except Exception:
+                continue
+    if risk_orders > 0:
+        _g_today_risk_count = risk_orders
+        print("[P16G2][INIT] 当日order反查重建 risk_sold=%d只 RSK水位=%d" % (
+            len(_g_risk_sold), _g_today_risk_count))
+
+
 def init(C):
-    """策略初始化。首部set_account确保主推推送；从心跳恢复seq/pending/risk_sold；读外部成本表与peak。"""
-    global _g_last_cmd_seq, _g_today, _g_risk_sold, _g_today_risk_count, _g_slippage_alert_count
+    """策略初始化（自闭环信号内产版）：预检 + 四步重建（position→白名单→峰值快照→当日order反查）
+    + L3 信号账本载入（hold_dates/ENS互斥/资金池/快照新鲜度）。
+    任一步异常 → 被动模式（不评估不下单，绝不「活跃+状态缺失」盲跑，2026-10-14 形态禁令）。"""
+    global _g_last_cmd_seq, _g_today, _g_risk_sold, _g_today_risk_count, _g_slippage_alert_count, _g_passive
+    global _g_hold_dates, _g_oppo_blocked, _g_signal_capital, _g_trade_dates
     try:
         C.set_account(ACCOUNT_ID)
     except Exception:
         pass
     _g_today = _today_str()
-    # 读取上次已处理seq + 恢复pending孤儿单 + 恢复risk_sold
-    heart = _read_json(_heart_path(_g_today))
-    if heart:
-        _g_last_cmd_seq = int(heart.get("last_cmd_seq_processed", 0) or 0)
-        pendings = heart.get("pending", [])
-        for p in pendings:
-            try:
-                sid = p.get("strategy_order_id", "")
-                if not sid or sid in _g_pending:
-                    continue
-                _g_pending[sid] = p
-            except Exception:
-                pass
-        if pendings:
-            print("[P16G2][INIT] 从心跳恢复pending %d条" % len(pendings))
-        rs = heart.get("risk_sold", [])
-        if rs:
-            _g_risk_sold = set(str(x) for x in rs)
-            print("[P16G2][INIT] 恢复risk_sold %d只" % len(_g_risk_sold))
-    # 恢复当日 risk_count（心跳有写、init 忽略 → 重启后 RSK sid 撞号覆盖 pending/fills）
+    # L3 信号账本（快照内嵌；account_id 戳校验在构建期生成时已完成 T-20260823-004）
     try:
-        _g_today_risk_count = int(heart.get("risk_count", 0) or 0) if heart else 0
-        if _g_today_risk_count:
-            print("[P16G2][INIT] 恢复risk_count=%d" % _g_today_risk_count)
-    except Exception:
-        _g_today_risk_count = 0
-    # 恢复当日滑点/跳空告警计数（重启后继续累加当日，不清零否则日内重启会丢告警留痕）
-    try:
-        _g_slippage_alert_count = int(heart.get("slippage_alert_count", 0) or 0) if heart else 0
-    except Exception:
-        _g_slippage_alert_count = 0
-    # 读外部成本表（外部每日写 cmd/positions_cfg_<date>.json，FIFO 含费成本；缺失回退最近表）
-    cfg = _load_positions_cfg(_g_today)
-    if cfg and str(cfg.get("account_id", "") or "") == ACCOUNT_ID:
-        n = 0
-        for p in cfg.get("positions", []):
-            try:
-                bcode = str(p.get("code", "") or "")
-                cost = float(p.get("cost", 0) or 0)
-                vol = int(p.get("vol", 0) or 0)
-                if not bcode or cost <= 0:
-                    continue
-                qcode = _to_qmt_code(bcode) or bcode
-                _g_positions[qcode] = {"cost": cost, "vol": vol, "peak": cost}
-                n += 1
-            except Exception:
-                pass
-        if n:
-            print("[P16G2][INIT] 外部成本表 %d 条" % n)
-    # 恢复追盈历史最高价（state/peak.json，跨日延续）
-    # 只升不降（T-20260910）：peak 已有成本底（上面成本表 peak=cost），持久化值仅在更高时采纳，
-    # 防 peak.json 被 0.0 污染（风控静默日写入）后把成本底覆盖回 0 → 追盈历史丢失。
-    pk = _read_json(_peak_path())
-    if pk and str(pk.get("account_id", "") or "") == ACCOUNT_ID:
-        # stale 检测（T-20260928-002）：桥宕机多日后重启，跳过陈旧 peak（防追认止损）
-        _pk_age_h = None
-        _pk_updated = pk.get("updated_at", "")
+        if str(ACCOUNT_STAMP) != ACCOUNT_ID:
+            raise RuntimeError("快照账号戳 %s != 策略 %s" % (ACCOUNT_STAMP, ACCOUNT_ID))
+        _g_hold_dates = dict(HOLD_DATES)
+        _g_oppo_blocked = set(str(x) for x in OPPONENT_HOLDS)
+        _g_signal_capital = float(CAPITAL_SNAP)
+        # 快照新鲜度（对齐 T-20260928-002 语义：>14 自然日告警，但不阻断信号——
+        # 估值特征陈旧化由误差量化结论接受，仓位保护不受影响）
+        _snap_age_d = -1
         try:
-            if _pk_updated:
-                _pk_dt = datetime.strptime(_pk_updated, "%Y-%m-%d %H:%M:%S")
-                _pk_age_h = (datetime.now() - _pk_dt).total_seconds() / 3600.0
+            from datetime import datetime as _dtm
+            _sd = _dtm.strptime(str(SNAPSHOT_DATE), "%Y%m%d")
+            _snap_age_d = (_dtm.now() - _sd).days
         except Exception:
-            _pk_age_h = None
-        if _pk_age_h is not None and _pk_age_h > PEAK_STALE_HOURS:
-            print("[P16G2][INIT] peak STALE %.1fh ago (>%gh), skip restore to avoid retroactive trailing (T-20260928-002)" % (
-                _pk_age_h, PEAK_STALE_HOURS))
+            _snap_age_d = -1
+        print("[P16G2][INIT] L3快照 date=%s age=%dd hold_dates=%d ens=%d capital=%.0f" % (
+            SNAPSHOT_DATE, _snap_age_d, len(_g_hold_dates), len(_g_oppo_blocked), _g_signal_capital))
+        if _snap_age_d >= 0 and _snap_age_d > 14:
+            print("[P16G2][INIT][WARN] 静态快照已 %d 天未刷新(>14)，估值特征陈旧——"
+                  "请重新构建（gen_g2_signal_snapshots.py + build_p16_g2.py）后粘贴" % _snap_age_d)
+    except Exception:
+        _g_passive = True
+        print("[P16G2][INIT-SNAP-ERR] L3 信号账本载入失败，转被动: %s" % traceback.format_exc())
+    # 近期交易日历（持有期计数）：取快照宇宙任一票近 400 根日线索引（一次）
+    if _g_trade_dates is None:
+        try:
+            _any = next(iter(_snap_load().keys()))
+            _d = C.get_market_data_ex(stock_code=[_any], period="1d", count=400,
+                                       dividend_type="none")
+            _df = (_d or {}).get(_any)
+            if _df is not None and len(_df) > 10:
+                _g_trade_dates = [str(x).replace("-", "")[:8] for x in _df.index]
+        except Exception as e:
+            print("[P16G2][INIT][WARN] 交易日历取数失败(%s)，持有期回退自然日/4" % e)
+    try:
+        _rebuild_state(C)
+    except Exception:
+        _g_passive = True
+        print("[P16G2][INIT-REBUILD-ERR] 状态重建异常，转被动模式（不评估不下单），"
+              "疑似沙箱/接口异常，请重启客户端并确认交易账号登录成功后重载策略: %s" % traceback.format_exc())
+    print("[P16G2][BUILD] BUILD_TAG=%s account=%s mode=自闭环信号内产(零文件) bridge=%s" % (
+        BUILD_TAG, ACCOUNT_ID, BRIDGE_DIR))
+    print("[P16G2][INIT] date=%s passive=%s last_seq=%d pending=%d positions=%d risk_sold=%d whitelist=%d" % (
+        _g_today, _g_passive, _g_last_cmd_seq, len(_g_pending), len(_g_positions), len(_g_risk_sold), len(_g_whitelist)))
+
+
+# ============================================================
+# [信号内产版 s4-5d] 信号引擎（QMT 内部产生，零文件零网络）
+#   取数(get_market_data_ex front_ratio) -> 21 特征 -> B21 模型打分 ->
+#   简化红线(prob>=0.60) -> TOP_N 动态等权 diff -> 既有订单执行链。
+#   对齐外部 rebalance_g2.build_plan 语义（先卖后买 / 到期卖出 / 等权平衡）。
+# ============================================================
+def _snap_load():
+    """构建快照字典（一次）：解 SNAP_BLOB -> 填 _g_snap / _g_st_codes。
+    布局见 _g2_signal_snapshots.SNAP_BLOB（构建期生成）：
+      keys(9B/票) + pe/pb/dv/adj(int32 定点) + ind(int16) + ST尾块(int32 n + n*9B)"""
+    global _g_snap, _g_st_codes
+    if _g_snap is not None:
+        return _g_snap
+    if np is None or pd is None:
+        raise RuntimeError("numpy/pandas 不可用")
+    import base64 as _b64
+    import lzma as _lzma
+    n = int(SNAP_N)
+    raw = _lzma.decompress(_b64.b64decode("".join(SNAP_BLOB)))
+    keys = [raw[i * CODE_LEN:(i + 1) * CODE_LEN].decode("ascii") for i in range(n)]
+    off = n * CODE_LEN
+    pe = np.frombuffer(raw[off:off + 4 * n], dtype=np.int32); off += 4 * n
+    pb = np.frombuffer(raw[off:off + 4 * n], dtype=np.int32); off += 4 * n
+    dv = np.frombuffer(raw[off:off + 4 * n], dtype=np.int32); off += 4 * n
+    adj = np.frombuffer(raw[off:off + 4 * n], dtype=np.int32); off += 4 * n
+    ind = np.frombuffer(raw[off:off + 2 * n], dtype=np.int16); off += 2 * n
+    n_st = int(np.frombuffer(raw[off:off + 4], dtype=np.int32)[0]); off += 4
+    _st = set()
+    for i in range(n_st):
+        _st.add(raw[off:off + CODE_LEN].decode("ascii")); off += CODE_LEN
+    _g_st_codes = _st
+    snap = {}
+    for i in range(n):
+        snap[keys[i]] = {
+            "pe": (np.nan if int(pe[i]) == PE_NAN_Q else float(pe[i]) / PE_SCALE),
+            "pb": (np.nan if int(pb[i]) == PB_NAN_Q else float(pb[i]) / PB_SCALE),
+            "dv": (np.nan if int(dv[i]) == DV_NAN_Q else float(dv[i]) / DV_SCALE),
+            "adj": float(adj[i]) / ADJ_SCALE,
+            "ind": int(ind[i]),
+        }
+    _g_snap = snap
+    return snap
+
+
+def _snap_universe():
+    """快照宇宙 code 集合（= 训练过滤帧，横截面特征参与行集）。"""
+    return set(_snap_load().keys())
+
+
+def _build_float_share_map(C):
+    """float_share 快照 {code: 万股}（必修③：FloatVolume 单位=股 -> ÷1e4）。
+    每次信号前构建（每日一次），逐票取最新流通股本；取不到的票记 0（NaN 处理）。"""
+    global _g_fs_map
+    fs = {}
+    bad = 0
+    for code in _snap_load().keys():
+        try:
+            d = C.get_instrument_detail(code)
+            v = float((d or {}).get("FloatVolume", 0) or 0)
+        except Exception:
+            v = 0.0
+        if v <= 0:
+            bad += 1
+            fs[code] = float("nan")   # 缺股本 -> NaN（circ_mv/换手全 NaN，模型按缺失走，非 0）
         else:
-            for code, peak in pk.get("peaks", {}).items():
-                try:
-                    if code in _g_positions:
-                        pv = float(peak or 0.0)
-                        if pv > float(_g_positions[code].get("peak", 0.0) or 0.0):
-                            _g_positions[code]["peak"] = pv
-                except Exception:
-                    pass
-    print("[P16G2][BUILD] BUILD_TAG=%s account=%s bridge=%s" % (BUILD_TAG, ACCOUNT_ID, BRIDGE_DIR))
-    print("[P16G2][INIT] date=%s last_seq=%d pending=%d positions=%d risk_sold=%d" % (
-        _g_today, _g_last_cmd_seq, len(_g_pending), len(_g_positions), len(_g_risk_sold)))
+            fs[code] = v / 10000.0
+    _g_fs_map = fs
+    print("[P16G2][SIG-FS] float_share 快照构建 %d 只（缺 %d）" % (len(fs), bad))
+    return fs
+
+
+def _fetch_bars(C, codes):
+    """QMT 日线取数 -> bars dict {code: DataFrame(index=YYYYMMDD,
+    columns=[close(adj_close), volume, amount, adj_factor, unadj_close])}。
+    ★ 复权口径（探针 2026-10-17 实证）：front_ratio close × 快照 adj_latest
+      与训练面板 hfq(close*adj_factor) 相对误差 max=3.6e-16（60 日全对齐）。
+    ★ 单位：xtdata amount=元、volume=手（增量库实测与 astock vol 同）。
+      astock amount 口径=千元 -> 传 amount_yuan=True 在 build_raw_columns ÷1000。"""
+    bars = {}
+    codes = list(codes)
+    ok = 0
+    for i in range(0, len(codes), SIGNAL_BATCH):
+        batch = codes[i:i + SIGNAL_BATCH]
+        # ★ 签名（QMT xtdata get_market_data_ex）: (field_list, stock_list, period, ...)
+        #   field_list 在前！位置传参会错位 -> 必须用 stock_code= 关键字（2026-10-17 核对
+        #   xtdata.py:392 签名 + qmt_builder.py:229 现役调用范式）。
+        try:
+            d = C.get_market_data_ex(stock_code=batch, period="1d",
+                                      count=SIGNAL_MIN_BARS,
+                                      dividend_type="front_ratio")
+        except Exception:
+            # 旧签名兜底（fields 第一参变体，ATR/黄氏529 部署为该形态）
+            try:
+                d = C.get_market_data_ex([], batch, period="1d",
+                                         count=SIGNAL_MIN_BARS,
+                                         dividend_type="front_ratio")
+            except Exception as e:
+                print("[P16G2][SIG-MD-ERR] batch=%d %s" % (i, e))
+                continue
+        if not d:
+            continue
+        for code, df in d.items():
+            try:
+                if df is None or len(df) < SIGNAL_MIN_BARS:
+                    continue
+                idx = df.index
+                dates = [str(x).replace("-", "")[:8] for x in idx]
+                snap = _snap_load().get(code)
+                if not snap:
+                    continue
+                adj_latest = snap["adj"]
+                px = df["close"].astype(float)
+                bars[code] = pd.DataFrame({
+                    "close": px.values,                      # qfq*adj_latest = 训练 hfq
+                    "adj_close": px.values,                  # 同上（模块 docstring 路径1）
+                    "unadj": px.values / adj_latest if adj_latest else px.values,
+                    "volume": df["volume"].astype(float).values,
+                    "amount": df["amount"].astype(float).values,
+                    "adj_factor": [adj_latest] * len(px),
+                }, index=pd.Index(dates, name="trade_date"))
+                ok += 1
+            except Exception:
+                continue
+        if (i // SIGNAL_BATCH) % 5 == 0:
+            print("[P16G2][SIG-MD] 进度 %d/%d ok=%d" % (i + len(batch), len(codes), ok))
+    print("[P16G2][SIG-MD] 取数完成 ok=%d/%d" % (len(bars), len(codes)))
+    return bars
+
+
+def _compute_scores(C, trade_date):
+    """21 特征 + B21 打分，返回按 prob 降序的 [(code, prob), ...]（过滤帧行集）。
+    bars 缓存到 _g_signal_bars（plan 阶段低开量比校验用）。"""
+    global _g_signal_prob, _g_signal_bars
+    snap = _snap_load()
+    codes = sorted(snap.keys())
+    fs = _g_fs_map if _g_fs_map is not None else _build_float_share_map(C)
+    bars = _fetch_bars(C, codes)
+    _g_signal_bars = bars
+    # 行业 map：IND_POOL + IND_ID 序号 -> {code: 行业名}
+    ind_map = {}
+    for i, code in enumerate(codes):
+        idx = snap[code]["ind"]
+        if idx >= 0 and idx < len(IND_POOL):
+            ind_map[code] = IND_POOL[idx]
+    # snap_map（估值，模块内 assemble 覆盖 pe/pb/dv）
+    snap_map = dict((c, {"pe_ttm": v["pe"], "pb": v["pb"], "dv_ttm": v["dv"]})
+                    for c, v in snap.items())
+    # 白名单/ST（filter_universe）：enabled=过滤帧宇宙（H1 同口径）；ST 快照剔当日新 ST
+    # ★ target_date 传 None（取全序列算滚动窗口）后自行取最新日：
+    #   09:50 盘中当日 bar 可能尚未生成，写死 trade_date==today 会筛空 -> 信号失败；
+    #   取 max(trade_date) 自适应（若当日 bar 已生成即为今日，否则 T-1）。
+    st_codes = _g_st_codes or (_snap_load(), _g_st_codes)[1]
+    out = build_from_qmt(
+        bars, fs, ind_map, snap_map,
+        target_codes=None, target_date=None,
+        amount_yuan=True, volume_is_lot=True,
+        enabled_codes=codes, st_codes=st_codes, align_universe=True)
+    if out is None or len(out) == 0:
+        raise RuntimeError("特征构建为空（行集过滤/取数失败）")
+    out = out[out["trade_date"] == out["trade_date"].max()]
+    if len(out) == 0:
+        raise RuntimeError("最新交易日无行（取数日对齐失败）")
+    X = out[[c for c in FEATURE_ORDER]].astype("float32").values
+    prob = predict_proba(X)
+    prob = [float(x) for x in prob]
+    pairs = sorted(zip(out["ts_code"].values.tolist(), prob),
+                   key=lambda t: t[1], reverse=True)
+    _g_signal_prob = dict(pairs[:SIGNAL_SELECT_TOP * 4])
+    top = pairs[:SIGNAL_SELECT_TOP]
+    n_pass = len([p for p in top if p[1] >= SIGNAL_REDLINE_PROB])
+    print("[P16G2][SIG-SCORE] rows=%d 红线(>=%.2f)过 %d/%d 首 %.4f 末 %.4f" % (
+        len(out), SIGNAL_REDLINE_PROB, n_pass, len(top),
+        top[0][1] if top else 0.0, top[-1][1] if top else 0.0))
+    return pairs
+
+
+def _count_hold_days(since, today):
+    """since(YYYYMMDD) 到 today 的交易日数（行情日历近似；无日历回退自然日/4）。
+    对齐 rebalance_g2._count_trade_days（start 含、end 不含）。"""
+    try:
+        dates = _g_trade_dates or []
+        if len(dates) > 10:
+            a = b = None
+            for d in dates:
+                if a is None and d >= since:
+                    a = d
+                if d < today:
+                    b = d
+                elif d >= today:
+                    break
+            if a is not None:
+                i0 = dates.index(a)
+                i1 = len(dates)
+                for j in range(i0, len(dates)):
+                    if dates[j] >= today:
+                        i1 = j
+                        break
+                return max(0, i1 - i0)
+        import datetime as _dt
+        d0 = _dt.datetime.strptime(str(since), "%Y%m%d").date()
+        d1 = _dt.datetime.strptime(str(today), "%Y%m%d").date()
+        return max(0, int((d1 - d0).days / 4))
+    except Exception:
+        return 0
+
+
+def _g2_tier(C):
+    """大盘门控 T 档（复刻 rebalance_g2._calc_tier；数据源换 QMT 内部行情）。
+    T=0 停买 / T=1 半仓 / T=2 满仓；取不到 fail-safe T=1 半仓。"""
+    tier_err = "行情不足"
+    for _sym in SIGNAL_HS300_SYMS:
+        try:
+            d = C.get_market_data_ex(stock_code=[_sym], period="1d",
+                                     count=2, dividend_type="none")
+            df = (d or {}).get(_sym)
+            if df is None or len(df) < 2:
+                raise RuntimeError("%s 行情不足" % _sym)
+            last = float(df["close"].iloc[-1])
+            prev = float(df["close"].iloc[-2])
+            if prev <= 0:
+                raise RuntimeError("%s 昨收非正" % _sym)
+            pct = (last / prev - 1.0) * 100.0
+            break
+        except Exception as e:
+            tier_err = str(e)
+            pct = None
+    if pct is None:
+        print("[P16G2][SIG-TIER] 沪深300 取数失败(%s)，fail-safe T=1 半仓" % tier_err)
+        return 1, None
+    if pct <= SIGNAL_TIER_STOP_PCT:
+        return 0, pct
+    if pct < SIGNAL_TIER_HALF_PCT:
+        return 1, pct
+    return 2, pct
+
+
+def _plan_signal(C, date, pairs):
+    """复刻 rebalance_g2.build_plan 核心：到期卖出 + 等权平衡（先卖后买）。
+    返回 orders（action/code/vol/price/reason/strategy_order_id）。"""
+    global _g_signal_capital
+    snap = _snap_load()
+    # 资金池 = L3 快照 + 当日 position 推算更新（持仓市值 + 期初快照基数口径见 §5.4）
+    capital = _g_signal_capital or CAPITAL_SNAP
+    # 账户 position（资金池/持仓真相）
+    f_get = globals().get("get_trade_detail_data")
+    if f_get is None:
+        f_get = getattr(C, "get_trade_detail_data", None)
+    if f_get is None:
+        raise RuntimeError("无 get_trade_detail_data")
+    positions = f_get(ACCOUNT_ID, "stock", "position") or []
+    acct = {}
+    for p in positions:
+        code = str(getattr(p, "m_strInstrumentID", "") or "")
+        if not code:
+            continue
+        if "." not in code:
+            code = "%s.SH" % code if code.startswith("6") else "%s.SZ" % code
+        vol = int(getattr(p, "m_nVolume", 0) or 0)
+        can_use = int(getattr(p, "m_nCanUseVolume", 0) or 0)
+        if vol <= 0:
+            continue
+        cost = 0.0
+        for attr in ("m_dOpenPrice", "m_dCostPrice", "m_dPrice"):
+            v = float(getattr(p, attr, 0) or 0)
+            if v > 0:
+                cost = v
+                break
+        acct[code] = {"vol": vol, "can_use": can_use, "cost": cost}
+    # 价格源：tick 现价（兜底快照估值用 bars 近似价）
+    tick_codes = list(acct.keys())
+    ticks = {}
+    try:
+        ticks = C.get_full_tick(tick_codes) or {}
+    except Exception:
+        ticks = {}
+
+    def _price(code):
+        t = ticks.get(code) or {}
+        try:
+            v = float(t.get("lastPrice", 0) or 0)
+        except Exception:
+            v = 0.0
+        return v
+
+    # G2 纳管集 = 持仓 ∩ (G2 白名单 ∪ 既有 hold_dates)——信号版持有账本 = hold_dates
+    hd = dict(_g_hold_dates)
+    # ---- 卖出：ST 强制 + 持有满 HOLD_DAYS 到期 ----
+    orders = []
+    sold = set()
+    for code in list(acct.keys()):
+        if code not in hd:
+            continue          # 非 G2 持票（资金红线：绝不碰他票）
+        skip_st = False
+        try:
+            if code in (_g_st_codes or (_snap_load(), _g_st_codes)[1]):
+                skip_st = True
+            else:
+                nm = C.get_stock_name(code) if hasattr(C, "get_stock_name") else ""
+                if nm and "ST" in str(nm).upper():
+                    skip_st = True
+        except Exception:
+            pass
+        held = _count_hold_days(hd[code], date)
+        if skip_st or held >= SIGNAL_HOLD_DAYS:
+            vol = min(acct[code]["can_use"] or acct[code]["vol"], acct[code]["vol"])
+            if vol <= 0:
+                continue
+            px = _price(code) or acct[code]["cost"]
+            if px <= 0:
+                continue
+            reason = ("ST强制卖出" if skip_st else "g2持有到期(满%d日)" % SIGNAL_HOLD_DAYS)
+            orders.append({"action": "SELL", "code": code, "vol": vol,
+                           "price": round(px, 3), "reason": reason,
+                           "strategy_order_id": "P16_%s_%04d" % (date, _g_signal_seq + len(orders) + 1)})
+            sold.add(code)
+    kept = set(hd.keys()) - sold
+    # ---- 门控 ----
+    tier, pct = _g2_tier(C)
+    deploy = 0.0 if tier == 0 else (SIGNAL_HALF_DEPLOY_PCT if tier == 1 else SIGNAL_DEPLOY_PCT)
+    print("[P16G2][SIG-TIER] hs300=%s tier=%d deploy=%.2f" % (
+        ("%.2f%%" % pct) if pct is not None else "N/A", tier, deploy))
+    if tier == 0 or deploy <= 0:
+        return orders, {"tier": tier, "buys": 0, "sells": len(orders)}
+    # ---- 买入候选：过简化红线 + 排除持仓/ENS ----
+    cand = [p for p in pairs
+            if p[1] >= SIGNAL_REDLINE_PROB
+            and p[0] not in kept and p[0] not in sold
+            and p[0] not in _g_oppo_blocked
+            and p[0] in snap]
+    cand = cand[:SIGNAL_SELECT_TOP]
+    n_slots = SIGNAL_TOP_N - len(kept)
+    if n_slots <= 0:
+        n_slots = 0
+    # 动态等权（对齐 rebalance_g2 L545-586）：target = capital*deploy/TOP_N
+    target_value = capital * deploy / float(SIGNAL_TOP_N)
+    # 超配减仓（kept > target）—— 先于买入
+    for code in list(kept):
+        if code not in acct:
+            continue
+        px = _price(code) or acct[code]["cost"]
+        if px <= 0:
+            continue
+        tgt = int(target_value / px / SIGNAL_MIN_VOL) * SIGNAL_MIN_VOL
+        diff = acct[code]["vol"] - tgt
+        if diff < SIGNAL_MIN_VOL:
+            continue
+        vol = min(diff, acct[code]["can_use"] or 0)
+        if vol < SIGNAL_MIN_VOL:
+            continue
+        orders.append({"action": "SELL", "code": code, "vol": vol,
+                       "price": round(px, 3),
+                       "reason": "动态等权超配减仓(目标%.0f)" % target_value,
+                       "strategy_order_id": "P16_%s_%04d" % (date, _g_signal_seq + len(orders) + 1)})
+    # 新晋建仓
+    buys = 0
+    for code, prob in cand:
+        if buys >= n_slots:
+            break
+        try:
+            d = C.get_market_data_ex(stock_code=[code], period="1d", count=1,
+                                      dividend_type="front_ratio")
+            df = (d or {}).get(code)
+            px = float(df["close"].iloc[-1]) if df is not None and len(df) else 0.0
+        except Exception:
+            px = 0.0
+        if px <= 0:
+            px = _price(code)
+        if px <= 0:
+            print("[P16G2][SIG-BUY-SKIP] %s 取价失败" % code)
+            continue
+        # 低开校验（复刻 position_filter.gap_guard，数据源=QMT tick）：
+        #   open_pct<=-5% 跳过；-5%~-3% 需量比>=2.0 放行；缺数据 fail-open 放行
+        try:
+            t = ticks.get(code) or {}
+            _op = float(t.get("open", 0) or 0)
+            _pre = float(t.get("lastClose", 0) or 0)
+            if _op > 0 and _pre > 0:
+                _opct = (_op / _pre - 1.0) * 100.0
+                if _opct <= -5.0:
+                    print("[P16G2][SIG-BUY-SKIP] %s 极端低开%.1f%%" % (code, _opct))
+                    continue
+                if _opct <= -3.0:
+                    _v0 = float(t.get("volume", 0) or 0)
+                    _b = (_g_signal_bars or {}).get(code)
+                    _avg5 = float(_b["volume"].tail(5).mean()) if _b is not None else 0.0
+                    _vr = (_v0 / _avg5) if (_avg5 > 0 and _v0 > 0) else None
+                    if not (_vr is not None and _vr >= 2.0):
+                        print("[P16G2][SIG-BUY-SKIP] %s 低开%.1f%%且量比不足跳过" % (code, _opct))
+                        continue
+        except Exception:
+            pass
+        tgt = int(target_value / px / SIGNAL_MIN_VOL) * SIGNAL_MIN_VOL
+        if tgt < SIGNAL_MIN_VOL:
+            print("[P16G2][SIG-BUY-SKIP] %s 资金不足一手 @%.2f" % (code, px))
+            continue
+        orders.append({"action": "BUY", "code": code, "vol": tgt,
+                       "price": round(px, 3),
+                       "reason": "g2内产信号 prob=%.4f" % prob,
+                       "strategy_order_id": "P16_%s_%04d" % (date, _g_signal_seq + len(orders) + 1)})
+        buys += 1
+    return orders, {"tier": tier, "buys": buys, "sells": len(orders),
+                    "target_value": round(target_value, 2),
+                    "cand": len(cand), "kept": len(kept)}
+
+
+def _rebuild_signal_watermark(C, date):
+    """同日重启防重复：当日 order 反查 remark=ORDER_REMARK，
+    按 sid(P16_<date>_<seq>) 重建 _g_signal_seq 水位与 _g_signal_bought。"""
+    global _g_signal_seq, _g_signal_bought
+    f_get = globals().get("get_trade_detail_data")
+    if f_get is None:
+        f_get = getattr(C, "get_trade_detail_data", None)
+    if f_get is None:
+        return
+    try:
+        orders = f_get(ACCOUNT_ID, "stock", "order") or []
+    except Exception:
+        return
+    max_seq = 0
+    for o in orders:
+        try:
+            uid = str(getattr(o, "m_strUserOrderId", "") or "")
+            if not uid.startswith("P16_%s_" % date):
+                continue
+            tail = uid.split("_")[-1]
+            max_seq = max(max_seq, int(tail) if tail.isdigit() else 0)
+            ocode = str(getattr(o, "m_strInstrumentID", "") or "")
+            if "." not in ocode:
+                ocode = "%s.SH" % ocode if ocode.startswith("6") else "%s.SZ" % ocode
+            opt = str(getattr(o, "m_strOptName", "") or "")
+            if "买入" in opt:
+                _g_signal_bought.add(ocode)
+        except Exception:
+            continue
+    _g_signal_seq = max(_g_signal_seq, max_seq)
+    if max_seq:
+        print("[P16G2][SIG-WATERMARK] 同日重启重建 signal_seq=%d bought=%d" % (
+            max_seq, len(_g_signal_bought)))
+
+
+def _run_signal(C, date):
+    """信号入口（时间闸门内调用一次/日）。失败转被动并大声打印。"""
+    global _g_signal_done, _g_signal_stage, _g_signal_seq, _g_hold_dates, _g_signal_capital
+    if _g_signal_done:
+        return
+    if _g_passive:
+        print("[P16G2][SIG-SKIP] 被动模式，信号不执行")
+        _g_signal_done = True
+        return
+    t0 = time.time()
+    _g_signal_stage = "start"
+    print("[P16G2][SIG-START] date=%s snap=%s n=%d" % (
+        date, SNAPSHOT_DATE, SNAP_N))
+    try:
+        _rebuild_signal_watermark(C, date)
+        _g_signal_stage = "scores"
+        pairs = _compute_scores(C, date)
+        _g_signal_stage = "plan"
+        orders, meta = _plan_signal(C, date, pairs)
+        _g_signal_stage = "execute"
+        print("[P16G2][SIG-PLAN] %s orders=%d" % (meta, len(orders)))
+        for o in orders:
+            if o["action"] == "BUY" and o["code"] in _g_signal_bought:
+                print("[P16G2][SIG-SKIP-DUP] %s 当日已买，跳过" % o["code"])
+                continue
+            sid = o.get("strategy_order_id", "")
+            _execute_order(C, o, date)
+            ok = sid in _g_pending or sid == ""
+            if o["action"] == "BUY":
+                if ok:
+                    # 仅下单入 pending 才记账（防失败单污染已买集合/持有日）
+                    _g_signal_bought.add(o["code"])
+                    _g_hold_dates.setdefault(o["code"], date)
+            else:
+                # 到期/ST 全额卖出清持有日；等权超配减仓为部分卖（仍持有），不清
+                if "超配减仓" not in o.get("reason", ""):
+                    _g_hold_dates.pop(o["code"], None)
+            _g_signal_seq += 1
+        _g_signal_stage = "done"
+        _g_signal_done = True
+        print("[P16G2][SIG-DONE] %d 单 耗时 %.1fs" % (len(orders), time.time() - t0))
+    except Exception:
+        _g_signal_done = True   # 失败也标完成（防同日反复重试放大风险）
+        print("[P16G2][SIG-ERR] 信号失败(阶段=%s)，当日信号终止（持仓风控不受影响）: %s" % (
+            _g_signal_stage, traceback.format_exc()))
 
 
 def handlebar(C):
-    """每分钟触发：读指令→下单→反查→pending→快照→心跳。"""
+    """每分钟触发：信号闸门→指令→下单→反查→pending→快照→心跳。"""
     global _g_last_cmd_seq, _g_today, _g_last_position_refresh, _g_last_asset_refresh, _g_slippage_alert_count
+    # ★ 信号闸门段对 _g_signal_* 有赋值 -> 必须显式声明 global，
+    #   否则 Python 判其为局部变量，读取处抛 UnboundLocalError（冒烟实测）。
+    global _g_signal_done, _g_signal_stage, _g_signal_prob, _g_signal_bought, _g_signal_seq
+
+    # 被动模式守卫（T-20261015-004）：IO 预检失败后不读指令/不下单/只写心跳，防沙箱下盲跑
+    if _g_passive:
+        try:
+            _write_heartbeat(_g_today, _g_last_cmd_seq)
+        except Exception:
+            pass
+        return
 
     # 日期切换重置
     today = _today_str()
@@ -1692,7 +2393,11 @@ def handlebar(C):
         _g_pending.clear()
         _g_risk_sold.clear()
         _g_slippage_alert_count = 0   # 告警计数按交易日重置（否则跨日累加，日终无法归因到具体某天）
-        print("[P16G2][NEW-DAY] date=%s pending清空 risk_sold清空 slippage_alert清零" % today)
+        _g_signal_done = False        # 信号每日一次（新交易日重置）
+        _g_signal_stage = ""
+        _g_signal_prob.clear()
+        _g_signal_bought.clear()      # 当日已买集合按日清零（防陈旧误跳过）
+        print("[P16G2][NEW-DAY] date=%s pending清空 risk_sold清空 slippage_alert清零 signal复位" % today)
 
     # 交易时段判断：09:30-11:30 或 13:00-15:00
     try:
@@ -1703,57 +2408,39 @@ def handlebar(C):
     in_session = ("09:30" <= hour_min <= "11:30") or ("13:00" <= hour_min <= "15:00")
 
     if not in_session:
-        # 2026-09-01 教训：此分支必须 try/except 兜底——心跳写失败（文件锁）若不捕获会崩溃整个策略
+        # 2026-09-01 教训：此分支必须 try/except 兜底——心跳写失败若不捕获会崩溃整个策略
         try:
             _write_heartbeat(_g_today, _g_last_cmd_seq)
         except Exception:
             print("[P16G2][HANDLEBAR-ERR-HEART] %s" % traceback.format_exc())
         return
 
-    # 1) 处理orders指令
-    try:
-        orders_seq = _process_orders_cmd(C, _g_today)
-        if orders_seq > _g_last_cmd_seq:
-            _g_last_cmd_seq = orders_seq
-    except Exception:
-        print("[P16G2][HANDLEBAR-ERR-ORDERS] %s" % traceback.format_exc())
+    # 0) 信号闸门（s4-5d 信号内产版）：09:50 触发一次（对齐原 G2 换仓时点），
+    #    09:58 后未跑则当日放弃（防盘中误触发）。信号段自身 try/except 全隔离。
+    if (not _g_signal_done) and _g_signal_stage == "":
+        if hour_min >= SIGNAL_HM and hour_min <= SIGNAL_DEADLINE_HM:
+            try:
+                _run_signal(C, _g_today)
+            except Exception:
+                print("[P16G2][HANDLEBAR-ERR-SIG] %s" % traceback.format_exc())
+                _g_signal_done = True
+        elif hour_min > SIGNAL_DEADLINE_HM:
+            _g_signal_done = True   # 过点放弃（当日不追补）
+            print("[P16G2][SIG-EXPIRED] 过信号时点(%s)且未执行，当日放弃" % SIGNAL_DEADLINE_HM)
 
-    # 2) 处理cancel指令
-    try:
-        cancel_seq = _process_cancel_cmd(C, _g_today)
-        if cancel_seq > _g_last_cmd_seq:
-            _g_last_cmd_seq = cancel_seq
-    except Exception:
-        print("[P16G2][HANDLEBAR-ERR-CANCEL] %s" % traceback.format_exc())
-
-    # 3) pending 状态机
+    # 1) pending 状态机（风控卖出委托的成交跟踪/超时重试/撤单重下）
     try:
         _check_pending_orders(C, _g_today)
     except Exception:
         print("[P16G2][HANDLEBAR-ERR-PENDING] %s" % traceback.format_exc())
 
-    # 3.5) 内置实时风控（止损/止盈/追盈，纯行情驱动）
+    # 2) 内置实时风控（止损/止盈/追盈，纯行情驱动）
     try:
         _check_risk_signals(C, _g_today)
     except Exception:
         print("[P16G2][HANDLEBAR-ERR-RISK] %s" % traceback.format_exc())
 
-    # 4) 持仓/资产快照（间隔>=10秒）
-    now = time.time()
-    if now - _g_last_position_refresh >= POSITION_REFRESH_INTERVAL:
-        try:
-            _refresh_positions(C, _g_today)
-            _g_last_position_refresh = now
-        except Exception:
-            print("[P16G2][HANDLEBAR-ERR-POS] %s" % traceback.format_exc())
-    if now - _g_last_asset_refresh >= POSITION_REFRESH_INTERVAL:
-        try:
-            _refresh_asset(C, _g_today)
-            _g_last_asset_refresh = now
-        except Exception:
-            print("[P16G2][HANDLEBAR-ERR-ASSET] %s" % traceback.format_exc())
-
-    # 5) 心跳
+    # 3) print 心跳（含持仓/资产快照的 print 留痕；原文件快照链路已废止）
     try:
         _write_heartbeat(_g_today, _g_last_cmd_seq)
     except Exception:

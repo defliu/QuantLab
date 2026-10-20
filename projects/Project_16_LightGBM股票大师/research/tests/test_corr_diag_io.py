@@ -800,19 +800,39 @@ else:
             continue
         rows, m = CIO.load_candidates(pth)
         check("H8 %s 候选行数" % kind, m["n_rows"] > 0, m["n_rows"])
-        hit = [c for c in m["codes"] if c in imap]
-        check("H9 %s 行业覆盖" % kind,
-              len(hit) == len(m["codes"]), "%d/%d" % (len(hit), len(m["codes"])))
+        # H9 行业覆盖（T-20261020-001 修正）：北交所（.BJ）不在申万一级映射内，
+        # 这是数据源事实而非缺陷——原断言要求 100% 覆盖，对含 .BJ 的候选恒假。
+        # 正确不变量：沪深候选 100% 有行业归属；.BJ 允许缺失但必须留痕。
+        bj = [c for c in m["codes"] if c.endswith(".BJ")]
+        hs = [c for c in m["codes"] if not c.endswith(".BJ")]
+        hs_hit = [c for c in hs if c in imap]
+        check("H9 %s 行业覆盖(沪深)" % kind,
+              len(hs_hit) == len(hs),
+              "%d/%d（.BJ 缺申万属数据源事实: %s）" % (len(hs_hit), len(hs), bj or "无"))
 
         r = CIO.diagnose_batch(kind, BATCH, REAL, fn[kind], today=TODAY)
         check("H10 %s 端到端有结论" % kind,
               r["overall"] in (OK, WARN, FAIL_S, SKIP_S), r["overall"])
         check("H11 %s IO状态非FAIL" % kind,
               r["io"]["io_status"] != FAIL_S, r["io"]["errors"][:2])
-        check("H12 %s 行业维度有结论" % kind,
-              r.get("section_status", {}).get("industry") in
-              (OK, WARN, FAIL_S, SKIP_S),
-              r.get("section_status", {}).get("industry"))
+        # H12 行业维度有结论（T-20261020-001 修正）：候选数 < min_candidates(5) 时
+        # 核心按设计走 _skip 分支并**提前 return**——此时 section_status 尚未构建
+        # （它只在完整诊断路径末尾生成），属正确行为。原断言强制要求 industry 有结论，
+        # 对小批次恒假。
+        n_cand = r.get("n_candidates", len(m["codes"]))
+        min_cand = core.THRESHOLDS["min_candidates"]
+        if n_cand >= min_cand:
+            check("H12 %s 行业维度有结论" % kind,
+                  r.get("section_status", {}).get("industry") in
+                  (OK, WARN, FAIL_S, SKIP_S),
+                  r.get("section_status", {}).get("industry"))
+        else:
+            check("H12 %s 小批次按设计跳过诊断" % kind,
+                  (r.get("sections", {}).get("_skip") or {}).get("status") in
+                  (OK, WARN, FAIL_S, SKIP_S),
+                  "n=%d < min_candidates=%d，_skip=%s" % (
+                      n_cand, min_cand,
+                      (r.get("sections", {}).get("_skip") or {}).get("status")))
         # 确定性：同参数两次调用结论一致
         r2 = CIO.diagnose_batch(kind, BATCH, REAL, fn[kind], today=TODAY)
         check("H13 %s 端到端确定性" % kind, r["overall"] == r2["overall"],
@@ -824,9 +844,14 @@ else:
     if os.path.exists(fut):
         rf = CIO.diagnose_batch("g2", "20261008", REAL,
                                 "20261008_g2_top10.csv", today=TODAY)
+        # H14 修正（T-20261020-001）：未来日期副本的候选仅 2 只 < min_candidates(5)，
+        # 核心走 _skip 分支提前 return，section_status 不存在。但「未来日期」必须仍
+        # 决定结论：skip 分支会把 overall 提升为 date_info 的 status（core L905-907），
+        # 故正确断言 = overall==FAIL 且 date 维度在 rf["date"]["status"] 里为 FAIL。
         check("H14 未来日期副本=FAIL",
-              rf.get("section_status", {}).get("date") == FAIL_S,
-              rf.get("section_status", {}).get("date"))
+              rf.get("overall") == FAIL_S
+              and (rf.get("date") or {}).get("status") == FAIL_S,
+              (rf.get("overall"), (rf.get("date") or {}).get("status")))
         check("H15 未来副本原因留痕",
               any("未来日期副本" in x for x in rf["reasons"]), rf["reasons"][:3])
     else:
