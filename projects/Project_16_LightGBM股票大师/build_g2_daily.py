@@ -35,6 +35,16 @@ OUT = os.path.join(LIVE, "g2_latest_features.parquet")
 RAW_COLS = ["close", "pct_chg", "vol", "amount", "turnover_rate", "volume_ratio",
             "pe_ttm", "pb", "dv_ttm", "circ_mv", "is_st"]
 
+# 量价特征计算窗口（每股最近 N 行）——2026-10-19 OOM 修复
+# 背景：原实现对全历史 1,477 万行算 23 个滚动/EMA 特征，中间对象（每个 ~118MB）峰值 >5GB，
+#   10-14/15/16/19 连续失败：numpy.core._exceptions._ArrayMemoryError:
+#   Unable to allocate 56.3 MiB for an array with shape (14770324,) and data type int32
+#   （build_g2_daily.py:76 groupby().transform(ewm)）。
+# 安全性：main() 最终只消费「目标日」一列特征（L170-172），而 250 日滚动只需 250 行、
+#   EMA(span<=26) / RSI6(alpha=1/6) 在 300 行后已数值收敛（(5/6)^300≈1e-24），
+#   横截面中位数 rel_mom_20 同日股票亦全量在位 -> 与全历史计算等价。
+FEATURE_WINDOW = 300
+
 
 def compute_price_features(df):
     """复用 merge_live_features 的量价特征重算（真实最新日）。"""
@@ -164,6 +174,15 @@ def main():
     merged = merged.drop_duplicates(subset=["ts_code", "trade_date"], keep="last").sort_values(["ts_code", "trade_date"])
     merged = merged[merged["trade_date"] <= target]
     print(f"    合并后 {len(merged):,} 行 | 最新可用 {merged['trade_date'].max().date()}")
+
+    # 2026-10-19 OOM 修复：量价特征只需「每股最近 FEATURE_WINDOW 行」。
+    # 全历史 1,477 万行时 compute_price_features 的 23 个滚动/EMA 中间对象峰值 >5GB
+    # （10-14/15/16/19 连续 numpy._ArrayMemoryError）。截断后仍完整覆盖 250 日滚动窗口
+    # 与 EMA/RSI 收敛所需历史，且同日横截面股票全量在位 -> 目标日特征与全历史计算等价。
+    n_merged = len(merged)
+    merged = merged.groupby("ts_code", sort=False).tail(FEATURE_WINDOW).copy()
+    print(f"    特征窗口截断：{n_merged:,} -> {len(merged):,} 行（每股最近 {FEATURE_WINDOW} 行）")
+    del main_df  # 主库全历史已并入 merged 并完成截断，此后无引用 -> 释放 ~1.4GB
 
     print("[2/6] 重算量价特征（真实最新日） ...")
     feats = compute_price_features(merged)
