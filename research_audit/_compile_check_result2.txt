@@ -1,0 +1,4 @@
+OK   d:\QuantLab\projects\Project_10_价值小盘V2\build\strategy_v2.py
+OK   d:\QuantLab\projects\Project_16_LightGBM股票大师\build\strategy_p16_g2_bridge.py
+OK   d:\QuantLab\projects\Project_16_LightGBM股票大师\build\strategy_p16_ens_bridge.py
+OK   d:\QuantLab\projects\Project_16_LightGBM股票大师\build\strategy_p16_v13_risk.py

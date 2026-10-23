@@ -1,0 +1,82 @@
+{
+  "generated": "2026-10-24 00:06:01",
+  "panel": "feature_panel_v3_enh2_n3_bt.parquet",
+  "live_model": "lgb_model_v3_g2_strong_real_20260825_1964t.txt",
+  "rows": [
+    {
+      "label": "① 旧模型 + 旧窗口 + TOP2 + 0.95（官方锚点）",
+      "model": "lgb_model_v3_g2_strong_real_20260825_1964t.txt",
+      "window": "2024-07-01 ~ 2026-08-14",
+      "threshold": "total_new>=60.0",
+      "n_days": 516,
+      "n_trades": 78,
+      "total_return": 3.5721,
+      "annual_return": 1.1008,
+      "sharpe": 2.336,
+      "max_drawdown": -0.1671,
+      "win_rate": 0.5513,
+      "skips": 37,
+      "elapsed": 265.3
+    },
+    {
+      "label": "①b 旧模型 + 旧窗口 + TOP2 + 0.98（实盘口径）",
+      "model": "lgb_model_v3_g2_strong_real_20260825_1964t.txt",
+      "window": "2024-07-01 ~ 2026-08-14",
+      "threshold": "total_new>=60.0",
+      "n_days": 516,
+      "n_trades": 78,
+      "total_return": 3.7286,
+      "annual_return": 1.1356,
+      "sharpe": 2.347,
+      "max_drawdown": -0.1695,
+      "win_rate": 0.5513,
+      "skips": 37,
+      "elapsed": 256.2
+    },
+    {
+      "label": "② 生产模型 + 旧窗口 + TOP2 + 0.98",
+      "model": "lgb_model_v3_g2_strong_real_20260825_1964t.txt",
+      "window": "2024-07-01 ~ 2026-08-14",
+      "threshold": "total_new>=60.0",
+      "n_days": 516,
+      "n_trades": 78,
+      "total_return": 3.7286,
+      "annual_return": 1.1356,
+      "sharpe": 2.347,
+      "max_drawdown": -0.1695,
+      "win_rate": 0.5513,
+      "skips": 37,
+      "elapsed": 291.2
+    },
+    {
+      "label": "③ 生产模型 + B21窗口 + TOP2 + 0.98（SC60）",
+      "model": "lgb_model_v3_g2_strong_real_20260825_1964t.txt",
+      "window": "2024-07-01 ~ 2026-09-30",
+      "threshold": "total_new>=60.0",
+      "n_days": 516,
+      "n_trades": 78,
+      "total_return": 3.7286,
+      "annual_return": 1.1356,
+      "sharpe": 2.347,
+      "max_drawdown": -0.1695,
+      "win_rate": 0.5513,
+      "skips": 37,
+      "elapsed": 266.8
+    },
+    {
+      "label": "④ 生产模型 + B21窗口 + TOP2 + 0.98（prob≥0.60）",
+      "model": "lgb_model_v3_g2_strong_real_20260825_1964t.txt",
+      "window": "2024-07-01 ~ 2026-09-30",
+      "threshold": "prob>=0.60",
+      "n_days": 516,
+      "n_trades": 80,
+      "total_return": -0.0812,
+      "annual_return": -0.0405,
+      "sharpe": 0.052,
+      "max_drawdown": -0.3989,
+      "win_rate": 0.4625,
+      "skips": 86,
+      "elapsed": 253.8
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "generated": "2026-10-23 09:08:11",
+  "rows": [
+    {
+      "seg": "2024H2",
+      "start": "2024-07-01",
+      "end": "2024-12-31",
+      "old": {
+        "days": 125,
+        "trades": 23,
+        "total_return": 0.3441,
+        "max_drawdown": -0.1283,
+        "win_rate": 0.3913
+      },
+      "new": {
+        "days": 125,
+        "trades": 21,
+        "total_return": -0.0133,
+        "max_drawdown": -0.1571,
+        "win_rate": 0.4762
+      }
+    },
+    {
+      "seg": "2025H1",
+      "start": "2025-01-01",
+      "end": "2025-06-30",
+      "old": {
+        "days": 117,
+        "trades": 18,
+        "total_return": 0.3826,
+        "max_drawdown": -0.1315,
+        "win_rate": 0.6667
+      },
+      "new": {
+        "days": 117,
+        "trades": 18,
+        "total_return": 0.6788,
+        "max_drawdown": -0.1264,
+        "win_rate": 0.8333
+      }
+    },
+    {
+      "seg": "2025H2",
+      "start": "2025-07-01",
+      "end": "2025-12-31",
+      "old": {
+        "days": 126,
+        "trades": 19,
+        "total_return": 0.4763,
+        "max_drawdown": -0.1141,
+        "win_rate": 0.5263
+      },
+      "new": {
+        "days": 126,
+        "trades": 16,
+        "total_return": 0.0968,
+        "max_drawdown": -0.0816,
+        "win_rate": 0.5625
+      }
+    },
+    {
+      "seg": "2026H1",
+      "start": "2026-01-01",
+      "end": "2026-06-30",
+      "old": {
+        "days": 116,
+        "trades": 17,
+        "total_return": 0.6482,
+        "max_drawdown": -0.1234,
+        "win_rate": 0.7059
+      },
+      "new": {
+        "days": 116,
+        "trades": 21,
+        "total_return": 0.169,
+        "max_drawdown": -0.2232,
+        "win_rate": 0.381
+      }
+    },
+    {
+      "seg": "2026Q3",
+      "start": "2026-07-01",
+      "end": "2026-09-30",
+      "old": {
+        "days": 32,
+        "trades": 5,
+        "total_return": 0.2385,
+        "max_drawdown": -0.1095,
+        "win_rate": 0.8
+      },
+      "new": {
+        "days": 32,
+        "trades": 5,
+        "total_return": 0.0439,
+        "max_drawdown": -0.1506,
+        "win_rate": 0.4
+      }
+    }
+  ]
+}

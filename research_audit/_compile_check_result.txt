@@ -1,0 +1,4 @@
+OK   d:\QuantLab\projects\Project_16_LightGBM股票大师\strategy\strategy_p16_g2_bridge_src.py
+OK   d:\QuantLab\projects\Project_16_LightGBM股票大师\strategy\strategy_p16_ens_bridge_src.py
+OK   d:\QuantLab\projects\Project_16_LightGBM股票大师\strategy\strategy_p16_v13_risk_src.py
+FAIL d:\QuantLab\projects\Project_10_价值小盘V2\strategy_v2.py : PyCompileError('  File "d:\\QuantLab\\projects\\Project_10_价值小盘V2\\strategy_v2.py", line 0\nSyntaxError: \'gbk\' codec can\'t decode byte 0x80 in position 20: illegal multibyte sequence\n', 'SyntaxError', SyntaxError("'gbk' codec can't decode byte 0x80 in position 20: illegal multibyte sequence", ('d:\\QuantLab\\projects\\Project_10_价值小盘V2\\strategy_v2.py', 0, 0, None)), 'd:\\QuantLab\\projects\\Project_10_价值小盘V2\\strategy_v2.py')

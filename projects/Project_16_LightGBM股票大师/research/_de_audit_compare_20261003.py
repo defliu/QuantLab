@@ -11,9 +11,9 @@ import sys
 BASE = r"D:\QuantLab\projects\Project_16_LightGBM股票大师"
 
 PAIRS = [
-    (r"strategy\strategy_p16_g2_bridge_src.py", r"build\strategy_p16_g2_bridge.py", "g2"),
+    (r"strategy\strategy_p16_g2_selfcontained_src.py", r"build\strategy_p16_g2_selfcontained.py", "g2"),
     (r"strategy\strategy_p16_v13_risk_src.py", r"build\strategy_p16_v13_risk.py", "v13"),
-    (r"strategy\strategy_p16_ens_bridge_src.py", r"build\strategy_p16_ens_bridge.py", "ens"),
+    (r"strategy\strategy_p16_ens_selfcontained_src.py", r"build\strategy_p16_ens_selfcontained.py", "ens"),
 ]
 
 BUILD_TAG_RE = re.compile(r"^BUILD_TAG\s*=\s*[\"']([0-9]{8}-[0-9]{6})[\"']")
