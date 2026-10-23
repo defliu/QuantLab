@@ -14,7 +14,7 @@ account:
   # 在国金QMT客户端「查询 -> 资金股份」查“总资产”填入。
   # 未填(null)时校验脚本只警告、不报硬错；但生产环境必须填真实值！
   total_capital: 10000000  # 1000万（国金QMT模拟端，2026-08-05 由大诚填报；换号后待复核实际总资产）
-  note: "共享账户资金上限；各策略虚拟子账户之和不得超此值（硬约束）。注：value_smallcap_v2 账本实际落在账号 67014907，此处仍登记其 capital_base 便于统一口径。"
+  note: "共享账户资金上限；各策略虚拟子账户之和不得超此值（硬约束）。注意：g2_bridge / p16_ensemble_bridge 已于 2026-10-22 迁至 67014907；value_smallcap_v2 已于 2026-10-22 清仓退出、本表移除。"
 
 strategies:
   - key: atr_lowvol_equalweight
@@ -24,14 +24,6 @@ strategies:
     config_file: "config/atr_lowvol_equalweight_config.yaml"
     note: "满仓等权8只集中版；10万/8=1.25万/只 + 真实价<50过滤(2026-08-14 由100只改8只，诚哥拍板)；NAV含浮盈滚动；虚拟子账户，绝不抢占他人资金/持仓"
 
-  - key: value_smallcap_v2
-    name: "价值小盘V2(退市排雷+buffer)"
-    capital_base: 100000
-    max_hold: 30
-    account_id: "67014907"
-    config_file: "config/value_smallcap_v2_config.yaml"
-    note: "纯行业中性BP+质量排雷+退市排雷+buffer160；双月调仓30只（2026-10-14 由80调至30，诚哥拍板：10万本金下单只预算1250→3333元、资金利用率56.4%→89.1%；回测N=30年化16.6%/回撤-26.5%/夏普0.65 vs N=80年化18.1%/回撤-29.7%/夏普0.71，降档代价有限且实盘可实现收益更优）；虚拟子账户，绝不抢占他人资金/持仓。账本 D:/QMT_POOL/v2_holdings_state.json(account_id=67014907)，与同号 V1.3(Project_16) 独立互不纳管"
-
   - key: huang529_breakout
     name: "黄氏529主升浪(ATR低波top16)"
     capital_base: 100000
@@ -40,16 +32,18 @@ strategies:
     note: "529信号日更CSV管道+09:35开盘执行；T-1信号补槽12只、1/12等权、止损-12%/到期60交易日/trail15默认关；虚拟子账户，绝不抢占他人资金/持仓（T-20260817-001 任务书T5登记）"
 
   - key: g2_bridge
-    name: "G2大QMT文件桥(Project_16换仓top2)"
+    name: "G2桥(Project_16换仓topN)"
     capital_base: 100000
     max_hold: 3
-    note: "G2版(大QMT 70180771)换仓top2等权、评分红线60；资金池独立D:/QMT_POOL/g2_bridge/g2_strategy_capital.json(70180771戳)；与V1.3(miniQMT 67014907)完全隔离，G2绝不纳管/卖出他人持仓（T-20260831-001 登记 2026-09-01）；max_hold 2→3（2026-10-08 拍板，N15 配置对齐）"
+    account_id: "67014907"
+    note: "G2版换仓top3等权、评分红线60、N15-live_trail；**2026-10-22 拍板由大QMT 70180771 迁至 miniQMT 67014907 并改为 xtquant 直连下单**（70180771 未开通 miniQMT）；资金池独立 D:/QMT_POOL/g2_bridge/g2_strategy_capital.json(67014907戳)，成交账本 g2_trade_log.csv，待补价队列 g2_pending_fills.jsonl，remark=p16_g2_new/p16_g2_risk；与 V1.3 同号但账本独立、绝不纳管/卖出他人持仓（T-20260831-001）；max_hold 2→3（2026-10-08 拍板，N15 配置对齐）"
 
   - key: p16_ensemble_bridge
-    name: "融合大QMT文件桥(Project_16融合top2)"
+    name: "融合桥(Project_16融合topN)"
     capital_base: 100000
     max_hold: 5
-    note: "融合版(v3_enh+G2 rank融合w=0.5)大QMT 70180771虚拟子账户换仓top2等权、红线60、live_trail/N10；资金池独立D:/QMT_POOL/p16_ensemble_bridge/ens_strategy_capital.json(70180771戳)；与G2桥完全隔离，股票重叠自动规避，绝不纳管/卖出他人持仓（2026-09-10 拍板上线）；max_hold 2→5（2026-10-08 拍板，N10 配置对齐）"
+    account_id: "67014907"
+    note: "融合版(v3_enh+G2 rank融合w=0.5)换仓top5等权、红线60、live_trail/N10；**2026-10-22 拍板由大QMT 70180771 迁至 miniQMT 67014907 并改为 xtquant 直连下单**；资金池独立 D:/QMT_POOL/p16_ensemble_bridge/ens_strategy_capital.json(67014907戳)，成交账本 ens_trade_log.csv，待补价队列 ens_pending_fills.jsonl，remark=p16_ens_new/p16_ens_risk；与 G2 桥完全隔离、股票重叠自动规避，绝不纳管/卖出他人持仓（2026-09-10 拍板上线）；max_hold 2→5（2026-10-08 拍板，N10 配置对齐）"
 
   - key: all_weather
     name: "全天候底仓V1(股30/债30/货25/金15)"
