@@ -262,7 +262,7 @@ def read_heart(date=None):
     跨日运行时"数据日期(date)"≠"桥运行日"，存活判断应看最新心跳，避免误判桥死）。
 
     ★ 自闭环回退（2026-10-20，T-20261020-001）：ENS 自 2026-10-16 起「自闭环信号内产（零文件）」，
-    heart_<date>.json 不再写，唯一通道是 print `[P16ENS][HEART]` → FormulaOutput 日志。
+    heart_<date>.json 不再写，唯一通道是 print `[P16ENSI][HEART]`（旧版 `[P16ENS]`）→ FormulaOutput 日志。
     ⚠ 必须取「文件心跳 vs 日志心跳」中较新者——残留的旧 heart_*.json 会掩盖新鲜日志心跳
     （2026-10-20 实测导致 rebalance_ens `[ABORT] 桥心跳异常`，当日换仓全灭）。"""
     file_heart = None
@@ -280,7 +280,7 @@ def read_heart(date=None):
     log_heart = None
     try:
         import qmt_bridge_client as _G2C
-        log_heart = _G2C.read_heart_from_log(date, tag="P16ENS")
+        log_heart = _G2C.read_heart_from_log(date, tag="P16ENSI")
     except Exception:
         log_heart = None
     if file_heart is None:

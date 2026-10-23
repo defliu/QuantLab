@@ -63,7 +63,7 @@ FEATURE_ORDER = [
     "turnover_rank", "industry_mom20",
     "pb", "dv_ttm", "pe_ttm", "log_mv",
 ]
-# ★ 本文件会被 build_p16_g2.py 构入门禁（含禁用词扫描），不得出现断言语句；
+# ★ 本文件会被 build_p16_g2_selfcontained.py 构入门禁（含禁用词扫描），不得出现断言语句；
 #   长度一致性由构建期脚本与离线对齐 harness 校验。
 N_FEATURES = len(FEATURE_ORDER)
 
@@ -358,7 +358,7 @@ def filter_universe(df, enabled_codes=None, st_codes=None, quantize=True):
       df           : 长表（需含 ts_code / trade_date 列）
       enabled_codes: 白名单 code 集合；None = 不过滤
                      ★ 沙箱内无 universe_all_a.csv，须由构建期生成静态快照
-                       （build_p16_g2.py 内联字面量）后经 init 传入
+                       （build_p16_g2_selfcontained.py 内联字面量）后经 init 传入
       st_codes     : 当日 ST/*ST code 集合；None = 若 df 无 is_st 列则跳过该步
                      ★ 沙箱内无逐行 is_st（QMT get_market_data_ex 无该字段），
                        同样须构建期静态快照（astock 最近交易日 is_st==1）

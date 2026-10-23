@@ -2,7 +2,7 @@
 """由 G2 信号内产版源码生成 ENS 源码（spec §4.3：逐字同构，仅标识/参数不同）。
 
 替换清单（行为相关全部显式列出，防止遗漏）：
-  标识: P16G2->P16ENS / bridge 目录 / G2_CODES->ENS_CODES / 文件头
+  标识: P16G2I->P16ENSI / bridge 目录 / G2_CODES->ENS_CODES / 文件头
   参数: 信号时点 09:50->09:31（ENS 换仓时点）/ deadline 09:58->09:39
         TOP_N 3->5（g2_ens_config）/ HOLD_DAYS 15->10（g2_ens_config）
   注释: g2_config.->g2_ens_config. / rebalance_g2.->rebalance_ens.
@@ -12,8 +12,8 @@ import io
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-G2 = os.path.join(HERE, "strategy", "strategy_p16_g2_bridge_src.py")
-ENS = os.path.join(HERE, "strategy", "strategy_p16_ens_bridge_src.py")
+G2 = os.path.join(HERE, "strategy", "strategy_p16_g2_selfcontained_src.py")
+ENS = os.path.join(HERE, "strategy", "strategy_p16_ens_selfcontained_src.py")
 
 # (old, new) 顺序敏感：参数行在前，标识在后
 REPLACEMENTS = [
@@ -55,7 +55,10 @@ REPLACEMENTS = [
 ]
 
 # 最后统一做前缀替换（P16G2 -> P16ENS）
-PREFIX_REPL = [("P16G2", "P16ENS")]
+# 2026-10-20 改名（T-20261020-004）：日志前缀 P16G2I / P16ENSI（I = 信号内产 internal）
+# ⚠️ 顺序敏感：必须先换长串 P16G2I，再换裸 P16G2（否则 P16G2I -> P16ENSI 会被
+#    裸 P16G2 规则先命中变成 P16ENSI 后再无 I，或产生 P16ENSII 之类错位）。
+PREFIX_REPL = [("P16G2I", "P16ENSI"), ("P16G2", "P16ENS")]
 
 
 def main():
@@ -73,7 +76,7 @@ def main():
     for old, new in PREFIX_REPL:
         src = src.replace(old, new)
     # 防呆：残留 G2 专属标识
-    for token in ("P16G2", "g2_bridge", "G2_CODES", "ENS_HOLDS"):
+    for token in ("P16G2I", "P16G2", "g2_bridge", "G2_CODES", "ENS_HOLDS"):
         if token in src:
             raise SystemExit("[ENS] 残留 G2 专属标识: %s" % token)
     with io.open(ENS, "w", encoding="utf-8", newline="\n") as f:

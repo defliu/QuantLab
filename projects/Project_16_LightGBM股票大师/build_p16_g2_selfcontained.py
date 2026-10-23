@@ -1,14 +1,14 @@
 # coding: utf-8
 """Project_16 g2 大QMT 文件桥 · 构建脚本。
 
-读 strategy/strategy_p16_g2_bridge_src.py (UTF-8 源码)，
-替换 BUILD_TAG 为当前时间戳，GBK 编码写出到 build/strategy_p16_g2_bridge.py，
+读 strategy/strategy_p16_g2_selfcontained_src.py (UTF-8 源码)，
+替换 BUILD_TAG 为当前时间戳，GBK 编码写出到 build/strategy_p16_g2_selfcontained.py，
 并做 Python 3.6 语法检查（QMT 内置兼容）。
 
 用法:
-  python build_p16_g2.py
+  python build_p16_g2_selfcontained.py
 产物:
-  build/strategy_p16_g2_bridge.py   # coding=gbk, BUILD_TAG=最新时间戳
+  build/strategy_p16_g2_selfcontained.py   # coding=gbk, BUILD_TAG=最新时间戳
 """
 import os
 import re
@@ -17,8 +17,8 @@ import sys
 import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SRC = os.path.join(HERE, "strategy", "strategy_p16_g2_bridge_src.py")
-OUT = os.path.join(HERE, "build", "strategy_p16_g2_bridge.py")
+SRC = os.path.join(HERE, "strategy", "strategy_p16_g2_selfcontained_src.py")
+OUT = os.path.join(HERE, "build", "strategy_p16_g2_selfcontained.py")
 
 # ---- vendor 注入（s4-5d G2/ENS 信号内产版）----
 # 源码内用行 `# __VENDOR__:<键>` 占位，构建时替换为对应文件全文（外加 BEGIN/END 注释围栏）。

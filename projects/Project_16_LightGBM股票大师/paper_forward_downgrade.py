@@ -15,6 +15,7 @@
   python paper_forward_downgrade.py               # 只读评估 + 新触发自动写标记+飞书
   python paper_forward_downgrade.py --check       # 只读评估，不写标记不推送（dry-run）
   python paper_forward_downgrade.py --unfreeze G2 # 人工解除冻结（V1.3/ENS 同理）
+  python paper_forward_downgrade.py --unfreeze G2 --eval-since 2026-10-21  # 换模型后重置评估基线（旧样本不计入）
   python paper_forward_downgrade.py --force-freeze ENS --reason "人工强制"
 
 退出码：0 正常（含冻结触发）；2 触发冻结告警但推送失败（fail-loud 供调度感知）；1 运行错误。
@@ -137,7 +138,17 @@ def save_mark(mark):
 
 
 def _eval_arm(key, hold, rank_n, check_only=False):
-    """评估单个臂，返回 (n, mean_excess, t, win, ret, bench, frozen, trigger)。rank_n=该臂实盘 TOP_N。"""
+    """评估单个臂，返回 (n, mean_excess, t, win, ret, bench, frozen, trigger)。rank_n=该臂实盘 TOP_N。
+
+    2026-10-23 新增 `eval_since` 基线（T-20261023-004）：
+    标记里 `eval_since=YYYY-MM-DD` 时，信号日早于该日的样本不计入评估。
+    背景：G2 于 10-23 人工回退生产模型（20261019→20260825），旧模型产生的历史样本
+    不应再拖累新模型的口径——否则 --unfreeze 当天就会被下一次自动评估立刻重新冻结
+    （评估用的是全部历史样本、没有基线概念）。基线只影响评估窗口，历史 CSV 完整保留。
+    """
+    mark = load_mark()
+    st = mark.get(key, {})
+    eval_since = str(st.get("eval_since", "") or "")
     csv_path = os.path.join(REAL, ARMS[key][0])
     if not os.path.exists(csv_path):
         return (0, None, None, None, None, None, False, False)
@@ -155,6 +166,8 @@ def _eval_arm(key, hold, rank_n, check_only=False):
         if "rank" in df.columns and pd.notna(r.get("rank")) and int(r["rank"]) > rank_n:
             continue  # 实盘 TOP_N 口径（rank<=rank_n）
         d0 = str(r["date"])
+        if eval_since and d0 < eval_since:
+            continue  # 模型切换/人工复盘后的评估基线：早于基线的旧样本不计入
         if d0 not in cal:
             continue
         i = cal.index(d0)
@@ -175,8 +188,6 @@ def _eval_arm(key, hold, rank_n, check_only=False):
         win = float((excs > 0).mean())
         sd = float(excs.std(ddof=1)) if n > 1 else 0.0
         t = mean_excess / (sd / np.sqrt(n)) if (n > 1 and sd and sd > 0) else None
-    mark = load_mark()
-    st = mark.get(key, {})
     frozen = bool(st.get("frozen", False))
     if n >= MIN_SAMPLES and mean_excess is not None and mean_excess < EXCESS_SIGN and mean_excess < EXCESS_FLOOR:
         trigger = True
@@ -254,6 +265,8 @@ def main():
     ap = argparse.ArgumentParser(description="纸面前向自动降级闸")
     ap.add_argument("--check", action="store_true", help="只读评估，不写标记不推送")
     ap.add_argument("--unfreeze", choices=list(ARMS.keys()), help="人工解除冻结")
+    ap.add_argument("--eval-since", default=None,
+                    help="配合 --unfreeze：重置评估基线 YYYY-MM-DD，早于该日的旧样本不再计入（模型切换后用）")
     ap.add_argument("--force-freeze", choices=list(ARMS.keys()), help="人工强制冻结")
     ap.add_argument("--reason", default="人工", help="强制冻结原因")
     args = ap.parse_args()
@@ -261,15 +274,24 @@ def main():
     if args.unfreeze:
         mark = load_mark()
         st = mark.setdefault(args.unfreeze, {})
+        _now = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
+        if args.eval_since:
+            st["eval_since"] = str(args.eval_since)
         if st.get("frozen"):
             st["frozen"] = False
             st["since"] = ""
-            st["note"] = "人工解除 " + pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
+            st["note"] = "人工解除 " + _now + (
+                ("；评估基线重置为 %s（早于该日的旧样本不计入）" % args.eval_since) if args.eval_since else "")
             save_mark(mark)
             _notify("【降级闸】策略 %s 已人工解除冻结" % args.unfreeze)
-            print("已解除冻结: %s" % args.unfreeze)
+            print("已解除冻结: %s%s" % (args.unfreeze,
+                                      ("（评估基线 %s）" % args.eval_since) if args.eval_since else ""))
         else:
-            print("策略 %s 当前未冻结，无需解除" % args.unfreeze)
+            if args.eval_since:
+                save_mark(mark)
+                print("策略 %s 当前未冻结；已设置评估基线 %s" % (args.unfreeze, args.eval_since))
+            else:
+                print("策略 %s 当前未冻结，无需解除" % args.unfreeze)
         return 0
 
     if args.force_freeze:

@@ -41,6 +41,29 @@ ENS_LOG = os.path.join(REAL, "paper_forward_ens.csv")
 ENS_SELECT = os.path.join(DATA, "selections", "g2_ens")   # 融合实盘选股落盘目录（rebalance_ens 消费）
 
 
+def _f5_data_dead(df):
+    """F5 坍缩是否属于「数据断源/死代码」（T-20261023-003）。
+
+    旧判据只看 `SC_F5.nunique()<=1` 就中止落盘，把**真实全市场普跌日**误判为断源：
+    2026-10-22 全市场个股中位数 -2.53%、行业加权中位数 -2.87%（119/5849 只行业正收益），
+    Top100 全部落在 F5 最差档 2.0 → 判据触发 → 10-21/10-22/10-23 三晚候选生成全部中止，
+    G2 从 10-21 之后无任何新候选文件（连续断链）。
+
+    区分口径：
+      - 数据可用（industry_pct 覆盖 >=90% 且跨行业分散 >=3 档）但 F5 同档 → 真实普跌，**放行**并告警；
+      - industry_pct 缺失/几乎无分散 且 F5 同档 → 断源/死代码，**中止**（保留 08-17~09-18 事故防线）。
+    """
+    if df["SC_F5"].nunique() > 1:
+        return False
+    ind = df["industry_pct"] if "industry_pct" in df.columns else pd.Series([np.nan] * len(df))
+    ind_ok = (ind.notna().mean() >= 0.9) and (ind.nunique() >= 3)
+    if ind_ok:
+        print("    [WARN] SC_F5 全池同档，但 industry_pct 覆盖 %.0f%%、行业分散 %d 档 → 判定当日全市场普跌，放行"
+              % (ind.notna().mean() * 100, ind.nunique()))
+        return False
+    return True
+
+
 def _append_live_dedup(rows):
     """幂等追加 paper_forward_live.csv：读现有 → concat → 按 (date, code) 去重 → 原子写回。
 
@@ -271,8 +294,16 @@ def main():
         pre[f"SC_{f}"] = sc[f].values
     # ---- FAIL-LOUD 自检（T-20260919-002 防线D，2026-09-20）：评分卡坍缩立即中止落盘 ----
     # 防 2026-08-17~09-18 F2/F5 死代码事故复发：SC_F2/SC_F5 恒值或 main_net 全 NaN → 中止（宁可空仓不选错）
-    if pre["SC_F2"].nunique() <= 1 or pre["SC_F5"].nunique() <= 1 or pre["main_net"].notna().sum() == 0:
-        raise SystemExit("!! FAIL-LOUD：SC_F2/SC_F5 恒值或 main_net 全 NaN（F2/F5 主源失效）——已中止落盘，勿用此候选")
+    if _f5_data_dead(pre) or pre["SC_F2"].nunique() <= 1 or pre["main_net"].notna().sum() == 0:
+        # 2026-10-23 增强：带上诊断量，避免只报一句「主源失效」无法定位是哪一维坍缩
+        raise SystemExit(
+            "!! FAIL-LOUD：SC_F2/SC_F5 恒值或 main_net 全 NaN（F2/F5 主源失效）——已中止落盘，勿用此候选"
+            " [diag] pool=%d main_net_nonnull=%d SC_F2(nuniq=%d,vals=%s) SC_F5(nuniq=%d,vals=%s)"
+            " industry_pct_nonnull=%d"
+            % (len(pre), pre["main_net"].notna().sum(),
+               pre["SC_F2"].nunique(), sorted(pre["SC_F2"].dropna().unique())[:5],
+               pre["SC_F5"].nunique(), sorted(pre["SC_F5"].dropna().unique())[:5],
+               pre["industry_pct"].notna().sum()))
 
     print("[5/5] 概率Top10 → 红线 + 位置过滤 + Top%d ..." % args.top)
     # ---- 作用池对齐回测引擎（T-20260929-005 方案1，2026-09-29 诚哥拍板）----
@@ -379,7 +410,7 @@ def main():
             for f in ("F1", "F2", "F3", "F4", "F5", "F6"):
                 ab_pre[f"SC_{f}"] = ab_sc[f].values
             # ---- FAIL-LOUD 自检（T-20260919-002 防线D）：AB 臂评分卡坍缩立即中止 ----
-            if ab_pre["SC_F2"].nunique() <= 1 or ab_pre["SC_F5"].nunique() <= 1 or ab_pre["main_net"].notna().sum() == 0:
+            if _f5_data_dead(ab_pre) or ab_pre["SC_F2"].nunique() <= 1 or ab_pre["main_net"].notna().sum() == 0:
                 raise SystemExit("!! FAIL-LOUD（AB）：SC_F2/SC_F5 恒值或 main_net 全 NaN——已中止 AB 落盘")
             ab_pre = ab_pre[ab_pre["total_new"] >= args.threshold].copy()
             if len(ab_pre) == 0:
@@ -433,7 +464,7 @@ def main():
                 print(f"    [ENS] 融合预筛后空池（概率/红线前）→ 空仓")
             else:
                 # ---- FAIL-LOUD 自检（T-20260919-002 防线D）：融合臂评分卡坍缩立即中止 ----
-                if en_pool["SC_F2"].nunique() <= 1 or en_pool["SC_F5"].nunique() <= 1 or en_pool["main_net"].notna().sum() == 0:
+                if _f5_data_dead(en_pool) or en_pool["SC_F2"].nunique() <= 1 or en_pool["main_net"].notna().sum() == 0:
                     raise SystemExit("!! FAIL-LOUD（ENS）：SC_F2/SC_F5 恒值或 main_net 全 NaN——已中止 ENS 落盘")
                 en_pool = en_pool[en_pool["total_new"] >= args.threshold].copy()
                 # ---- ST 风险警示剔除（T-20261012-001）：候选生成端根治（同 G2 主臂）----

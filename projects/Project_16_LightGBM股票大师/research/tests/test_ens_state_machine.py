@@ -34,7 +34,7 @@ import types
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PROJ = os.path.abspath(os.path.join(HERE, "..", ".."))
-SRC = os.path.join(PROJ, "strategy", "strategy_p16_ens_bridge_src.py")
+SRC = os.path.join(PROJ, "strategy", "strategy_p16_ens_selfcontained_src.py")
 
 PASS = [0]
 FAIL = []
@@ -528,7 +528,7 @@ def test_t18_cancel_confirm_first_lookup_oid(m):
 def test_t19_heartbeat_snapshot(m):
     """[自闭环重写 2026-10-20 T-20261020-001] print 心跳必须携带可观测计数。
     旧断言基于 heart_<date>.json 落盘（沙箱禁 open，2026-10-15 起永久废止）；
-    现行唯一通道是 print [P16ENS][HEART] → FormulaOutput 日志，外部监控/桥存活判定
+    现行唯一通道是 print [P16ENSI][HEART] → FormulaOutput 日志，外部监控/桥存活判定
     全靠解析这一行，字段缺失=监控瞎。"""
     reset(m)
     m._g_slippage_alert_count = 3
@@ -545,7 +545,7 @@ def test_t19_heartbeat_snapshot(m):
     finally:
         sys.stdout = old
     out = buf.getvalue()
-    check("T19 打印HEART行", "[P16ENS][HEART]" in out, out[:200])
+    check("T19 打印HEART行", "[P16ENSI][HEART]" in out, out[:200])
     for k in ("date=20261002", "pending=0", "positions=0", "risk_sold=1",
               "risk_count=1", "fills=2", "slippage=3", "passive=False"):
         check("T19 HEART含%s" % k, k in out, out[:300])
@@ -557,7 +557,7 @@ def test_t19_heartbeat_snapshot(m):
     finally:
         sys.stdout = old
     check("T19 60s节流生效", buf2.getvalue() == "", buf2.getvalue()[:120])
-    check("T19 HOLD行", "[P16ENS][HOLD]" in out, out[:400])
+    check("T19 HOLD行", "[P16ENSI][HOLD]" in out, out[:400])
 
 
 # ------------------------------------------------------------------ T20
@@ -572,7 +572,7 @@ def test_t20_init_rebuilds_state_from_account(m):
         [Order(oid="1001", status=56, deal_vol=1000, avg=9.4),
          Order(oid="1002", status=56, deal_vol=500, avg=9.6)] if tp == "order" else [])
     for o in m.g["get_trade_detail_data"](1, "stock", "order"):
-        o.m_strRemark = "P16ENS桥"
+        o.m_strRemark = "P16ENSI桥"
         o.m_strInstrumentID = "300413.SZ"
     m.init(Ctx())
     check("T20 账户反查重建risk_sold", len(m._g_risk_sold) >= 1, m._g_risk_sold)

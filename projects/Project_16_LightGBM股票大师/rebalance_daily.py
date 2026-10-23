@@ -872,8 +872,7 @@ def main():
             guard_note.append(f"买{b['code']}:ST_BLOCK")
             continue
         if _ohlc:
-            _avg = PF.recent_avg_vol(b["code"])
-            _vr = (_ohlc["vol_lot"] / _avg) if (_avg and _avg > 0) else None
+            _vr = PF.gap_volume_ratio(b["code"], _ohlc["vol_lot"])
             _skip, _why = PF.gap_guard(b["code"], b["price"], _ohlc["pre_close"], _ohlc["open"], _vr)
             if _skip:
                 print(f"    !! {b['code']} 低开拦截: {_why}")

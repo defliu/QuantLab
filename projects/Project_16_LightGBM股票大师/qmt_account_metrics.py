@@ -19,8 +19,8 @@
 归属规则（deal/order 按 remark；position 按 code 集合，文件仅作过渡期辅助）：
   V2  : remark 含 "V2"        | code ∈ v2_holdings_state.json holdings
   V13 : remark 含 "P16V13"/"planA"/"order_guard"/"traework" | code ∈ qmt_trade_log.csv FIFO 净额>0
-  G2  : remark 含 "P16G2"     | code ∈ reconcile_g2 ledger
-  ENS : remark 含 "P16ENS"    | code ∈ reconcile_g2_ens ledger
+  G2  : remark 含 "P16G2I"/"P16G2"     | code ∈ reconcile_g2 ledger
+  ENS : remark 含 "P16ENSI"/"P16ENS"   | code ∈ reconcile_g2_ens ledger
   ATR : remark 含 "ATR"       （暂无持仓归属辅助文件）
   其余 → unattributed（如实列出，不臆造归属）
 
@@ -113,13 +113,19 @@ ACCOUNT_STRATEGIES = {
 }
 
 # remark → 策略归属（按序首中即停；V2 在前防 "V2" 误吞其他前缀）
+# 2026-10-20 改名（T-20261020-004）：G2/ENS 下单 remark 改为 "P16G2I桥" / "P16ENSI桥"。
+# ⚠️ 顺序敏感：新值 P16G2I/P16ENSI 必须排在旧值 P16G2/P16ENS 之前——子串匹配下
+#    "P16G2I桥" 也含 "P16G2"，若旧值在前会把新单误判为旧版（虽然归到同一标签 G2I/ENSI，
+#    但语义上应显式区分）。旧值保留以兼容改名前的历史成交。
 REMARK_MAP = [
     ("V2", "V2"),
     ("V13", "P16V13"),
     ("V13", "planA"),
     ("V13", "order_guard"),
     ("V13", "traework"),
+    ("G2I", "P16G2I"),
     ("G2I", "P16G2"),
+    ("ENSI", "P16ENSI"),
     ("ENSI", "P16ENS"),
     ("ATR", "ATR"),
 ]
@@ -154,10 +160,13 @@ _RE_BUILD = re.compile(r"BUILD_TAG=([0-9\-]+)|\bbuild=([0-9A-Za-z\-_]+)")
 _RE_HEART = re.compile(
     r"\[(?:HEART|hb)\].*?(?:持仓|holdings|positions)[=\s]*(\d+)"
     r"(?:.*?(?:cash|现金)[=\s]*([0-9.\-]+))?", re.I)
-_RE_TAG = re.compile(r"\[(P16V13|P16G2|P16ENS|V2|ATR[A-Z0-9_]*)\]")
+_RE_TAG = re.compile(r"\[(P16V13|P16G2I|P16G2|P16ENSI|P16ENS|V2|ATR[A-Z0-9_]*)\]")
 # 日志内策略标签 → 统计标签（G2/ENS 信号内产版独立统计，2026-10-19）
+# 2026-10-20 改名（T-20261020-004）：新前缀 P16G2I/P16ENSI 与旧 P16G2/P16ENS 归到同一统计标签。
 _LOG_TAG_NORM = {
+    "P16G2I": "G2I",
     "P16G2": "G2I",
+    "P16ENSI": "ENSI",
     "P16ENS": "ENSI",
 }
 _RE_TS = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}")

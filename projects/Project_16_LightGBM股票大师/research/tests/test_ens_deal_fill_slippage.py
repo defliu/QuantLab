@@ -2,7 +2,7 @@
 """ENS 大QMT 文件桥「deal 成交均价 + 跳空/滑点」纯函数测试。
 
 与 G2 / V1.3 同口径（同一套降级协议与阈值），本文件只针对 ENS 源码
-strategy/strategy_p16_ens_bridge_src.py 的实现做回归：
+strategy/strategy_p16_ens_selfcontained_src.py 的实现做回归：
 
   E1. _query_deals 三态：接口缺失 / 无委托号 / 正常过滤
   E2. _resolve_fill_avg：加权均价、覆盖校验、多委托号、写入延迟重试
@@ -21,7 +21,7 @@ import types
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PROJ = os.path.abspath(os.path.join(HERE, "..", ".."))
-SRC = os.path.join(PROJ, "strategy", "strategy_p16_ens_bridge_src.py")
+SRC = os.path.join(PROJ, "strategy", "strategy_p16_ens_selfcontained_src.py")
 
 PASS = [0]
 FAIL = []
@@ -110,7 +110,7 @@ def reset(m):
     m._g_slippage_alert_count = 0
     m.written = []
     # 拦截统一出口：本组测试只验协议字段，不落盘。
-    # 自闭环（2026-10-20 T-20261020-001）：_write_fill 内部同时 print [P16ENS][FILL] 并调
+    # 自闭环（2026-10-20 T-20261020-001）：_write_fill 内部同时 print [P16ENSI][FILL] 并调
     # _add_or_update_fill；此处只拦落盘入口，print 照常（正是新增的可观测通道）。
     m._add_or_update_fill = lambda date, rec: m.written.append(rec)
 

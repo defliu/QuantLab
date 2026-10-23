@@ -42,7 +42,8 @@ BRIDGES = {
 # heart_*.json 停写，唯一通道是 print [P16xx][HEART] → FormulaOutput 日志。
 # 双客户端并存（AGENTS.md）：G2/ENS 在 D:\QMT交易端模拟，V13 在 D:\国金QMT交易端模拟。
 LOG_ROOTS = [r"D:\国金QMT交易端模拟", r"D:\QMT交易端模拟"]
-LOG_TAGS = {"G2": "P16G2", "ENS": "P16ENS", "V13": "P16V13"}
+# 2026-10-20 改名（T-20261020-004）：G2/ENS 新前缀带 I 后缀；_latest_heart_log 同时认旧前缀。
+LOG_TAGS = {"G2": "P16G2I", "ENS": "P16ENSI", "V13": "P16V13"}
 
 
 def _latest_heart(dirpath):
@@ -62,7 +63,9 @@ def _latest_heart_log(tag):
     """自闭环心跳（2026-10-20，T-20261020-001）：从 QMT FormulaOutput 日志取该策略
     最新 [HEART] 行，返回 (ts_str, epoch) 或 None。取最近 3 个日志文件兜底。"""
     import re
-    pat = re.compile(r"\[%s\]\[HEART\]\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})" % re.escape(tag))
+    _tags = [tag] + ([tag[:-1]] if tag.endswith("I") else [])
+    pat = re.compile(r"\[(?:%s)\]\[HEART\]\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})"
+                     % "|".join(re.escape(t) for t in _tags))
     best = None
     for root in LOG_ROOTS:
         d = os.path.join(root, "userdata", "log")

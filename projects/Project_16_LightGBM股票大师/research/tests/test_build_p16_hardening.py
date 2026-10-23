@@ -22,9 +22,9 @@ import tempfile
 PROJ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 BUILDERS = [
-    ("build_p16_g2.py", "strategy_p16_g2_bridge.py"),
+    ("build_p16_g2_selfcontained.py", "strategy_p16_g2_selfcontained.py"),
     ("build_p16_v13_risk.py", "strategy_p16_v13_risk.py"),
-    ("build_p16_ens.py", "strategy_p16_ens_bridge.py"),
+    ("build_p16_ens_selfcontained.py", "strategy_p16_ens_selfcontained.py"),
 ]
 
 PASS = 0
@@ -78,7 +78,7 @@ def main():
         _check("S1_%s_mock_scan" % builder_py, "[MOCK-REJECT]" in bsrc, "缺 MOCK 残留扫描")
 
     # A. 合成源码：拒绝路径（必须 SystemExit 且带 BUILD_TAG-REJECT）
-    mod = _load("build_p16_g2.py")
+    mod = _load("build_p16_g2_selfcontained.py")
     cases = [
         ("A1_zero_assign", []),
         ("A2_two_assign", ['BUILD_TAG = "20260901-000000"', 'BUILD_TAG = "20260902-000000"']),

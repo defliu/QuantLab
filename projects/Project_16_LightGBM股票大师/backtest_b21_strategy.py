@@ -12,8 +12,8 @@ G2/ENS 信号内产版（B21 k=1500 树模型 + 简化红线 prob>=0.60），此
     候选池取过线前 SELECT_TOP(10) 只，按 prob 降序补足空位到 TOP_N
   - G2 臂：TOP_N=3 / HOLD_DAYS=15；ENS 臂：TOP_N=5 / HOLD_DAYS=10
   - 买入执行：T+1 开盘价成交；可执行过滤（一字涨停/停牌/无量买不进）；
-    低开校验 gap_guard（open<=-5% 跳过；-5%~-3% 需量比>=2.0，量比=分钟线 09:50 前累计量/
-    前5日分钟日均量，缺数据 fallback 全天量比，再缺 fail-open 放行）
+    低开校验 gap_guard（open<=-5% 跳过；-5%~-3% 需单位时间量比>=3.3，量比=(09:50前累计量/已开盘20分钟)/
+    (前5日全天均量/240)，缺数据 fallback 全天量比，再缺 fail-open 放行）
   - tier 门控（沪深300）：开盘较前收 <=-1.5% 停买(T0) / <-1.0% 半仓(T1, deploy 50%) /
     其余满仓(T2, deploy 98%)；数据缺失 fail-safe T1（bridge 同语义）
   - 出场：live_trail 口径（与 bridge/V13 风控同源）——止损 -7% / 止盈 +15% /
@@ -71,8 +71,8 @@ HOLD_ENS, TOP_ENS = 10, 5      # ENS 臂
 DELIST_DAYS = 60               # 连续无价天数视为退市（官方引擎同口径）
 DELIST_LOSS = 0.5              # 退市损失假设
 GAP_HARD = -5.0                # gap_guard：open<=-5% 跳过
-GAP_SOFT = -3.0                # gap_guard：-5%~-3% 需量比>=2.0
-VOL_RATIO_MIN = 2.0            # gap_guard 量比门槛
+GAP_SOFT = -3.0                # gap_guard：-5%~-3% 需单位时间量比>=GAP_VR
+VOL_RATIO_MIN = float(os.environ.get("BT_GAP_VR", "3.3"))   # gap_guard 量比门槛（**单位时间口径**，≈全样本 p75；T-20261023-007）
 
 # ---- 生产评分卡口径（deploy_predict_g2 候选流 + scorecard_real 生产语义）----
 SC_REDLINE = 60.0              # 生产红线（--threshold 60，g2_candidates_night 实跑值）
@@ -352,10 +352,14 @@ _MIN1_CACHE = {}
 
 
 def _volume_ratio_0950(code, buy_date, avg5vol_daily, vol_next, maps):
-    """量比 = 买入日 09:50 前分钟累计量 / 前5日日均量。
+    """量比 = (买入日 09:50 前累计量 / 已开盘 20 分钟) / (前5日全天均量 / 240)（T-20261023-007）。
+
+    单位时间口径：>1 表示今日成交节奏快于自身近期常态。与实盘 position_filter.gap_volume_ratio 同口径。
+    旧口径「09:50 累计量 / 前5日**全天**均量」分子只含全天 8% 的时间却与全天量比，
+    正常量水平 vr≈0.08~0.2，阈值 2.0 实测放行率仅 0.49% → 该分支等于死代码。
 
     主口径：分钟线自算（分子分母同源同单位，零单位风险）。
-    缺失链：分钟线不可用 -> 全天量比（vol_next/avg5vol）-> 仍缺 -> None（fail-open 放行）。
+    缺失链：分钟线不可用 -> 全天量比（vol_next/avg5vol，退化为 ~1.0 常态，基本不过阈值）-> 仍缺 -> None（fail-open 放行）。
     """
     try:
         fp = os.path.join(MIN1_DIR, "%s.parquet" % code)
@@ -378,11 +382,16 @@ def _volume_ratio_0950(code, buy_date, avg5vol_daily, vol_next, maps):
         m["trade_date"] = pd.to_datetime(m["trade_date"])
         day = m[m["trade_date"] == buy_date]
         tt = pd.to_datetime(day["trade_time"]).dt.time
-        cum = float(day.loc[tt <= datetime.time(9, 50), "vol"].sum())
-        return cum / float(prev5.mean())
+        mask = tt <= datetime.time(9, 50)
+        cum = float(day.loc[mask, "vol"].sum())
+        n_min = int(mask.sum())
+        if n_min <= 0:
+            raise ValueError("无分钟数据")
+        # 单位时间量比：(累计/已开盘分钟) / (全天均量/240)
+        return (cum / float(n_min)) / (float(prev5.mean()) / 240.0)
     except Exception:
         pass
-    # fallback 1：全天量比（日线口径）
+    # fallback 1：全天量比（日线口径，量纲≈1.0，不做时间归一化——只剩全天数据时无法还原日内节奏）
     try:
         if avg5vol_daily and avg5vol_daily > 0 and vol_next and vol_next > 0:
             return float(vol_next) / float(avg5vol_daily)

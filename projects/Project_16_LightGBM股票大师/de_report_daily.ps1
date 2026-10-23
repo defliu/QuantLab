@@ -116,6 +116,21 @@ if ($Task -eq "midday") {
 }
 [System.IO.File]::WriteAllText($promptFile, $prompt, $utf8)
 
+# 预生成等待闸（2026-10-20 T-20261020-004 错峰）：close 报告原 15:40 启动 DE（耗 20~30 分钟），
+# 与其他重任务集中在 16:20~17:30；现改为 16:50 触发，且先看当日预生成报告
+# （Quant_P16_DE_Report_Pregenerate 14:50 产出）：存在 -> 直接推送；不存在 -> 最多等 25 分钟。
+if ($Task -eq "close") {
+    $preGen = $outFile
+    $waitUntil = (Get-Date).AddMinutes(25)
+    while ((-not (Test-Path $preGen)) -and ((Get-Date) -lt $waitUntil)) {
+        Start-Sleep -Seconds 30
+    }
+    $preAge = -1
+    if (Test-Path $preGen) { $preAge = [int]((Get-Date) - (Get-Item $preGen).LastWriteTime).TotalMinutes }
+    $preOk = Test-Path $preGen
+    Write-Log "[$(Get-Date -Format 'HH:mm:ss')] 预生成报告就绪=$preOk 龄期=${preAge}min"
+}
+
 # 幂等（T-20260903-023）：当日报告已生成 → 不重跑 DE，直接推送既有报告（TRAE/Windows 双触发保护）
 if ((Test-Path $outFile) -and ((Get-Item $outFile).LastWriteTime.Date -eq (Get-Date).Date)) {
     Write-Log "[$(Get-Date -Format 'HH:mm:ss')] 当日报告已存在，跳过 DE 重跑: $outFile"

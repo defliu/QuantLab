@@ -277,7 +277,7 @@ def read_heart(date=None):
 
     ★ 自闭环回退（2026-10-20，T-20261020-001）：G2/ENS 自 2026-10-16 起改为
     「自闭环信号内产（零文件）」模式，heart_<date>.json **不再写**（沙箱禁 open），
-    唯一心跳通道是策略 print `[P16G2][HEART]` / `[P16ENS][HEART]` → QMT
+    唯一心跳通道是策略 print `[P16G2I][HEART]` / `[P16ENSI][HEART]`（旧版 `[P16G2]`/`[P16ENS]`）→ QMT
     `XtClient_FormulaOutput_<date>.log`。
 
     ⚠ 关键：不能「文件存在就直接返回」——10-16 之后残留的旧 heart_*.json 永远存在且
@@ -312,12 +312,16 @@ def read_heart(date=None):
 QMT_PATH = r"D:\国金QMT交易端模拟"
 # 备用客户端（部分策略跑在另一台 QMT 客户端上，见 AGENTS.md 双客户端并存）
 QMT_PATH_ALT = r"D:\QMT交易端模拟"
-_STRATEGY_LOG_TAG = "P16G2"     # 由 qmt_bridge_client_ens 覆盖为 P16ENS
+# 2026-10-20 改名（T-20261020-004）：新前缀 P16G2I / P16ENSI（I = 信号内产）。
+# 读日志时**必须同时认旧前缀**——改名前的历史日志里是 [P16G2]/[P16ENS]，
+# 只认新值会让当日改名前的日志心跳查不到。
+_STRATEGY_LOG_TAG = "P16G2I"     # 由 qmt_bridge_client_ens 覆盖为 P16ENSI
+_STRATEGY_LOG_TAG_LEGACY = ("P16G2",)
 
 # 2026-10-20 11:28:06 前缀为宿主行时间戳，兼容裸行（无时间戳）
 _RE_LOG_TS = re.compile(r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})")
 _RE_HEART_LINE = re.compile(
-    r"\[(?P<tag>P16G2|P16ENS|P16V13)\]\[HEART\]\s+(?P<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})"
+    r"\[(?P<tag>P16G2I|P16G2|P16ENSI|P16ENS|P16V13)\]\[HEART\]\s+(?P<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})"
     r"(?P<rest>.*)$")
 _RE_HEART_KV = re.compile(r"(\w+)=(\S+)")
 
@@ -346,7 +350,15 @@ def read_heart_from_log(date=None, tag=None):
     """
     date = date or _today()
     tag = tag or _STRATEGY_LOG_TAG
-    pat = re.compile(r"\[%s\]\[HEART\]\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})(.*)$" % re.escape(tag))
+    # 同时认旧前缀（改名前的日志）：tag="P16G2I" 时也要匹配 [P16G2][HEART]
+    tags = [tag]
+    for legacy in _STRATEGY_LOG_TAG_LEGACY:
+        if legacy != tag and tag.startswith(legacy):
+            tags.append(legacy)
+    if tag.startswith("P16ENSI"):
+        tags.append("P16ENS")
+    pat = re.compile(r"\[(?:%s)\]\[HEART\]\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})(.*)$"
+                     % "|".join(re.escape(t) for t in tags))
     for path in _formula_log_candidates(date):
         latest = None
         try:

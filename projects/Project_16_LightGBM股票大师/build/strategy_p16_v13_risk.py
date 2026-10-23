@@ -24,7 +24,7 @@ import traceback
 # ============================================================
 # 常量
 # ============================================================
-BUILD_TAG = "20261020-163502"
+BUILD_TAG = "20261023-110053"
 
 ACCOUNT_ID = "67014907"
 
@@ -32,8 +32,12 @@ ACCOUNT_ID = "67014907"
 # 持仓归属白名单：V13 实际持仓代码，支持 '600522.SH' / 'SH.600522' / '600522' 格式。
 # 账号 67014907 上 V13 与 V2 共存，白名单用于圈定 V13 纳管范围：
 #   白名单 ∩ 账户 position = 纳管集；白名单外的持仓绝不触碰（资金分配红线）。
-# 白名单为空 = 部署未填 = 完全被动模式（不评估不下单）。
-V13_CODES = ("301536.SZ",)
+# 白名单为空 = 部署未填 = 完全被动模式（不评估不下单）；
+# ★ 2026-10-23：账号 67014907 已全清（V2 清仓，账户 N=0），V13 白名单置空，
+#   首个交易日由外部 rebalance_daily.py 买入（remark=planA_new_top）后，
+#   init 扫当日 order / 被动模式下每 30s 延迟绑定自动纳管（见 _late_bind_whitelist）。
+#   注意：QMT 当日 order 隔日即丢：若 V1.3 已有持仓且策略隔日重启，必须人工把持仓代码填回本常量。
+V13_CODES = ()
 
 # 追盈历史峰值快照（跨日延续，T-20260910 只升不降语义）：
 #   {代码: 峰值}，代码格式同 V13_CODES；快照缺失的票运行中以当日 high 重锚（偏保守，方案 §5.6）。
@@ -46,6 +50,20 @@ OP_SELL = 24
 ORDER_TYPE_VOL = 1101
 PRTYPE_LATEST = 5
 ORDER_REMARK = "P16V13风控"
+ORDER_REMARK_ALL = (ORDER_REMARK,)
+
+# ★ 2026-10-23 外部下单 remark（T-20261023-002，与 G2/ENS 同款）
+# 拍板 F 后换仓买入由外部 rebalance_daily.py（xtquant 直连 67014907）完成，
+# remark 与内置风控 remark 完全不同 → 若不自查，内置风控会：
+#   ① 白名单（V13_CODES）永远漏掉外部新买入的票 → 新仓零止损覆盖（T-20261020-005 同型 P0）；
+#   ② risk_sold 重建漏掉外部卖出 → 重启后可能重复卖出。
+# 解法（对齐官方《QMT内置Python外部读写权限调整说明》§06「订单备注建立幂等控制」）：
+#   init 时扫「当日 order」，凡 remark 命中 EXTERNAL_REMARK_BUY 的票自动并入白名单。
+EXTERNAL_REMARK_BUY = "planA_new_top"
+EXTERNAL_REMARK_SELL = ("planA_st_exit", "planA_mature", "planA_pk_out", "planA_trim")
+EXTERNAL_REMARK_ALL = (EXTERNAL_REMARK_BUY,) + tuple(EXTERNAL_REMARK_SELL)
+# 全量 remark（内置自身 + 外部）→ 用于 risk_sold 重建
+ALL_REMARKS = ORDER_REMARK_ALL + EXTERNAL_REMARK_ALL
 
 # pending 超时与重试（买卖统一：300秒/3次，防「30秒即放弃永不补单」）
 PENDING_TIMEOUT = 300
@@ -94,6 +112,7 @@ _g_whitelist = set()        # V13_CODES 归一化缓存（QMT 代码格式，init 重建）
 _g_peak_snap = {}           # PEAK_SNAPSHOT 归一化缓存（QMT 代码格式，init 重建）
 _g_last_heart_ts = 0.0      # print 心跳节流（60秒，tick 级 handlebar 全量打印会刷爆日志）
 _g_last_passive_ts = 0.0    # 被动模式心跳节流（300秒）
+_g_last_bind_try = 0.0      # 被动模式下延迟绑定白名单的上次尝试时刻（T-20261023-002，30s 节流）
 _g_diag_printed = False
 _g_deal_ok = None   # deal 明细接口可用性探测缓存：None=未探测 True=可用 False=不可用（降级只用订单对象价）
 _g_deal_err_count = 0   # deal 接口连续异常计数（达 DEAL_QUERY_MAX_ERR 才永久降级，单次异常可能只是瞬时抖动）
@@ -1085,10 +1104,33 @@ def _rebuild_state(C):
             _g_whitelist.add(qc)
         else:
             print("[P16V13][WARN] 白名单代码无法归一化，已忽略: %r" % (c,))
+    # ★ 2026-10-23（T-20261023-002）：外部下单票自动并入白名单（与 G2/ENS 同款）。
+    # 换仓买入由外部 rebalance_daily.py 完成（remark=planA_new_top），
+    # 内置白名单恒量 V13_CODES 不可能预知新票 → 必须扫当日 order 反推，否则新仓零风控覆盖。
+    # 官方口径（§06）：用订单备注 + 交易日建立归属与幂等，而非硬编码。
+    _ext_added = []
+    try:
+        _day_orders = f_get(ACCOUNT_ID, "stock", "order")
+        for o in (_day_orders or []):
+            try:
+                _rk = str(getattr(o, "m_strRemark", "") or "")
+                if EXTERNAL_REMARK_BUY not in _rk:
+                    continue
+                _oc = _to_qmt_code_any(str(getattr(o, "m_strInstrumentID", "") or ""))
+                if _oc and _oc not in _g_whitelist:
+                    _g_whitelist.add(_oc)
+                    _ext_added.append(_oc)
+            except Exception:
+                continue
+    except Exception as _e:
+        print("[P16V13][WARN] 外部委托白名单反推失败（可能零风控覆盖，需人工核对）: %r" % (_e,))
+    if _ext_added:
+        print("[P16V13][INIT] 外部委托(remark=%s)反推并入白名单 %d 只: %s" % (
+            EXTERNAL_REMARK_BUY, len(_ext_added), ",".join(sorted(_ext_added))))
     if not _g_whitelist:
         _g_passive = True
-        print("[P16V13][WARN] V13_CODES 白名单为空，完全被动模式（不评估不下单）；"
-              "部署前人工填入 V13 实际持仓代码")
+        print("[P16V13][WARN] V13_CODES 白名单为空且当日无外部买入委托，完全被动模式"
+              "（不评估不下单；被动下每30s自动重扫外部买入，见 _late_bind_whitelist）")
         return
     # 纳管集 = 白名单 ∩ 账户 position（白名单外绝不纳管）
     managed = 0
@@ -1135,14 +1177,15 @@ def _rebuild_state(C):
         _g_peak_snap[qc] = pv
         if qc in _g_positions and pv > float(_g_positions[qc].get("peak", 0.0) or 0.0):
             _g_positions[qc]["peak"] = pv
-    # 4) 当日 order 反查 remark=ORDER_REMARK → 重建 risk_sold + RSK 序号水位
+    # 4) 当日 order 反查 remark∈ALL_REMARKS → 重建 risk_sold + RSK 序号水位
+    #    （2026-10-23：并入外部 remark，防内置重启后对外部已卖票重复卖出）
     orders = f_get(ACCOUNT_ID, "stock", "order")
     risk_orders = 0
     if orders:
         for o in orders:
             try:
                 remark = str(getattr(o, "m_strRemark", "") or "")
-                if ORDER_REMARK not in remark:
+                if not any(rk in remark for rk in ALL_REMARKS):
                     continue
                 ocode = str(getattr(o, "m_strInstrumentID", "") or "")
                 if not ocode:
@@ -1195,6 +1238,82 @@ def _print_holdings():
 
 
 # ============================================================
+# 被动模式延迟绑定（T-20261023-002，与 G2/ENS 同款）
+# ============================================================
+def _late_bind_whitelist(C):
+    """被动模式下延迟绑定白名单。
+
+    场景：策略 09:00 init 时账户空仓、当日无委托 → 白名单空 → 进被动；
+          09:50 外部 rebalance_daily.py 用 remark=planA_new_top 买入 →
+          若不做延迟绑定，内置风控永远 passive，新仓零止损覆盖（T-20261020-005 同型 P0）。
+
+    做法（官方 §06「订单备注 + 交易日建立归属」）：每 30s 扫一次当日 order，
+    凡 remark 命中 EXTERNAL_REMARK_BUY 的票并入白名单；一旦非空则重建持仓并解除被动。
+
+    返回 True = 已成功绑定并解除被动（调用方应继续走正常 handlebar 流程）。
+    """
+    global _g_passive, _g_last_bind_try, _g_whitelist
+    now = time.time()
+    if now - _g_last_bind_try < 30.0:
+        return False
+    _g_last_bind_try = now
+    f_get = globals().get("get_trade_detail_data")
+    if f_get is None:
+        f_get = getattr(C, "get_trade_detail_data", None)
+    if f_get is None:
+        return False
+    added = []
+    try:
+        for o in (f_get(ACCOUNT_ID, "stock", "order") or []):
+            try:
+                if EXTERNAL_REMARK_BUY not in str(getattr(o, "m_strRemark", "") or ""):
+                    continue
+                c = _to_qmt_code_any(str(getattr(o, "m_strInstrumentID", "") or ""))
+                if c and c not in _g_whitelist:
+                    _g_whitelist.add(c)
+                    added.append(c)
+            except Exception:
+                continue
+    except Exception:
+        return False
+    if not added:
+        return False
+    print("[P16V13][LATE-BIND] 被动模式下捕获外部买入 %d 只并入白名单: %s"
+          % (len(added), ",".join(sorted(added))))
+    # 重建持仓纳管集（复用 init 口径：白名单 ∩ 账户 position）
+    managed = 0
+    try:
+        for p in (f_get(ACCOUNT_ID, "stock", "position") or []):
+            code = _to_qmt_code_any(str(getattr(p, "m_strInstrumentID", "")
+                                        or getattr(p, "m_strSecurityCode", "") or ""))
+            if not code or code not in _g_whitelist:
+                continue
+            vol = int(getattr(p, "m_nVolume", 0) or 0)
+            if vol <= 0:
+                continue
+            cost = 0.0
+            for attr in ("m_dOpenPrice", "m_dCostPrice", "m_dPrice"):
+                v = float(getattr(p, attr, 0) or 0)
+                if v > 0:
+                    cost = v
+                    break
+            _g_positions[code] = {"cost": cost, "vol": vol,
+                                  "can_use": int(getattr(p, "m_nCanUseVolume", 0) or 0),
+                                  "peak": cost}
+            managed += 1
+    except Exception as e:
+        print("[P16V13][LATE-BIND] 持仓重建异常，保持被动: %r" % (e,))
+        return False
+    if managed <= 0:
+        print("[P16V13][LATE-BIND] 白名单已扩充但账户暂无对应持仓（T+1 未成交），继续等待")
+        return False
+    _g_passive = False
+    print("[P16V13][LATE-BIND] 解除被动，纳管 %d 只: %s"
+          % (managed, ",".join(sorted(_g_positions.keys()))))
+    return True
+
+
+# ============================================================
 # QMT 生命周期
 # ============================================================
 def init(C):
@@ -1222,14 +1341,19 @@ def handlebar(C):
     → pending状态机 → print心跳。"""
     global _g_today, _g_slippage_alert_count, _g_last_passive_ts
 
-    # 被动守卫（红线：绝不活跃盲跑）：直接 return，仅节流打印被动心跳供沙箱外旁路监控可见
+    # 被动守卫（红线：绝不活跃盲跑）
+    # ★ 2026-10-23（T-20261023-002）：被动下每 30s 尝试延迟绑定（外部买入票 planA_new_top 自动纳管）。
+    #   绑定成功则解除被动、继续走正常风控流程；仍失败则只打被动心跳退出。
     if _g_passive:
-        now = time.time()
-        if now - _g_last_passive_ts >= 300:
-            _g_last_passive_ts = now
-            print("[P16V13][PASSIVE] %s 被动模式运行中（不评估不下单），"
-                  "查上方 WARN/ERR 行定位真实原因" % _now_str())
-        return
+        if _late_bind_whitelist(C):
+            pass   # 已解除被动，继续往下执行
+        else:
+            now = time.time()
+            if now - _g_last_passive_ts >= 300:
+                _g_last_passive_ts = now
+                print("[P16V13][PASSIVE] %s 被动模式运行中（不评估不下单），"
+                      "查上方 WARN/ERR 行定位真实原因" % _now_str())
+            return
 
     # 日期切换重置（pending 清空：隔日委托已失效；risk_sold 清空：新一天允许重新触发）
     today = _today_str()

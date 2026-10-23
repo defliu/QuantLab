@@ -1,7 +1,8 @@
 # coding: utf-8
 """融合（ensemble）大QMT 文件桥 · 独立配置 —— 与 G2 桥（g2_config.py）完全隔离，绝不 import g2_config.py。
 
-- 账号：70180771（与 G2 同券商账号，虚拟子账户独立账本；绝不纳管/卖出他人持仓）
+- 账号：67014907（国金 miniQMT；2026-10-22 拍板从 70180771 迁入，70180771 未开通 miniQMT）
+- 执行：外部 Python 经 xtquant 直连下单（2026-10-22 起，不再写文件桥 cmd/orders）
 - 选股：deploy_predict_g2 --ensemble（v3_enh + G2 rank 融合 w=0.5），红线 60，TOP2
 - 配置：live_trail/N10/红线60/TOP2（2026-09-10 拍板上线，对齐网格最优 融合-live_trail/N10 +0.211%）
 - 资金池：独立文件 ens_strategy_capital.json（不读 G2/V1.3 资金池）
@@ -13,11 +14,29 @@ import os
 import time
 
 # ---- 账号与桥 ----
-ACCOUNT_ID = "70180771"              # 大QMT 模拟端（与 G2 同一券商账号，虚拟子账户）
+# 2026-10-22 拍板：由 70180771（无 miniQMT 权限）迁至 67014907，改为 xtquant 直连下单。
+ACCOUNT_ID = "67014907"
 STRATEGY = "Project_16_ens"
 BRIDGE_DIR = "D:/QMT_POOL/p16_ensemble_bridge"
 CMD_DIR = os.path.join(BRIDGE_DIR, "cmd")
 STATE_DIR = os.path.join(BRIDGE_DIR, "state")
+
+# ---- xtquant 连接与下单参数（供 order_guard.configure() 消费）----
+QMT_PATH = r"D:\国金QMT交易端模拟"
+USERDATA = os.path.join(QMT_PATH, "userdata_mini")
+XTPACK = os.path.join(QMT_PATH, "bin.x64", "Lib", "site-packages")
+BUY_PRICE_TYPE = "FIX"               # 买入限价（对齐 V1.3）
+AUTO_SELL_PRICE_TYPE = "LATEST"      # 卖出最新价（对齐 V1.3）
+# ENS 独立待补价队列（绝不与 V1.3 / G2 共用）
+PENDING_FILL_FILE = os.path.join(BRIDGE_DIR, "ens_pending_fills.jsonl")
+# ENS 独立成交账本（2026-10-22 新建；原靠内置桥写 state/fills_*.json，已随桥作废）
+TRADE_LOG = os.path.join(BRIDGE_DIR, "ens_trade_log.csv")
+TRADE_LOG_FIELDS = ["time", "account_id", "code", "side", "vol", "price",
+                    "order_id", "remark", "reason"]
+# 下单备注（归属隔离：同账号三策略靠 remark 区分，绝不交叉纳管）
+REMARK_BUY = "p16_ens_new"
+REMARK_SELL = "p16_ens_risk"
+
 
 # ---- 路径（外部信号层） ----
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -59,14 +78,34 @@ _LARK_CLI_FALLBACK = r"C:\Users\Administrator\.trae-cn\plugins\trae-remote-offic
 LARK_CLI = _LARK_CLI_MAIN if os.path.exists(_LARK_CLI_MAIN) else _LARK_CLI_FALLBACK
 
 
+def _backup_stale_capital(path, old_stamp):
+    """account_id 戳不匹配 → 备份旧档（AGENTS T-20260823-004 fail-safe）。
+
+    2026-10-22 账号由 70180771 迁至 67014907：旧资金池带 70180771 戳，
+    直接沿用会把「别的账号的收益」当成自己的起点。故备份后按 START_CAPITAL 空仓起步。
+    """
+    try:
+        bak = "%s.bak_acct_%s_%s" % (path, old_stamp or "nostamp",
+                                     time.strftime("%Y%m%d_%H%M%S"))
+        os.replace(path, bak)
+        print("[g2_ens_config] 资金池 account_id 戳不匹配(旧=%s, 本策略=%s) → 已备份为 %s，"
+              "按 %.0f 元空仓起步" % (old_stamp, ACCOUNT_ID, os.path.basename(bak), START_CAPITAL))
+        return bak
+    except Exception as e:
+        print("[g2_ens_config] 资金池备份失败（人工核对）: %r" % (e,))
+        return None
+
+
 def load_ens_capital():
     """读融合独立资金池（account_id 戳校验；失败/不匹配回退 START_CAPITAL）。
     收益滚动、亏损不补：capital = 初始 + 已实现盈亏 + 策略持仓浮盈。"""
     try:
         with open(ENS_CAPITAL_FILE, encoding="utf-8") as f:
             d = json.load(f)
-        if str(d.get("account_id", "")) != ACCOUNT_ID:
-            raise ValueError("account_id 戳不匹配: %s" % d.get("account_id"))
+        stamp = str(d.get("account_id", ""))
+        if stamp != ACCOUNT_ID:
+            _backup_stale_capital(ENS_CAPITAL_FILE, stamp)
+            return float(START_CAPITAL)
         cap = float(d.get("capital", 0) or 0)
         if cap > 0:
             return cap
@@ -94,7 +133,7 @@ def save_ens_capital(capital, note=""):
 # ---- 低开校验参数（执行侧安全闸，与 G2/V1.4 同规则） ----
 GAP_HARD_PCT = float(os.environ.get("GAP_HARD_PCT", "-5.0"))   # 极端低开阈值，直接跳过
 GAP_OPEN_PCT = float(os.environ.get("GAP_OPEN_PCT", "-3.0"))   # 低开触发阈值
-GAP_VR       = float(os.environ.get("GAP_VR", "2.0"))          # 低开放行量比
+GAP_VR       = float(os.environ.get("GAP_VR", "3.3"))          # 低开放行量比（单位时间口径，T-20261023-007）
 
 
 def today_str():

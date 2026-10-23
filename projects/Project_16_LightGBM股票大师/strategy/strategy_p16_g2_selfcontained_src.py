@@ -28,14 +28,35 @@ BRIDGE_DIR = "D:/QMT_POOL/g2_bridge"
 CMD_DIR = os.path.join(BRIDGE_DIR, "cmd")
 STATE_DIR = os.path.join(BRIDGE_DIR, "state")
 
-ACCOUNT_ID = "70180771"
+ACCOUNT_ID = "67014907"
 
 # passorder 常量（对齐ATR战备模板：prType=5最新价，第8参=remark对账标识，第9参=2，第11参=C）
 OP_BUY = 23
 OP_SELL = 24
 ORDER_TYPE_VOL = 1101
 PRTYPE_LATEST = 5
-ORDER_REMARK = "P16G2桥"
+ORDER_REMARK = "P16G2I桥"
+# 旧 remark 兼容（2026-10-20 改名，T-20261020-004）：改名前（文件桥版，10-16 前）下的
+# 委托 remark 是 "P16G2桥"。同日重启/当日 order 反查若只认新值，会把**改名当天之前**
+# 挂出的未成交委托当作「非本策略」→ risk_sold 重建漏项 → 可能重复卖出。
+# 故反查/重建一律用 ORDER_REMARK_ALL 做「任一命中」判定；下单只写新值。
+ORDER_REMARK_LEGACY = ("P16G2桥",)
+ORDER_REMARK_ALL = (ORDER_REMARK,) + ORDER_REMARK_LEGACY
+
+# ★ 2026-10-23 外部下单 remark（T-20261023-002，拍板 F 配套）
+# 拍板 F 后信号与下单全部移到外部 Python（rebalance_g2.py），内置侧只做风控。
+# 外部用 g2_config.REMARK_BUY / REMARK_SELL 下单，与内置原 remark 完全不同 →
+# 若不自查这两个值，内置风控会：
+#   ① 白名单永远漏掉外部新买入的票 → 零止损覆盖（T-20261020-005 同型 P0）；
+#   ② risk_sold 重建漏项 → 重启后可能重复卖出。
+# 解法（对齐官方《QMT内置Python外部读写权限调整说明》§06「通过订单备注建立幂等控制」）：
+#   init 时扫「当日 order」，凡 remark 命中 EXTERNAL_REMARK_BUY 的票自动并入白名单。
+EXTERNAL_REMARK_BUY = "p16_g2_new"
+EXTERNAL_REMARK_SELL = "p16_g2_risk"
+EXTERNAL_REMARK_ALL = (EXTERNAL_REMARK_BUY, EXTERNAL_REMARK_SELL)
+# 全量 remark（内置自身 + 外部）→ 用于 risk_sold 重建
+ALL_REMARKS = ORDER_REMARK_ALL + EXTERNAL_REMARK_ALL
+
 
 # pending 超时与重试（买卖统一：300秒/3次，防「30秒即放弃永不补单」）
 PENDING_TIMEOUT = 300
@@ -56,8 +77,14 @@ PEAK_STALE_HOURS = 24.0     # peak.json 距上次写盘超过此小时数视为 
 
 # ===== 自闭环纯风控版（2026-10-16，QMT 沙箱 m_nPythonOpFile=1 下零文件读写，方案 §4.2 Step 1）=====
 # 持仓白名单：白名单 ∩ 账户 position = 纳管集；白名单外持仓绝不触碰（资金分配红线）。
-# 空 = 部署未填 = 完全被动模式（不评估不下单）。op 部署前按当日实际持仓填入。
-G2_CODES = ("605098.SH", "000607.SZ")
+# 空 = 部署未填 = 完全被动模式（不评估不下单）。
+# ★ 2026-10-23（T-20261023-002）：拍板 F 后改为**外部下单 + 内置风控**，
+#   白名单不再靠人工硬编码，而是 init 时从「当日 order 的 remark=p16_g2_new」自动反推
+#   （见 _rebuild_state 步骤 2.5）。本常量仅保留"历史存量票"用途。
+#   2026-10-23 现状：67014907 已清空（V2 清仓后 0 只），故置空。
+#   → 若当日有外部买入，会自动并入；若无持仓且无买入，进入"只监控模式"（安全）。
+G2_CODES = ()
+
 
 # 追盈历史峰值快照（跨日延续，T-20260910 只升不降语义）：{代码: 峰值}。
 # PEAK_SNAPSHOT_DATE = 快照取数日（YYYYMMDD）；距今 > PEAK_STALE_HOURS 不恢复（T-20260928-002 防追认止损）。
@@ -87,6 +114,7 @@ _g_pending = {}
 _g_last_cmd_seq = 0
 _g_last_position_refresh = 0.0
 _g_last_asset_refresh = 0.0
+_g_last_bind_try = 0.0   # 被动模式延迟绑定白名单的上次尝试时刻（T-20261023-002，30s 节流）
 _g_today = ""
 _g_today_order_count = 0
 _g_today_fill_count = 0
@@ -116,6 +144,12 @@ _g_slippage_alert_count = 0
 #   全部输入来自 QMT 内部 API + 源码内嵌快照（_g2_signal_snapshots.py 构建期生成）。
 # ============================================================
 # 信号时点（HH:MM，对齐原 09:50 G2 换仓任务）与执行窗口
+# ★ 2026-10-22 拍板 F：信号改为**外部 Python 算完整评分卡 F1~F6**，本内置策略只保留风控段。
+#   SIGNAL_ENABLED=False → handlebar 的信号闸门整段跳过（见 handlebar 0) 段），
+#   内置侧仅做 tick 级 STOP/TP/TRAIL + pending 状态机，不选股不下新单。
+#   原因：《QMT内置Python外部读写权限调整说明》2026-10-23 全量启用限制后，
+#   内置侧拿不到 F2/F5/F6（需外部网络），内产信号只能退化为 prob 单维 → 口径降级。
+SIGNAL_ENABLED = False
 SIGNAL_HM = "09:50"
 SIGNAL_DEADLINE_HM = "09:58"      # 过点未跑则当日放弃（防盘中重复触发）
 # 简化红线（拍板：内移版只带 prob + 简化红线；F2/F5/F6 沙箱内不可得）
@@ -162,7 +196,7 @@ try:
 except Exception:
     pd = None
 
-# ---- vendor 注入占位（build_p16_g2.py 构建期替换为文件全文）----
+# ---- vendor 注入占位（build_p16_g2_selfcontained.py 构建期替换为文件全文）----
 # __VENDOR__:snapshot
 # __VENDOR__:features
 # __VENDOR__:model
@@ -180,7 +214,7 @@ def _atomic_write_json(path, data):
 
 def _write_cmd_alert(date, kind, path):
     """[自闭环] 告警落盘已废止 → 改 print（桥无推送能力，唯一通道是 QMT 日志）。"""
-    print("[P16G2][ALERT] kind=%s path=%s (文件落盘已废止，走print通道)" % (kind, path))
+    print("[P16G2I][ALERT] kind=%s path=%s (文件落盘已废止，走print通道)" % (kind, path))
 
 
 def _read_json(path):
@@ -308,7 +342,7 @@ def _load_positions_cfg(date):
     if fb and str(fb.get("account_id", "") or "") == ACCOUNT_ID:
         if not _g_cfg_fallback_logged:
             _g_cfg_fallback_logged = True
-            print("[P16G2][CFG-FALLBACK] 当日成本表缺失，回退最近表 date=%s（持仓未变时成本仍有效）"
+            print("[P16G2I][CFG-FALLBACK] 当日成本表缺失，回退最近表 date=%s（持仓未变时成本仍有效）"
                   % str(fb.get("date", "")))
         return fb
     return None
@@ -349,7 +383,7 @@ def _scan_stale_orders():
             if not (name.startswith("orders_") or name.startswith("cancel_")):
                 continue
             full = os.path.join(CMD_DIR, name)
-            print("[P16G2][STALE-CMD] 未归档命令文件: %s" % full)
+            print("[P16G2I][STALE-CMD] 未归档命令文件: %s" % full)
             try:
                 _atomic_write_json(
                     os.path.join(STATE_DIR, "stale_cmd_alert.json"),
@@ -407,7 +441,7 @@ def _do_passorder(C, action, code, vol, price, prtype=PRTYPE_LATEST):
         ret = passorder(op, ORDER_TYPE_VOL, ACCOUNT_ID, code, prtype, price, vol, ORDER_REMARK, 2, "", C)
         return ret
     except Exception as e:
-        print("[P16G2][PASSORDER-ERR] %s %s: %s" % (action, code, e))
+        print("[P16G2I][PASSORDER-ERR] %s %s: %s" % (action, code, e))
         return None
 
 
@@ -483,7 +517,7 @@ def _query_deals(C, code, oids):
         f_get = getattr(C, "get_trade_detail_data", None)
     if f_get is None:
         _g_deal_ok = False
-        print("[P16G2][DEAL-API-UNAVAIL] 无 get_trade_detail_data，成交价降级为订单对象价")
+        print("[P16G2I][DEAL-API-UNAVAIL] 无 get_trade_detail_data，成交价降级为订单对象价")
         return []
     try:
         deals = f_get(ACCOUNT_ID, "stock", "deal")
@@ -491,7 +525,7 @@ def _query_deals(C, code, oids):
         _g_deal_err_count += 1
         if _g_deal_err_count >= DEAL_QUERY_MAX_ERR:
             _g_deal_ok = False
-        print("[P16G2][DEAL-API-ERR] get_trade_detail_data 抛异常(%d/%d): %s%s" % (
+        print("[P16G2I][DEAL-API-ERR] get_trade_detail_data 抛异常(%d/%d): %s%s" % (
             _g_deal_err_count, DEAL_QUERY_MAX_ERR, e,
             "，成交价降级为订单对象价" if _g_deal_ok is False else "，本次按无明细处理"))
         return []
@@ -536,7 +570,7 @@ def _query_deals(C, code, oids):
         # 全无委托号 → 无法归属本次委托，拒绝使用（fail-safe：宁可降级，也不用可能混入历史成交的均价记账）
         if not _g_deal_no_oid:
             _g_deal_no_oid = True
-            print("[P16G2][DEAL-NO-OID] 成交明细无任何委托号字段，无法归属本次委托，"
+            print("[P16G2I][DEAL-NO-OID] 成交明细无任何委托号字段，无法归属本次委托，"
                   "成交均价降级为订单对象价（不猜测归属）")
         return []
     if not oids:
@@ -631,7 +665,7 @@ def _slippage_alert(sid, code, action, px_source, ref_price, fill_price, adverse
     if not notes:
         return ""
     _g_slippage_alert_count += 1
-    print("[P16G2][SLIPPAGE-ALERT] %s %s %s px_source=%s ref=%.3f fill=%.3f adverse=%.2f%% gap=%.2f%% | %s" % (
+    print("[P16G2I][SLIPPAGE-ALERT] %s %s %s px_source=%s ref=%.3f fill=%.3f adverse=%.2f%% gap=%.2f%% | %s" % (
         sid, code, action, px_source, ref_price, fill_price, adverse * 100, gap * 100, "; ".join(notes)))
     tail = " adverse_slippage=%.2f%%" % (adverse * 100) if adverse > MAX_ADVERSE_SLIPPAGE_PCT else ""
     if gap > MAX_GAP_TOLERANCE_PCT:
@@ -705,7 +739,7 @@ def _write_fill(C, date, sid, info, code, action, vol, status, sysid, reason,
     # _atomic_write_json 是空壳），若不在此 print，成交记录会**彻底消失**——
     # 外部 sync_*/对账/飞书成交卡全部断供（V13 早已有 [P16V13][FILL]，G2/ENS 漏了）。
     # 格式与 V13 逐字段对齐，外部解析器可复用同一正则。
-    print("[P16G2][FILL] %s %s %s %s vol=%d px=%.4f src=%s status=%s ref=%.3f slip=%.2f%% gap=%.2f%% retry=%d oids=%s | %s" % (
+    print("[P16G2I][FILL] %s %s %s %s vol=%d px=%.4f src=%s status=%s ref=%.3f slip=%.2f%% gap=%.2f%% retry=%d oids=%s | %s" % (
         date, sid, rec.get("code", code), action, vol, price, px_source, status,
         ref_price, adverse * 100, gap * 100, rec.get("retry", 0), ",".join(oids), reason))
     _add_or_update_fill(date, rec)
@@ -755,7 +789,7 @@ def _lookup_order(C, code, vol, action, sid="", active_only=True):
                     remark = str(getattr(o, "m_strRemark", "") or "")
                     return (
                         1 if sid and uid == sid else 0,
-                        1 if ORDER_REMARK in remark else 0,
+                        1 if any(rk in remark for rk in ORDER_REMARK_ALL) else 0,
                         str(getattr(o, "m_strInsertTime", "") or ""),
                     )
                 candidates.sort(key=_key, reverse=True)
@@ -771,7 +805,7 @@ def _lookup_order(C, code, vol, action, sid="", active_only=True):
                                  or ("deal" in a.lower()) or ("vol" in a.lower()) or ("trade" in a.lower())
                                  or ("price" in a.lower()) or ("amount" in a.lower())]
                         diag = {a: str(getattr(matched, a, ""))[:40] for a in attrs}
-                        print("[P16G2][DIAG-ORDER] 匹配订单字段=%s" % diag)
+                        print("[P16G2I][DIAG-ORDER] 匹配订单字段=%s" % diag)
                     except Exception:
                         pass
                 return order_id, matched
@@ -790,16 +824,16 @@ def _cancel_order_by_id(C, code, order_id, sysid=""):
         return None
     try:
         if not can_cancel_order(oid, ACCOUNT_ID, "stock"):
-            print("[P16G2][CANCEL-NOT-CANCELABLE] %s %s 当前不可撤" % (code, oid))
+            print("[P16G2I][CANCEL-NOT-CANCELABLE] %s %s 当前不可撤" % (code, oid))
             return None
     except Exception:
         pass
     try:
         r = cancel(oid, ACCOUNT_ID, "stock", C)
-        print("[P16G2][CANCEL] code=%s order_id=%s 返回:%s" % (code, oid, r))
+        print("[P16G2I][CANCEL] code=%s order_id=%s 返回:%s" % (code, oid, r))
         return r
     except Exception as e:
-        print("[P16G2][CANCEL-ERR] code=%s order_id=%s: %s" % (code, oid, e))
+        print("[P16G2I][CANCEL-ERR] code=%s order_id=%s: %s" % (code, oid, e))
         return None
 
 
@@ -817,7 +851,7 @@ def _execute_order(C, order, date):
 
     # 无效指令检查
     if vol <= 0 or price <= 0:
-        print("[P16G2][REJECTED] %s %s vol=%d price=%.3f reason=无效参数" % (action, code, vol, price))
+        print("[P16G2I][REJECTED] %s %s vol=%d price=%.3f reason=无效参数" % (action, code, vol, price))
         _add_or_update_fill(date, {
             "strategy_order_id": strategy_order_id,
             "code": code,
@@ -834,7 +868,7 @@ def _execute_order(C, order, date):
     # 代码格式转换
     qmt_code = _to_qmt_code(code)
     if qmt_code is None:
-        print("[P16G2][REJECTED] %s %s reason=代码格式无法转换" % (action, code))
+        print("[P16G2I][REJECTED] %s %s reason=代码格式无法转换" % (action, code))
         _add_or_update_fill(date, {
             "strategy_order_id": strategy_order_id,
             "code": code,
@@ -850,13 +884,13 @@ def _execute_order(C, order, date):
 
     # 幂等：已在pending中则跳过
     if strategy_order_id in _g_pending:
-        print("[P16G2][SKIP] %s %s 已在pending中" % (action, strategy_order_id))
+        print("[P16G2I][SKIP] %s %s 已在pending中" % (action, strategy_order_id))
         return
 
     # 下单（prtype 可覆盖为 11 指定价，用于测试不可成交单）
     prtype = int(order.get("prtype", PRTYPE_LATEST) or PRTYPE_LATEST)
     ret = _do_passorder(C, action, qmt_code, vol, price, prtype)
-    print("[P16G2][ORDER] %s %s %s %d股 @%.3f prtype=%d ret=%s" % (action, strategy_order_id, qmt_code, vol, price, prtype, ret))
+    print("[P16G2I][ORDER] %s %s %s %d股 @%.3f prtype=%d ret=%s" % (action, strategy_order_id, qmt_code, vol, price, prtype, ret))
     _g_today_order_count += 1
     # 信号内产版：新买入票立即纳入白名单（否则成交后 _check_risk_signals 按
     # 白名单过滤不纳管 -> 止损/止盈永不触发 = 孤儿持仓，实盘红线）。
@@ -903,7 +937,7 @@ def _process_cancels(C, cancel_data, date):
         sid = c.get("strategy_order_id", "")
         info = _g_pending.get(sid)
         if info is None:
-            print("[P16G2][CANCEL-SKIP] %s 不在pending中" % sid)
+            print("[P16G2I][CANCEL-SKIP] %s 不在pending中" % sid)
             continue
         code = info["code"]
         action = info["action"]
@@ -934,7 +968,7 @@ def _process_cancels(C, cancel_data, date):
                             info.get("risk_reason", "filled before cancel"),
                             matched=m)
                 _g_pending.pop(sid, None)
-                print("[P16G2][CANCEL-TOO-LATE] %s 已全部成交 deal=%d" % (sid, total_deal))
+                print("[P16G2I][CANCEL-TOO-LATE] %s 已全部成交 deal=%d" % (sid, total_deal))
                 continue
         if oid:
             # 官方撤单 cancel()（调研 QMT撤单重委托方案.md），进入 cancel_requested 确认态
@@ -942,10 +976,10 @@ def _process_cancels(C, cancel_data, date):
             info["order_id"] = oid
             info["cancel_requested"] = True
             info["time"] = time.time()
-            print("[P16G2][CANCEL-SENT] %s %s 撤单已发 order_id=%s，等待确认" % (sid, code, oid))
+            print("[P16G2I][CANCEL-SENT] %s %s 撤单已发 order_id=%s，等待确认" % (sid, code, oid))
             continue
         # 拿不到真实 order_id：绝不假写 CANCELED（否则 QMT 真单变孤儿），保留 pending 延后复查
-        print("[P16G2][CANCEL-NOID] %s %s 无法定位order_id，保留pending复查" % (sid, code))
+        print("[P16G2I][CANCEL-NOID] %s %s 无法定位order_id，保留pending复查" % (sid, code))
         continue
 
 
@@ -987,7 +1021,7 @@ def _handle_rejected_retry(C, date, sid, info, now, deal_vol):
     # 原单实际已全成交 → FILLED 收尾，绝不重报
     if filled_now > 0:
         total_deal = info.get("filled_so_far", 0) + filled_now
-        print("[P16G2][FILLED] %s %s 原单已全成交 deal=%d" % (sid, code, total_deal))
+        print("[P16G2I][FILLED] %s %s 原单已全成交 deal=%d" % (sid, code, total_deal))
         _write_fill(C, date, sid, info, code, action, total_deal, "FILLED",
                     info.get("sysid", ""),
                     info.get("risk_reason", "filled, original still active"),
@@ -997,14 +1031,14 @@ def _handle_rejected_retry(C, date, sid, info, now, deal_vol):
         return
     if not dead:
         # 原单未确认死透（仍活跃）→ 延后60s复查，不重报不计数（防双倍持仓）
-        print("[P16G2][REJECTED-UNCONFIRMED] %s %s 原单未死透，延后60s复查" % (sid, code))
+        print("[P16G2I][REJECTED-UNCONFIRMED] %s %s 原单未死透，延后60s复查" % (sid, code))
         info["time"] = now - PENDING_TIMEOUT + 60
         return
 
     filled_so_far = info.get("filled_so_far", 0) + deal_vol
     info["filled_so_far"] = filled_so_far
     if retry >= MAX_RETRY:
-        print("[P16G2][ABANDON] %s %s 废单retry=%d filled=%d" % (sid, code, retry, filled_so_far))
+        print("[P16G2I][ABANDON] %s %s 废单retry=%d filled=%d" % (sid, code, retry, filled_so_far))
         _write_fill(C, date, sid, info, code, action, filled_so_far, "ABANDONED",
                     info.get("sysid", ""),
                     info.get("risk_reason", "rejected status=57, retry exhausted"))
@@ -1019,7 +1053,7 @@ def _handle_rejected_retry(C, date, sid, info, now, deal_vol):
     retry_px = _refresh_last_price(C, code, float(info.get("price", 0) or 0))
     info["last_price"] = retry_px
     ret = _do_passorder(C, action, code, remaining, retry_px)
-    print("[P16G2][REJECTED-RETRY-%d] %s %s %d股 px=%.3f ret=%s" % (
+    print("[P16G2I][REJECTED-RETRY-%d] %s %s %d股 px=%.3f ret=%s" % (
         retry + 1, sid, code, remaining, retry_px, ret))
     oid3, m3 = _lookup_order(C, code, remaining, action, sid=sid)
     sysid3 = ""
@@ -1053,7 +1087,7 @@ def _handle_timeout_retry(C, date, sid, info, now):
             _acc_order_id(info, oid)
             if not info.get("order_id"):
                 info["order_id"] = oid
-    print("[P16G2][TIMEOUT] %s %s elapsed>%ds retry=%d cur_vol=%d filled=%d" % (
+    print("[P16G2I][TIMEOUT] %s %s elapsed>%ds retry=%d cur_vol=%d filled=%d" % (
         sid, code, PENDING_TIMEOUT, retry, cur_vol, filled_so_far))
     if oid:
         _cancel_order_by_id(C, code, oid, info.get("sysid", ""))
@@ -1079,7 +1113,7 @@ def _handle_timeout_retry(C, date, sid, info, now):
         dead = True
     if filled_before_cancel > 0:
         total_deal = filled_so_far + filled_before_cancel
-        print("[P16G2][FILLED] %s %s 撤前已全成交 deal=%d" % (sid, code, total_deal))
+        print("[P16G2I][FILLED] %s %s 撤前已全成交 deal=%d" % (sid, code, total_deal))
         _write_fill(C, date, sid, info, code, action, total_deal, "FILLED",
                     info.get("sysid", ""),
                     info.get("risk_reason", "filled before cancel"),
@@ -1089,11 +1123,11 @@ def _handle_timeout_retry(C, date, sid, info, now):
         return
     if not dead:
         # 撤单未确认死透 → 延后60s复查，不重报不计数（防双倍持仓）
-        print("[P16G2][TIMEOUT-UNCONFIRMED] %s 撤单未确认，延后60s复查" % sid)
+        print("[P16G2I][TIMEOUT-UNCONFIRMED] %s 撤单未确认，延后60s复查" % sid)
         info["time"] = now - PENDING_TIMEOUT + 60
         return
     if retry >= MAX_RETRY:
-        print("[P16G2][ABANDON] %s %s 超时retry=%d filled=%d" % (sid, code, retry, filled_so_far))
+        print("[P16G2I][ABANDON] %s %s 超时retry=%d filled=%d" % (sid, code, retry, filled_so_far))
         _write_fill(C, date, sid, info, code, action, filled_so_far, "ABANDONED",
                     info.get("sysid", ""),
                     info.get("risk_reason", "timeout, retry exhausted"))
@@ -1107,7 +1141,7 @@ def _handle_timeout_retry(C, date, sid, info, now):
     retry_px = _refresh_last_price(C, code, float(info.get("price", 0) or 0))
     info["last_price"] = retry_px
     ret = _do_passorder(C, action, code, remaining, retry_px)
-    print("[P16G2][RETRY-%d] %s %s %d股 px=%.3f ret=%s" % (
+    print("[P16G2I][RETRY-%d] %s %s %d股 px=%.3f ret=%s" % (
         retry + 1, sid, code, remaining, retry_px, ret))
     oid3, m3 = _lookup_order(C, code, remaining, action, sid=sid)
     sysid3 = ""
@@ -1149,7 +1183,7 @@ def _handle_cancel_confirm(C, date, sid, info, now):
                         matched=m)
             _g_pending.pop(sid, None)
             _g_today_fill_count += 1
-            print("[P16G2][CANCEL-CONFIRM-FILLED] %s %s deal=%d" % (sid, code, total_deal))
+            print("[P16G2I][CANCEL-CONFIRM-FILLED] %s %s deal=%d" % (sid, code, total_deal))
             return
         if st in (53, 54):
             _write_fill(C, date, sid, info, code, action, filled_so_far + dv, "CANCELED",
@@ -1157,26 +1191,26 @@ def _handle_cancel_confirm(C, date, sid, info, now):
                         info.get("risk_reason", "cancel confirmed"),
                         matched=m)
             _g_pending.pop(sid, None)
-            print("[P16G2][CANCEL-CONFIRMED] %s %s status=%d" % (sid, code, st))
+            print("[P16G2I][CANCEL-CONFIRMED] %s %s status=%d" % (sid, code, st))
             return
         if st == 57:
             _write_fill(C, date, sid, info, code, action, filled_so_far + dv, "REJECTED",
                         info.get("sysid", ""), "cancel rejected status=%d" % st,
                         matched=m)
             _g_pending.pop(sid, None)
-            print("[P16G2][CANCEL-REJECTED] %s %s status=%d" % (sid, code, st))
+            print("[P16G2I][CANCEL-REJECTED] %s %s status=%d" % (sid, code, st))
             return
         # 55=部成是活跃态（原单仍在成交），不能当 REJECTED 弹出 pending（假终态=真单孤儿）
         # 仍活跃（2/48/49/50 等非终态）：撤单未生效！保留 pending（fail-loud），90s 后重发最多2次
-        print("[P16G2][CANCEL-NOT-EFFECTIVE] %s %s status=%d 撤单未生效，订单仍活跃，保留pending复查" % (sid, code, st))
+        print("[P16G2I][CANCEL-NOT-EFFECTIVE] %s %s status=%d 撤单未生效，订单仍活跃，保留pending复查" % (sid, code, st))
         if now - info.get("time", now) > 90 and info.get("cancel_retry", 0) < 2:
             info["cancel_retry"] = info.get("cancel_retry", 0) + 1
             info["time"] = now
             _cancel_order_by_id(C, code, _extract_order_id(m) or info.get("order_id", ""), info.get("sysid", ""))
-            print("[P16G2][CANCEL-RETRY] %s %s 重发撤单 %d/2" % (sid, code, info["cancel_retry"]))
+            print("[P16G2I][CANCEL-RETRY] %s %s 重发撤单 %d/2" % (sid, code, info["cancel_retry"]))
         return
     # m is None：查不到订单（可能已撤/已成交/列表过期）→ UNCONFIRMED，外部以 positions 兜底
-    print("[P16G2][CANCEL-UNKNOWN] %s %s 撤单后订单查不到，状态未知，写UNCONFIRMED（外部以positions兜底）" % (sid, code))
+    print("[P16G2I][CANCEL-UNKNOWN] %s %s 撤单后订单查不到，状态未知，写UNCONFIRMED（外部以positions兜底）" % (sid, code))
     _write_fill(C, date, sid, info, code, action, filled_so_far, "UNCONFIRMED",
                 info.get("sysid", ""),
                 "cancel state unknown (may be canceled or filled), rely on positions")
@@ -1211,7 +1245,7 @@ def _check_pending_orders(C, date):
             if elapsed > PENDING_TIMEOUT:
                 _handle_timeout_retry(C, date, sid, info, now)
             else:
-                print("[P16G2][PENDING-NO-ORDER] %s %s elapsed=%.0fs" % (sid, code, elapsed))
+                print("[P16G2I][PENDING-NO-ORDER] %s %s elapsed=%.0fs" % (sid, code, elapsed))
             continue
 
         deal_vol = _extract_deal_volume(matched, fallback_vol=cur_vol)
@@ -1231,7 +1265,7 @@ def _check_pending_orders(C, date):
 
         # 1a) 成交量硬事实优先：已成交 >= 目标量 → FILLED
         if total_deal >= vol:
-            print("[P16G2][FILLED] %s %s deal=%d" % (sid, code, total_deal))
+            print("[P16G2I][FILLED] %s %s deal=%d" % (sid, code, total_deal))
             _write_fill(C, date, sid, info, code, action, total_deal, "FILLED",
                         sysid, info.get("risk_reason", "deal confirmed"), matched=matched)
             _g_pending.pop(sid, None)
@@ -1242,12 +1276,12 @@ def _check_pending_orders(C, date):
         # 且不撤原单 → 原单继续成交 + 重报单也成交 = 双倍建仓（9/2 实锤 600262 3000→6400）。
         # 55 走 1d/1a 等原单自然成交满；只有 status=57(真废单终态) 才重报。
         if status == 57:
-            print("[P16G2][REJECTED] %s %s status=57废单 deal=%d" % (sid, code, deal_vol))
+            print("[P16G2I][REJECTED] %s %s status=57废单 deal=%d" % (sid, code, deal_vol))
             _handle_rejected_retry(C, date, sid, info, now, deal_vol)
             continue
         # 1c) 撤类终态(53,54) → CANCELED 收尾（vol=total_deal，防漏计最后成交）
         if status in CANCEL_STATUS:
-            print("[P16G2][CANCELED-FROM-QMT] %s %s status=%d deal=%d" % (sid, code, status, total_deal))
+            print("[P16G2I][CANCELED-FROM-QMT] %s %s status=%d deal=%d" % (sid, code, status, total_deal))
             _write_fill(C, date, sid, info, code, action, total_deal, "CANCELED",
                         sysid,
                         info.get("risk_reason", "canceled by QMT, status=%d" % status),
@@ -1257,7 +1291,7 @@ def _check_pending_orders(C, date):
         # 1d) 有成交未满 → PARTIAL_FILLED 进度回写（filled_so_far不变，deal_vol是累计值）
         # 注意：部成也必须走超时判断（否则停滞单永不撤/永不重报，挂到日终被 NEW-DAY 清掉）
         if deal_vol > 0:
-            print("[P16G2][PARTIAL] %s %s deal=%d/%d" % (sid, code, total_deal, vol))
+            print("[P16G2I][PARTIAL] %s %s deal=%d/%d" % (sid, code, total_deal, vol))
             _write_fill(C, date, sid, info, code, action, total_deal, "PARTIAL_FILLED",
                         sysid, info.get("risk_reason", "partial deal, waiting more"),
                         matched=matched)
@@ -1272,7 +1306,7 @@ def _check_pending_orders(C, date):
         if elapsed > PENDING_TIMEOUT:
             _handle_timeout_retry(C, date, sid, info, now)
             continue
-        print("[P16G2][PENDING-STATUS] %s %s status=%d deal=%d" % (sid, code, status, deal_vol))
+        print("[P16G2I][PENDING-STATUS] %s %s status=%d deal=%d" % (sid, code, status, deal_vol))
 
 
 # ============================================================
@@ -1322,7 +1356,7 @@ def _reload_positions_cfg(date):
                     info["vol"] = int(p.get("vol", 0) or 0)
                 if not info.get("peak", 0) or info.get("peak", 0) <= 0:
                     info["peak"] = cost
-                print("[P16G2][CFG-RELOAD] %s 孤儿校准 cost=%.4f vol=%d" % (qcode, cost, info.get("vol", 0)))
+                print("[P16G2I][CFG-RELOAD] %s 孤儿校准 cost=%.4f vol=%d" % (qcode, cost, info.get("vol", 0)))
         except Exception:
             pass
 
@@ -1379,14 +1413,14 @@ def _check_risk_signals(C, date):
                     peak0 = snap_peak
                 _g_positions[code] = {"cost": info["cost"], "vol": info["vol"],
                                       "can_use": info["can_use"], "peak": peak0}
-                print("[P16G2][POS-NEW] %s 入账 cost=%.4f vol=%d can_use=%d peak=%.4f（白名单内新持仓）" % (
+                print("[P16G2I][POS-NEW] %s 入账 cost=%.4f vol=%d can_use=%d peak=%.4f（白名单内新持仓）" % (
                     code, info["cost"], info["vol"], info["can_use"], peak0))
         for code in list(_g_positions.keys()):
             if code not in acct_pos:
                 _g_positions.pop(code, None)
                 _g_risk_sold.discard(code)
     except Exception as e:
-        print("[P16G2][RISK-POS-ERR] %s" % e)
+        print("[P16G2I][RISK-POS-ERR] %s" % e)
         return
     if not _g_positions:
         return
@@ -1437,13 +1471,13 @@ def _check_risk_signals(C, date):
         sid_pre = "P16_%s_RSK%04d" % (date, _g_today_risk_count + 1)
         ret = _do_passorder(C, "SELL", code, can_use, last)
         if ret is None or ret != 0:
-            print("[P16G2][RISK-FAIL] %s %s %s 卖%d股 ret=%s 未记 risk_sold（下轮重试） | %s" % (
+            print("[P16G2I][RISK-FAIL] %s %s %s 卖%d股 ret=%s 未记 risk_sold（下轮重试） | %s" % (
                 action, sid_pre, code, can_use, ret, note))
             continue
         _g_risk_sold.add(code)
         _g_today_risk_count += 1
         sid = "P16_%s_RSK%04d" % (date, _g_today_risk_count)
-        print("[P16G2][RISK] %s %s %s 卖%d股 ret=%s | %s" % (action, sid, code, can_use, ret, note))
+        print("[P16G2I][RISK] %s %s %s 卖%d股 ret=%s | %s" % (action, sid, code, can_use, ret, note))
         _g_pending[sid] = {
             "code": code,
             "bridge_code": _to_bridge_code(code),
@@ -1534,7 +1568,7 @@ def _refresh_positions(C, date):
         }
         _atomic_write_json(_positions_path(date), data)
     except Exception as e:
-        print("[P16G2][POSITIONS-ERR] %s" % e)
+        print("[P16G2I][POSITIONS-ERR] %s" % e)
 
 
 def _refresh_asset(C, date):
@@ -1562,7 +1596,7 @@ def _refresh_asset(C, date):
         }
         _atomic_write_json(_asset_path(date), data)
     except Exception as e:
-        print("[P16G2][ASSET-ERR] %s" % e)
+        print("[P16G2I][ASSET-ERR] %s" % e)
 
 
 # ============================================================
@@ -1576,7 +1610,7 @@ def _write_heartbeat(date, cmd_seq):
     if now - _g_last_heart_ts < 60:
         return
     _g_last_heart_ts = now
-    print("[P16G2][HEART] %s date=%s pending=%d positions=%d risk_sold=%d risk_count=%d fills=%d slippage=%d passive=%s" % (
+    print("[P16G2I][HEART] %s date=%s pending=%d positions=%d risk_sold=%d risk_count=%d fills=%d slippage=%d passive=%s" % (
         _now_str(), date, len(_g_pending), len(_g_positions), len(_g_risk_sold),
         _g_today_risk_count, _g_today_fill_count, _g_slippage_alert_count, _g_passive))
     _print_holdings()
@@ -1593,7 +1627,7 @@ def _print_holdings():
                                          float(info.get("cost", 0) or 0)))
         except Exception:
             parts.append("%s=?" % code)
-    print("[P16G2][HOLD] %s n=%d %s" % (
+    print("[P16G2I][HOLD] %s n=%d %s" % (
         _now_str(), len(_g_positions), " ".join(parts) if parts else "-"))
 
 
@@ -1608,7 +1642,7 @@ def _archive_cmd_if_same(path, date, seq, prefix):
             return
         cur_seq = int(data.get("seq", 0) or 0)
         if cur_seq != seq:
-            print("[P16G2][ARCHIVE-SKIP] %s seq变化 %d->%d，不归档" % (prefix, seq, cur_seq))
+            print("[P16G2I][ARCHIVE-SKIP] %s seq变化 %d->%d，不归档" % (prefix, seq, cur_seq))
             return
         _archive_cmd(path, date, seq, prefix)
     except Exception:
@@ -1625,21 +1659,21 @@ def _process_orders_cmd(C, date):
     data = _read_json(path)
     if data is None:
         # 文件存在但读取失败：10-14 丢单即此路径（静默吞异常无法定位）
-        print("[P16G2][CMD-READ-FAIL] %s exists but read failed" % path)
+        print("[P16G2I][CMD-READ-FAIL] %s exists but read failed" % path)
         _write_cmd_alert(date, "orders", path)
         return 0
 
     # 账号防呆
     file_acct = str(data.get("account_id", "") or "")
     if file_acct != ACCOUNT_ID:
-        print("[P16G2][ACCT-MISMATCH] orders文件account=%s != 期望%s，跳过" % (file_acct, ACCOUNT_ID))
+        print("[P16G2I][ACCT-MISMATCH] orders文件account=%s != 期望%s，跳过" % (file_acct, ACCOUNT_ID))
         return 0
 
     seq = int(data.get("seq", 0) or 0)
     if seq <= _g_last_cmd_seq:
         return 0
 
-    print("[P16G2][CMD] 读取orders seq=%d (上次=%d)" % (seq, _g_last_cmd_seq))
+    print("[P16G2I][CMD] 读取orders seq=%d (上次=%d)" % (seq, _g_last_cmd_seq))
     _g_last_cmd_seq = seq
     _write_heartbeat(date, seq)
     orders = data.get("orders", [])
@@ -1647,7 +1681,7 @@ def _process_orders_cmd(C, date):
         try:
             _execute_order(C, o, date)
         except Exception:
-            print("[P16G2][ORDER-ERR] %s" % traceback.format_exc())
+            print("[P16G2I][ORDER-ERR] %s" % traceback.format_exc())
 
     _archive_cmd_if_same(path, date, seq, "orders")
     return seq
@@ -1662,20 +1696,20 @@ def _process_cancel_cmd(C, date):
     data = _read_json(path)
     if data is None:
         # 文件存在但读取失败：10-14 丢单即此路径（静默吞异常无法定位）
-        print("[P16G2][CMD-READ-FAIL] %s exists but read failed" % path)
+        print("[P16G2I][CMD-READ-FAIL] %s exists but read failed" % path)
         _write_cmd_alert(date, "cancel", path)
         return 0
 
     file_acct = str(data.get("account_id", "") or "")
     if file_acct != ACCOUNT_ID:
-        print("[P16G2][ACCT-MISMATCH] cancel文件account=%s != 期望%s，跳过" % (file_acct, ACCOUNT_ID))
+        print("[P16G2I][ACCT-MISMATCH] cancel文件account=%s != 期望%s，跳过" % (file_acct, ACCOUNT_ID))
         return 0
 
     seq = int(data.get("seq", 0) or 0)
     if seq <= _g_last_cmd_seq:
         return 0
 
-    print("[P16G2][CMD] 读取cancel seq=%d (上次=%d)" % (seq, _g_last_cmd_seq))
+    print("[P16G2I][CMD] 读取cancel seq=%d (上次=%d)" % (seq, _g_last_cmd_seq))
     _g_last_cmd_seq = seq
     _write_heartbeat(date, seq)
     cancels = data.get("cancels", [])
@@ -1683,7 +1717,7 @@ def _process_cancel_cmd(C, date):
     try:
         _process_cancels(C, cancel_data, date)
     except Exception:
-        print("[P16G2][CANCEL-ERR] %s" % traceback.format_exc())
+        print("[P16G2I][CANCEL-ERR] %s" % traceback.format_exc())
 
     _archive_cmd_if_same(path, date, seq, "cancel")
     return seq
@@ -1735,17 +1769,43 @@ def _rebuild_state(C):
         if qc:
             _g_whitelist.add(qc)
         else:
-            print("[P16G2][WARN] 白名单代码无法归一化，已忽略: %r" % (c,))
+            print("[P16G2I][WARN] 白名单代码无法归一化，已忽略: %r" % (c,))
     # 信号内产版：L3 hold_dates 持票并入白名单（重启后风控必须纳管信号持仓）
     for c in list(_g_hold_dates.keys()):
         qc = _to_qmt_code_any(c)
         if qc:
             _g_whitelist.add(qc)
+    # ★ 2026-10-23（T-20261023-002）：外部下单票自动并入白名单。
+    # 拍板 F 后买入由外部 rebalance_g2.py 完成（remark=p16_g2_new），内置白名单
+    # 恒量 G2_CODES 不可能预知新票 → 必须扫当日 order 反推，否则新仓零风控覆盖。
+    # 官方口径（§06）：用订单备注 + 交易日期建立归属与幂等，而非硬编码。
+    _ext_added = []
+    try:
+        _day_orders = f_get(ACCOUNT_ID, "stock", "order")
+        for o in (_day_orders or []):
+            try:
+                _rk = str(getattr(o, "m_strRemark", "") or "")
+                if EXTERNAL_REMARK_BUY not in _rk:
+                    continue
+                _oc = str(getattr(o, "m_strInstrumentID", "") or "")
+                if not _oc:
+                    continue
+                _oc = _to_qmt_code_any(_oc)
+                if _oc and _oc not in _g_whitelist:
+                    _g_whitelist.add(_oc)
+                    _ext_added.append(_oc)
+            except Exception:
+                continue
+    except Exception as _e:
+        print("[P16G2I][WARN] 外部委托白名单反推失败（可能零风控覆盖，需人工核对）: %r" % (_e,))
+    if _ext_added:
+        print("[P16G2I][INIT] 外部委托(remark=%s)反推并入白名单 %d 只: %s" % (
+            EXTERNAL_REMARK_BUY, len(_ext_added), ",".join(sorted(_ext_added))))
     if not _g_whitelist:
         _g_passive = True
-        print("[P16G2][WARN] G2_CODES 白名单为空且 L3 账本无持票，完全被动模式（不评估不下单）")
+        print("[P16G2I][WARN] G2_CODES 白名单为空且 L3 账本无持票，完全被动模式（不评估不下单）")
         return
-    print("[P16G2][INIT] 白名单合并 G2_CODES+L3 hold_dates = %d 只" % len(_g_whitelist))
+    print("[P16G2I][INIT] 白名单合并 G2_CODES+L3 hold_dates = %d 只" % len(_g_whitelist))
     # 纳管集 = 白名单 ∩ 账户 position（白名单外绝不纳管）
     managed = 0
     for p in positions:
@@ -1768,12 +1828,12 @@ def _rebuild_state(C):
         _g_positions[code] = {"cost": cost, "vol": vol, "can_use": can_use, "peak": cost}
         managed += 1
         if cost <= 0:
-            print("[P16G2][WARN] %s 成本字段缺失(m_dOpenPrice<=0)，该票风控暂跳过待逐tick自愈" % code)
+            print("[P16G2I][WARN] %s 成本字段缺失(m_dOpenPrice<=0)，该票风控暂跳过待逐tick自愈" % code)
     if managed <= 0:
-        print("[P16G2][WARN] 白名单(%d只) ∩ 账户position 交集为空，进入只监控模式"
+        print("[P16G2I][WARN] 白名单(%d只) ∩ 账户position 交集为空，进入只监控模式"
               "（白名单内持仓出现即自动纳管）" % len(_g_whitelist))
     else:
-        print("[P16G2][INIT] 白名单∩position 纳管 %d/%d 只" % (managed, len(_g_whitelist)))
+        print("[P16G2I][INIT] 白名单∩position 纳管 %d/%d 只" % (managed, len(_g_whitelist)))
     # 3) L3 追盈峰值快照（只升不降 + stale 检测 T-20260928-002：快照超 PEAK_STALE_HOURS 不恢复）
     _pk_stale = False
     try:
@@ -1782,7 +1842,7 @@ def _rebuild_state(C):
             _age_h = (datetime.now() - _snap_dt).total_seconds() / 3600.0
             if _age_h > PEAK_STALE_HOURS:
                 _pk_stale = True
-                print("[P16G2][INIT] PEAK_SNAPSHOT STALE %.1fh ago (>%gh), skip restore "
+                print("[P16G2I][INIT] PEAK_SNAPSHOT STALE %.1fh ago (>%gh), skip restore "
                       "to avoid retroactive trailing (T-20260928-002)" % (_age_h, PEAK_STALE_HOURS))
     except Exception:
         _pk_stale = True
@@ -1805,7 +1865,7 @@ def _rebuild_state(C):
         for o in orders:
             try:
                 remark = str(getattr(o, "m_strRemark", "") or "")
-                if ORDER_REMARK not in remark:
+                if not any(rk in remark for rk in ALL_REMARKS):
                     continue
                 ocode = str(getattr(o, "m_strInstrumentID", "") or "")
                 if not ocode:
@@ -1817,7 +1877,7 @@ def _rebuild_state(C):
                 continue
     if risk_orders > 0:
         _g_today_risk_count = risk_orders
-        print("[P16G2][INIT] 当日order反查重建 risk_sold=%d只 RSK水位=%d" % (
+        print("[P16G2I][INIT] 当日order反查重建 risk_sold=%d只 RSK水位=%d" % (
             len(_g_risk_sold), _g_today_risk_count))
 
 
@@ -1848,14 +1908,14 @@ def init(C):
             _snap_age_d = (_dtm.now() - _sd).days
         except Exception:
             _snap_age_d = -1
-        print("[P16G2][INIT] L3快照 date=%s age=%dd hold_dates=%d ens=%d capital=%.0f" % (
+        print("[P16G2I][INIT] L3快照 date=%s age=%dd hold_dates=%d ens=%d capital=%.0f" % (
             SNAPSHOT_DATE, _snap_age_d, len(_g_hold_dates), len(_g_oppo_blocked), _g_signal_capital))
         if _snap_age_d >= 0 and _snap_age_d > 14:
-            print("[P16G2][INIT][WARN] 静态快照已 %d 天未刷新(>14)，估值特征陈旧——"
-                  "请重新构建（gen_g2_signal_snapshots.py + build_p16_g2.py）后粘贴" % _snap_age_d)
+            print("[P16G2I][INIT][WARN] 静态快照已 %d 天未刷新(>14)，估值特征陈旧——"
+                  "请重新构建（gen_g2_signal_snapshots.py + build_p16_g2_selfcontained.py）后粘贴" % _snap_age_d)
     except Exception:
         _g_passive = True
-        print("[P16G2][INIT-SNAP-ERR] L3 信号账本载入失败，转被动: %s" % traceback.format_exc())
+        print("[P16G2I][INIT-SNAP-ERR] L3 信号账本载入失败，转被动: %s" % traceback.format_exc())
     # 近期交易日历（持有期计数）：取快照宇宙任一票近 400 根日线索引（一次）
     if _g_trade_dates is None:
         try:
@@ -1866,16 +1926,16 @@ def init(C):
             if _df is not None and len(_df) > 10:
                 _g_trade_dates = [str(x).replace("-", "")[:8] for x in _df.index]
         except Exception as e:
-            print("[P16G2][INIT][WARN] 交易日历取数失败(%s)，持有期回退自然日/4" % e)
+            print("[P16G2I][INIT][WARN] 交易日历取数失败(%s)，持有期回退自然日/4" % e)
     try:
         _rebuild_state(C)
     except Exception:
         _g_passive = True
-        print("[P16G2][INIT-REBUILD-ERR] 状态重建异常，转被动模式（不评估不下单），"
+        print("[P16G2I][INIT-REBUILD-ERR] 状态重建异常，转被动模式（不评估不下单），"
               "疑似沙箱/接口异常，请重启客户端并确认交易账号登录成功后重载策略: %s" % traceback.format_exc())
-    print("[P16G2][BUILD] BUILD_TAG=%s account=%s mode=自闭环信号内产(零文件) bridge=%s" % (
+    print("[P16G2I][BUILD] BUILD_TAG=%s account=%s mode=自闭环信号内产(零文件) bridge=%s" % (
         BUILD_TAG, ACCOUNT_ID, BRIDGE_DIR))
-    print("[P16G2][INIT] date=%s passive=%s last_seq=%d pending=%d positions=%d risk_sold=%d whitelist=%d" % (
+    print("[P16G2I][INIT] date=%s passive=%s last_seq=%d pending=%d positions=%d risk_sold=%d whitelist=%d" % (
         _g_today, _g_passive, _g_last_cmd_seq, len(_g_pending), len(_g_positions), len(_g_risk_sold), len(_g_whitelist)))
 
 
@@ -1946,7 +2006,7 @@ def _build_float_share_map(C):
         else:
             fs[code] = v / 10000.0
     _g_fs_map = fs
-    print("[P16G2][SIG-FS] float_share 快照构建 %d 只（缺 %d）" % (len(fs), bad))
+    print("[P16G2I][SIG-FS] float_share 快照构建 %d 只（缺 %d）" % (len(fs), bad))
     return fs
 
 
@@ -1976,7 +2036,7 @@ def _fetch_bars(C, codes):
                                          count=SIGNAL_MIN_BARS,
                                          dividend_type="front_ratio")
             except Exception as e:
-                print("[P16G2][SIG-MD-ERR] batch=%d %s" % (i, e))
+                print("[P16G2I][SIG-MD-ERR] batch=%d %s" % (i, e))
                 continue
         if not d:
             continue
@@ -2003,8 +2063,8 @@ def _fetch_bars(C, codes):
             except Exception:
                 continue
         if (i // SIGNAL_BATCH) % 5 == 0:
-            print("[P16G2][SIG-MD] 进度 %d/%d ok=%d" % (i + len(batch), len(codes), ok))
-    print("[P16G2][SIG-MD] 取数完成 ok=%d/%d" % (len(bars), len(codes)))
+            print("[P16G2I][SIG-MD] 进度 %d/%d ok=%d" % (i + len(batch), len(codes), ok))
+    print("[P16G2I][SIG-MD] 取数完成 ok=%d/%d" % (len(bars), len(codes)))
     return bars
 
 
@@ -2049,7 +2109,7 @@ def _compute_scores(C, trade_date):
     _g_signal_prob = dict(pairs[:SIGNAL_SELECT_TOP * 4])
     top = pairs[:SIGNAL_SELECT_TOP]
     n_pass = len([p for p in top if p[1] >= SIGNAL_REDLINE_PROB])
-    print("[P16G2][SIG-SCORE] rows=%d 红线(>=%.2f)过 %d/%d 首 %.4f 末 %.4f" % (
+    print("[P16G2I][SIG-SCORE] rows=%d 红线(>=%.2f)过 %d/%d 首 %.4f 末 %.4f" % (
         len(out), SIGNAL_REDLINE_PROB, n_pass, len(top),
         top[0][1] if top else 0.0, top[-1][1] if top else 0.0))
     return pairs
@@ -2106,7 +2166,7 @@ def _g2_tier(C):
             tier_err = str(e)
             pct = None
     if pct is None:
-        print("[P16G2][SIG-TIER] 沪深300 取数失败(%s)，fail-safe T=1 半仓" % tier_err)
+        print("[P16G2I][SIG-TIER] 沪深300 取数失败(%s)，fail-safe T=1 半仓" % tier_err)
         return 1, None
     if pct <= SIGNAL_TIER_STOP_PCT:
         return 0, pct
@@ -2198,7 +2258,7 @@ def _plan_signal(C, date, pairs):
     # ---- 门控 ----
     tier, pct = _g2_tier(C)
     deploy = 0.0 if tier == 0 else (SIGNAL_HALF_DEPLOY_PCT if tier == 1 else SIGNAL_DEPLOY_PCT)
-    print("[P16G2][SIG-TIER] hs300=%s tier=%d deploy=%.2f" % (
+    print("[P16G2I][SIG-TIER] hs300=%s tier=%d deploy=%.2f" % (
         ("%.2f%%" % pct) if pct is not None else "N/A", tier, deploy))
     if tier == 0 or deploy <= 0:
         return orders, {"tier": tier, "buys": 0, "sells": len(orders)}
@@ -2247,7 +2307,7 @@ def _plan_signal(C, date, pairs):
         if px <= 0:
             px = _price(code)
         if px <= 0:
-            print("[P16G2][SIG-BUY-SKIP] %s 取价失败" % code)
+            print("[P16G2I][SIG-BUY-SKIP] %s 取价失败" % code)
             continue
         # 低开校验（复刻 position_filter.gap_guard，数据源=QMT tick）：
         #   open_pct<=-5% 跳过；-5%~-3% 需量比>=2.0 放行；缺数据 fail-open 放行
@@ -2258,7 +2318,7 @@ def _plan_signal(C, date, pairs):
             if _op > 0 and _pre > 0:
                 _opct = (_op / _pre - 1.0) * 100.0
                 if _opct <= -5.0:
-                    print("[P16G2][SIG-BUY-SKIP] %s 极端低开%.1f%%" % (code, _opct))
+                    print("[P16G2I][SIG-BUY-SKIP] %s 极端低开%.1f%%" % (code, _opct))
                     continue
                 if _opct <= -3.0:
                     _v0 = float(t.get("volume", 0) or 0)
@@ -2266,13 +2326,13 @@ def _plan_signal(C, date, pairs):
                     _avg5 = float(_b["volume"].tail(5).mean()) if _b is not None else 0.0
                     _vr = (_v0 / _avg5) if (_avg5 > 0 and _v0 > 0) else None
                     if not (_vr is not None and _vr >= 2.0):
-                        print("[P16G2][SIG-BUY-SKIP] %s 低开%.1f%%且量比不足跳过" % (code, _opct))
+                        print("[P16G2I][SIG-BUY-SKIP] %s 低开%.1f%%且量比不足跳过" % (code, _opct))
                         continue
         except Exception:
             pass
         tgt = int(target_value / px / SIGNAL_MIN_VOL) * SIGNAL_MIN_VOL
         if tgt < SIGNAL_MIN_VOL:
-            print("[P16G2][SIG-BUY-SKIP] %s 资金不足一手 @%.2f" % (code, px))
+            print("[P16G2I][SIG-BUY-SKIP] %s 资金不足一手 @%.2f" % (code, px))
             continue
         orders.append({"action": "BUY", "code": code, "vol": tgt,
                        "price": round(px, 3),
@@ -2315,7 +2375,7 @@ def _rebuild_signal_watermark(C, date):
             continue
     _g_signal_seq = max(_g_signal_seq, max_seq)
     if max_seq:
-        print("[P16G2][SIG-WATERMARK] 同日重启重建 signal_seq=%d bought=%d" % (
+        print("[P16G2I][SIG-WATERMARK] 同日重启重建 signal_seq=%d bought=%d" % (
             max_seq, len(_g_signal_bought)))
 
 
@@ -2325,12 +2385,12 @@ def _run_signal(C, date):
     if _g_signal_done:
         return
     if _g_passive:
-        print("[P16G2][SIG-SKIP] 被动模式，信号不执行")
+        print("[P16G2I][SIG-SKIP] 被动模式，信号不执行")
         _g_signal_done = True
         return
     t0 = time.time()
     _g_signal_stage = "start"
-    print("[P16G2][SIG-START] date=%s snap=%s n=%d" % (
+    print("[P16G2I][SIG-START] date=%s snap=%s n=%d" % (
         date, SNAPSHOT_DATE, SNAP_N))
     try:
         _rebuild_signal_watermark(C, date)
@@ -2339,10 +2399,10 @@ def _run_signal(C, date):
         _g_signal_stage = "plan"
         orders, meta = _plan_signal(C, date, pairs)
         _g_signal_stage = "execute"
-        print("[P16G2][SIG-PLAN] %s orders=%d" % (meta, len(orders)))
+        print("[P16G2I][SIG-PLAN] %s orders=%d" % (meta, len(orders)))
         for o in orders:
             if o["action"] == "BUY" and o["code"] in _g_signal_bought:
-                print("[P16G2][SIG-SKIP-DUP] %s 当日已买，跳过" % o["code"])
+                print("[P16G2I][SIG-SKIP-DUP] %s 当日已买，跳过" % o["code"])
                 continue
             sid = o.get("strategy_order_id", "")
             _execute_order(C, o, date)
@@ -2359,11 +2419,84 @@ def _run_signal(C, date):
             _g_signal_seq += 1
         _g_signal_stage = "done"
         _g_signal_done = True
-        print("[P16G2][SIG-DONE] %d 单 耗时 %.1fs" % (len(orders), time.time() - t0))
+        print("[P16G2I][SIG-DONE] %d 单 耗时 %.1fs" % (len(orders), time.time() - t0))
     except Exception:
         _g_signal_done = True   # 失败也标完成（防同日反复重试放大风险）
-        print("[P16G2][SIG-ERR] 信号失败(阶段=%s)，当日信号终止（持仓风控不受影响）: %s" % (
+        print("[P16G2I][SIG-ERR] 信号失败(阶段=%s)，当日信号终止（持仓风控不受影响）: %s" % (
             _g_signal_stage, traceback.format_exc()))
+
+
+def _late_bind_whitelist(C):
+    """被动模式下延迟绑定白名单（T-20261023-002）。
+
+    场景：策略 09:00 init 时账户空仓、当日无委托 → 白名单空 → 进被动；
+          09:50 外部 rebalance_g2.py 用 remark=p16_g2_new 买入 →
+          若不做延迟绑定，内置风控永远 passive，新仓零止损覆盖（P0 同型）。
+
+    做法（官方 §06「订单备注 + 交易日建立归属」）：每 30s 扫一次当日 order，
+    凡 remark 命中 EXTERNAL_REMARK_BUY 的票并入白名单；一旦非空则重建持仓并解除被动。
+
+    返回 True = 已成功绑定并解除被动（调用方应继续走正常 handlebar 流程）。
+    """
+    global _g_passive, _g_last_bind_try, _g_whitelist
+    import time as _t
+    now = _t.time()
+    if now - _g_last_bind_try < 30.0:
+        return False
+    _g_last_bind_try = now
+    f_get = globals().get("get_trade_detail_data")
+    if f_get is None:
+        f_get = getattr(C, "get_trade_detail_data", None)
+    if f_get is None:
+        return False
+    added = []
+    try:
+        for o in (f_get(ACCOUNT_ID, "stock", "order") or []):
+            try:
+                if EXTERNAL_REMARK_BUY not in str(getattr(o, "m_strRemark", "") or ""):
+                    continue
+                c = _to_qmt_code_any(str(getattr(o, "m_strInstrumentID", "") or ""))
+                if c and c not in _g_whitelist:
+                    _g_whitelist.add(c)
+                    added.append(c)
+            except Exception:
+                continue
+    except Exception:
+        return False
+    if not added:
+        return False
+    print("[P16G2I][LATE-BIND] 被动模式下捕获外部买入 %d 只并入白名单: %s"
+          % (len(added), ",".join(sorted(added))))
+    # 重建持仓纳管集（复用 init 口径：白名单 ∩ 账户 position）
+    managed = 0
+    try:
+        for p in (f_get(ACCOUNT_ID, "stock", "position") or []):
+            code = _to_qmt_code_any(str(getattr(p, "m_strInstrumentID", "") or ""))
+            if not code or code not in _g_whitelist:
+                continue
+            vol = int(getattr(p, "m_nVolume", 0) or 0)
+            if vol <= 0:
+                continue
+            cost = 0.0
+            for attr in ("m_dOpenPrice", "m_dCostPrice", "m_dPrice"):
+                v = float(getattr(p, attr, 0) or 0)
+                if v > 0:
+                    cost = v
+                    break
+            _g_positions[code] = {"cost": cost, "vol": vol,
+                                  "can_use": int(getattr(p, "m_nCanUseVolume", 0) or 0),
+                                  "peak": cost}
+            managed += 1
+    except Exception as e:
+        print("[P16G2I][LATE-BIND] 持仓重建异常，保持被动: %r" % (e,))
+        return False
+    if managed <= 0:
+        print("[P16G2I][LATE-BIND] 白名单已扩充但账户暂无对应持仓（T+1 未成交），继续等待")
+        return False
+    _g_passive = False
+    print("[P16G2I][LATE-BIND] 解除被动，纳管 %d 只: %s"
+          % (managed, ",".join(sorted(_g_positions.keys()))))
+    return True
 
 
 def handlebar(C):
@@ -2374,18 +2507,23 @@ def handlebar(C):
     global _g_signal_done, _g_signal_stage, _g_signal_prob, _g_signal_bought, _g_signal_seq
 
     # 被动模式守卫（T-20261015-004）：IO 预检失败后不读指令/不下单/只写心跳，防沙箱下盲跑
+    # ★ 2026-10-23（T-20261023-002）：被动模式下每 30s 尝试延迟绑定（外部买入票自动纳管）。
+    #   绑定成功则解除被动、继续走正常风控流程；仍失败则只写心跳退出。
     if _g_passive:
-        try:
-            _write_heartbeat(_g_today, _g_last_cmd_seq)
-        except Exception:
-            pass
-        return
+        if _late_bind_whitelist(C):
+            pass   # 已解除被动，继续往下执行
+        else:
+            try:
+                _write_heartbeat(_g_today, _g_last_cmd_seq)
+            except Exception:
+                pass
+            return
 
     # 日期切换重置
     today = _today_str()
     if today != _g_today:
         if _g_slippage_alert_count:
-            print("[P16G2][SLIPPAGE-DAY-SUMMARY] 前一交易日不利滑点/跳空超限 %d 次" % _g_slippage_alert_count)
+            print("[P16G2I][SLIPPAGE-DAY-SUMMARY] 前一交易日不利滑点/跳空超限 %d 次" % _g_slippage_alert_count)
         _g_today = today
         _g_last_cmd_seq = 0
         _g_last_position_refresh = 0.0
@@ -2397,7 +2535,7 @@ def handlebar(C):
         _g_signal_stage = ""
         _g_signal_prob.clear()
         _g_signal_bought.clear()      # 当日已买集合按日清零（防陈旧误跳过）
-        print("[P16G2][NEW-DAY] date=%s pending清空 risk_sold清空 slippage_alert清零 signal复位" % today)
+        print("[P16G2I][NEW-DAY] date=%s pending清空 risk_sold清空 slippage_alert清零 signal复位" % today)
 
     # 交易时段判断：09:30-11:30 或 13:00-15:00
     try:
@@ -2412,45 +2550,46 @@ def handlebar(C):
         try:
             _write_heartbeat(_g_today, _g_last_cmd_seq)
         except Exception:
-            print("[P16G2][HANDLEBAR-ERR-HEART] %s" % traceback.format_exc())
+            print("[P16G2I][HANDLEBAR-ERR-HEART] %s" % traceback.format_exc())
         return
 
     # 0) 信号闸门（s4-5d 信号内产版）：09:50 触发一次（对齐原 G2 换仓时点），
     #    09:58 后未跑则当日放弃（防盘中误触发）。信号段自身 try/except 全隔离。
-    if (not _g_signal_done) and _g_signal_stage == "":
+    # ★ 2026-10-22 拍板 F：SIGNAL_ENABLED=False → 整段跳过，信号由外部 Python 算 F1~F6
+    if SIGNAL_ENABLED and (not _g_signal_done) and _g_signal_stage == "":
         if hour_min >= SIGNAL_HM and hour_min <= SIGNAL_DEADLINE_HM:
             try:
                 _run_signal(C, _g_today)
             except Exception:
-                print("[P16G2][HANDLEBAR-ERR-SIG] %s" % traceback.format_exc())
+                print("[P16G2I][HANDLEBAR-ERR-SIG] %s" % traceback.format_exc())
                 _g_signal_done = True
         elif hour_min > SIGNAL_DEADLINE_HM:
             _g_signal_done = True   # 过点放弃（当日不追补）
-            print("[P16G2][SIG-EXPIRED] 过信号时点(%s)且未执行，当日放弃" % SIGNAL_DEADLINE_HM)
+            print("[P16G2I][SIG-EXPIRED] 过信号时点(%s)且未执行，当日放弃" % SIGNAL_DEADLINE_HM)
 
     # 1) pending 状态机（风控卖出委托的成交跟踪/超时重试/撤单重下）
     try:
         _check_pending_orders(C, _g_today)
     except Exception:
-        print("[P16G2][HANDLEBAR-ERR-PENDING] %s" % traceback.format_exc())
+        print("[P16G2I][HANDLEBAR-ERR-PENDING] %s" % traceback.format_exc())
 
     # 2) 内置实时风控（止损/止盈/追盈，纯行情驱动）
     try:
         _check_risk_signals(C, _g_today)
     except Exception:
-        print("[P16G2][HANDLEBAR-ERR-RISK] %s" % traceback.format_exc())
+        print("[P16G2I][HANDLEBAR-ERR-RISK] %s" % traceback.format_exc())
 
     # 3) print 心跳（含持仓/资产快照的 print 留痕；原文件快照链路已废止）
     try:
         _write_heartbeat(_g_today, _g_last_cmd_seq)
     except Exception:
-        print("[P16G2][HANDLEBAR-ERR-HEART] %s" % traceback.format_exc())
+        print("[P16G2I][HANDLEBAR-ERR-HEART] %s" % traceback.format_exc())
 
 
 def exit(C):
     """日终摘要。"""
     pending_count = len(_g_pending)
-    print("[P16G2][EXIT] date=%s 委托=%d 成交=%d 放弃=%d 最终pending=%d" % (
+    print("[P16G2I][EXIT] date=%s 委托=%d 成交=%d 放弃=%d 最终pending=%d" % (
         _g_today, _g_today_order_count, _g_today_fill_count,
         _g_today_abandon_count, pending_count))
     # 写心跳

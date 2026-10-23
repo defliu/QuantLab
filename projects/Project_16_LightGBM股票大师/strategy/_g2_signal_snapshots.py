@@ -1,8 +1,8 @@
 # coding: utf-8
 """G2 信号内产版静态快照（gen_g2_signal_snapshots.py 自动生成，禁止手改）。
-    生成日 20261016  过滤帧 4863 只  账号 70180771
+    生成日 20261021  过滤帧 4863 只  账号 70180771
 """
-SNAPSHOT_DATE = "20261016"
+SNAPSHOT_DATE = "20261021"
 ACCOUNT_STAMP = "70180771"
 SNAP_N = 4863
 CODE_LEN = 9
@@ -295,8 +295,7 @@ IND_POOL = (
     "黄金",
 )
 HOLD_DATES = {
-    "000607.SZ": "20260929",
-    "000960.SZ": "20261016",
+    "301202.SZ": "20261019",
 }
 OPPONENT_HOLDS = (
     "002762.SZ",
@@ -304,4 +303,4 @@ OPPONENT_HOLDS = (
     "600691.SH",
     "688758.SH",
 )
-CAPITAL_SNAP = 98941.82
+CAPITAL_SNAP = 95245.82

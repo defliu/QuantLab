@@ -76,9 +76,14 @@ try {
     }
 
     $already = $false
-    # 标记1：桥 cmd/orders_<date>.json 已写（TRAE 已 live 写桥，有实际买卖）
-    $ordersFile = Join-Path $bridgeCmd "orders_$Date.json"
-    if (Test-Path $ordersFile) { $already = $true; Log "  桥 orders_$Date.json 已存在 → ENS 已换仓，跳过" }
+    # 标记1（2026-10-22 起）：账本当日有成交 → ENS 已真实下单
+    # 原标记「桥 cmd/orders_<date>.json 已存在」随文件桥作废（改为 xtquant 直连）。
+    $ensTradeLog = "D:\QMT_POOL\p16_ensemble_bridge\ens_trade_log.csv"
+    if (Test-Path $ensTradeLog) {
+        $ensDatePrefix = $Date.Substring(0,4) + "-" + $Date.Substring(4,2) + "-" + $Date.Substring(6,2)
+        $ensRows = Import-Csv $ensTradeLog | Where-Object { $_.time -like "$ensDatePrefix*" }
+        if ($ensRows) { $already = $true; Log "  账本 ens_trade_log.csv 当日有 $($ensRows.Count) 条成交 → ENS 已下单，跳过" }
+    }
     # 标记2：正式 plan json 存在（非 .dryrun）→ 当日 rebalance_ens 已执行（含 NOOP 无买卖也算执行，T-20260915-001 修正）
     if (-not $already) {
         $planJson = Join-Path $dataDir "rebalance_g2_ens\rebalance_g2_ens_$Date.json"
@@ -127,33 +132,33 @@ try {
 
     if ($CheckOnly) { Log "[CheckOnly] 检测完成：ENS 需兜底，将 dry-run 校验后 rebalance_ens.py --date $Date --live（本次仅检测，不执行）"; exit 0 }
 
-    # 第一步：dry-run 校验（桥存活/候选新鲜/门控 均内置，非 0 即中止）
+    # 第一步：dry-run 校验（候选新鲜/门控 均内置；文件桥已作废，不再查桥存活）
     Log "  >> python rebalance_ens.py --date $Date (dry-run 校验)"
     & $py "rebalance_ens.py" --date $Date 2>&1 | ForEach-Object { Log $_ }
     $rc = $LASTEXITCODE
     Log "  >> dry-run exit=$rc"
     if ($rc -ne 0) {
-        $msg = "ENS $Date guard 补跑 dry-run 校验失败（exit=$rc），未写桥未写锁。请人工核查（桥存活/候选新鲜/门控）。"
+        $msg = "ENS $Date guard 补跑 dry-run 校验失败（exit=$rc），未下单未写锁。请人工核查（候选新鲜/门控）。"
         Log "!! $msg"
         & $py "push_alert_card.py" --title "ENS guard 补跑 dry-run 失败" --body $msg --level error 2>&1 | ForEach-Object { Log $_ }
         Pop-Location
         exit 1
     }
 
-    # 第二步：--live 写桥
+    # 第二步：--live 真实下单（xtquant 直连 67014907，2026-10-22 起）
     Log "  >> python rebalance_ens.py --date $Date --live"
     & $py "rebalance_ens.py" --date $Date --live 2>&1 | ForEach-Object { Log $_ }
     $rc2 = $LASTEXITCODE
     Log "  >> live exit=$rc2"
     if ($rc2 -ne 0) {
-        $msg = "ENS $Date guard 补跑 rebalance_ens --live 失败（exit=$rc2），未写锁供人工重试。请核对 orders_$Date.json 与桥状态。"
+        $msg = "ENS $Date guard 补跑 rebalance_ens --live 失败（exit=$rc2），未写锁供人工重试。请核对 ens_trade_log.csv 与账户持仓。"
         Log "!! $msg"
         & $py "push_alert_card.py" --title "ENS guard 补跑 rebalance 失败" --body $msg --level error 2>&1 | ForEach-Object { Log $_ }
         Pop-Location
         exit 1
     } else {
         New-Item -ItemType File -Path $lock -Force | Out-Null
-        Log "  ENS 补跑成功，已写桥"
+        Log "  ENS 补跑成功，已真实下单"
     }
     Log "[guard] 完成"
     Pop-Location

@@ -5,7 +5,8 @@
   - R2 高位剔除（Lite/Full 共用）: 距20日高点 > -2% 且 非温和放量突破 → 剔除（核心规则，两口径均有效）
   - R1 追高剔除（仅 Full）      : pre20 > 30% 且 量比 > 1.5 → 剔除（红线60 有效）
   - R3 流动性过滤（仅 Full）    : 5日均额 < 1.0 亿 → 剔除（阈值验证后由 2.0 下调，防误伤 001378）
-  - gap_guard 低开校验（执行端）: 极端低开(<=-5%)跳过；低开(-5~-3%)放量(量比>=2)放行，缩量跳过
+  - gap_guard 低开校验（执行端）: 极端低开(<=-5%)跳过；低开(-5~-3%)放量(单位时间量比>=3.3)放行，缩量跳过
+    （T-20261023-007：量比改为时间归一化口径，原「09:50累计量/全天均量」与阈值2.0 组合实测放行率仅0.49%=死代码）
 
 Fail-open 原则：行情/特征计算失败一律放行并告警；PF_DISABLE=1 一键回滚。
 只依赖 data_config（行情路径），不 import 任何策略业务模块，避免循环依赖。
@@ -29,7 +30,9 @@ PF_DISABLE   = os.environ.get("PF_DISABLE", "0") == "1"
 # 低开校验（执行端 gap_guard）
 GAP_HARD_PCT = float(os.environ.get("GAP_HARD_PCT", "-5.0"))  # 极端低开阈值，直接跳过
 GAP_OPEN_PCT = float(os.environ.get("GAP_OPEN_PCT", "-3.0"))  # 低开触发阈值
-GAP_VR       = float(os.environ.get("GAP_VR", "2.0"))         # 低开放行量比
+GAP_VR       = float(os.environ.get("GAP_VR", "3.3"))         # 低开放行量比（单位时间口径，≈全样本 p75）
+# 时间归一化量比用：A 股连续竞价总分钟数（09:30-11:30 + 13:00-15:00）
+DAY_SESSION_MIN = 240.0
 
 _CACHE = {"mkt": None}
 
@@ -195,14 +198,63 @@ def recent_avg_vol(code, n=5):
         return None
 
 
+def elapsed_session_min(now_hm=None):
+    """当日已完成的连续竞价分钟数（09:30 起算，跳过 11:30-13:00 午休）。
+
+    now_hm: 'HH:MM' 字符串；None 取本机当前时间。开盘前返回 0，收盘后返回 240。
+    仅用于把「盘中累计量」还原成「单位时间成交量」，不做任何交易决策。
+    """
+    if now_hm is None:
+        import datetime as _dt
+        now_hm = _dt.datetime.now().strftime("%H:%M")
+    try:
+        hh, mm = int(now_hm[:2]), int(now_hm[3:5])
+    except Exception:
+        return 0.0
+    cur = hh * 60 + mm
+    am_s, am_e = 9 * 60 + 30, 11 * 60 + 30
+    pm_s, pm_e = 13 * 60, 15 * 60
+    if cur <= am_s:
+        return 0.0
+    if cur <= am_e:
+        return float(cur - am_s)
+    if cur <= pm_s:
+        return float(am_e - am_s)
+    return float((am_e - am_s) + min(cur, pm_e) - pm_s)
+
+
+def gap_volume_ratio(code, vol_lot, now_hm=None, n=5):
+    """低开校验用的**单位时间量比**（T-20261023-007）。
+
+    vr = (当日累计成交量 / 已开盘分钟数) / (前 n 日全天均量 / 240)
+
+    语义：>1 表示该股今日成交节奏快于自身近期常态，2.0 = 放量一倍。
+    缺数据（无均量 / 未开盘 / vol 非法）返回 None → gap_guard fail-open。
+
+    背景（原口径缺陷）：旧口径 vr = 当日累计量 / 前5日**全天**均量，09:50 时点分子只含
+    全天 8% 的时间却与全天量比，正常量水平 vr≈0.08~0.2，阈值 2.0 实测放行率仅 0.49%
+    → 「低开放量放行」分支等于死代码。本函数按已开盘分钟数归一化后，阈值才具备量能含义。
+    """
+    if not vol_lot or vol_lot <= 0:
+        return None
+    nmin = elapsed_session_min(now_hm)
+    if nmin <= 0:
+        return None
+    avg5 = recent_avg_vol(code, n=n)
+    if not avg5 or avg5 <= 0:
+        return None
+    return float((vol_lot / nmin) / (avg5 / DAY_SESSION_MIN))
+
+
 def gap_guard(code, price, pre_close=None, open_price=None, vr=None):
     """执行端低开校验（T3/T4，供 rebalance 买入循环调用）。
     返回 (skip: bool, reason: str|None)。
     规则：
       - 缺数据（pre_close/open 拿不到）→ 不拦截（fail-open，返回 False）
       - open_pct <= GAP_HARD_PCT(-5%)            → 跳过（极端低开，防 003005 型跌停接刀）
-      - GAP_HARD_PCT < open_pct <= GAP_OPEN_PCT(-3%) → 需量比>=GAP_VR 放行，否则跳过
+      - GAP_HARD_PCT < open_pct <= GAP_OPEN_PCT(-3%) → 需单位时间量比>=GAP_VR 放行，否则跳过
       - open_pct > GAP_OPEN_PCT                  → 放行
+    vr 由 gap_volume_ratio() 计算（时间归一化口径，见该函数 docstring）。
     """
     if pre_close is None or open_price is None or pre_close <= 0:
         return False, None
@@ -212,7 +264,8 @@ def gap_guard(code, price, pre_close=None, open_price=None, vr=None):
     if open_pct <= GAP_OPEN_PCT:
         if vr is not None and vr >= GAP_VR:
             return False, None   # 低开但放量 → 强势承接，放行
-        return True, "低开%.1f%%且量比不足%.1f跳过买入" % (open_pct, GAP_VR)
+        return True, "低开%.1f%%且量比不足%.1f跳过买入(量比%s)" % (
+            open_pct, GAP_VR, ("%.2f" % vr) if vr is not None else "NA")
     return False, None
 
 

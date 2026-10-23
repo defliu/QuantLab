@@ -1,7 +1,7 @@
 # coding: utf-8
 """G2 信号内产版 · 构建期静态快照生成器（s4-5d，v3 int32 定点打包版）。
 
-产出 strategy/_g2_signal_snapshots.py（纯数据常量，供 build_p16_g2.py 注入 QMT 单文件）:
+产出 strategy/_g2_signal_snapshots.py（纯数据常量，供 build_p16_g2_selfcontained.py 注入 QMT 单文件）:
   SNAPSHOT_DATE   快照生成日（YYYYMMDD，init 打印 + 过期告警）
   ACCOUNT_STAMP   账号戳（70180771，账本防错红线 T-20260823-004）
   SNAP_N          宇宙票数（与各平行数组长度一致）
@@ -52,7 +52,10 @@ ARMS = {
             r"D:\QMT_POOL\p16_ensemble_bridge\ens_strategy_capital.json"),
 }
 
-ACCOUNT_ID = "70180771"
+# 2026-10-22 拍板：G2/ENS 由 70180771 迁至 67014907（70180771 未开通 miniQMT）。
+# 本生成器读的是 *_strategy_capital.json 的资金池戳，必须同步，否则读不到资金池
+# 会静默回退 START_CAPITAL(10 万)，导致内置快照的资金基准与实际不符。
+ACCOUNT_ID = "67014907"
 CODE_LEN = 9          # "000001.SZ" 定长
 PE_SCALE = 1000.0
 PB_SCALE = 1000.0

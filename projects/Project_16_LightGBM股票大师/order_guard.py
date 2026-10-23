@@ -50,6 +50,30 @@ PENDING_FILL_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                  "data", "qmt_pending_fills.jsonl")
 
 
+def configure(config=None, pending_fill_file=None):
+    """为独立策略（G2 / ENS）注入配置，使其复用本模块而不继承 V1.3 的 qmt_config。
+
+    T-20261022-001（拍板 C：下单逻辑抽公共模块）：
+      V1.3 走 qmt_config，G2/ENS 各走自己的 config，三者在同一账号 67014907 下并存，
+      但账本 / 待补价队列 / 价格类型必须隔离。原实现硬 `import qmt_config as C`，
+      独立策略复用时会把 V1.3 的 ACCOUNT_ID 与 PENDING_FILL_FILE 带进来 -> 串账。
+      故加本函数：不调用时行为完全不变（V1.3 零影响），调用后可覆盖。
+
+    参数：
+      config            需提供 BUY_PRICE_TYPE / AUTO_SELL_PRICE_TYPE / ACCOUNT_ID
+                        （XTPACK 已在模块导入时固化，独立策略须与 V1.3 同机同 xtquant）
+      pending_fill_file 该策略独立的待补价队列路径（建议 <账本目录>/<strategy>_pending_fills.jsonl）
+
+    返回：生效后的 config 对象。
+    """
+    global C, PENDING_FILL_FILE
+    if config is not None:
+        C = config
+    if pending_fill_file is not None:
+        PENDING_FILL_FILE = pending_fill_file
+    return C
+
+
 # 订单状态（xtconstant）
 ORDER_REPORTED = 50       # 已报
 ORDER_REPORTED_CANCEL = 51  # 已报待撤

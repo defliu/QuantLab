@@ -1,14 +1,14 @@
 # coding: utf-8
 """Project_16 融合(ensemble) 大QMT 文件桥 · 构建脚本。
 
-读 strategy/strategy_p16_ens_bridge_src.py (UTF-8 源码)，
-替换 BUILD_TAG 为当前时间戳，GBK 编码写出到 build/strategy_p16_ens_bridge.py，
+读 strategy/strategy_p16_ens_selfcontained_src.py (UTF-8 源码)，
+替换 BUILD_TAG 为当前时间戳，GBK 编码写出到 build/strategy_p16_ens_selfcontained.py，
 并做 Python 3.6 语法检查（QMT 内置兼容）。
 
 用法:
-  python build_p16_ens.py
+  python build_p16_ens_selfcontained.py
 产物:
-  build/strategy_p16_ens_bridge.py   # coding=gbk, BUILD_TAG=最新时间戳
+  build/strategy_p16_ens_selfcontained.py   # coding=gbk, BUILD_TAG=最新时间戳
 """
 import os
 import re
@@ -17,10 +17,10 @@ import sys
 import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SRC = os.path.join(HERE, "strategy", "strategy_p16_ens_bridge_src.py")
-OUT = os.path.join(HERE, "build", "strategy_p16_ens_bridge.py")
+SRC = os.path.join(HERE, "strategy", "strategy_p16_ens_selfcontained_src.py")
+OUT = os.path.join(HERE, "build", "strategy_p16_ens_selfcontained.py")
 
-# ---- vendor 注入（s4-5d ENS 信号内产版；与 build_p16_g2.py 同构）----
+# ---- vendor 注入（s4-5d ENS 信号内产版；与 build_p16_g2_selfcontained.py 同构）----
 VENDOR_FILES = {
     "model": os.path.join(HERE, "vendor", "g2_tree_model_B21_k1500.py"),
     "features": os.path.join(HERE, "vendor", "g2_features_qmt.py"),
@@ -49,7 +49,7 @@ FORBIDDEN_TEXT = [
 
 
 def _is_blob_data_line(line):
-    """判定 base64 数据行（vendor 模型 _BLOB 内容）；见 build_p16_g2.py 同名函数。"""
+    """判定 base64 数据行（vendor 模型 _BLOB 内容）；见 build_p16_g2_selfcontained.py 同名函数。"""
     s = line.strip()
     if len(s) < 10 or not s.startswith('"'):
         return False
@@ -147,7 +147,7 @@ def build():
     if not new_src.lstrip().startswith("# coding=gbk"):
         raise SystemExit("产物首行必须是 # coding=gbk")
 
-    # 4.5 体积门禁（实测落盘字节 + LF 行尾，见 build_p16_g2.py 注释）
+    # 4.5 体积门禁（实测落盘字节 + LF 行尾，见 build_p16_g2_selfcontained.py 注释）
     with open(OUT, "w", encoding="gbk", newline="\n") as f:
         f.write(new_src)
     actual = os.path.getsize(OUT)

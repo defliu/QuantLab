@@ -33,8 +33,7 @@ import g2_config as G
 import is_trade_day as ITD
 import position_filter as PF
 from qmt_bridge_client import (
-    write_orders, read_fills, read_positions, read_heart,
-    positions_from_fills, fetch_price, is_bridge_alive, _cmd_path, notify_feishu,
+    fetch_price, notify_feishu,
 )
 
 
@@ -127,19 +126,6 @@ def _update_hold_dates(plan, date):
     return hd
 
 
-def _gen_positions_cfg(date):
-    """生成当日 positions_cfg 成本锚（桥内止损/对账账本依赖，T-20260902-005 自动化）。
-    复用 gen_positions_cfg_g2.py 逻辑：G2 持仓 code（g2_hold_dates.json）∩ 账户持仓
-    （state/positions_<date>.json avg_price=含费成本）→ 写 cmd/positions_cfg_<date>.json。
-    返回退出码（0=已写/无变化；1=异常）。"""
-    try:
-        import gen_positions_cfg_g2 as GPC
-        return GPC.main_with_date(date)
-    except Exception as e:
-        print("[positions_cfg] 生成异常: %s" % e)
-        return 1
-
-
 def _fetch_ohlc(code):
     """腾讯行情取 现价/昨收/今开/当日成交量(手)/实时名称。失败返回 None（G2-V1.0 低开校验用）。
     name（T-20261012-001）：实时证券简称（含 ST 前缀），供 PF.st_guard 免二次请求直判。"""
@@ -159,22 +145,6 @@ def _fetch_ohlc(code):
     except Exception:
         pass
     return None
-
-
-def _recent_avg_vol(code, n=5):
-    """增量库取该股最近 n 个交易日平均成交量（手）；数据不足/失败返回 None。"""
-    try:
-        incr = os.path.join(G.PROJECT_DIR, "data_live", "incremental_daily.parquet")
-        if not os.path.exists(incr):
-            return None
-        d = pd.read_parquet(incr, columns=["ts_code", "trade_date", "volume"])
-        d["ts_code"] = d["ts_code"].astype(str)
-        sub = d[d["ts_code"] == code].sort_values("trade_date")
-        if len(sub) < 3:
-            return None
-        return float(sub["volume"].tail(n).mean())
-    except Exception:
-        return None
 
 
 def load_hs300_pct():
@@ -355,56 +325,45 @@ def load_g2_selection(date, top_n):
 
 
 def load_g2_ledger(date):
-    """G2 账本持仓：positions_cfg（成本锚）为主 + fills FIFO 推导兜底。
-    返回 {code: {"vol": int, "cost": float, "src": str}}。绝不读账户全量持仓。"""
-    ledger = {}
-    # ① positions_cfg（G2 自写成本锚 = 纳管持仓）
-    #    当日缺失 → 回退最近可用 positions_cfg（T-20260904 修复：09:50 换仓时当日 positions_cfg 由
-    #    15:40 reconcile 才生成；若缺失且 fills 未落盘 → 账本空 → 误判"无持仓"而错误买入 → 回退昨日账本）
-    cfg_path = _cmd_path_positions_cfg(date)
-    if not os.path.exists(cfg_path):
-        cfg_files = sorted([f for f in os.listdir(G.CMD_DIR)
-                            if f.startswith("positions_cfg_") and f.endswith(".json")])
-        cfg_path = os.path.join(G.CMD_DIR, cfg_files[-1]) if cfg_files else None
-        if cfg_path:
-            print("  [ledger] 当日 positions_cfg 缺失，回退最近账本 %s" % os.path.basename(cfg_path))
-    try:
-        if cfg_path:
-            cfg = json.load(open(cfg_path, encoding="utf-8"))
-            if str(cfg.get("account_id", "")) == G.ACCOUNT_ID:
-                for p in cfg.get("positions", []):
-                    c = p.get("code", "")
-                    if c:
-                        ledger[c] = {"vol": int(p.get("vol", 0) or 0),
-                                     "cost": float(p.get("cost", 0) or 0), "src": "cfg"}
-    except Exception:
-        pass
-    # ② fills FIFO 推导（补 cfg 未覆盖的 G2 成交）
-    try:
-        derived = positions_from_fills(date)
-        for c, v in derived.items():
-            if c not in ledger or ledger[c]["vol"] <= 0:
-                ledger[c] = {"vol": int(v.get("vol", 0) or 0),
-                             "cost": float(v.get("cost", 0) or 0), "src": "fills"}
-    except Exception:
-        pass
-    return {c: v for c, v in ledger.items() if v["vol"] > 0}
+    """G2 账本持仓（2026-10-22 起改为**独立成交账本**推导）。
 
+    旧口径：positions_cfg（内置桥成本锚）+ state/fills FIFO —— 随文件桥作废（沙箱下内置侧读不到）。
+    新口径：g2_trade_log.csv（外部 xtquant 下单后自写）BUY-SELL 净额 + FIFO 成本。
+    账本 account_id 戳不符 → 自动备份 + 空仓起步（AGENTS T-20260823-004）。
+    绝不读账户全量持仓（同账号三策略并存，账户持仓含他人票）。
 
-def _cmd_path_positions_cfg(date):
-    return os.path.join(G.CMD_DIR, "positions_cfg_%s.json" % date)
+    返回 {code: {"vol": int, "cost": float, "src": str}}。
+    """
+    import xt_exec
+    try:
+        led = xt_exec.ledger_from_trades(G)
+    except Exception as e:
+        print("  !! [ledger] 账本推导失败（按空仓处理，宁可不交易）: %r" % (e,))
+        return {}
+    return {c: {"vol": int(v["vol"]), "cost": float(v["cost"]), "src": "trade_log"}
+            for c, v in led.items() if v["vol"] > 0}
 
 
 def load_sellable(date, code):
-    """从桥账户 positions 取可卖量（T+1 锁定=0）。账户全量 only 用于取 can_use，不据此判定归属。"""
+    """查可卖量（T+1 锁定=0）。连接账户实时查询；失败返回 None（调用方按全量 vol 处理）。
+
+    仅取 can_use，不据此判定归属（归属只认本策略账本）。
+    """
     try:
-        pos = read_positions(date) or {}
-        for p in pos.get("positions", []):
-            if p.get("code") == code:
-                return int(p.get("can_use_volume", 0) or 0)
-    except Exception:
-        pass
-    return None
+        import xt_exec
+        trader, account = xt_exec.connect(G)
+        try:
+            pos = xt_exec.query_positions(trader, account)
+        finally:
+            try:
+                trader.stop()
+            except Exception:
+                pass
+        return int((pos.get(code) or {}).get("can_use", 0))
+    except Exception as e:
+        print("  !! [sellable] 查可卖量失败（按账本全量处理）: %r" % (e,))
+        return None
+
 
 
 def build_plan(date, capital):
@@ -430,11 +389,9 @@ def build_plan(date, capital):
         "sells": [], "buys": [], "skips": [],
     }
     orders = []
+    # 2026-10-22：seq0 原取自桥心跳 last_cmd_seq_processed，文件桥已作废 → 固定 0
+    #（strategy_order_id 仅作人读标识，不再参与桥侧幂等；幂等改由账本 + 互斥锁承担）
     seq0 = 0
-    try:
-        seq0 = int(read_heart(date).get("last_cmd_seq_processed", 0) or 0)
-    except Exception:
-        pass
 
     sold_codes = set()
 
@@ -573,8 +530,7 @@ def build_plan(date, capital):
                 print(f"    !! {code} ST 拦截: {_st_why}")
                 continue
             if _ohlc:
-                _avg = _recent_avg_vol(code)
-                _vr = (_ohlc["vol_lot"] / _avg) if (_avg and _avg > 0) else None
+                _vr = PF.gap_volume_ratio(code, _ohlc["vol_lot"])
                 _skip, _why = PF.gap_guard(code, price, _ohlc["pre_close"], _ohlc["open"], _vr)
                 if _skip:
                     plan["skips"].append({"code": code, "reason": _why})
@@ -646,9 +602,8 @@ def main():
     G.SELECT_TOP = args.top
     capital = args.capital or G.load_g2_capital()
 
-    alive, msg = is_bridge_alive(max_age=600)  # date=None→读最新心跳，避免数据日期旧心跳误判桥死
+    # 2026-10-22：桥心跳检查删除——文件桥已作废，改为 xtquant 直连（连接失败在 live 分支 abort）
     print("== G2 换仓（%s）==" % date)
-    print("桥存活: %s | %s" % (alive, msg))
     print("资金池: %.0f 元（%s）" % (capital, G.G2_CAPITAL_FILE))
 
     orders, plan = build_plan(date, capital)
@@ -668,27 +623,42 @@ def main():
         print("  %s %s %s %5d股 @%.3f %s" % (o["action"], o["code"], o["strategy_order_id"], o["vol"], o["price"], o["reason"]))
 
     if args.live:
-        if not alive:
-            print("[ABORT] 桥心跳异常，拒绝写单")
+        # 2026-10-22 拍板：改为 xtquant 直连真实下单（原「写桥 cmd/orders_*.json」通道作废，
+        # QMT 沙箱下内置侧读不到）。桥心跳检查随之删除——不再依赖文件桥。
+        import xt_exec
+        print("[LIVE] 连接 miniQMT %s ..." % G.ACCOUNT_ID)
+        try:
+            trader, account = xt_exec.connect(G)
+        except Exception as e:
+            print("[ABORT] 连接失败，未下任何单: %r" % (e,))
             return 1
-        seq = write_orders(orders, date=date, account_id=G.ACCOUNT_ID)
-        print("已写 cmd/orders_%s.json seq=%d（%d 条）" % (date, seq, len(orders)))
-        plan["seq"] = seq
+        try:
+            result = xt_exec.execute_orders(G, trader, account, orders, date)
+        finally:
+            try:
+                trader.stop()
+            except Exception:
+                pass
+        print("执行汇总: %s" % json.dumps(result["summary"], ensure_ascii=False))
+        if result["failures"]:
+            print("!! 失败 %d 笔: %s" % (
+                len(result["failures"]),
+                json.dumps(result["failures"], ensure_ascii=False)[:800]))
         plan["written"] = True
-        _notify_feishu("【G2换仓 %s】已写桥 seq=%d，共 %d 条\n%s" % (
-            date, seq, len(orders),
-            "\n".join("  %s %s %d股@%.3f" % (o["action"], o["code"], o["vol"], o["price"]) for o in orders)))
-        # 更新持仓建仓日并落盘（N=10 持有期记账）
+        plan["execution"] = result["summary"]
+        plan["execution_records"] = result["records"]
+        plan["execution_failures"] = result["failures"]
+        _notify_feishu("【G2换仓 %s】已下单 %d 笔（成交 %d 股，失败 %d 笔）\n%s" % (
+            date, result["summary"]["n"], result["summary"]["traded"],
+            result["summary"]["failures"],
+            "\n".join("  %s %s %d股@%.3f" % (x["side"], x["code"], x["traded_vol"], x["fill_price"])
+                      for x in result["records"])))
+        # 更新持仓建仓日并落盘（N=15 持有期记账）
         hd = _update_hold_dates(plan, date)
         save_hold_dates(hd)
         print("持仓建仓日已更新: %s" % json.dumps(hd, ensure_ascii=False))
         plan["hold_dates_after"] = hd
-        # 生成当日 positions_cfg 成本锚（桥内止损/对账账本依赖；T-20260902-005 自动化）
-        try:
-            rc = _gen_positions_cfg(date)
-            print("[positions_cfg] 生成结果 exit=%d" % rc)
-        except Exception as e:
-            print("[positions_cfg] 生成失败（不影响换仓写单）: %s" % e)
+        # 注：positions_cfg 成本锚随文件桥作废，不再生成（内置风控改为硬编码白名单，见方案 P0-5）
     else:
         print("DRY-RUN：未写桥。确认后加 --live。")
         plan["written"] = False
