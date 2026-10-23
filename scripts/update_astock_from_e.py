@@ -22,10 +22,13 @@ D:/astock（唯一权威数据源）。
   python update_astock_from_e.py --apply                  # 备份 + 合并 + 写回 + 验证 + 生成报告
   python update_astock_from_e.py --e-layout flat          # 2026-10-01 网盘下载的扁平结构 dry-run
   python update_astock_from_e.py --e-layout flat --apply  # 扁平结构真实升级
+  python update_astock_from_e.py --e-layout flat-sub --apply --run-tag 20261022
+                                                          # 2026-10-22 起：网盘子目录镜像布局（推荐）
   python update_astock_from_e.py --run-tag 20261001       # 换本轮备份标识（避免复用旧 .bak_20260913）
 """
 import sys
 import os
+import re
 import time
 import shutil
 import argparse
@@ -53,11 +56,55 @@ E_FLAT_ROOT = r'E:\temp\行情数据'
 E_FLAT_FULL_DIR = os.path.join(E_FLAT_ROOT, '个股行情全量')
 
 E_BASE = r'E:\temp\行情数据\1.2parquet格式股票数据'
-E_DAILY_DIR = os.path.join(E_BASE, r'1.parquet格式个股行情数据\行情数据更新至2026.9.18')
-E_FIN_DIR = os.path.join(E_BASE, r'财务数据parquet格式（已清洗去重）\财务数据更新至2026.9.18')
-E_LHB_BOARD_DIR = os.path.join(E_BASE, r'parquet格式打板专题数据\打板专题数据更新至2026.9.18')
-E_RESEARCH_DIR = os.path.join(E_BASE, r'parquet格式特色数据\特色数据更新至2026.9.18')
-E_MONEYFLOW_DIR = os.path.join(E_BASE, r'parquet格式资金流向数据\资金流向数据更新至2026.9.18')
+
+# 2026-10-22：网盘供应商版本目录名随期次变化（更新至YYYY.M.D），不再写死单一版本，
+# 改由 --e-version 指定；缺省时自动选「更新至YYYY.M.D」中日期最大的一套（五类目录需齐备）。
+E_VERSION = '2026.10.16'
+E_VERSION_RE = re.compile(r'^更新至(\d{4})\.(\d{1,2})\.(\d{1,2})$')
+
+E_DAILY_SUB = r'1.parquet格式个股行情数据'
+E_FIN_SUB = r'财务数据parquet格式（已清洗去重）'
+E_LHB_BOARD_SUB = r'parquet格式打板专题数据'
+E_RESEARCH_SUB = r'parquet格式特色数据'
+E_MONEYFLOW_SUB = r'parquet格式资金流向数据'
+
+E_DAILY_DIR = E_FIN_DIR = E_LHB_BOARD_DIR = E_RESEARCH_DIR = E_MONEYFLOW_DIR = ''
+
+
+def version_dir_name(sub_dir, version):
+    return '更新至%s' % version
+
+
+def detect_latest_version():
+    """返回 E 盘五个子目录都存在的最大「更新至YYYY.M.D」版本号；找不到返回 None。"""
+    cands = set()
+    subs = [E_DAILY_SUB, E_FIN_SUB, E_LHB_BOARD_SUB, E_RESEARCH_SUB, E_MONEYFLOW_SUB]
+    first = True
+    for sub in subs:
+        p = os.path.join(E_BASE, sub)
+        if not os.path.isdir(p):
+            return None
+        found = set()
+        for nm in os.listdir(p):
+            m = E_VERSION_RE.match(nm)
+            if m and os.path.isdir(os.path.join(p, nm)):
+                found.add('%s.%s.%s' % (m.group(1), int(m.group(2)), int(m.group(3))))
+        cands = found if first else (cands & found)
+        first = False
+    if not cands:
+        return None
+    return max(cands, key=lambda v: tuple(int(x) for x in v.split('.')))
+
+
+def bind_e_dirs(version):
+    """把五类源目录绑定到指定版本（目录名形如「更新至YYYY.M.D」）。"""
+    global E_VERSION, E_DAILY_DIR, E_FIN_DIR, E_LHB_BOARD_DIR, E_RESEARCH_DIR, E_MONEYFLOW_DIR
+    E_VERSION = version
+    E_DAILY_DIR = os.path.join(E_BASE, E_DAILY_SUB, version_dir_name(E_DAILY_SUB, version))
+    E_FIN_DIR = os.path.join(E_BASE, E_FIN_SUB, version_dir_name(E_FIN_SUB, version))
+    E_LHB_BOARD_DIR = os.path.join(E_BASE, E_LHB_BOARD_SUB, version_dir_name(E_LHB_BOARD_SUB, version))
+    E_RESEARCH_DIR = os.path.join(E_BASE, E_RESEARCH_SUB, version_dir_name(E_RESEARCH_SUB, version))
+    E_MONEYFLOW_DIR = os.path.join(E_BASE, E_MONEYFLOW_SUB, version_dir_name(E_MONEYFLOW_SUB, version))
 
 D_BASE = r'D:\astock'
 
@@ -83,15 +130,25 @@ FIN_DATE_COL_DEFAULT = 'ann_date'
 
 
 def build_table_specs(layout='nested'):
-    """layout='nested'：2026-09-14 离线包层级结构（默认，行为不变）。
+    """layout='nested'：2026-09-14 离线包层级结构（默认），五类子目录下带「更新至YYYY.M.D」版本文件夹。
     layout='flat'：2026-10-01 用户自网盘下载的扁平结构，各表平铺在 E 盘根目录，
     daily 额外从 个股行情全量\stock_daily_full.parquet 取全量版做替换迁移
-    （E 根目录的 stock_daily.parquet 是增量，制度规定不得混入主库）。"""
+    （E 根目录的 stock_daily.parquet 是增量，制度规定不得混入主库）。
+    layout='flat-sub'（2026-10-22 新增）：网盘文件按「子目录\\文件名」镜像落盘，
+    不带版本文件夹，五类子目录根下直接放各表。"""
     if layout == 'flat':
         e_fin = e_lhb_board = e_research = e_moneyflow = E_FLAT_ROOT
         e_daily = E_FLAT_FULL_DIR          # 全量版所在子目录
         e_daily_fname = 'stock_daily_full.parquet'
         e_basic = E_FLAT_ROOT              # basic 源在根目录，不在「个股行情全量」子目录
+    elif layout == 'flat-sub':
+        e_daily = os.path.join(E_BASE, E_DAILY_SUB)
+        e_daily_fname = 'stock_daily.parquet'
+        e_basic = e_daily
+        e_fin = os.path.join(E_BASE, E_FIN_SUB)
+        e_lhb_board = os.path.join(E_BASE, E_LHB_BOARD_SUB)
+        e_research = os.path.join(E_BASE, E_RESEARCH_SUB)
+        e_moneyflow = os.path.join(E_BASE, E_MONEYFLOW_SUB)
     else:
         e_daily = E_DAILY_DIR
         e_daily_fname = 'stock_daily.parquet'
@@ -114,6 +171,8 @@ def build_table_specs(layout='nested'):
         replace=True,  # 全量替换模式（不备份，直接用 E 全量版覆盖，不做合并）
     ))
     # 2. finance 8 表
+    #    2026-10-22 改用 put 模式「备份 + E 版全量替换」：同一 (code, end_date, ann_date) 下存在
+    #    多条内容不同的版本记录（修订稿/更正公告），主键合并会丢掉一半历史行，故不做主键合并。
     for t in FIN_TABLES:
         specs.append(dict(
             name='finance/' + t,
@@ -122,6 +181,7 @@ def build_table_specs(layout='nested'):
             keys=FIN_KEYS[t],
             date_col=FIN_DATE_COL.get(t, FIN_DATE_COL_DEFAULT),
             indexed=False,
+            put=True,  # 备份后整体替换（不合并、不去重）
         ))
     # 3. lhb
     specs.append(dict(
@@ -206,13 +266,15 @@ def process_table(spec, apply_mode):
     date_col = spec['date_col']
     indexed = spec['indexed']
     replace = spec.get('replace', False)
+    put = spec.get('put', False)
     bak_path = d_path + BAK_SUFFIX
 
     st = dict(name=name, status='PENDING', error='')
     print('')
     print('=' * 78)
-    print('[%s] 模式=%s%s' % (name, 'APPLY' if apply_mode else 'DRY-RUN',
-                             '（全量替换）' if replace else ''))
+    print('[%s] 模式=%s%s%s' % (name, 'APPLY' if apply_mode else 'DRY-RUN',
+                               '（全量替换）' if replace else '',
+                               '（备份后整体替换，不合并）' if put else ''))
 
     if not os.path.isfile(d_path):
         raise RuntimeError('D 目标文件不存在: %s' % d_path)
@@ -264,6 +326,83 @@ def process_table(spec, apply_mode):
     st['union_cols_n'] = len(union_cols)
     st['union_cols'] = union_cols
     print('  列对齐: D独有列=%s E独有列=%s 合并列数=%d' % (d_only_cols, e_only_cols, len(union_cols)))
+
+    # ---- put 模式（财务表，2026-10-22）：备份 + E 版整体替换 ----
+    # 理由：同一主键下有多条内容不同的版本记录，主键合并会丢历史行；供应商 E 版即权威全量。
+    # 校验：E 行数不得少于 D 的 50%（防下载不完整/错版覆盖），列结构以 D 为基准补齐。
+    if put:
+        if e_rows < d_rows * 0.5:
+            raise RuntimeError('整体替换模式但 E 行数(%d) 不足 D 行数(%d) 的 50%%——疑似源文件不完整，拒绝替换'
+                               % (e_rows, d_rows))
+        # 去掉 E 端 parquet 残留的索引列（Parquet 里存的 RangeIndex 会变成 __index_level_0__ 列）
+        e_extra_idx = [c for c in e2.columns if c not in d2.columns and str(c).startswith('__index_level_')]
+        if e_extra_idx:
+            e2 = e2.drop(columns=e_extra_idx)
+            e_only_cols = [c for c in e_only_cols if c not in e_extra_idx]
+        result = e2.reindex(columns=d2.columns if not e_only_cols else d_cols + e_only_cols)
+        st['d_only_cols'] = d_only_cols
+        st['e_only_cols'] = e_only_cols
+        st['union_cols'] = list(result.columns)
+        st['union_cols_n'] = len(result.columns)
+        st['d_only_keys'] = 0
+        st['e_new_keys'] = e_rows - d_rows if e_rows >= d_rows else 0
+        st['conflict_keys'] = min(e_rows, d_rows)
+        st['e_internal_dup'] = 0
+        st['d_internal_dup'] = 0
+        st['key_nan_rows'] = 0
+        del e2, d2
+        st['expected_rows'] = int(len(result))
+        st['result_rows'] = int(len(result))
+        st['result_range'] = date_range_str(result, date_col, indexed)
+        print('  [整体替换] E 行数=%d（D 行数=%d），丢弃索引列=%s' % (e_rows, d_rows, e_extra_idx))
+        print('  替换后行数=%d  日期[%s ~ %s]' % (st['result_rows'], st['result_range'][0], st['result_range'][1]))
+        if not apply_mode:
+            st['status'] = 'PLAN_OK'
+            st['total_sec'] = round(time.time() - t0, 1)
+            print('  [DRY-RUN] 不写文件。计划：备份->整体替换->验证')
+            return st
+        t_bak = time.time()
+        shutil.copy2(d_path, bak_path)
+        if not os.path.isfile(bak_path) or os.path.getsize(bak_path) != os.path.getsize(d_path):
+            raise RuntimeError('备份失败或大小不一致: %s' % bak_path)
+        st['backup'] = os.path.basename(bak_path)
+        st['backup_sec'] = round(time.time() - t_bak, 1)
+        print('  备份完成: %s（%.1fs）' % (bak_path, st['backup_sec']))
+        t_write = time.time()
+        tmp_path = d_path + '.tmp_put'
+        result.to_parquet(tmp_path, engine='pyarrow')
+        os.replace(tmp_path, d_path)
+        st['write_sec'] = round(time.time() - t_write, 1)
+        print('  写入完成（整体替换）: %s（%.1fs）' % (d_path, st['write_sec']))
+        del result
+        t_verify = time.time()
+        v = pd.read_parquet(d_path)
+        st['verified_rows'] = int(len(v))
+        v_range = date_range_str(v, date_col, indexed)
+        st['verified_range'] = v_range
+        ok = True
+        errs = []
+        if st['verified_rows'] != st['expected_rows']:
+            ok = False
+            errs.append('行数不符: 写后=%d 预期=%d' % (st['verified_rows'], st['expected_rows']))
+        if list(v.columns) != st['union_cols']:
+            ok = False
+            errs.append('列结构不符: %s' % (list(v.columns),))
+        try:
+            if v_range[1] < st['e_range'][1]:
+                ok = False
+                errs.append('写后日期上界 %s < E 上界 %s' % (v_range[1], st['e_range'][1]))
+        except TypeError:
+            pass
+        st['verify_sec'] = round(time.time() - t_verify, 1)
+        st['total_sec'] = round(time.time() - t0, 1)
+        if not ok:
+            st['status'] = 'FAIL'
+            st['error'] = '写后验证失败: %s' % '; '.join(errs)
+            raise RuntimeError(st['error'])
+        print('  验证通过: 行数=%d 日期[%s ~ %s]（%.1fs）' % (st['verified_rows'], v_range[0], v_range[1], st['verify_sec']))
+        st['status'] = 'OK'
+        return st
 
     missing = [k for k in keys if k not in list(d2.columns) or k not in list(e2.columns)]
     if missing:
@@ -490,7 +629,9 @@ def write_report(results, apply_mode, aborted_msg, e_layout='nested'):
     lines.append('- 脚本：`D:\\QuantLab\\scripts\\update_astock_from_e.py`')
     lines.append('- E 源：`%s`' % (E_FLAT_ROOT if e_layout == 'flat' else E_BASE)
                  + ('（扁平布局：各表平铺根目录，daily 全量版取 `个股行情全量\\stock_daily_full.parquet`）'
-                    if e_layout == 'flat' else '（各子目录「更新至2026.9.18」）'))
+                    if e_layout == 'flat' else
+                    ('（子目录镜像布局：五类子目录根下直接放表）' if e_layout == 'flat-sub'
+                     else '（各子目录「更新至%s」）' % E_VERSION)))
     lines.append('- D 目标：`D:\\astock\\`（唯一权威数据源，AGENTS 硬规则）')
     lines.append('- 备份后缀：`%s`（与原文件同目录）' % BAK_SUFFIX)
     lines.append('- 合并规则：按主键去重，D 独有行保留 + E 全量行，冲突键以 E 为准（E 较新）；只增不删。')
@@ -592,14 +733,26 @@ def main():
                     '(daily: full replace; others: backup + primary-key merge)'
     )
     parser.add_argument('--apply', action='store_true', help='真正执行（默认 dry-run 只打印计划）')
-    parser.add_argument('--e-layout', choices=['nested', 'flat'], default='nested',
+    parser.add_argument('--e-layout', choices=['nested', 'flat', 'flat-sub'], default='nested',
                         help='E 盘源布局：nested=2026-09-14 离线包层级结构（默认）；'
-                             'flat=2026-10-01 网盘下载扁平结构（根目录平铺 + 个股行情全量\\stock_daily_full.parquet）')
+                             'flat=2026-10-01 网盘下载扁平结构（根目录平铺 + 个股行情全量\\stock_daily_full.parquet）；'
+                             'flat-sub=网盘文件按子目录镜像落盘（各子目录根下直接放表，无版本文件夹）')
     parser.add_argument('--run-tag', default=None,
                         help='本轮备份标识（YYYYMMDD），决定 .bak_<tag> 后缀与报告文件名；'
                              '不传则用默认 20260913。若该 tag 的备份已存在会被门禁拒绝，需换新 tag。')
+    parser.add_argument('--e-version', default=None,
+                        help='nested 布局下 E 盘版本文件夹的日期，形如 2026.10.16（对应「更新至2026.10.16」）；'
+                             '不传则自动选五类子目录齐备的最大版本。')
     args = parser.parse_args()
     apply_mode = bool(args.apply)
+
+    if args.e_layout == 'nested':
+        ver = args.e_version or detect_latest_version()
+        if not ver:
+            raise SystemExit('E 盘未找到五类子目录齐备的「更新至YYYY.M.D」版本文件夹，'
+                             '请先下载并用 --e-version 指定')
+        bind_e_dirs(ver)
+        print('E 版本: 更新至%s' % ver)
 
     global BAK_TAG, BAK_SUFFIX, REPORT_PATH
     if args.run_tag:
