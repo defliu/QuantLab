@@ -364,7 +364,9 @@ def check_d(fix):
 # → QMT `userdata/log/XtClient_FormulaOutput_<date>.log`。E2 必须读日志，否则恒判「桥可能停」。
 # 双客户端并存（AGENTS.md）：G2/ENS 在 D:\QMT交易端模拟，V13 在 D:\国金QMT交易端模拟。
 QMT_LOG_ROOTS = [r"D:\国金QMT交易端模拟", r"D:\QMT交易端模拟"]
-HEART_LOG_TAGS = {"G2": "P16G2", "ENS": "P16ENS", "V13": "P16V13"}
+# 2026-10-20 改名（T-20261020-004）：G2/ENS 日志前缀加 I 后缀（信号内产版），
+# 与旧文件桥版（P16G2/P16ENS）区分。_log_heart 内部同时认新旧两种前缀。
+HEART_LOG_TAGS = {"G2": "P16G2I", "ENS": "P16ENSI", "V13": "P16V13"}
 
 
 def _log_heart(tag, latest_trade_date):
@@ -373,7 +375,12 @@ def _log_heart(tag, latest_trade_date):
     latest_trade_date 给定时优先只读该日日志（E2b 判「今天有没有心跳」必须严格按日，
     否则会被前一日的更晚心跳污染）；同时扫最近 3 个日志文件兜底历史判定。"""
     import re as _re
-    pat = _re.compile(r"\[%s\]\[HEART\]\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})(.*)$" % _re.escape(tag))
+    # 同时认旧前缀（改名前的日志 [P16G2]/[P16ENS]）
+    _tags = [tag]
+    if tag.endswith("I"):
+        _tags.append(tag[:-1])
+    pat = _re.compile(r"\[(?:%s)\]\[HEART\]\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})(.*)$"
+                     % "|".join(_re.escape(t) for t in _tags))
     kv_pat = _re.compile(r"(\w+)=(\S+)")
     best = None
     want = (latest_trade_date or "").replace("-", "")

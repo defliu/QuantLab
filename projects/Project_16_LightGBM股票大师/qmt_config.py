@@ -42,7 +42,7 @@ MIN_ORDER_VOL = 100                    # 单笔最小委托股数（1手=100股�
 POSFILTER_MODE = os.environ.get("PF_MODE_V13", "lite")  # V1.3 用 lite；PF_DISABLE=1 整体关闭
 GAP_HARD_PCT = float(os.environ.get("GAP_HARD_PCT", "-5.0"))   # 极端低开阈值，直接跳过
 GAP_OPEN_PCT = float(os.environ.get("GAP_OPEN_PCT", "-3.0"))   # 低开触发阈值
-GAP_VR       = float(os.environ.get("GAP_VR", "2.0"))          # 低开放行量比
+GAP_VR       = float(os.environ.get("GAP_VR", "3.3"))          # 低开放行量比（单位时间口径，T-20261023-007）
 
 # ---- 交易费率（结算统一按实盘口径；模拟盘仅验证流程，不用模拟盘费率）----
 # 与用户实盘费用一致（2026 实测）：佣金 万2 双边最低5元 / 印花税 万5 仅卖出 / 过户费 万0.1 仅沪市(60开头)双边

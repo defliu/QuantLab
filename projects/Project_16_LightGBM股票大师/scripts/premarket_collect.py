@@ -18,23 +18,24 @@ TODAY = datetime.date.today().strftime("%Y%m%d")
 CACHE = os.path.join(HERE, "data", "cache")
 os.makedirs(CACHE, exist_ok=True)
 
-# 标的池（2026-10-20 盘前按当日真实候选/持仓刷新）
-# G2 候选：data/selections/g2/20261020_g2_top10.csv（夜间 20:05 任务 10-19 20:08 产出，数据日 20261019）
-# V1.3 候选：data/selections/20261019_model_top10.csv（数据最新日 D=20261019，panel max 同日）
-# 持仓：g2_bridge/state/positions_20261016.json + p16_v13_risk/cmd/positions_cfg_v13_20261020.json（今日 cfg 空仓）
-G2_CANDIDATES = ["000960.SZ"]
-V13_CANDIDATES = ["301060.SZ", "300394.SZ", "301536.SZ"]
+# 标的池（2026-10-21 盘前按当日真实候选/持仓刷新）
+# G2 候选：data/selections/g2/20261020_g2_top10.csv（夜间 20:05 任务 10-20 20:06 产出，数据日 D=20261020）
+#   另有 20261021_g2_top10.csv（20:07 产出，同 3 只候选），候选一致
+# V1.3 候选：data/selections/20261020_model_top10.csv（09:15 任务 10-21 09:17 产出，panel 数据最新日 D=20261020）
+# 持仓：g2_bridge/state/positions_20261016.json + p16_v13_risk/cmd/positions_cfg_v13_20261021.json（持 301536 800 股）
+G2_CANDIDATES = ["001287.SZ", "688021.SH", "688013.SH"]
+V13_CANDIDATES = ["600812.SH", "603101.SH", "300821.SZ", "600458.SH"]
 G2_HOLDINGS = ["600691.SH", "605098.SH", "688758.SH", "000607.SZ", "002841.SZ"]
 ENS_HOLDINGS = ["002841.SZ", "600691.SH", "688758.SH"]  # ENS 持仓 ⊂ G2 持仓
-V13_HOLDINGS = []  # 今日 positions_cfg_v13_20261020.json = 空仓（10-19 曾持 002011）
+V13_HOLDINGS = ["301536.SZ"]  # 今日 positions_cfg_v13_20261021.json（09:00 产出）
 CANDIDATES = G2_CANDIDATES + V13_CANDIDATES
 ALL_STOCKS = list(dict.fromkeys(CANDIDATES + G2_HOLDINGS + V13_HOLDINGS))
 
 NAME_MAP = {
-    "000960.SZ": "锡业股份",
-    "301060.SZ": "兰卫医学", "300394.SZ": "天孚通信", "301536.SZ": "星宸科技",
-    "600691.SH": "阳煤化工", "605098.SH": "行动教育", "688758.SH": "赛分科技",
-    "000607.SZ": "华塑控股", "002841.SZ": "视源股份",
+    "001287.SZ": "中电港", "688021.SH": "奥福科技", "688013.SH": "天臣医疗",
+    "600812.SH": "华北制药", "603101.SH": "汇嘉时代", "300821.SZ": "东岳硅材", "600458.SH": "时代新材",
+    "600691.SH": "潞化科技", "605098.SH": "行动教育", "688758.SH": "赛分科技",
+    "000607.SZ": "华媒控股", "002841.SZ": "视源股份", "301536.SZ": "星宸科技",
 }
 
 

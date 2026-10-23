@@ -34,7 +34,7 @@ def _read_local_build_tag():
     读不到（产物缺失/被删）时返回 None，由 check_heartbeat 显式告警而非静默通过。
     """
     build_py = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            "build", "strategy_p16_g2_bridge.py")
+                            "build", "strategy_p16_g2_selfcontained.py")
     if not os.path.exists(build_py):
         return None
     try:
@@ -81,7 +81,7 @@ def check_heartbeat(date):
         return False
     expected = _read_local_build_tag()
     if not expected:
-        print("  !! 无法读取本地 G2 build 产物 BUILD_TAG（build/strategy_p16_g2_bridge.py 缺失或未含 tag）")
+        print("  !! 无法读取本地 G2 build 产物 BUILD_TAG（build/strategy_p16_g2_selfcontained.py 缺失或未含 tag）")
         print("     无法核对部署版本，请先构建 G2 桥产物")
         return False
     bt = heart.get("build_tag", "")

@@ -6,6 +6,8 @@
 >
 > **账号分工（2026-08-25 用户确认，双账号并存、各跑各的）**：`67014907`（旧号，miniQMT/xtquant 委托，跑本项目 Project\_16 策略，`qmt_config.py` 的 `ACCOUNT_ID`）；`70180771`（新号，纯 QMT 端跑 ATR低波/价值小盘V2 等策略）。本文件的 `67014907` 绑定记录有效，非停用账号。
 >
+> 🚫 **`70180771` 未开通 miniQMT（xtquant）（2026-10-22 用户确认 + 实测）**：外部 Python `connect()` 返回 0 但 `subscribe()` 返回 **-1**、`query_stock_asset()` 返回 **None**、持仓/委托/成交全空。**不是链路故障**，是该号无 miniQMT 权限。禁止再用 external xtquant 连它做连通性排查；该号策略只走 QMT 内置引擎 + 文件桥。
+>
 > 完整对话级记忆（按日期的 `session_memory_*.jsonl`）归档于 `D:\QuantLab\archive\_from_trae_workspace_20260825\memory_projects\trae_workspace\`。
 
 ## 项目背景
@@ -1666,7 +1668,7 @@ DE 运行约 25 分钟，**无 `SCOPE_ACK`、无报告正文、CPU 长时间几�
 ## 2026-10-20 · P16 体检 + 自闭环监控层对齐（T-20261020-003，发现 2 个真缺陷）
 
 - **任务**：诚哥「给 p16 项目做个体检，发现问题直接修复」。范围=夜间体检 33 项 + 23 个单测套件 + QMT 实机日志交叉核对。
-- **【P0 真缺陷①】G2/ENS 今日盘中全程停跑，且监控层看不见**：`D:\QMT交易端模拟` 上 `STRATEGY_P16_G2_BRIDGE.py` / `STRATEGY_P16_ENS_BRIDGE.py` 于 **08:52:30 被 `python formula destructed` 卸载**（同批 `QMT_SANDBOX_PROBE.py` 抛 `KeyboardInterrupt:策略被手动停止`），此后至收盘**零输出**。直接后果：10:07 G2 guard、10:08 ENS guard 双双 `[ABORT] 桥心跳异常，拒绝写单` → **当日 G2 买入（000960.SZ 1200股@25.27）与 ENS 两笔到期卖出（002841.SZ / 600691.SH）全部未执行**。**监控为何没报**：①`nightly_check.py` E2 用 48h 阈值 → 停跑 4h 仍判 PASS；②`check_bridge_heartbeat.py` 虽在 12:00 抓到了，但它读的是**文件心跳**（heart_20261016.json，83h 前），告警文字误导为「桥心跳超时」而非「策略已停」。**修复**：`nightly_check.py` 新增 **E2b 盘中存活检查**——交易日且过 10:00 时，当日最新 `[HEART]` 落在 09:30 之前或当天无心跳 → **FAIL**（区分「停跑」与「心跳旧」）；`_log_heart` 加 `latest_trade_date` 参数支持「锁当日」严格判定。**实测**：修复后体检正确报 `E2b 盘中存活 G2/ENS FAIL 最新心跳停在 08:51`、V13 PASS（11:29）。**⚠️ 未修复项（需人工）**：策略本身仍停着，**必须重启 QMT 客户端并重载 G2/ENS 策略**（沙箱/策略进程不可由外部脚本拉起）。
+- **【P0 真缺陷①】G2/ENS 今日盘中全程停跑，且监控层看不见**：`D:\QMT交易端模拟` 上 `STRATEGY_P16_G2_BRIDGE.py` / `STRATEGY_P16_ENS_BRIDGE.py` 于 **08:52:30 被 `python formula destructed` 卸载**（同批 `QMT_SANDBOX_PROBE.py` 抛 `KeyboardInterrupt:策略被手动停止`），此后至收盘**零输出**。直接后果：10:07 G2 guard、10:08 ENS guard 双双 `[ABORT] 桥心跳异常，拒绝写单` → **当日 G2 买入（000960.SZ 1200股@25.27）与 ENS 两笔到期卖出（002841.SZ / 600691.SH）全部未执行**。**监控为何没报**：①`nightly_check.py` E2 用 48h 阈值 → 停跑 4h 仍判 PASS；②`check_bridge_heartbeat.py` 虽在 12:00 抓到了，但它读的是**文件心跳**（heart_20261016.json，83h 前），告警文字误导为「桥心跳超时」而非「策略已停」。**⚠️ 后续更正（T-20261020-005 实测）**：G2/ENS **并非全天停跑**——13:44:42 已重新加载并心跳至 15:00:03，真实影响窗口 08:52~13:44（覆盖 09:50/09:52 换仓时点，故当日买卖仍未执行，但 13:44 后风控已恢复在岗）。**修复**：`nightly_check.py` 新增 **E2b 盘中存活检查**——交易日且过 10:00 时，当日最新 `[HEART]` 落在 09:30 之前或当天无心跳 → **FAIL**（区分「停跑」与「心跳旧」）；`_log_heart` 加 `latest_trade_date` 参数支持「锁当日」严格判定。**实测**：修复后体检正确报 `E2b 盘中存活 G2/ENS FAIL 最新心跳停在 08:51`、V13 PASS（11:29）。**⚠️ 未修复项（需人工）**：策略本身仍停着，**必须重启 QMT 客户端并重载 G2/ENS 策略**（沙箱/策略进程不可由外部脚本拉起）。
 - **【P0 根因②】心跳通道自闭环化后，外部判定全断**：G2/ENS/V13 自 2026-10-15~16 起「自闭环零文件」，`heart_<date>.json` **永久停写**，唯一通道是 print `[P16xx][HEART]` → `XtClient_FormulaOutput_<date>.log`。但外部 5 处仍在读文件心跳：`qmt_bridge_client.read_heart` / `qmt_bridge_client_ens.read_heart` / `check_bridge_heartbeat.py` / `nightly_check.py` E2 / `rebalance_g2|ens` 的 `is_bridge_alive`。**⚠️ 关键坑（不是「文件不存在才回退」）**：10-16 的旧 `heart_*.json` **一直在盘上**，`if heart: return heart` 会直接返回 83h 前的死心跳，把日志里的新鲜心跳完全掩盖 → 回退形同虚设。**正确做法 = 两源都读、按 `last_heartbeat` 字符串取较新者**。**修复**：`qmt_bridge_client.py` 新增 `read_heart_from_log()`（解析 `[P16G2|P16ENS|P16V13][HEART]` 行 → 同构 dict，含 `source="formula_log"`）+ `QMT_PATH/QMT_PATH_ALT` 双客户端扫描；`read_heart`（G2/ENS 两客户端）改为双源取最新；`is_bridge_alive` msg 增 `source=` 便于诊断。
 - **【P1 真缺陷③】G2/ENS 成交记录彻底消失**：`_write_fill` 末尾只调 `_add_or_update_fill` → `_atomic_write_json`，而后者在自闭环版是**空壳 `return`**（沙箱禁 open）→ **G2/ENS 自 10-16 起所有成交记录无任何落点**（V13 早有 `[P16V13][FILL]`，G2/ENS 漏了）。影响：`reconcile_g2/ens`（读 fills json 恒 0 条）、`push_fill_card.py`、`track_sold_forward`、`analyze_sell_timing` 全部断供；且因当日无成交未能暴露。**修复**：两 src 的 `_write_fill` 在 `_add_or_update_fill` 前补 `[P16G2|P16ENS][FILL]` print，**字段/格式与 V13 逐字对齐**（date sid code action vol px src status ref slip gap retry oids | reason），外部解析器可复用同一正则。**实测**：单测跑通输出 `[P16G2][FILL] 20261020 s1 300413.SZ SELL vol=1000 px=9.4000 src=fill_avg status=FILLED ref=9.500 slip=1.05% gap=0.00% retry=0 oids=1001 | stop_loss`。
 - **【噪声清理】C1 白名单过期**：`nightly_check.py` `EXPECTED_TASKS` 仍列 `Quant_Monitor_0945`，该任务及同族 6 个已于 10-17 经诚哥拍板删除（T-20261017-001）→ 10-17~10-20 每天固定 FAIL 1 项。已移出白名单（保留注释说明来龙去脉）。**修复后 C1 PASS**。
@@ -1675,3 +1677,53 @@ DE 运行约 25 分钟，**无 `SCOPE_ACK`、无报告正文、CPU 长时间几�
 - **产物**：`build/strategy_p16_g2_bridge.py` BUILD_TAG=**20261020-122656**（4183 行/544032 B）、`build/strategy_p16_ens_bridge.py` BUILD_TAG=**20261020-122659**（4187 行/544548 B）。源码 `strategy/strategy_p16_{g2,ens}_bridge_src.py` 各补 1 处 FILL print。
 - **⏳ 待人工**：①**重启 QMT 客户端 + 重载 G2/ENS 策略**（今日盘中仍停跑，新 build 需粘贴部署，BUILD_TAG 核对 20261020-1226xx）；②新 build 首次实跑需核对日志出现 `[P16G2][FILL]` 与 `[P16G2][HEART]` 且 `passive=False`；③B2 WARN 待 10-26 周更自动恢复。
 - **关联**：T-20261015-004（沙箱自闭环改造，本任务即其监控层收尾）、T-20261017-001（Quant_Monitor 六任务删除，C1 白名单源）、T-20261018-003（G4 观察期闸，同为「监控层没跟上架构变更」形态）。
+
+## 2026-10-20 · G2/ENS 自闭环版改名（T-20261020-005，三层全改：文件名 / 日志前缀 / ORDER_REMARK）
+
+- **任务**：诚哥要求「把 QMT 内执行的策略换个名称，区别原有可外部读写的策略」。选定三层全量改名，命名风格 `_selfcontained`（语义直白=自闭环零文件，与旧 `_bridge` 形成对照）。
+- **⚠️ 事实更正（推翻本日 T-20261020-003 的部分表述）**：G2/ENS **并非全天停跑**——08:52:30 被卸载后，**13:44:42 已重新加载并持续心跳到 15:00:03**（当日 G2 心跳 75 条、ENS 75 条，首条 08:51:03、13:44:42 起恢复）。真实影响窗口 = **08:52~13:44（约 4h52m）**，覆盖 09:50/09:52 换仓时点 → 当日 G2 买入与 ENS 两笔到期卖出仍未执行，但 **13:44 后风控（止损/止盈/追盈）已恢复在岗**。T-20261020-003 里「此后至收盘零输出」应以此条为准。恢复动作非本 agent 所为（疑似人工重载）。
+- **改名清单（四层，全部已落地）**：
+  1. **文件名**：`strategy/strategy_p16_g2_bridge_src.py` → `strategy_p16_g2_selfcontained_src.py`；ENS 同理。构建脚本 `build_p16_g2.py` → `build_p16_g2_selfcontained.py`；ENS 同理。产物 `build/strategy_p16_g2_bridge.py` → `build/strategy_p16_g2_selfcontained.py`；ENS 同理。
+  2. **日志前缀**：`[P16G2]` → `[P16G2I]`、`[P16ENS]` → `[P16ENSI]`（I = 信号内产 internal）。源码各 103 处全换，产物零旧前缀残留。
+  3. **ORDER_REMARK**：`P16G2桥` → `P16G2I桥`、`P16ENS桥` → `P16ENSI桥`。**新增旧值兼容层**：`ORDER_REMARK_LEGACY = ("P16G2桥",)` + `ORDER_REMARK_ALL = (ORDER_REMARK,) + ORDER_REMARK_LEGACY`，两处反查点（`_lookup_order` 排序键、`_rebuild_state` risk_sold 重建）改用 `any(rk in remark for rk in ORDER_REMARK_ALL)`——**下单只写新值，反查认新旧两值**，防同日重启把改名前的未成交委托当「非本策略」→ risk_sold 漏项 → 重复卖出。
+  4. **旧产物归档**：`build/strategy_p16_{g2,ens}_bridge.py` → `build/_deprecated_bridge/`（`git mv`，留证可查；`build/` 下只剩新产物，防人工粘贴拿错）。
+- **⚠️ 关键陷阱（本次踩到并解决）**：`gen_ens_bridge_src.py` 是**由 G2 源码生成 ENS 源码**的生成器，其 `PREFIX_REPL` 原为 `[("P16G2","P16ENS")]`。若只改源码不改生成器，下次重生成会把命名**回退**。且前缀替换**顺序敏感**——必须先换长串 `P16G2I` 再换裸 `P16G2`，否则 `P16G2I桥` 会被裸规则先命中产生错位。已改为 `[("P16G2I","P16ENSI"), ("P16G2","P16ENS")]` 并把 `P16G2I` 加入防呆残留检查；实跑生成器验证产出 103 处 `P16ENSI`、零 `P16G2` 残留、参数正确（SIGNAL_HM=09:31 / TOP_N=5 / HOLD_DAYS=10）。
+- **下游同步（7 处，全部改为「认新旧两前缀」而非只认新值）**：`qmt_bridge_client.py`（`_STRATEGY_LOG_TAG="P16G2I"` + `_STRATEGY_LOG_TAG_LEGACY` + `read_heart_from_log` 正则 `(?:P16G2I|P16G2|P16ENSI|P16ENS|P16V13)`）、`qmt_bridge_client_ens.py`（tag="P16ENSI"）、`check_bridge_heartbeat.py`（`LOG_TAGS` + `_tags` 双值）、`scripts/nightly_check.py`（`HEART_LOG_TAGS` + `_log_heart` 双值）、`qmt_account_metrics.py`（`REMARK_MAP` 新值排在旧值**之前**——子串匹配下 `P16G2I桥` 也含 `P16G2`，旧值在前会误判；`_RE_TAG` 加新前缀；`_LOG_TAG_NORM` 新旧都归 G2I/ENSI）、`premarket_g2_check.py`（产物路径）、两个历史审计脚本路径。**为什么必须双认**：改名前的历史日志/成交记录里仍是旧前缀，只认新值会让当日改名前的数据全部查不到。
+- **验证**：**23/23 单测套件 rc=0**（含 build hardening 40/40、G2 状态机 100/100、ENS 100/100、V13 55/55、V13 fill 87/87、corr_diag_io 153/153）；`check_py36_compat` exit 0；两新产物 `check_build_bridge_artifact` 全 PASS；`premarket_g2_check._read_local_build_tag()` 正确读到 `20261020-232204`；**实机日志双前缀兼容实测通过**——`read_heart_from_log('20261020', tag='P16G2I')` 成功解析出**旧前缀** `[P16G2]` 的 14:59:36 心跳；`qmt_account_metrics._attr_by_remark` 对 `P16G2I桥`/`P16G2桥`/`P16ENSI桥`/`P16ENS桥` 四种输入均正确归属；夜间体检 FAIL=0、E2b 三策略全 PASS。
+- **产物**：`build/strategy_p16_g2_selfcontained.py` BUILD_TAG=**20261020-232204**（4189 行/544644 B）、`build/strategy_p16_ens_selfcontained.py` BUILD_TAG=**20261020-232205**（4193 行/545162 B）。
+- **⏳ 待人工**：①**新产物需重新粘贴部署**（QMT 客户端当前跑的仍是 `20261017-235317/235319` 旧名旧前缀版），粘贴后核对 BUILD_TAG 为 20261020-2322xx；②QMT 客户端策略编辑器里的**策略名**需一并改为新名（`STRATEGY_P16_G2_BRIDGE` → 建议 `P16_G2_SELFCLOSED`，ENS 同理），否则客户端侧仍是旧名，与仓库产物名不对应；③改名后首次实跑需核对日志出现 `[P16G2I][HEART]`/`[P16G2I][FILL]` 且 `passive=False`。
+- **遗留**：未提交 git；`ablate_exits.py`/`backtest_b21_strategy.py` 等历史分析脚本的 docstring 仍提及旧名（属历史叙述，不影响运行，未改）。
+- **关联**：T-20261020-003（本日体检，本条更正其「全天停跑」表述）、T-20261015-004（自闭环改造）、T-20261019-001（G2I/ENSI 统计标签首次引入）。
+
+## 2026-10-21 · G2 内置版上线检查 + L3 快照幽灵持仓修复（T-20261021-001）
+
+- **任务**：诚哥「粘贴了 strategy_p16_g2_selfcontained，ENS 先搁置（QMT 政策不明朗），先跑 G2 内置版看看，检查一下」。
+- **✅ 新版部署核实（实机）**：`STRATEGY_P16_G2_SELFCONTAINED.py` 于 **21:36:30 加载成功**，`BUILD_TAG=20261020-232204`（与本地产物一致）、`mode=自闭环信号内产(零文件)`、`passive=False`、`positions=0`、`whitelist=3`；`continueRun` 回放 55189 根历史 bar 无异常。旧版 `STRATEGY_P16_G2_BRIDGE.py` 已于 **20:53:48 `stop success` + `python formula destructed`** 正常卸载，新旧未并存。日志前缀已切 `[P16G2I]`，旧前缀零残留。
+- **✅ 心跳监控链路实测通**：`read_heart()` 正确解析 `[P16G2I][HEART]`（`source=formula_log`，21:36:30），`is_bridge_alive` → `True`；`nightly_check` E2/E2b 均 PASS（G2 21:36）。**改名后的双前缀兼容在真实新版日志上验证成立**。
+- **✅ ENS 搁置确认**：`STRATEGY_P16_ENS_BRIDGE.py` 20:53:48 已 `destructed`，21:36 后零输出，符合诚哥「先搁置」。ENS 账本 `g2_ens_hold_dates.json` 仍有 4 只陈旧持仓（600691.SH/002841.SZ/002762.SZ/688758.SH，updated_at 10-15），**按指示未动**，恢复 ENS 前必须先清理。
+- **🚨【P1 真缺陷，已修】L3 快照幽灵持仓 → 实际部署仅 32.7%**：新版首次加载时 `[P16G2I][INIT] 白名单(3只) ∩ 账户position 交集为空`，但 L3 快照 `HOLD_DATES = {'000607.SZ':'20260929', '000960.SZ':'20261016'}` 仍带两只**幽灵持仓**。**危害链**：信号逻辑 `kept = set(_g_hold_dates) - sold`，而卖出循环只遍历 `acct`（账户实际持仓，当前为空）→ **幽灵票永远卖不掉、永远留在 kept** → `n_slots = SIGNAL_TOP_N(3) - len(kept)(2) = 1` → 只能买 1 只，**实际部署 32.7% 而非 98%**。若未发现，明日 09:50 信号会以 1/3 仓位建仓，且 `000960.SZ` 还被算作「持有中」参与超配减仓判定。
+- **根因（两层）**：①`g2_hold_dates.json` 停在 **10-16 09:52**，从未随实际持仓收敛；②`000607.SZ`/`000960.SZ` 在 `[HOLD]` 日志里**从未出现在实际持仓**（10-19~10-21 实际只有 605098.SH，10-21 13:10 止损卖出后清空）→ **陈旧账本条目污染**。**⚠️ 更正（2026-10-21 22:xx 复核）**：本条初稿称这两只是「退市票（10-01 起无行情）」**有误**——当时误用了 `D:/astock` 主库（该库最新只到 **2026-09-30**，所有票都停在 9-30，不能用于判退市）；查 `data_live/merged_daily_full`（最新 10-21）**四只票（000607/000960/301202/605098）均有正常行情到 10-21**，均未退市。`D:/QMT_POOL/delist_info.csv` 也不是退市名单——它是全市场 5922 只的清单（list_status 全空）。**清空 hold_dates 的处置仍然正确**（这两只确实不在实际持仓），但归因改为「账本未跟随实际持仓」，非「退市」。
+- **修复（3 步）**：①备份 `g2_hold_dates.json.bak_stale_20261021`，清空 `hold_dates={}` 并写 note 说明来龙去脉（账户 10-21 13:10 止损卖出 605098.SH 后实际空仓）；②重跑 `gen_g2_signal_snapshots.py --arm g2` → `hold_dates=0`、`merged last=2026-10-21`、`capital=95246`、`SNAP_N=4863`；③重建产物 **BUILD_TAG=20261021-214054**（4188 行/544587 B），校验 `SNAPSHOT_DATE=20261021`、`HOLD_DATES` 空、`CAPITAL_SNAP=95245.82`、新前缀 102 处/旧前缀 0、`ORDER_REMARK=P16G2I桥`。**干跑验证**：`kept=∅ → n_slots=3 → 可部署 98.0%`（修复前 32.7%）。
+- **✅ 旧版今日实际战绩（供对照）**：10-21 旧版 `STRATEGY_P16_G2_BRIDGE.py`（BUILD 20261017-235317）运行正常——11:25 加载、`SIG-EXPIRED`（过 09:58 信号点，未换仓）、**13:10:18 触发 `[P16G2][RISK] SELL_STOP` 卖出 605098.SH 500股@52.45（跌破止损位 52.46）并 `[FILLED] deal=500`**。内置风控在岗有效。
+- **验证**：23/23 单测套件 rc=0；`check_py36_compat` exit 0；`check_build_bridge_artifact` 全 PASS；`nightly_check` FAIL=0。
+- **⏳ 待人工（关键）**：①**新产物 BUILD_TAG=20261021-214054 需重新粘贴部署**（当前运行的是 20261020-232204，快照仍是 10-16 幽灵持仓版）；②粘贴后确认日志 `[P16G2I][INIT] L3快照 date=20261021` + `白名单合并 ... = 3 只`（不再有「交集为空」WARN）+ `positions=0`；③QMT 客户端策略名建议同步改为 `P16_G2_SELFCLOSED`。
+- **⚠️ 遗留风险（未修，需拍板）**：`G2_CODES = ("605098.SH", "000607.SZ")` 里 **`000607.SZ` 是退市票**，硬编码在白名单里会一直占一个名额（不影响下单，因候选池来自行情宇宙不会选中它，但 `whitelist=3` 显示虚高）。建议下次重建时改为 `("605098.SH",)` 或换成当前实际持仓。
+- **关联**：T-20261020-005（改名）、T-20261020-003（心跳监控层对齐）、T-20261015-004（自闭环改造）。
+
+## 2026-10-21 晚 · 301202 纳管 G2（T-20261021-001 续，诚哥「真实持仓是 301202 1000股，其他都清空了」）
+
+- **触发**：诚哥告知真实持仓 = **301202.SZ 1000 股**，其余已清空。核查发现该票**不在 `G2_CODES` 白名单**（原为 `("605098.SH","000607.SZ")`）→ 按 `_rebuild_state` 的「白名单 ∩ 账户position = 纳管集」逻辑，**301202 属白名单外持仓，G2 绝不触碰 → 零风控覆盖（止损/止盈/追盈全部不触发）**。这是资金安全红线级缺口。
+- **持仓事实（QMT 客户端日志实证，xtquant 外部直连 CONNECT_RC=-1 不可用）**：从 `D:\QMT交易端模拟\userdata\log\XtClient_2026102*.log` 的 `[LOGIN] initPosition` 行解析：
+  - `stockCode:301202, totalAmt:1000, enableAmount:1000, costPrice:29.4512, costBalance:29431`；
+  - 10-20 08:52 lastPrice=30.10（浮盈 648.45）、10-21 11:25 lastPrice=31.45（浮盈 1997.77）、10-21 20:53 lastPrice=31.08（浮盈 1627.96）。
+  - **建仓日推断 = 20261019**：成本 29.4512 落在 10-19 当日区间 [29.19, 30.40] 内（10-20 最低 29.49 已高于成本，10-16 最高 31.02/最低 29.55 区间不含该价但 10-19 唯一精确命中）。
+- **⚠️ 重要更正（推翻本日早前判断）**：此前把 `000607.SZ`/`000960.SZ` 判为「退市票（10-01 起无行情）」**是错的**，根因是误用了 `D:/astock` 主库——该库最新只到 **2026-09-30**（所有票都停在 9-30），**不能用来判退市**；且 `D:/QMT_POOL/delist_info.csv` 也不是退市名单，是全市场 5922 只的清单（`list_status` 全空）。改查 `data_live/merged_daily_full`（最新 **10-21**）确认：**000607 / 000960 / 301202 / 605098 四只全部有正常行情到 10-21，均未退市**。清空旧 `hold_dates` 的处置本身正确（那两只确实不在实际持仓），但归因应为「账本未跟随实际持仓」而非「退市」。
+- **修复（3 处）**：
+  1. `g2_hold_dates.json`：`{"301202.SZ": "20261019"}`（移除 000607/000960），note 留痕建仓日推断依据 + 605098 已于 10-21 13:10 止损卖出；
+  2. 源码 `G2_CODES = ("301202.SZ",)`（原 `("605098.SH","000607.SZ")`，三只全已不在持仓），加注释说明「白名单外持仓 = 零风控覆盖，持仓变动后必须同步此常量 + 重建产物」；
+  3. 重跑快照（`hold_dates=1`、`last=2026-10-21`、`capital=95246`）+ 重建产物 **BUILD_TAG=20261021-224356**（4191 行/544907 B）。
+- **仓位分配干跑（纳入后）**：`kept={301202.SZ}` → `n_slots = 3-1 = 2`；目标每仓 31114 元；301202 当前 1000 股 × 31.08 = 31080 元 ≈ 目标（diff=0，**不触发超配减仓**）；总部署 = 31080 + 2×31114 = 93307 = **98.0%**（符合设计）。301202 `is_st=0`（非 ST），满 15 日约 **2026-11-07** 到期卖出。
+- **验证**：23/23 单测套件 rc=0；`check_py36_compat` exit 0；`check_build_bridge_artifact` 全 PASS；产物常量核对 `G2_CODES=("301202.SZ",)` / `HOLD_DATES={"301202.SZ":"20261019"}` / `SNAPSHOT_DATE=20261021` / `CAPITAL_SNAP=95245.82` / 新前缀 102 处旧前缀 0。
+- **⏳ 待人工（关键）**：**BUILD_TAG=20261021-224356 需重新粘贴部署**。当前运行的是 20261020-232204（白名单还是 `605098.SH/000607.SZ`、L3 为空）→ **不粘贴则 301202 仍无止损保护**。粘贴后核对：`[P16G2I][INIT] L3快照 date=20261021` + `白名单合并 ... = 1 只` + `白名单∩position 纳管 1/1 只`（不应再出现「交集为空」WARN）+ `[P16G2I][HOLD] n=1 301202.SZ=1000@29.451`。
+- **遗留**：①ENS 仍搁置，其账本 `g2_ens_hold_dates.json` 仍有 4 只陈旧持仓（600691/002841/002762/688758），恢复 ENS 前必须先清理；②`data_live/merged_daily_full` 已到 10-21 但 `D:/astock` 主库仍停 9-30，两者口径差异需在下次数据更新时对齐（回测/研究用主库会缺 10 月行情）；③未提交 git。
+- **关联**：T-20261021-001（本日前半段：G2 上线检查 + 幽灵持仓修复，本条更正其退市误判）、T-20261020-005（改名）、T-20261015-004（自闭环改造）。
