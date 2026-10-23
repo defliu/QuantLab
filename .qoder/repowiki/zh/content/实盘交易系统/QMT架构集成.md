@@ -313,10 +313,55 @@ QMT 远程 position 可能是 `CPositionDetail` 对象，字段是 `m_strInstrum
 
 | 账号 | 用途 | 通道 |
 |---|---|---|
-| `67014907` | Project_16 LightGBM/V1.3（**仍在用**）；**价值小盘V2（2026-10-13 迁至本号，与 V1.3 共号但账本独立）** | miniQMT / xtquant（V1.3）；QMT 端自包含（V2） |
-| `70180771` | ATR低波 / 黄氏529 / G2 / 融合 / 全天候 | 纯 QMT 端文件桥 |
+| `67014907` | Project_16 V1.3；**G2桥 / 融合桥（2026-10-22 由 70180771 迁入，外部 xtquant 直连下单）**；~~价值小盘V2（2026-10-22 清仓退出，28 只全成、已实现 −1188.08 元 / −4.36%）~~ | miniQMT / xtquant（V1.3 + G2 + ENS）；内置风控 V13/G2风控/ENS风控 |
+| `70180771` | ATR低波 / 黄氏529 / 全天候 | 纯 QMT 端文件桥（**未开通 miniQMT**） |
 
-> ⚠️ 此前「67014907 已停用、全策略换号 70180771」的说法**已被推翻**。哪个策略用哪个号必须严格对应，**引用错号会废单**。Project_16 的 build/脚本引用 `67014907` 属正常。**2026-10-13 起价值小盘V2 也落在 `67014907`**（诚哥指定），其 `v2_holdings_state.json` 与 V1.3 账本各自内嵌 `account_id` 戳、互不纳管。
+> ⚠️ 此前「67014907 已停用、全策略换号 70180771」的说法**已被推翻**。哪个策略用哪个号必须严格对应，**引用错号会废单**。Project_16 的 build/脚本引用 `67014907` 属正常。
+
+> 🚫 **`70180771` 未开通 miniQMT（xtquant）功能（2026-10-22 用户确认 + 实测）**：外部 Python 用 xtquant 连该号时，`trader.connect()` 返回 `0`（看起来连上了），但 `subscribe()` 返回 **`-1`**、`query_stock_asset()` 返回 **`None`**、持仓/委托/成交全为空。**这不是链路故障、不是 QMT 未启动、不是 session_id 问题**，而是账号本身未授权 miniQMT 通道。该号下所有策略一律走 QMT 客户端内置策略引擎 + `D:/QMT_POOL/` 文件桥。**禁止再用 external Python + xtquant 连 70180771 做「连通性排查」——做了也是白做。**
+
+### 单账号三策略并存（V1.3 / G2 / ENS，2026-10-22 起）
+
+67014907 上三策略同跑，**归属靠各自独立成交账本 + 独立 remark**，绝不交叉纳管：
+
+| 策略 | 成交账本 | 买入 remark | 卖出 remark | 待补价队列 |
+|---|---|---|---|---|
+| V1.3 | `Project_16/data/qmt_trade_log.csv` | `planA_new_top` | `traework_rebalance` | `data/qmt_pending_fills.jsonl` |
+| G2 | `D:/QMT_POOL/g2_bridge/g2_trade_log.csv` | `p16_g2_new` | `p16_g2_risk` | `g2_bridge/g2_pending_fills.jsonl` |
+| ENS | `D:/QMT_POOL/p16_ensemble_bridge/ens_trade_log.csv` | `p16_ens_new` | `p16_ens_risk` | `p16_ensemble_bridge/ens_pending_fills.jsonl` |
+
+- **下单**：外部 `rebalance_g2.py` / `rebalance_ens.py` → `xt_exec.execute_orders()` → `order_guard.order_with_guard()`（轮询成交/撤单重试/涨跌停跳过/成交均价回填）。`order_guard.configure(cfg, pending_file)` 注入各策略 config，不调用时 V1.3 行为零变化。
+- **持仓推导**：只认本策略账本 BUY-SELL 净额 + FIFO，**绝不读账户全量持仓判定归属**（含他人票）。账本 `account_id` 戳不符 → 自动备份 + 空仓起步。
+- **风控**：内置（拍板 A）。内置策略 `SIGNAL_ENABLED=False`（信号由外部算 F1~F6），只保留 tick 级 STOP 7% / TP 15% / TRAIL 8%。内置卖出不回写文件 → 由 `Quant_P16_SyncDeals`（09:00）用 `archive/trades_<date>.csv` 补记。
+- **归档**：`archive_daily_orders.py`（15:58）把当日 orders/trades/positions 落 `data/archive/`——QMT 隔日清空，不落盘即永久丢失（301536.SZ 教训）。**注意 `query_stock_trades` 在 67014907 会 HANG，必须走 orders 的 traded_volume/traded_price 口径**。
+- **⚠️ 内置风控的归属绑定必须认「外部 remark」（T-20261023-002，集成 P0 修复）**：内置侧原按自身 `ORDER_REMARK_ALL`（`P16G2I桥` / `P16ENS桥` / `P16V13风控`）反查当日 order 建立白名单，而外部下单写的是 `p16_g2_new` / `p16_ens_new` / `planA_new_top` → **白名单永远漏新票 = 新仓零止损覆盖**（T-20261020-005 同型）+ `risk_sold` 重建漏项（重启可能重复卖出）。现三份内置产物统一为：
+  1. 声明 `EXTERNAL_REMARK_BUY` / `EXTERNAL_REMARK_SELL` / `ALL_REMARKS = ORDER_REMARK_ALL + EXTERNAL_REMARK_ALL`；
+  2. `init` 扫当日 order，凡 remark 命中 `EXTERNAL_REMARK_BUY` 的票**自动并入白名单**；
+  3. `_late_bind_whitelist(C)`：被动模式下每 **30s** 重扫当日 order + 重建持仓，一旦账户出现白名单内持仓即**自动解除被动**继续风控（解决 09:00 init 空仓 → 09:50 外部买入 → 内置永远 passive 的死锁）；
+  4. `risk_sold` 重建改用 `ALL_REMARKS`（内置 + 外部卖出都计入已卖）。
+  > 因此 `*_CODES` 白名单常量不再是唯一来源，只是「无当日委托时的冷启动快照」。**但 QMT 当日 order 隔日即丢**：若持仓已存在且策略隔日重启，仍须人工把持仓代码填回 `*_CODES`。
+  > 当前版本：`V13=20261023-110053` / `G2=20261023-105529` / `ENS=20261023-105530`，三者 `*_CODES=()`（67014907 已全清，始于空仓）。
+
+### 特征口径（易混淆，2026-10-22 澄清）
+
+| 口径 | 特征数 | 用途 | 位置 |
+|---|---|---|---|
+| **现役生产 `g2_strong_real`** | **43** = 27 v3 基础 + 6 enh 慢变量 asof + 10 g2 增强 | **外部信号层实际使用**（G2/ENS 均为此） | `train_g2.py` / `deploy_predict_g2.py` |
+| **沙箱内产版（B21）** | **21**（`FEATURE_ORDER`） | QMT 内置 Python 现算，**已随 `SIGNAL_ENABLED=False` 成死代码** | `vendor/g2_features_qmt.py` |
+
+> ⚠️ `vendor/g2_features_qmt.py` 的 21 个**不是** G2 全部特征，是沙箱精简集。误把 21 当现役口径会低估策略能力。
+
+**两版收益对照**（`results/B21_干净对比_生产评分卡口径_20261018.md`，2024-07~2026-09，slip 0.1%，t0_close）：
+
+| 信号层 | 年化 | 夏普 | 回撤 |
+|---|---|---|---|
+| B21 内产版（21f + prob≥0.60） | +5.84% | 0.44 | −16.6% |
+| 现役 43f 简化红线（prob≥0.60） | **+12.26%** | **0.86** | −15.0% |
+| 现役 43f 生产评分卡 SC60（F1~F6） | **−3.87%** | −0.19 | −22.5% |
+
+**两条反直觉结论**：①43 特征配简化红线是 21 特征的 2.1 倍收益；②同一 43 特征下，**评分卡 SC60 反而比简化红线差 16.1pp**（本窗内评分卡红线是负 alpha 来源）。当前实盘按拍板 F 用 F1~F6 是为「保持生产口径一致」，非收益最优；是否切简化红线见方案 §8.2 遗留项 J。
+
+
 
 ## 本地 miniQMT 验证
 
