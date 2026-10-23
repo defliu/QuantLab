@@ -1,0 +1,28 @@
+{
+  "g2": {
+    "start": "2026-08-17",
+    "end": "2026-10-23",
+    "n_days": 44,
+    "calendar_days": 67,
+    "start_capital": 100000.0,
+    "end_asset": 84406.09,
+    "total_return": -0.155939,
+    "cagr": -0.621276,
+    "vol_annual": 0.243485,
+    "sharpe": -3.8604,
+    "max_drawdown": -0.179669
+  },
+  "v13": {
+    "start": "2026-08-17",
+    "end": "2026-10-23",
+    "n_days": 44,
+    "calendar_days": 67,
+    "start_capital": 100000.0,
+    "end_asset": 96338.7,
+    "total_return": -0.036613,
+    "cagr": -0.192351,
+    "vol_annual": 0.206079,
+    "sharpe": -0.9356,
+    "max_drawdown": -0.081146
+  }
+}
