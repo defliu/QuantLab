@@ -23,15 +23,20 @@
           "catalyst_score":10, "catalyst_note":"半年报净利+40.35%确证利好"}
        ]
      }
-     （pe_ttm=实时市盈率，turnover=实时换手率，供 F6 估值打分；缺省则 F6 回退面板分）
+     （pe_ttm=实时市盈率，turnover=实时换手率；T-20261024 起仅作差异提示参考，不参与 F6 打分）
 
 逻辑：
-  - F2(资金) = f(实时主力净额, 量比)   （Project_15 规则；无数据回退 5.0）
+  - F2(资金) = f(Tushare moneyflow T-1 权威, 实时量比)（无数据回退实时/5.0）
   - F3(催化) = 实时 catalyst_score（AI 结合新闻/公告给出 0-10；无数据回退 0）
-  - F5(板块) = f(实时所属行业当日涨幅 HYZAF)（无数据回退 5.0）
-  - F1/F4 沿用 deploy 面板代理分；F6 优先用实时 PE（PE<0 或 >100 硬性扣 1 分），无实时则回退面板 SC_F6
+  - F5(板块) = f(申万一级行业信号日全天涨幅，本地自算)（对齐回测口径；无数据回退中性 5.0）
+  - F1/F4 沿用 deploy 面板代理分；F6 = 信号日 Tushare daily_basic PE/换手打分（对齐回测 est 口径），
+    缺失回退面板 SC_F6；实时 PE 仅作差异>50% 提示，不参与打分
   - 总分 = F1*25%+F2*20%+F3*20%+F4*15%+F5*10%+F6*10%（×10 得百分制）
   - 输出完整版清单 Markdown + CSV（data/selections/）
+
+口径对齐说明（T-20261024 A 方案，诚哥拍板）：
+  F5/F6 改为信号日（T，即候选 trade_date）全天口径，与已通过回测验证的 scorecard_real 口径一致；
+  原实时口径（执行日 T+1 盘前 15 分钟）与回测不同日不同尺度，属跨日口径错配，已废除。
 
 用法：
   python review_full.py --candidates data/selections/20260814_model_top5.csv
@@ -147,10 +152,10 @@ def score_f5(industry_pct):
 
 
 def score_f6(pe_ttm, turnover):
-    """F6 估值/流动性：用实时 PE-TTM + 实时换手（替代面板 asof PE，修复估值口径偏差）。
+    """F6 估值/流动性打分函数（纯函数，输入口径由调用方决定）。
 
-    审计修复（2026-08-21）：面板 asof PE 与实时差异大（如朗特实时 PE 789 但面板口径给 7 分），
-    导致"评分高但估值畸高"的票入围。改用实时 PE 打分，PE<0 或 PE>100 硬性扣 1 分。
+    T-20261024 A 方案：入参 pe_ttm/turnover 由调用方以「信号日 Tushare daily_basic」
+    主源传入（缺失回退面板 SC_F6）；实时 PE 不再进入本函数。PE<0 或 PE>100 硬性扣 1 分。
     """
     if np.isnan(pe_ttm):
         return 5.0
@@ -321,8 +326,8 @@ def main():
             print(f"  [F2主源] Tushare 快照滞后 {lag} 天 >2 → 回退实时源")
 
     # T-20260903 三源补充（全部 fail-safe，失败回退现有逻辑）：
-    #   F5 = 申万一级行业 T-1 自算（本地 sw_l1 成分 + 增量库收盘）权威
-    #   F6 = Tushare daily_basic T-1（交叉验证 + 实时缺失时权威兜底）
+    #   F5 = 申万一级行业信号日自算（本地 sw_l1 成分 + 增量库收盘，asof=候选 trade_date）
+    #   F6 = Tushare daily_basic 信号日（主源；缺失回退面板 SC_F6）
     #   F3 = Tushare forecast/express 业绩公告（实时/9:25缓存均缺失时兜底）
     sw_map, db_map, ea_map = {}, {}, {}
     if TS is not None:
@@ -334,7 +339,7 @@ def main():
             try:
                 sw_map = TS.sw_l1_pct_map(_codes, asof_t)
                 if sw_map:
-                    print("  [F5主源] 申万一级行业 T-1 自算（%s）: %s" % (
+                    print("  [F5主源] 申万一级行业信号日自算（%s）: %s" % (
                         next(iter(sw_map.values()))["asof"],
                         ", ".join("%s=%s%.2f%%" % (c, v["sw_l1"], v["pct"]) for c, v in sw_map.items())))
             except Exception as e:
@@ -385,7 +390,9 @@ def main():
                 f3_src = "tushare_anns"
         if np.isnan(f3):
             f3 = 0.0
-        # F5 板块：申万一级行业 T-1 权威（新鲜则优先）> 实时 industry_pct 兜底
+        # F5 板块：申万一级行业信号日全天涨幅（对齐回测 scorecard_real 口径，T-20261024 A 方案）。
+        # 唯一主源=sw_l1 自算；缺失 → 中性 5.0（与回测 score_f5(nan) 一致），不再用实时 industry_pct 打分
+        # （实时值是执行日 T+1 时点，与回测信号日口径不同日不同尺度，混用会破坏 110% 回测验证的口径）。
         sw = sw_map.get(code)
         if sw is not None and "pct" in sw:
             f5 = score_f5(sw["pct"])
@@ -393,29 +400,29 @@ def main():
             ind_used = sw["pct"]
             ind_label = "%s(%s)" % (sw["sw_l1"], f5_src)
         else:
-            f5 = score_f5(s.get("industry_pct", np.nan))
-            f5_src = "realtime"
-            ind_used = s.get("industry_pct", np.nan)
-            ind_label = "实时行业"
-        # F6 估值：实时 PE 优先；缺失时 Tushare daily_basic T-1 权威兜底；两者都在做交叉验证
-        pe_ttm = s.get("pe_ttm", np.nan)
-        turnover = s.get("turnover", np.nan)
-        tcb_warn = ""
+            f5 = score_f5(np.nan)
+            f5_src = "neutral_5.0"
+            ind_used = s.get("industry_pct", np.nan)  # 仅展示参考，不参与打分
+            ind_label = "无信号日行业数据→中性"
+        # F6 估值：信号日（T）Tushare daily_basic 权威主源（对齐回测 est 口径，T-20261024 A 方案）；
+        # 缺失回退候选 CSV 的 SC_F6（面板 pe_ttm+turn_ma5，与回测 est 缺失回退路径同构）。
+        # 实时 PE 不再参与打分（执行日 T+1 时点口径），仅当与信号日差异>50% 时提示供人工参考。
         db = db_map.get(code)
-        if db is not None:
-            tpe = db.get("pe_ttm", np.nan)
-            if not np.isnan(tpe):
-                if np.isnan(pe_ttm):
-                    pe_ttm = tpe
-                    if np.isnan(turnover):
-                        turnover = db.get("turnover_rate", np.nan)
-                else:
-                    try:
-                        ratio = abs(float(pe_ttm) - float(tpe)) / max(abs(float(tpe)), 1e-9)
-                        if ratio > 0.5 or (float(pe_ttm) < 0) != (float(tpe) < 0):
-                            tcb_warn = "F6校验:实时PE(%.1f) vs Tushare T-1(%.1f)差异大" % (pe_ttm, tpe)
-                    except Exception:
-                        pass
+        if db is not None and not np.isnan(db.get("pe_ttm", np.nan)):
+            pe_ttm = db["pe_ttm"]
+            turnover = db.get("turnover_rate", np.nan)
+        else:
+            pe_ttm = np.nan
+            turnover = np.nan
+        rpe = s.get("pe_ttm", np.nan)  # 实时 PE，仅作差异提示参考
+        tcb_warn = ""
+        if db is not None and not np.isnan(rpe) and not np.isnan(pe_ttm):
+            try:
+                ratio = abs(float(rpe) - float(pe_ttm)) / max(abs(float(pe_ttm)), 1e-9)
+                if ratio > 0.5 or (float(rpe) < 0) != (float(pe_ttm) < 0):
+                    tcb_warn = "F6参考:实时PE(%.1f) vs 信号日(%.1f)差异大" % (rpe, pe_ttm)
+            except Exception:
+                pass
         f1 = float(r["SC_F1"])
         f4 = float(r["SC_F4"])
         f6 = score_f6(pe_ttm, turnover) if not np.isnan(pe_ttm) else float(r["SC_F6"])
@@ -481,7 +488,7 @@ def main():
     lines = [
         f"# 双轨选股 · 完整版清单（多数据源实时复核）",
         "",
-        f"> 生成时间：{rdate}  |  数据口径：模型分基于面板特征；F2/F3/F5 为实时数据（TDX 优先，缺失回退面板分）；F1/F4/F6 为面板代理分",
+        f"> 生成时间：{rdate}  |  数据口径：模型分基于面板特征；F2 Tushare T-1 权威；F5/F6 信号日全天口径（对齐回测，T-20261024 A 方案）；F1/F3/F4 含实时复核",
         f"> 评分卡红线：{args.threshold:.0f} 分",
         f"> 数据来源：{', '.join(sorted(set(s.get('source','') for s in stocks.values() if s.get('source'))))}",
         "",

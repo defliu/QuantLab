@@ -22,7 +22,6 @@ KEYS_PATH = "D:/QuantLab/config/data_source_keys.json"
 CACHE_DIR = "D:/QuantLab/projects/Project_16_LightGBM股票大师/data/tushare_cache"
 SW_L1_PATH = "D:/astock/index/sw_l1_daily.parquet"
 INCR_DAILY_PATH = "D:/QuantLab/projects/Project_16_LightGBM股票大师/data_live/incremental_daily.parquet"
-FRESH_LAG = 2  # 权威口径允许的最大滞后天数（T-1 计 1 天，滞后<=2 视为新鲜，与 F2 moneyflow 一致）
 
 _token = None
 _pro = None
@@ -61,15 +60,6 @@ def _ensure_cache():
 
 def _today():
     return pd.Timestamp.now().normalize()
-
-
-def _fresh(asof_date, asof):
-    """判断权威口径新鲜度：asof（YYYYMMDD）相对今日滞后<=FRESH_LAG 天视为新鲜。"""
-    try:
-        lag = (_today() - pd.Timestamp(str(asof_date))).days
-        return lag <= FRESH_LAG
-    except Exception:
-        return False
 
 
 # ---------------------------------------------------------------- F6 daily_basic
@@ -195,8 +185,11 @@ def _load_sw_membership():
 
 
 def sw_l1_pct_map(codes, asof):
-    """本地自算候选的申万一级行业 T-1 涨幅（T-20260903 权威口径）：
-    sw_l1_daily 成分（静态）+ incremental_daily（T-1 新鲜个股 close/preClose）等权自算。
+    """本地自算候选的申万一级行业信号日涨幅（对齐回测 scorecard_real 口径，T-20261024 A 方案）：
+    sw_l1_daily 成分（静态）+ incremental_daily（信号日 asof 当天个股 close/preClose）等权自算。
+    asof=信号日（候选 CSV trade_date），不再忽略——精确取信号日全天数据，非增量库最新日。
+    新鲜度：信号日距今日历 lag<=4（覆盖周末+节假日容错）；增量库未覆盖信号日 → 返回 {}
+    （review_full 侧回退中性 5.0，与回测 score_f5(nan) 行为一致）。
     返回 {ts_code: {"sw_l1": 行业名, "pct": float, "asof": YYYYMMDD}}；成分缺失/不新鲜/失败返回 {}。"""
     try:
         mem = _load_sw_membership()
@@ -204,9 +197,15 @@ def sw_l1_pct_map(codes, asof):
             return {}
         inc = pd.read_parquet(INCR_DAILY_PATH)
         inc = inc[inc["suspendFlag"].fillna(0) == 0]
-        latest = pd.Timestamp(pd.Timestamp(inc["trade_date"].max()).date())
-        if not _fresh(latest.strftime("%Y%m%d"), latest):
-            print("    [tushare_source] 增量库行业自算最新 %s 不新鲜，跳过" % latest.date())
+        asof_ts = pd.Timestamp(str(asof))
+        today = _today()
+        lag = (today - asof_ts).days
+        if lag < 0 or lag > 4:
+            print("    [tushare_source] 行业自算信号日 %s 距今 lag=%d 超界(0~4)，跳过" % (asof, lag))
+            return {}
+        if not len(inc[inc["trade_date"] == asof_ts]):
+            print("    [tushare_source] 增量库未覆盖信号日 %s（最新 %s），行业自算跳过"
+                  % (asof, pd.Timestamp(inc["trade_date"].max()).date()))
             return {}
         # 候选 -> 申万一级行业
         cand_ind = {}
@@ -216,21 +215,19 @@ def sw_l1_pct_map(codes, asof):
                 cand_ind[c] = mem[c]
         if not cand_ind:
             return {}
-        # 最新日个股 pct
-        day = inc[inc["trade_date"] == latest]
-        if len(day) == 0:
-            return {}
+        # 信号日个股 pct
+        day = inc[inc["trade_date"] == asof_ts]
         day = day.copy()
         day["pct"] = (day["close"] / day["preClose"] - 1.0) * 100.0
         day = day.set_index("ts_code")["pct"]
         out = {}
         for code, (idx_code, ind_name) in cand_ind.items():
-            # 该行业成分在最新日的涨跌幅（等权平均，近似申万一级行业指数涨幅）
+            # 该行业成分在信号日的涨跌幅（等权平均，近似申万一级行业指数涨幅）
             cons = [c2 for c2 in mem if mem[c2][0] == idx_code]
             sub = day.reindex(cons).dropna()
             if len(sub) < max(5, len(cons) // 10):
                 continue
-            out[code] = {"sw_l1": ind_name, "pct": float(sub.mean()), "asof": latest.strftime("%Y%m%d")}
+            out[code] = {"sw_l1": ind_name, "pct": float(sub.mean()), "asof": str(asof)}
         return out
     except Exception as e:
         print("    [tushare_source] sw_l1 行业自算失败: %s" % e)
