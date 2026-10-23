@@ -1,0 +1,33 @@
+[
+  {
+    "strategy": "g2",
+    "name": "G2",
+    "date": "20261022",
+    "connected": true,
+    "plan_exists": true,
+    "today_trades": 0,
+    "ledger_count": 0,
+    "hold_count": null,
+    "hold_codes": [],
+    "issues": [],
+    "warns": [
+      "日志无 P16G2I [HOLD] 行（内置策略未加载/未跑？）"
+    ]
+  },
+  {
+    "strategy": "ens",
+    "name": "融合",
+    "date": "20261022",
+    "connected": true,
+    "plan_exists": false,
+    "today_trades": 0,
+    "ledger_count": 0,
+    "hold_count": null,
+    "hold_codes": [],
+    "issues": [],
+    "warns": [
+      "当日换仓计划缺失（rebalance_g2_ens_20261022.json）",
+      "日志无 P16ENSI [HOLD] 行（内置策略未加载/未跑？）"
+    ]
+  }
+]

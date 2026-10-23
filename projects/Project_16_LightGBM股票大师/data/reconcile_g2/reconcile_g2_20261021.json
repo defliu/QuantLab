@@ -1,0 +1,29 @@
+{
+  "date": "20261021",
+  "account_id": "70180771",
+  "generated_at": "2026-10-21 15:47:18",
+  "fills": [],
+  "pending": [],
+  "orphans": [],
+  "cross_strategy": [],
+  "ledger": {
+    "000607.SZ": 7700
+  },
+  "asset": {},
+  "issues": [],
+  "fills_total": 0,
+  "fills_by_status": {},
+  "pending_count": 0,
+  "account_positions": {},
+  "snapshot_missing": true,
+  "notes": [
+    "SNAPSHOT_MISSING：账户快照不存在，差额与孤儿判定已跳过，请人工核对上一交易日快照"
+  ],
+  "deltas": {},
+  "other_strategy_holdings": [
+    "002841.SZ",
+    "600691.SH",
+    "688758.SH"
+  ],
+  "capital_rolled": 95245.82
+}

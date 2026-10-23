@@ -1,0 +1,28 @@
+[
+  {
+    "strategy": "g2",
+    "account_id": "67014907",
+    "date": "20261022",
+    "generated_at": "2026-10-22 23:52:38",
+    "connected": true,
+    "dry_run": true,
+    "ledger_before": {},
+    "deltas": {},
+    "backfilled": [],
+    "unresolved": [],
+    "orphans_not_in_ledger": []
+  },
+  {
+    "strategy": "ens",
+    "account_id": "67014907",
+    "date": "20261022",
+    "generated_at": "2026-10-22 23:52:40",
+    "connected": true,
+    "dry_run": true,
+    "ledger_before": {},
+    "deltas": {},
+    "backfilled": [],
+    "unresolved": [],
+    "orphans_not_in_ledger": []
+  }
+]

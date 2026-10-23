@@ -1,0 +1,547 @@
+{
+ "date": "20261022",
+ "generated_at": "2026-10-22 15:38:12",
+ "source": "xtquant sandbox-external read-only + multi-instance FormulaOutput log",
+ "instances": [
+  {
+   "key": "main",
+   "name": "主实例",
+   "log_dir": "D:\\国金QMT交易端模拟\\userdata\\log",
+   "accounts": [
+    "67014907"
+   ],
+   "query_via": "main"
+  },
+  {
+   "key": "second",
+   "name": "第二实例",
+   "log_dir": "D:\\QMT交易端模拟\\userdata\\log",
+   "accounts": [
+    "70180771"
+   ],
+   "query_via": "main"
+  }
+ ],
+ "account_strategies": {
+  "67014907": [
+   "V13",
+   "V2"
+  ],
+  "70180771": [
+   "G2I",
+   "ENSI"
+  ]
+ },
+ "strategy_label": {
+  "V13": "V1.3 风控",
+  "V2": "价值小盘V2",
+  "G2I": "G2 内产版",
+  "ENSI": "融合内产版"
+ },
+ "accounts": [
+  {
+   "account_id": "67014907",
+   "connected": true,
+   "asset": {
+    "cash": 10081994.39,
+    "frozen_cash": 0.0,
+    "market_value": 0.0,
+    "total_asset": 10081994.39
+   },
+   "positions": [],
+   "deals": [],
+   "orders": [
+    {
+     "code": "000153.SZ",
+     "order_id": "1082151079",
+     "order_vol": 200,
+     "traded_vol": 200,
+     "price": 5.5,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "002054.SZ",
+     "order_id": "1082151080",
+     "order_vol": 100,
+     "traded_vol": 100,
+     "price": 6.42,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "002144.SZ",
+     "order_id": "1082151081",
+     "order_vol": 100,
+     "traded_vol": 100,
+     "price": 9.91,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "002391.SZ",
+     "order_id": "1082151082",
+     "order_vol": 200,
+     "traded_vol": 200,
+     "price": 4.89,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "002398.SZ",
+     "order_id": "1082151083",
+     "order_vol": 200,
+     "traded_vol": 200,
+     "price": 3.98,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "002442.SZ",
+     "order_id": "1082151084",
+     "order_vol": 200,
+     "traded_vol": 200,
+     "price": 4.81,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "002566.SZ",
+     "order_id": "1082151085",
+     "order_vol": 100,
+     "traded_vol": 100,
+     "price": 6.43,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "002666.SZ",
+     "order_id": "1082151086",
+     "order_vol": 300,
+     "traded_vol": 300,
+     "price": 3.88,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "002753.SZ",
+     "order_id": "1082151087",
+     "order_vol": 100,
+     "traded_vol": 100,
+     "price": 6.31,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "002863.SZ",
+     "order_id": "1082151088",
+     "order_vol": 200,
+     "traded_vol": 200,
+     "price": 4.52,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "002996.SZ",
+     "order_id": "1082151089",
+     "order_vol": 200,
+     "traded_vol": 200,
+     "price": 5.63,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "300230.SZ",
+     "order_id": "1082151090",
+     "order_vol": 200,
+     "traded_vol": 200,
+     "price": 4.14,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "300335.SZ",
+     "order_id": "1082151091",
+     "order_vol": 200,
+     "traded_vol": 200,
+     "price": 5.08,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "300384.SZ",
+     "order_id": "1082151092",
+     "order_vol": 100,
+     "traded_vol": 100,
+     "price": 11.14,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "300407.SZ",
+     "order_id": "1082151093",
+     "order_vol": 100,
+     "traded_vol": 100,
+     "price": 10.22,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "300636.SZ",
+     "order_id": "1082151094",
+     "order_vol": 100,
+     "traded_vol": 100,
+     "price": 6.47,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "300650.SZ",
+     "order_id": "1082151095",
+     "order_vol": 100,
+     "traded_vol": 100,
+     "price": 10.58,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "300771.SZ",
+     "order_id": "1082151096",
+     "order_vol": 100,
+     "traded_vol": 100,
+     "price": 11.01,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "301032.SZ",
+     "order_id": "1082151097",
+     "order_vol": 100,
+     "traded_vol": 100,
+     "price": 9.72,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "301332.SZ",
+     "order_id": "1082151098",
+     "order_vol": 100,
+     "traded_vol": 100,
+     "price": 7.32,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "600051.SH",
+     "order_id": "1082151099",
+     "order_vol": 200,
+     "traded_vol": 200,
+     "price": 5.83,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "600419.SH",
+     "order_id": "1082151100",
+     "order_vol": 100,
+     "traded_vol": 100,
+     "price": 8.3,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "603041.SH",
+     "order_id": "1082151101",
+     "order_vol": 100,
+     "traded_vol": 100,
+     "price": 10.35,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "603585.SH",
+     "order_id": "1082151102",
+     "order_vol": 100,
+     "traded_vol": 100,
+     "price": 9.96,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "603617.SH",
+     "order_id": "1082151103",
+     "order_vol": 100,
+     "traded_vol": 100,
+     "price": 6.22,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "603700.SH",
+     "order_id": "1082151104",
+     "order_vol": 100,
+     "traded_vol": 100,
+     "price": 10.76,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "603797.SH",
+     "order_id": "1082151105",
+     "order_vol": 200,
+     "traded_vol": 200,
+     "price": 4.25,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    },
+    {
+     "code": "605166.SH",
+     "order_id": "1082151106",
+     "order_vol": 100,
+     "traded_vol": 100,
+     "price": 7.88,
+     "status": "56",
+     "remark": "v2_exit",
+     "strategy": "unattributed"
+    }
+   ],
+   "error": "",
+   "instance": "main"
+  },
+  {
+   "account_id": "70180771",
+   "connected": true,
+   "asset": null,
+   "positions": [],
+   "deals": [],
+   "orders": [],
+   "error": "",
+   "instance": "second"
+  }
+ ],
+ "strategies": {
+  "V13": {
+   "fills": [],
+   "orders": [],
+   "positions": [],
+   "buy": 0,
+   "sell": 0,
+   "hold": 0,
+   "build": "20261017-235319",
+   "heart": {
+    "ts": "2026-10-22 14:59:35",
+    "hold": 0,
+    "cash": null,
+    "raw": "[P16V13][HEART] 2026-10-22 14:59:35 date=20261022 pending=0 positions=0 risk_sold=0 risk_count=0 fills=0 slippage_alerts=0 passive=False\n[P16V13][HOLD] 2026-10-22 14:59:35 n=0 -"
+   },
+   "cost": null,
+   "float_pnl": null,
+   "market_value": null,
+   "hold_src": "log_hold",
+   "cost_src": "unavailable"
+  },
+  "V2": {
+   "fills": [],
+   "orders": [],
+   "positions": [],
+   "buy": 0,
+   "sell": 0,
+   "hold": null,
+   "build": "20261016-075943",
+   "heart": {
+    "ts": "2026-10-22 14:59:53",
+    "hold": 28,
+    "cash": 69806.0,
+    "raw": "2026-10-22 14:59:53 [HEART] 持仓=28 现金=69806 passive=False build=20261016-075943"
+   },
+   "cost": 0.0,
+   "float_pnl": 0.0,
+   "market_value": 0.0
+  },
+  "G2I": {
+   "fills": [],
+   "orders": [],
+   "positions": [],
+   "buy": 0,
+   "sell": 0,
+   "hold": 1,
+   "build": "20261020-232204",
+   "heart": {
+    "ts": "2026-10-22 14:59:26",
+    "hold": 1,
+    "cash": null,
+    "raw": "[P16G2I][HEART] 2026-10-22 14:59:26 date=20261022 pending=0 positions=1 risk_sold=0 risk_count=1 fills=2 slippage=0 passive=False\n[P16G2I][HOLD] 2026-10-22 14:59:26 n=1 301019.SZ=2200@14.571"
+   },
+   "capital": 95245.82,
+   "cost": null,
+   "float_pnl": null,
+   "market_value": null,
+   "hold_src": "log_hold",
+   "cost_src": "unavailable"
+  },
+  "ENSI": {
+   "fills": [],
+   "orders": [],
+   "positions": [],
+   "buy": 0,
+   "sell": 0,
+   "hold": null,
+   "build": "",
+   "heart": null,
+   "capital": 88130.58,
+   "cost": 0.0,
+   "float_pnl": 0.0,
+   "market_value": 0.0
+  }
+ },
+ "log": {
+  "path": "D:\\国金QMT交易端模拟\\userdata\\log\\XtClient_FormulaOutput_20261022.log | D:\\QMT交易端模拟\\userdata\\log\\XtClient_FormulaOutput_20261022.log",
+  "exists": true,
+  "builds": {
+   "V13": "20261017-235319",
+   "V2": "20261016-075943",
+   "G2I": "20261020-232204"
+  },
+  "hearts": {
+   "V13": {
+    "ts": "2026-10-22 14:59:35",
+    "hold": 0,
+    "cash": null,
+    "raw": "[P16V13][HEART] 2026-10-22 14:59:35 date=20261022 pending=0 positions=0 risk_sold=0 risk_count=0 fills=0 slippage_alerts=0 passive=False\n[P16V13][HOLD] 2026-10-22 14:59:35 n=0 -"
+   },
+   "V2": {
+    "ts": "2026-10-22 14:59:53",
+    "hold": 28,
+    "cash": 69806.0,
+    "raw": "2026-10-22 14:59:53 [HEART] 持仓=28 现金=69806 passive=False build=20261016-075943"
+   },
+   "G2I": {
+    "ts": "2026-10-22 14:59:26",
+    "hold": 1,
+    "cash": null,
+    "raw": "[P16G2I][HEART] 2026-10-22 14:59:26 date=20261022 pending=0 positions=1 risk_sold=0 risk_count=1 fills=2 slippage=0 passive=False\n[P16G2I][HOLD] 2026-10-22 14:59:26 n=1 301019.SZ=2200@14.571"
+   }
+  },
+  "forbidden_io": 0,
+  "by_instance": {
+   "main": {
+    "name": "主实例",
+    "log_dir": "D:\\国金QMT交易端模拟\\userdata\\log",
+    "path": "D:\\国金QMT交易端模拟\\userdata\\log\\XtClient_FormulaOutput_20261022.log",
+    "exists": true,
+    "builds": {
+     "V13": "20261017-235319",
+     "V2": "20261016-075943"
+    },
+    "hearts": {
+     "V13": {
+      "ts": "2026-10-22 14:59:35",
+      "hold": 0,
+      "cash": null,
+      "raw": "[P16V13][HEART] 2026-10-22 14:59:35 date=20261022 pending=0 positions=0 risk_sold=0 risk_count=0 fills=0 slippage_alerts=0 passive=False\n[P16V13][HOLD] 2026-10-22 14:59:35 n=0 -"
+     },
+     "V2": {
+      "ts": "2026-10-22 14:59:53",
+      "hold": 28,
+      "cash": 69806.0,
+      "raw": "2026-10-22 14:59:53 [HEART] 持仓=28 现金=69806 passive=False build=20261016-075943"
+     }
+    },
+    "forbidden_io": 0
+   },
+   "second": {
+    "name": "第二实例",
+    "log_dir": "D:\\QMT交易端模拟\\userdata\\log",
+    "path": "D:\\QMT交易端模拟\\userdata\\log\\XtClient_FormulaOutput_20261022.log",
+    "exists": true,
+    "builds": {
+     "G2I": "20261020-232204"
+    },
+    "hearts": {
+     "G2I": {
+      "ts": "2026-10-22 14:59:26",
+      "hold": 1,
+      "cash": null,
+      "raw": "[P16G2I][HEART] 2026-10-22 14:59:26 date=20261022 pending=0 positions=1 risk_sold=0 risk_count=1 fills=2 slippage=0 passive=False\n[P16G2I][HOLD] 2026-10-22 14:59:26 n=1 301019.SZ=2200@14.571"
+     }
+    },
+    "forbidden_io": 0
+   }
+  },
+  "holds": {
+   "V13": {
+    "ts": "2026-10-22 14:59:35",
+    "n": 0,
+    "items": []
+   },
+   "G2I": {
+    "ts": "2026-10-22 14:59:26",
+    "n": 1,
+    "items": [
+     {
+      "code": "301019.SZ",
+      "vol": 2200,
+      "cost": 14.571
+     }
+    ]
+   }
+  }
+ },
+ "unattributed": {
+  "deals": [],
+  "positions": []
+ },
+ "version_slice": {
+  "inprod_build": {},
+  "legacy_build": {
+   "G2I": "20261020-232204"
+  },
+  "slice": {
+   "G2I": {
+    "version": "legacy",
+    "build": "20261020-232204",
+    "baseline_date": "20261019",
+    "baseline_capital": 95399.82,
+    "current_capital": 95245.82,
+    "pnl_since_baseline": -154.0,
+    "return_since_baseline": -0.001614
+   },
+   "ENSI": {
+    "version": "legacy",
+    "build": "",
+    "baseline_date": "20261019",
+    "baseline_capital": 87239.58,
+    "current_capital": 88130.58,
+    "pnl_since_baseline": 891.0,
+    "return_since_baseline": 0.010213
+   }
+  }
+ }
+}

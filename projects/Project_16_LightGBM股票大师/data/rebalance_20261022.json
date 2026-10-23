@@ -1,0 +1,53 @@
+{
+  "date": "20261022",
+  "executed_live": true,
+  "executed_at": "2026-10-22 09:51:43",
+  "tier": 1,
+  "eff_top": 1,
+  "target": [
+    {
+      "code": "603101.SH",
+      "name": "汇嘉时代",
+      "total": 58.5,
+      "prob": 0.561
+    }
+  ],
+  "strategy_capital": 83663.92,
+  "target_value_each": 41831.96,
+  "sell": [],
+  "buy": [],
+  "trim": [],
+  "hold": [
+    "301536.SZ"
+  ],
+  "locked": [],
+  "guard_note": [],
+  "selection_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20261022_selection_full.csv",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20261022_selection_full.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20261022",
+  "candidate_rows": 1,
+  "candidate_rows_raw": 6,
+  "candidate_sha256": "2e1a49482fdff0cac4bf5d98d2e7d41eaf3c11dde036f103553252b4d794af46",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\candidates_asof\\20261022_2e1a4948_20261022_selection_full.csv",
+  "degraded": "",
+  "manual_reconciliation": {
+    "reconciled_at": "2026-10-22 10:06:00 readonly audit (TRAE session)",
+    "reason": "4c account-vs-ledger mismatch: ledger qmt_trade_log.csv holds 301536.SZ BUY 800@101.51 (2026-10-20 09:53:23, order 1082136808) with no SELL row anywhere, but readonly miniQMT query shows 67014907 holds no 301536.SZ (confirmed twice on 2026-10-22; 10-20 13:08 still present, 10-21 16:49 reconcile already showed 0). Sell time/price unobtainable (QMT keeps only same-day orders/deals; query_stock_trades HANGs on 67014907) -> per 4c any-unconfirmable-step-stop rule, stopped before ledger backfill and pushed alert for manual reconciliation. Script original fields untouched.",
+    "corrections": [
+      {
+        "code": "301536.SZ",
+        "side": "SELL",
+        "vol": 800,
+        "price": null,
+        "order_id": null,
+        "script_action": "NO_RECORD_IN_LEDGER",
+        "actual_action": "POSSESSION_GONE_UNKNOWN_FILL_TIME",
+        "delta": "ledger shows 800 shares held, account shows 0; sell execution details unknown -> NOT backfilled, pending manual counter query",
+        "evidence": "readonly query_stock_positions x2 on 2026-10-22 (28 positions, no 301536.SZ); today orders=[] and plan json zero orders; Project_10 V2 reconcile_20261020/20261021 cross_strategy=[] and no 301536 sell; reconcile_20261021.md FAIL line; p16_intraday_deals_verify_20261020.txt (13:08 positions=29 incl. 301536)"
+      }
+    ],
+    "trade_log_backfilled": false,
+    "no_reorder_rule": "state-ambiguity period: no further orders on 301536.SZ, rebalance_daily.py --live not re-run; idempotency owned by 10:05 Windows guard"
+  }
+}

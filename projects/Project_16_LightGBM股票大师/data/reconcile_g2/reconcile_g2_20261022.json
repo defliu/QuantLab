@@ -1,0 +1,24 @@
+{
+  "date": "20261022",
+  "account_id": "70180771",
+  "generated_at": "2026-10-22 15:47:36",
+  "fills": [],
+  "pending": [],
+  "orphans": [],
+  "cross_strategy": [],
+  "ledger": {},
+  "asset": {},
+  "issues": [],
+  "fills_total": 0,
+  "fills_by_status": {},
+  "pending_count": 0,
+  "account_positions": {},
+  "snapshot_missing": false,
+  "deltas": {},
+  "other_strategy_holdings": [
+    "002841.SZ",
+    "600691.SH",
+    "688758.SH"
+  ],
+  "capital_rolled": 92550.82
+}

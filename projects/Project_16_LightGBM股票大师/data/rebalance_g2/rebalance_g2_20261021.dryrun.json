@@ -1,0 +1,109 @@
+{
+  "date": "20261021",
+  "account_id": "70180771",
+  "capital": 94706.82,
+  "pool": [
+    {
+      "code": "001287.SZ",
+      "total": 62.5
+    },
+    {
+      "code": "688021.SH",
+      "total": 61.5
+    },
+    {
+      "code": "688013.SH",
+      "total": 61.5
+    }
+  ],
+  "ledger": {
+    "000607.SZ": {
+      "vol": 7700,
+      "cost": 3.9034,
+      "src": "cfg"
+    }
+  },
+  "note": "g2 候选池 3 只（红线 60）",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\g2\\20261021_g2_top10.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20261021",
+  "candidate_rows": 3,
+  "candidate_rows_raw": 3,
+  "candidate_sha256": "93f858305e1966f26fe8cd855afbdeb7206ae1882027fba32422e300ea6066c5",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\rebalance_g2\\candidates_asof\\20261021_93f85830_20261021_g2_top10.csv",
+  "hold_days": 15,
+  "hold_dates": {
+    "000607.SZ": "20260929",
+    "000960.SZ": "20261016"
+  },
+  "sells": [
+    {
+      "code": "000607.SZ",
+      "vol": 400,
+      "cost": 3.9034,
+      "price": 4.19,
+      "note": "等权减仓"
+    }
+  ],
+  "buys": [
+    {
+      "code": "001287.SZ",
+      "vol": 1500,
+      "price": 19.36,
+      "held": 0,
+      "target_vol": 1500,
+      "total": 62.5
+    },
+    {
+      "code": "688021.SH",
+      "vol": 1700,
+      "price": 18.13,
+      "held": 0,
+      "target_vol": 1700,
+      "total": 61.5
+    }
+  ],
+  "skips": [
+    {
+      "code": "000607.SZ",
+      "vol": 7700,
+      "reason": "持有未满15日(20260929起,已11日,日历OK)"
+    }
+  ],
+  "hs300_pct": -0.2312,
+  "tier": 2,
+  "deploy_pct": 0.98,
+  "target_value": 30937.56,
+  "written": false,
+  "hold_dates_preview": {
+    "000607.SZ": "20260929",
+    "001287.SZ": "20261021",
+    "688021.SH": "20261021"
+  },
+  "orders": [
+    {
+      "action": "SELL",
+      "code": "000607.SZ",
+      "vol": 400,
+      "price": 4.19,
+      "reason": "动态等权超配减仓(目标市值30938)",
+      "strategy_order_id": "P16_20261021_0001"
+    },
+    {
+      "action": "BUY",
+      "code": "001287.SZ",
+      "vol": 1500,
+      "price": 19.36,
+      "reason": "g2选股Top1(total=62.5)",
+      "strategy_order_id": "P16_20261021_0002"
+    },
+    {
+      "action": "BUY",
+      "code": "688021.SH",
+      "vol": 1700,
+      "price": 18.13,
+      "reason": "g2选股Top2(total=61.5)",
+      "strategy_order_id": "P16_20261021_0003"
+    }
+  ]
+}

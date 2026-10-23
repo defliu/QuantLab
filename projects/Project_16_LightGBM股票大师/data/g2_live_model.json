@@ -1,26 +1,7 @@
 {
-  "model_path": "D:/QuantLab/models\\lgb_model_v3_g2_strong_real_20261019_1327t.txt",
-  "meta_path": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\features_v3_g2_strong_real_20261019.json",
-  "trained_date": "20261019",
-  "trees": 1327,
-  "test_ic": 0.08154,
-  "tail_ic": 0.12401,
-  "top2_ret": 0.02524,
-  "top2_n": 102,
-  "quantile_fwd_ret": {
-    "1": Infinity,
-    "2": Infinity,
-    "3": 0.00373,
-    "4": 0.00433,
-    "5": Infinity
-  },
-  "promoted_at": "2026-10-19 19:29:47",
-  "trial": {
-    "ends_after_days": 10,
-    "prev_model": "D:/QuantLab/models\\lgb_model_v3_g2_strong_real_20260915_1522t.txt",
-    "prev_ic": 0.08111,
-    "prev_top2_ret": 0.01975,
-    "note": "观察期：10 交易日后用 rollback_check_g2.py 对比前向，劣于 prev_top2_ret 建议回退（G4）"
-  },
-  "note": "g2_strong_real 周更重训 live 指针；门禁 G1 同窗口 / G2 尾部IC / G3 可执行模拟（train_g2.py --promote）"
+  "model_path": "D:/QuantLab/models/lgb_model_v3_g2_strong_real_20260825_1964t.txt",
+  "meta_path": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\features_v3_g2_strong_real_20260825.json",
+  "trained_date": "20260825",
+  "trees": 1964,
+  "note": "2026-10-23 人工回退（诚哥拍板）：10-19 promote 的 20261019_1327t 生产模型在纸面前向持续劣化（n=72 日均超额 -0.099%/日，10-21 自动降级闸冻结），同 harness 对照年化 +44.04%（回撤 -38.93%）vs 20260825 旧模型 +113.56%（回撤 -16.95%）。回退旧指针并 --unfreeze G2 重新累积纸面前向样本。旧指针备份 g2_live_model.json.bak_before_rollback_20261023_1231。trees/test_ic 等指标沿用以 20260825 训练产物为准（见 data/features_v3_g2_strong_real_20260825.json）。"
 }

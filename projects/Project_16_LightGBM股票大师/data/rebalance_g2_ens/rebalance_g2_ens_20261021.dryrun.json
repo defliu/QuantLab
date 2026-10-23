@@ -1,0 +1,127 @@
+{
+  "date": "20261021",
+  "account_id": "70180771",
+  "capital": 88067.58,
+  "pool": [
+    {
+      "code": "300613.SZ",
+      "total": 72.0
+    },
+    {
+      "code": "300976.SZ",
+      "total": 66.5
+    },
+    {
+      "code": "301631.SZ",
+      "total": 66.5
+    },
+    {
+      "code": "002738.SZ",
+      "total": 64.5
+    },
+    {
+      "code": "688501.SH",
+      "total": 64.5
+    },
+    {
+      "code": "688455.SH",
+      "total": 64.5
+    },
+    {
+      "code": "001287.SZ",
+      "total": 62.5
+    },
+    {
+      "code": "000021.SZ",
+      "total": 61.5
+    },
+    {
+      "code": "688021.SH",
+      "total": 61.5
+    },
+    {
+      "code": "301308.SZ",
+      "total": 61.5
+    }
+  ],
+  "ledger": {
+    "002841.SZ": {
+      "vol": 400,
+      "cost": 43.7394,
+      "src": "cfg"
+    },
+    "600691.SH": {
+      "vol": 6700,
+      "cost": 2.693,
+      "src": "cfg"
+    },
+    "688758.SH": {
+      "vol": 600,
+      "cost": 27.4326,
+      "src": "cfg"
+    }
+  },
+  "note": "融合候选池 10 只（红线 60）",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\g2_ens\\20261021_g2_top10.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20261021",
+  "candidate_rows": 10,
+  "candidate_rows_raw": 10,
+  "candidate_sha256": "c580509f7372172d893ecc0639005ef20b5b40e732cd140856624c403d95c3e0",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\rebalance_g2_ens\\candidates_asof\\20261021_c580509f_20261021_g2_top10.csv",
+  "hold_days": 10,
+  "hold_dates": {
+    "600691.SH": "20260928",
+    "002841.SZ": "20260929",
+    "002762.SZ": "20261012",
+    "688758.SH": "20261013"
+  },
+  "sells": [
+    {
+      "code": "002841.SZ",
+      "vol": 400,
+      "cost": 43.7394,
+      "price": 43.52
+    },
+    {
+      "code": "600691.SH",
+      "vol": 6700,
+      "cost": 2.693,
+      "price": 2.52
+    }
+  ],
+  "buys": [],
+  "skips": [
+    {
+      "code": "688758.SH",
+      "vol": 600,
+      "reason": "持有未满10日(20261013起,已6日,日历OK)"
+    }
+  ],
+  "downgrade_frozen": true,
+  "hs300_pct": -0.2394,
+  "tier": 2,
+  "deploy_pct": 0.98,
+  "written": false,
+  "hold_dates_preview": {
+    "688758.SH": "20261013"
+  },
+  "orders": [
+    {
+      "action": "SELL",
+      "code": "002841.SZ",
+      "vol": 400,
+      "price": 43.52,
+      "reason": "融合持有到期(满10日)",
+      "strategy_order_id": "P16_20261021_0001"
+    },
+    {
+      "action": "SELL",
+      "code": "600691.SH",
+      "vol": 6700,
+      "price": 2.52,
+      "reason": "融合持有到期(满10日)",
+      "strategy_order_id": "P16_20261021_0002"
+    }
+  ]
+}

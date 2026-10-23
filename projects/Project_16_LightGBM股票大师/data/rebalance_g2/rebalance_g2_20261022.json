@@ -1,0 +1,53 @@
+{
+  "date": "20261022",
+  "account_id": "70180771",
+  "capital": 95245.82,
+  "pool": [
+    {
+      "code": "001287.SZ",
+      "total": 62.5
+    },
+    {
+      "code": "688021.SH",
+      "total": 61.5
+    },
+    {
+      "code": "688013.SH",
+      "total": 61.5
+    }
+  ],
+  "ledger": {
+    "000607.SZ": {
+      "vol": 7700,
+      "cost": 3.9034,
+      "src": "cfg"
+    }
+  },
+  "note": "g2 候选池 3 只（红线 60）",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\g2\\20261021_g2_top10.csv",
+  "candidate_loader": "fallback",
+  "candidate_data_date": "20261021",
+  "candidate_rows": 3,
+  "candidate_rows_raw": 3,
+  "candidate_sha256": "93f858305e1966f26fe8cd855afbdeb7206ae1882027fba32422e300ea6066c5",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\rebalance_g2\\candidates_asof\\20261022_93f85830_20261021_g2_top10.csv",
+  "hold_days": 15,
+  "hold_dates": {
+    "301202.SZ": "20261019"
+  },
+  "sells": [],
+  "buys": [],
+  "skips": [
+    {
+      "code": "000607.SZ",
+      "vol": 7700,
+      "reason": "建仓日缺失，fail-safe 跳过卖出（防误清仓）"
+    }
+  ],
+  "downgrade_frozen": true,
+  "hs300_pct": -1.1664,
+  "tier": 1,
+  "deploy_pct": 0.5,
+  "written": true,
+  "orders": []
+}

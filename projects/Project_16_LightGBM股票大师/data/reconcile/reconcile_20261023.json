@@ -1,0 +1,34 @@
+[
+  {
+    "strategy": "g2",
+    "account_id": "67014907",
+    "date": "20261023",
+    "generated_at": "2026-10-23 15:50:02",
+    "connected": true,
+    "ledger": {},
+    "ledger_count": 0,
+    "deltas": {},
+    "issues": [],
+    "orphans_not_in_any_ledger": [],
+    "orphans_count": 0,
+    "total_asset": 10081509.64,
+    "cash": 10081509.64,
+    "market_value": 0.0
+  },
+  {
+    "strategy": "ens",
+    "account_id": "67014907",
+    "date": "20261023",
+    "generated_at": "2026-10-23 15:50:04",
+    "connected": true,
+    "ledger": {},
+    "ledger_count": 0,
+    "deltas": {},
+    "issues": [],
+    "orphans_not_in_any_ledger": [],
+    "orphans_count": 0,
+    "total_asset": 10081509.64,
+    "cash": 10081509.64,
+    "market_value": 0.0
+  }
+]

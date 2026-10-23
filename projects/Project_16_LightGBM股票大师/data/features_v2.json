@@ -89,10 +89,10 @@
   "fwd_days": 1,
   "label_mode": "close",
   "label_hold_days": null,
-  "n_rows": 4865977,
-  "n_stocks": 4319,
+  "n_rows": 4845077,
+  "n_stocks": 4316,
   "date_range": [
     "2019-01-10 00:00:00",
-    "2026-10-20 00:00:00"
+    "2026-10-23 00:00:00"
   ]
 }

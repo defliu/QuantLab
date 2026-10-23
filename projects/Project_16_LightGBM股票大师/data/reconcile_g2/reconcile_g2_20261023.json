@@ -1,0 +1,20 @@
+{
+  "date": "20261023",
+  "account_id": "67014907",
+  "generated_at": "2026-10-23 15:47:05",
+  "fills": [],
+  "pending": [],
+  "orphans": [],
+  "cross_strategy": [],
+  "ledger": {},
+  "asset": {},
+  "issues": [],
+  "fills_total": 0,
+  "fills_by_status": {},
+  "pending_count": 0,
+  "account_positions": {},
+  "snapshot_missing": false,
+  "deltas": {},
+  "other_strategy_holdings": [],
+  "capital_rolled": 93501.00000000001
+}

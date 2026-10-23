@@ -1,0 +1,33 @@
+{
+  "date": "20261021",
+  "session": "开盘实时复核与每日换仓执行（TRAE 会话）",
+  "written_at": "2026-10-21 09:56:00",
+  "anomaly_flags": ["红线拦截零单(POOL_BLOCK)", "D_model_top10.csv 断更改用前一交易日 model_top10"],
+  "现象": [
+    "step3 rebalance_daily.py --date 20261021 --top 2 --live 正常跑完（退出码 0，executed_live=true），但 3 只新晋买入全部被 [T-20260907-003 存量校验] 拦截（POOL_BLOCK），当日 0 委托、0 卖出。",
+    "拦截根因：保留持仓 301536.SZ（星宸科技）估算市值 87,744 元 > 当日买入上限（策略资金池 83,663.92 × 98% = 81,991 元），脚本判定继续买入会突破本金上限，属设计内 fail-safe。",
+    "D_model_top10.csv 断更（停留 trade_date=20260929），沿用 10-14 以来惯例改用 16:30 盘后管道产出的 20261020_model_top10.csv（本次已现场重跑 deploy_predict.py --model v3 --top-k 10 复现，结果与盘后产物一致：600812.SH/603101.SH/300821.SZ/600458.SH 4 只）。"
+  ],
+  "证据": [
+    "plan json: data/rebalance_20261021.json，executed_at=2026-10-21 09:53:53，executed_live=true，tier=2，candidate_sha256=71247fd626189e9b84de84ce3c37c1513114eb521b1845f382d04eebc3b76a43（溯源字段齐全）",
+    "guard_note=[\"买603101.SH:POOL_BLOCK\",\"买600812.SH:POOL_BLOCK\",\"买300821.SZ:POOL_BLOCK\"]，sell=[]，hold=[\"301536.SZ\"]",
+    "stdout: 保留持仓 87,744 + 已买 0 + 本单 26,656/27,244/25,785 > 资金池上限 81,991 → 拒绝（3 笔）",
+    "候选链：feature_panel_v3 最新 trade_date=2026-10-20 → 20261020_model_top10.csv（4 只，trade_date 校验通过）→ tdx_review.json date=20261021/data_date=20261020/errors=0 → 20261021_selection_full.csv（4 只候选中 3 只过 60 分线：603101=68.5 / 600812=61.0 / 300821=58.5；600458=53.5 未过线）",
+    "market_tier.py: hs300_pct=+0.0101 → tier=2（腾讯行情，未人工重算）",
+    "账户可用资金 9,975,193.03（仅日志展示，未使用；买入上限按策略资金池 81,991 执行）"
+  ],
+  "已执行动作": [
+    "第零步之一 is_trade_day.py 退出码 0（交易日 2026-10-21）",
+    "第零步之二 幂等前置检查：rebalance_20261021.json 与 guard lock 在 step3 前后均不存在 → 判定未执行，放行 --live",
+    "step1 现场 deploy_predict（D_ 断更兜底）+ scripts/collect_v13_review_20261021.py 取数（腾讯/东财经 router check+record，F2 走 review_full 内置 Tushare 本地 T-1 权威口径）+ review_full 生成当日清单",
+    "step2 market_tier.py --json 取 T=2",
+    "step3 rebalance_daily.py --date 20261021 --top 2 --live（单次，无重试）",
+    "step4 只读核对 plan json（executed_live/溯源字段/guard_note），未写 plan json 任何字段；无委托 → 不触发 4c 人工对账协议"
+  ],
+  "遗留事项": [
+    "资金池水位：保留持仓 301536.SZ 市值 87,744 已超买入上限 81,991，导致在无卖出的情况下任何新买都会被拦——需人工判断是否调整 strategy_capital 资金池、或接受在持仓市值回落后再买入（本会话不擅自改资金池/阈值）",
+    "301536.SZ 已掉出目标但未满 HOLD_DAYS=5 故未卖（hold 名单），下一交易日复核其持有天数是否到期",
+    "D_model_top10.csv 持续断更（20260929），当前依赖 16:30 管道的 <前一交易日>_model_top10.csv 惯例"
+  ],
+  "no_reorder_rule": "本会话已执行 --live 一次，禁止任何重试/重跑 rebalance_daily.py --live；幂等由 10:05 Windows guard 负责"
+}

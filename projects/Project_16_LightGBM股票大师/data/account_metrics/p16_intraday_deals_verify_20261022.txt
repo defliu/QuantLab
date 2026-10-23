@@ -1,0 +1,34 @@
+P16 盘中成交明细采集验证（2026-10-22 13:10，连续竞价时段）
+
+一、执行情况
+- 步骤1 基线备份：当日 qmt_account_metrics_20261022.json 采集前不存在（目录最新为 10-21），无需备份 midday.bak。
+- 步骤2 采集：miniqmt 解释器执行 qmt_account_metrics.py（未传 --date），PYTHONPATH/PYTHONHOME 均为空，落档 data/account_metrics/qmt_account_metrics_20261022.json（generated_at=2026-10-22 13:10:31），全程只读。
+
+二、双账号指标（新档）
+- 67014907（主实例）：connected=True，error 空
+  asset：现金 10,056,120.49 / 市值 26,365.00 / 总资产 10,082,661.49
+  持仓 28 只，deals 0 条，orders 0 条
+- 70180771（第二实例）：connected=True，error 空
+  asset：null（现金/市值/总资产均取不到）
+  持仓 0 只，deals 0 条，orders 0 条
+
+三、strategies（新档）
+- V13（V1.3 风控，build 20261017-235319）：buy 0 / sell 0 / hold 0（日志 [HOLD] V13=0）
+- V2（价值小盘V2，build 20261016-075943）：buy 0 / sell 0 / hold 28
+- G2I（G2 内产版，build 20261020-232204）：buy 0 / sell 0 / hold 1（日志 [HOLD] G2I=1）
+- ENSI（融合内产版，无 build）：buy 0 / sell 0 / hold 无来源
+- 主实例 Foribdden 行=0，第二实例 Foribdden 行=0（无沙箱文件拦截迹象）
+
+四、核心结论：连续竞价时段 deals 仍为空 → 判定为 API 级限制，需改为用 query_stock_orders 的 status=56 委托反推成交。
+依据（4 条只读证据）：
+1) 13:10 处于午后连续竞价，独立只读探针直调 query_stock_trades(67014907/70180771)：state=OK、n=0、耗时 0.01 秒——本次并未触发 10 秒守护超时，即「非竞价时段无限挂起→降级为空」这一假设在本次不成立，API 是正常快速返回了空列表。
+2) 有成交却仍取空的硬证据：10-19 留档中 002011.SZ 委托 vol=7600/traded=7600、300439.SZ vol=100/traded=100，均 status=56 全部成交，同档 deals=0；10-20 留档中 301536.SZ 委托 vol=800/traded=800、status=56，同档 deals=0。五次采样（1016/1019/1020/1021/1022）deals 恒为 0，而 orders 曾非 0。
+3) 今日主账号 67014907 确无新单：FormulaOutput 主实例日志今日除心跳外零委托/零成交行，探针 query_stock_orders 亦返回 0——故今日 deals=0 本身无可观察样本，不能单独证成。
+4) 今日第二账号 70180771 确有成交但取不到：第二实例日志 09:58:51 [P16G2I][FILL] 301019.SZ BUY vol=2200 px=14.65 status=FILLED（oids=4456932499372203575），13:10 采样该账号 asset/positions/deals/orders 全空。
+
+五、反推方案的适用边界（重要）
+- 67014907：orders 查询有效（10-19 返回 2 笔、10-20 返回 1 笔，含 status=56 与 traded_vol），改用 status=56 + traded_vol 反推成交可行。
+- 70180771：orders 同样恒返回空（五次采样全 0，asset/positions 亦空），status=56 反推对该账号无效，必须退回策略日志 [FILL] 行旁路（今日已验证该日志含 FILLED 成交）。
+- 直调 query_stock_trades 时若遇挂起，仍保留 10 秒守护线程超时降级，不得绕过。
+
+本次全程只读：未下单、未改动任何策略源码/配置/构建产物/定时任务。

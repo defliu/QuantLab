@@ -1,0 +1,38 @@
+{
+  "date": "20261023",
+  "session": "开盘实时复核与每日换仓执行（TRAE 会话）",
+  "written_at": "2026-10-23 09:55:00",
+  "anomaly_flags": ["红线拦截零单(过红线>58者=0, 0买0卖)", "数据源降级(东财扩展4只失败, 量比字段4项缺失)", "D_model_top10.csv断更(沿用面板最新日惯例)", "301536.SZ账本虚挂遗留(10-22 4c未决)"],
+  "现象": [
+    "【红线空仓·零单】review_full 全部 10 只候选 total 均 <58 红线（最高 600577.SH=52.5），过红线者 0 → rebalance_daily 走买入拦截闸门（T-20261002-001）：本日不买入，卖出链路照常执行但到期判定后无到期/调出卖出 → 最终 0 买 0 卖。",
+    "【数据源降级】东财 push2 扩展取数 4/10 失败（300813.SZ/300457.SZ/300233.SZ/002709.SZ：Remote end closed connection without response），该 4 只量比 liangbi=None；基础行情（腾讯 10/10）、F5 板块（东财 10/10）、F3 新闻（东财 10/10）完整，缺字段未编造。",
+    "D_model_top10.csv 持续断更（trade_date=20260929），沿用 10-14 以来惯例改用面板最新日 20261022_model_top10.csv（16:51 盘后管道 deploy 产物，10 只，trade_date=20261022=面板最新日，与 EXPECT_DATE 校验一致，未现场重跑 deploy_predict）。",
+    "持仓 301536.SZ 掉出目标但未满 HOLD_DAYS=5（10-20 买入，持有约 3 个交易日）→ 到期制保留；注：该票为 10-22 4c 遗留的账本虚挂（账户实际已无此票，见 rebalance_20261022.trae_note.json），今日零委托故未触发新账实核查。",
+    "tier=2（hs300 -0.9358%，腾讯行情脚本直取）→ --top 2 → eff_top=5（TOP_N 归一，设计内语义）。"
+  ],
+  "证据": [
+    "plan json: data/rebalance_20261023.json，executed_at=2026-10-23 09:53:46，executed_live=true，tier=2，sell=[] buy=[] hold=[\"301536.SZ\"] trim=[] guard_note=[] degraded=\"\"",
+    "溯源字段（4b 核验通过）：candidate_sha256=59746471c27460b89d5f0ffb99f1801dcc43474c6c443ad15fece170d30899f9，candidate_file/selection_file=20261023_selection_full.csv，candidate_data_date=20261023，candidate_rows=0（过红线 0）",
+    "is_trade_day.py --json → 退出码 0（2026-10-23 交易日）",
+    "幂等前置检查：data/rebalance_20261023.json 与 data/schedules/rebalance_daily_guard_20261023.lock 在 step3 前两次复核均不存在 → 放行",
+    "data/tdx_review.json：date=20261023（写后自查 DATE-OK），data_date=20261022，quote_time=20261023095148，errors=4（均 em_ext）",
+    "review_full stdout：[F2主源] Tushare moneyflow 本地快照 2026-10-22（滞后 1 天 ≤2）→ 权威口径主源",
+    "market_tier.py --json：hs300_pct=-0.9358 → tier=2，source=tencent_qt.gtimg.cn，missing=false（脚本输出，未人工重算）",
+    "账本唯一行：2026-10-20 09:53:23,301536.SZ,BUY,800,101.51,70.0,1082136808,67014907（无 SELL，持有约 3 个交易日 < 5）"
+  ],
+  "已执行动作": [
+    "第零步之一 is_trade_day.py 退出码 0（交易日 2026-10-23）",
+    "第零步之二 幂等前置检查：两个标记均不存在（step3 前二次复核仍不存在）→ 放行",
+    "step1 候选检查（D=20261022，20261022_model_top10.csv 就绪 → 跳过 deploy_predict）+ scripts/collect_v13_review_20261023.py 取数（date 自查 20261023 OK）+ review_full.py --candidates data/selections/20261022_model_top10.csv → 20261023_selection_full.csv",
+    "step2 market_tier.py --json → T=2 → --top 2",
+    "step3 rebalance_daily.py --date 20261023 --top 2 --live（单次，无重试；0 买 0 卖）",
+    "step4 只读核对 plan json：executed_live=true、candidate_sha256 非空、guard_note 空、零委托 → 未触发 4c",
+    "step5 飞书 bot 推送买入结果摘要（红线空仓说明 + F2 主源标注）"
+  ],
+  "遗留事项": [
+    "【10-22 遗留·未决】301536.SZ 账本虚挂：账户实际无此票、账本 800 股无卖出记录，待人工柜台查询 10-20/10-21 成交明细后按 4c 第4步补记；补记/清除前该票持续参与存量校验口径失真",
+    "D_model_top10.csv 持续断更（20260929）",
+    "东财 push2 扩展源对 4 只候选连接被断（errors=4），下个交易日如复发考虑加间隔/重试"
+  ],
+  "no_reorder_rule": "本会话已执行 --live 一次（0 委托），禁止任何重试/重跑 rebalance_daily.py --live；301536.SZ 状态歧义期严禁对其再发任何委托；幂等由 10:05 Windows guard 负责"
+}

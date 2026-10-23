@@ -1,0 +1,30 @@
+{
+  "date": "20261022",
+  "account_id": "67014907",
+  "capital": 100000.0,
+  "pool": [],
+  "ledger": {},
+  "note": "融合候选数据日 20261021 落后于增量库最新日 20261022（09:25 候选生成失败？），宁缺毋滥中止，绝不用过期候选",
+  "candidate_file": null,
+  "candidate_loader": "none",
+  "candidate_data_date": null,
+  "candidate_rows": 0,
+  "candidate_rows_raw": 0,
+  "candidate_sha256": null,
+  "candidate_asof": null,
+  "hold_days": 10,
+  "hold_dates": {
+    "600691.SH": "20260928",
+    "002841.SZ": "20260929",
+    "002762.SZ": "20261012",
+    "688758.SH": "20261013"
+  },
+  "sells": [],
+  "buys": [],
+  "skips": [],
+  "downgrade_frozen": true,
+  "hs300_pct": -1.8393,
+  "tier": 0,
+  "deploy_pct": 0.0,
+  "orders": []
+}

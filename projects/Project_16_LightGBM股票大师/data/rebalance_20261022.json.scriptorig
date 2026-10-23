@@ -1,0 +1,34 @@
+{
+  "date": "20261022",
+  "executed_live": true,
+  "executed_at": "2026-10-22 09:51:43",
+  "tier": 1,
+  "eff_top": 1,
+  "target": [
+    {
+      "code": "603101.SH",
+      "name": "汇嘉时代",
+      "total": 58.5,
+      "prob": 0.561
+    }
+  ],
+  "strategy_capital": 83663.92,
+  "target_value_each": 41831.96,
+  "sell": [],
+  "buy": [],
+  "trim": [],
+  "hold": [
+    "301536.SZ"
+  ],
+  "locked": [],
+  "guard_note": [],
+  "selection_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20261022_selection_full.csv",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\20261022_selection_full.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20261022",
+  "candidate_rows": 1,
+  "candidate_rows_raw": 6,
+  "candidate_sha256": "2e1a49482fdff0cac4bf5d98d2e7d41eaf3c11dde036f103553252b4d794af46",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\candidates_asof\\20261022_2e1a4948_20261022_selection_full.csv",
+  "degraded": ""
+}

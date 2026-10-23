@@ -1,0 +1,44 @@
+{
+  "date": "20261022",
+  "session": "开盘实时复核与每日换仓执行（TRAE 会话）",
+  "written_at": "2026-10-22 10:05:00",
+  "anomaly_flags": ["账实不符(301536.SZ, 触发4c协议)", "数据源降级(悟道熔断OPEN→F5申万T-1自算)", "D_model_top10.csv断更+现场deploy复现", "T=1半仓+存量校验买入名额0"],
+  "现象": [
+    "【账实不符·触发4c】本地账本 qmt_trade_log.csv 记录 301536.SZ 于 2026-10-20 09:53:23 BUY 800股@101.51（order_id=1082136808, account=67014907），全项目日志中该票无任何 SELL 记录；但 miniQMT 只读查询显示 67014907 当前持仓 28 只中已无 301536.SZ。",
+    "卖出时点夹逼：10-20 13:08 账户 positions=29（含 301536，见 p16_intraday_deals_verify_20261020.txt）；10-21 16:49 对账报告 reconcile_20261021.md 已记 [FAIL] 301536.SZ 日志=800 QMT=0 → 卖出发生于 10-20 13:08 ~ 10-21 16:49 之间。",
+    "排除项：① 今日换仓 0 委托（plan json sell/buy/guard_note 全空，今日 query_stock_orders 亦为空）→ 非本会话卖出；② Project_10 V2 对账 reconcile_v2_20261020/20261021.json 无 301536 卖出与 cross_strategy 记录（v13_hold_codes=[\"301536\"]）→ 非 V2 代卖；③ QMT_POOL 无该票卖出日志。",
+    "卖出时间与成交价不可确认：QMT 只保留当日 order/deal（10-21 委托历史已过期），query_stock_trades 在 67014907 上 API 级 HANG（见 10-20 验证档）→ 无法取得柜台成交时间与均价。",
+    "step1 数据源降级：悟道 wudao 熔断状态 OPEN → 跳过；F5 板块走申万一级 T-1 自算口径；F2 主源=本地 Tushare moneyflow T-1（2026-10-21）权威口径，errors=0。",
+    "D_model_top10.csv 持续断更（trade_date=20260929），沿用 10-14 惯例改用面板最新日 20261021_model_top10.csv，本会话现场重跑 deploy_predict.py --model v3 --top-k 10 复现，与 compare_base 比对 6/6 同序完全一致。",
+    "本会话 collect 脚本首跑因复制模板日期常量漏改（TODAY/EXPECT_DATE 未更新）写出 date=20261021 的错误 tdx_review.json 并覆盖 data/cache/f3_news_20261021.json；已自查发现、修正常量后重跑，产出 date=20261022（写后自查 DATE-OK）。f3_news_20261021.json 缓存被覆盖为今日口径为遗留小瑕疵。",
+    "今日换仓 0 买 0 卖：tier=1（hs300 -1.14%）半仓 → target 仅 603101.SH 汇嘉时代 1 只；持仓账本 1 只 ≥ 目标 1 → T-20260907-003 存量校验买入名额 0；301536 掉出目标但未满 HOLD_DAYS=5 → hold（注：账本口径 hold，账户实际已无此票）。"
+  ],
+  "证据": [
+    "plan json: data/rebalance_20261022.json，executed_at=2026-10-22 09:51:43，executed_live=true，tier=1，eff_top=1，sell=[] buy=[] hold=[\"301536.SZ\"]，guard_note=[]",
+    "溯源字段（4b 核验通过）：candidate_sha256=2e1a49482fdff0cac4bf5d98d2e7d41eaf3c11dde036f103553252b4d794af46，candidate_loader=exact，candidate_data_date=20261022，candidate_rows=1 / raw=6，candidate_asof 已留档",
+    "账户只读查询（2026-10-22 上午两次）：67014907 持仓 28 只、无 301536.SZ；cash=10,056,120.49，mktval=26,520，total=10,082,673.49；今日 query_stock_orders=[]（与 plan json 零委托一致）",
+    "账本唯一行：2026-10-20 09:53:23,301536.SZ,BUY,800,101.51,70.0,1082136808,67014907（grep 全量仅此 1 行，无 SELL）",
+    "data/account_metrics/p16_intraday_deals_verify_20261020.txt：10-20 13:08 positions=29、唯一委托 301536 status=56 全部成交；query_stock_trades 在 67014907 上 HANG",
+    "data/reconcile_20261021.md：[FAIL] 301536.SZ 日志=800 QMT=0；策略资金池 83,664 元（初始10万 + 已实现 -16,336）",
+    "D:/QuantLab/projects/Project_10_价值小盘V2/data/reconcile_v2/reconcile_v2_20261021.json：v13_hold_codes=[\"301536\"], orphans=[], cross_strategy=[]",
+    "market_tier.py --json：hs300_pct=-1.14% → tier=1（脚本输出，未人工重算）",
+    "清单链：feature_panel_v3 最新 trade_date=2026-10-21 → 20261021_model_top10.csv（6 只，现场 deploy 与 compare_base 6/6 一致）→ tdx_review.json date=20261022/data_date=20261021/errors=0 → 20261022_selection_full.csv（唯一过线 603101.SH=58.5）"
+  ],
+  "已执行动作": [
+    "第零步之一 is_trade_day.py 退出码 0（交易日 2026-10-22）",
+    "第零步之二 幂等前置检查：rebalance_20261022.json 与 guard lock 在 step3 前均不存在 → 放行",
+    "step1 现场 deploy_predict + scripts/collect_v13_review_20261022.py 取数（修正日期常量后重跑，DATE-OK）+ review_full 生成 20261022_selection_full.csv",
+    "step2 market_tier.py --json → T=1",
+    "step3 rebalance_daily.py --date 20261022 --top 1 --live（单次，无重试；0 买 0 卖）",
+    "step4 只读核对 plan json（executed_live=true、溯源字段齐全、guard_note 空）；发现 301536 账实不符 → 触发 4c 协议：只读核查证据固化于本文件 → 备份 .scriptorig → 追加 manual_reconciliation 区块",
+    "4c 第4步账本补记：**停止未执行**——卖出时间与成交价不可确认（QMT 委托历史已过期 + query_stock_trades HANG），按协议「任何一步无法确认即停止并推告警等待人工」，未臆造补行"
+  ],
+  "遗留事项": [
+    "【待人工】301536.SZ 账实不符：账本 800 股买入无卖出记录、账户已无此票。需人工从 QMT 客户端柜台查询 10-20/10-21 该票成交明细（卖出时间/价格/数量），确认后按 4c 第4步补记 8 列账本行（account_id=67014907），并判断卖出主体（疑似 QMT 内置风控策略自行卖出、内置策略成交不回写外部账本）",
+    "hold 名单中 301536.SZ 为账本虚挂：账户实际无此票，下轮换仓脚本按账本估算其市值参与存量校验/上限判断会持续失真——补记或清除前，POOL_BLOCK 风险仍在",
+    "资金池水位：策略资金池 83,664 元，若补记卖出需据实回填已实现盈亏",
+    "data/cache/f3_news_20261021.json 被本会话首跑（错日期）覆盖为今日口径，如需昨日 F3 缓存需重采",
+    "D_model_top10.csv 持续断更（20260929）"
+  ],
+  "no_reorder_rule": "本会话已执行 --live 一次，禁止任何重试/重跑 rebalance_daily.py --live；301536 状态歧义期严禁对其再发任何委托；幂等由 10:05 Windows guard 负责"
+}

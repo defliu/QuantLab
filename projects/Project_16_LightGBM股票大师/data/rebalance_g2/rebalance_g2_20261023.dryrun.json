@@ -1,0 +1,36 @@
+{
+  "date": "20261023",
+  "account_id": "67014907",
+  "capital": 100000.0,
+  "pool": [
+    {
+      "code": "001395.SZ",
+      "total": 66.5
+    }
+  ],
+  "ledger": {},
+  "note": "g2 候选池 1 只（红线 60）",
+  "candidate_file": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\selections\\g2\\20261023_g2_top10.csv",
+  "candidate_loader": "exact",
+  "candidate_data_date": "20261023",
+  "candidate_rows": 1,
+  "candidate_rows_raw": 1,
+  "candidate_sha256": "94dee88d0e879b0d8dce5177c4b9d17c5a1dd24e6f1031d709fc2c208969395b",
+  "candidate_asof": "D:\\QuantLab\\projects\\Project_16_LightGBM股票大师\\data\\rebalance_g2\\candidates_asof\\20261023_94dee88d_20261023_g2_top10.csv",
+  "hold_days": 15,
+  "hold_dates": {},
+  "sells": [],
+  "buys": [],
+  "skips": [
+    {
+      "code": "001395.SZ",
+      "reason": "极端低开-5.6%跳过买入"
+    }
+  ],
+  "hs300_pct": 1.7102,
+  "tier": 2,
+  "deploy_pct": 0.98,
+  "target_value": 32666.67,
+  "written": false,
+  "orders": []
+}
