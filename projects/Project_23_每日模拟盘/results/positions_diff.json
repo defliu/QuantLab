@@ -1,0 +1,18 @@
+{
+  "query_time": "2026-10-24",
+  "live_account": {
+    "total_asset": 10081519.64,
+    "cash": 10081509.64,
+    "positions": "20 只代码全部 volume=0（空占位），持仓市值=0"
+  },
+  "ledger_after_filters": {
+    "net_nonzero": 0,
+    "note": "剔除300684/历史清理后全部策略交易已平，最后一笔 2026-10-20 301536.SZ 买800卖800"
+  },
+  "ledger_without_cleanup_filter": {
+    "net_nonzero": 52,
+    "all_negative": true,
+    "note": "全部为 2026-08-25 前历史持仓清理卖出（账本无对应买入记录）"
+  },
+  "conclusion": "账本与真实账户 2026-10-24 完全一致：双方均为零持仓、纯现金状态"
+}
