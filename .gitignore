@@ -120,3 +120,6 @@ workspace/
 
 # 浏览器会话日志（browse/ 下一次性 jsonl，不入库；2026-10-13 补）
 browse/*.jsonl
+
+# agent 工具会话残留（organize-* 一次性目录，不入库；2026-10-25 补）
+organize-*/
