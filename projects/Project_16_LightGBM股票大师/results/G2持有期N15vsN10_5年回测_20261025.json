@@ -1,0 +1,214 @@
+{
+  "generated": "2026-10-25 08:21:50",
+  "rows": [
+    {
+      "seg": "2021H2",
+      "start": "2021-07-01",
+      "end": "2021-12-31",
+      "N10": {
+        "days": 125,
+        "trades": 26,
+        "total_return": 0.4041,
+        "max_drawdown": -0.1577,
+        "win_rate": 0.6538
+      },
+      "N15": {
+        "days": 125,
+        "trades": 20,
+        "total_return": 0.2691,
+        "max_drawdown": -0.1022,
+        "win_rate": 0.65
+      }
+    },
+    {
+      "seg": "2022H1",
+      "start": "2022-01-01",
+      "end": "2022-06-30",
+      "N10": {
+        "days": 117,
+        "trades": 27,
+        "total_return": -0.0966,
+        "max_drawdown": -0.2234,
+        "win_rate": 0.3704
+      },
+      "N15": {
+        "days": 117,
+        "trades": 22,
+        "total_return": -0.2111,
+        "max_drawdown": -0.3506,
+        "win_rate": 0.5
+      }
+    },
+    {
+      "seg": "2022H2",
+      "start": "2022-07-01",
+      "end": "2022-12-31",
+      "N10": {
+        "days": 125,
+        "trades": 26,
+        "total_return": 0.2198,
+        "max_drawdown": -0.1689,
+        "win_rate": 0.5769
+      },
+      "N15": {
+        "days": 125,
+        "trades": 18,
+        "total_return": 0.1093,
+        "max_drawdown": -0.0999,
+        "win_rate": 0.4444
+      }
+    },
+    {
+      "seg": "2023H1",
+      "start": "2023-01-01",
+      "end": "2023-06-30",
+      "N10": {
+        "days": 118,
+        "trades": 23,
+        "total_return": 0.0782,
+        "max_drawdown": -0.1582,
+        "win_rate": 0.5652
+      },
+      "N15": {
+        "days": 118,
+        "trades": 17,
+        "total_return": 0.335,
+        "max_drawdown": -0.1156,
+        "win_rate": 0.6471
+      }
+    },
+    {
+      "seg": "2023H2",
+      "start": "2023-07-01",
+      "end": "2023-12-31",
+      "N10": {
+        "days": 124,
+        "trades": 24,
+        "total_return": -0.0145,
+        "max_drawdown": -0.106,
+        "win_rate": 0.375
+      },
+      "N15": {
+        "days": 124,
+        "trades": 18,
+        "total_return": -0.1419,
+        "max_drawdown": -0.151,
+        "win_rate": 0.4444
+      }
+    },
+    {
+      "seg": "2024H1",
+      "start": "2024-01-01",
+      "end": "2024-06-30",
+      "N10": {
+        "days": 117,
+        "trades": 28,
+        "total_return": -0.1941,
+        "max_drawdown": -0.2288,
+        "win_rate": 0.3571
+      },
+      "N15": {
+        "days": 117,
+        "trades": 25,
+        "total_return": -0.0212,
+        "max_drawdown": -0.3019,
+        "win_rate": 0.52
+      }
+    },
+    {
+      "seg": "2024H2",
+      "start": "2024-07-01",
+      "end": "2024-12-31",
+      "N10": {
+        "days": 125,
+        "trades": 28,
+        "total_return": 0.3092,
+        "max_drawdown": -0.1655,
+        "win_rate": 0.4286
+      },
+      "N15": {
+        "days": 125,
+        "trades": 23,
+        "total_return": 0.3441,
+        "max_drawdown": -0.1283,
+        "win_rate": 0.3913
+      }
+    },
+    {
+      "seg": "2025H1",
+      "start": "2025-01-01",
+      "end": "2025-06-30",
+      "N10": {
+        "days": 117,
+        "trades": 24,
+        "total_return": 0.41,
+        "max_drawdown": -0.1195,
+        "win_rate": 0.6667
+      },
+      "N15": {
+        "days": 117,
+        "trades": 18,
+        "total_return": 0.3826,
+        "max_drawdown": -0.1315,
+        "win_rate": 0.6667
+      }
+    },
+    {
+      "seg": "2025H2",
+      "start": "2025-07-01",
+      "end": "2025-12-31",
+      "N10": {
+        "days": 126,
+        "trades": 26,
+        "total_return": 0.4326,
+        "max_drawdown": -0.1238,
+        "win_rate": 0.5769
+      },
+      "N15": {
+        "days": 126,
+        "trades": 19,
+        "total_return": 0.4763,
+        "max_drawdown": -0.1141,
+        "win_rate": 0.5263
+      }
+    },
+    {
+      "seg": "2026H1",
+      "start": "2026-01-01",
+      "end": "2026-06-30",
+      "N10": {
+        "days": 116,
+        "trades": 21,
+        "total_return": 0.0659,
+        "max_drawdown": -0.1291,
+        "win_rate": 0.4286
+      },
+      "N15": {
+        "days": 116,
+        "trades": 17,
+        "total_return": 0.6482,
+        "max_drawdown": -0.1234,
+        "win_rate": 0.7059
+      }
+    },
+    {
+      "seg": "2026Q3+",
+      "start": "2026-07-01",
+      "end": "2026-10-23",
+      "N10": {
+        "days": 32,
+        "trades": 6,
+        "total_return": 0.2198,
+        "max_drawdown": -0.1156,
+        "win_rate": 0.6667
+      },
+      "N15": {
+        "days": 32,
+        "trades": 5,
+        "total_return": 0.2385,
+        "max_drawdown": -0.1095,
+        "win_rate": 0.8
+      }
+    }
+  ]
+}
