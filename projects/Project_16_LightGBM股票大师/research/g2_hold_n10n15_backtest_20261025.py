@@ -81,6 +81,11 @@ def run_seg(hold, start, end):
 
 
 def main():
+    if "--from-json" in sys.argv and os.path.exists(OUT_JSON):
+        rows = json.load(open(OUT_JSON, encoding="utf-8"))["rows"]
+        print("[--from-json] 复用已有回测结果，仅重建报告")
+        write_md(rows)
+        return
     rows = []
     for seg, start, end in SEGMENTS:
         line = {"seg": seg, "start": start, "end": end}
@@ -101,16 +106,30 @@ def main():
     json.dump({"generated": time.strftime("%Y-%m-%d %H:%M:%S"), "rows": rows},
               open(OUT_JSON, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 
+    write_md(rows)
+
+
+def write_md(rows):
     lines = [
-        "# G2 持有期 N15 vs N10 · 5 年回测 OOS 对照",
+        "# G2 持有期 N15 vs N10 · 5 年分段回测对照",
         "",
         "> 生成 %s | live 模型 `%s`" % (time.strftime("%Y-%m-%d %H:%M"), os.path.basename(MODEL)),
         "> 同 harness（scan_rotate_cost_real.py）同参数（TOP2/deploy0.98/SC60/live_trail/slip0.1%），唯一变量=持有期",
         "> 段内为总收益（段短不年化）；回撤按段内净值",
         "",
-        "| 分段 | N10 总收益 | N10 回撤 | N10 胜率 | N15 总收益 | N15 回撤 | N15 胜率 | 差（N10−N15） |",
-        "|---|---|---|---|---|---|---|---|",
+        "> ⚠️ **口径更正（2026-10-25 审计）**：本表**不是纯 OOS**。live 模型训练切分 = "
+        "train 2020-01~2023-06 / valid 2023-07~2024-06 / test 2024-07~"
+        "（`train_g2.py:214-217`），故 2021H2~2024H1 共 6 段属样本内/验证内，仅 2024H2 起 5 段是 test。",
+        "> 另：面板 `feature_panel_v3_enh2_n3_bt.parquet` 截止 **2026-08-14**，末段 `2026Q3+` 实际仅覆盖 07-01~08-14（32 个交易日），非至 10-23。",
+        "> 且 N10/N15 因周转节奏不同会选中**不同的票**（非「同票不同持有期」配对），段差含选股路径分叉成分。",
+        "",
+        "| 分段 | 窗口类型 | N10 总收益 | N10 回撤 | N10 胜率 | N15 总收益 | N15 回撤 | N15 胜率 | 差（N10−N15） |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
+    win = {"2021H2": "train", "2022H1": "train", "2022H2": "train", "2023H1": "train",
+           "2023H2": "valid", "2024H1": "valid",
+           "2024H2": "test", "2025H1": "test", "2025H2": "test",
+           "2026H1": "test", "2026Q3+": "test(仅到08-14)"}
     n10_win = n15_win = 0
     for r in rows:
         a, b = r.get("N10"), r.get("N15")
@@ -120,16 +139,41 @@ def main():
                 n10_win += 1
             else:
                 n15_win += 1
-            lines.append("| %s | %+.2f%% | %.2f%% | %.0f%% | %+.2f%% | %.2f%% | %.0f%% | **%+.2fpp** |" % (
-                r["seg"], a["total_return"] * 100, a["max_drawdown"] * 100,
+            lines.append("| %s | %s | %+.2f%% | %.2f%% | %.0f%% | %+.2f%% | %.2f%% | %.0f%% | **%+.2fpp** |" % (
+                r["seg"], win.get(r["seg"], ""), a["total_return"] * 100, a["max_drawdown"] * 100,
                 (a["win_rate"] or 0) * 100, b["total_return"] * 100,
                 b["max_drawdown"] * 100, (b["win_rate"] or 0) * 100, diff))
         else:
-            lines.append("| %s | %s | | | %s | | | |" % (
-                r["seg"],
+            lines.append("| %s | %s | %s | | | %s | | | |" % (
+                r["seg"], win.get(r["seg"], ""),
                 ("%+.2f%%" % (a["total_return"] * 100)) if a else "无数据",
                 ("%+.2f%%" % (b["total_return"] * 100)) if b else "无数据"))
     lines += ["", "N10 段胜 %d / N15 段胜 %d（共 %d 段）" % (n10_win, n15_win, n10_win + n15_win), ""]
+
+    # 按训练切分聚合（审计新增）：只有 test 段才算样本外
+    import numpy as _np
+    seg = {r["seg"]: r for r in rows}
+
+    def _grp(name, segs):
+        d = [(seg[s]["N10"]["total_return"] - seg[s]["N15"]["total_return"]) * 100
+             for s in segs if seg.get(s) and seg[s].get("N10") and seg[s].get("N15")]
+        if not d:
+            return
+        mean = float(_np.mean(d))
+        t = float("nan")
+        if len(d) >= 3 and _np.std(d, ddof=1) > 0:
+            t = mean / (_np.std(d, ddof=1) / _np.sqrt(len(d)))
+        lines.append("- %s：%d 段，均值 %+.2fpp（N10−N15，负=利好 N15），t=%s"
+                     % (name, len(d), mean, ("%+.2f" % t) if t == t else "n/a"))
+
+    lines.append("### 按训练切分聚合")
+    _grp("train 2021H2~2023H1", ["2021H2", "2022H1", "2022H2", "2023H1"])
+    _grp("valid 2023H2~2024H1", ["2023H2", "2024H1"])
+    _grp("test 2024H2~2026Q3+", ["2024H2", "2025H1", "2025H2", "2026H1", "2026Q3+"])
+    _grp("test 剔除 2026H1", ["2024H2", "2025H1", "2025H2", "2026Q3+"])
+    _grp("全 11 段", [r["seg"] for r in rows])
+    lines.append("")
+    lines.append("> 判读：任何分窗的配对 t 均未过 |t|>2；且 test 段本身是模型/参数选型（110.08% 锚点、TOP2/SC60/deploy0.98/live_trail）的依据，属「被使用过的 test 集」，非干净 OOS。")
     open(OUT_MD, "w", encoding="utf-8").write("\n".join(lines))
     print("[输出]", OUT_MD)
 
