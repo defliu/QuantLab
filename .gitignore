@@ -59,6 +59,7 @@ mcp/
 
 # MCP 配置含 token，不提交
 .mcp.json
+QODER_MCP配置说明书.md
 
 # 数据源 API 密钥（不入库）
 config/data_source_keys.json
