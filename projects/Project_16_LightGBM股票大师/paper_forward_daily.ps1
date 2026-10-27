@@ -20,6 +20,10 @@
 # 2026-09-16: 新增步骤7 track_sold_forward.py 实盘卖出后 T+1/3/5 前向跟踪（T-20260916-003）：
 #             对 qmt_trade_log + 三桥 fills 的每笔实盘 SELL 回填后续开收盘 vs 卖出价，
 #             产物 data/real/sold_forward_live.csv + sold_forward_<date>.md（含卖飞警示）。
+# 2026-10-27: 新增步骤8 paper_shadow_b21.py --daily 21f 纸面影子臂（T-20261027-004）：
+#             与 QMT 内置引擎同一份特征代码(vendor/g2_features_qmt.py)+同一模型(B21 k1500)，
+#             零下单零账本，逐日记录 21f 臂候选并回填 T+1 开盘起 5/10/15 日 open→open 收益，
+#             供「21f vs 43f」前向对照。观察件，失败只告警不阻断主链。
 # PS5.1 下 native stderr 经 *>> 重定向会触发 ErrorRecord，Stop 会静默终止整条管道
 # （与 nightly_check_task 同口径，T-20260910-006 教训）；退出码逐步显式检查。
 $ErrorActionPreference = "Continue"
@@ -75,6 +79,9 @@ try {
     $dgExit = $LASTEXITCODE
     & $py -u track_sold_forward.py *>> $log
     $tfExit = $LASTEXITCODE
+    # 21f 纸面影子臂（观察件，零下单零账本；失败只告警不阻断主链）
+    & $py -u paper_shadow_b21.py --daily *>> $log
+    $shExit = $LASTEXITCODE
     # 三臂纸面季评（2026-09-13 立，P1-1）：每日随管道跑（样本不足自动标"样本不足"不排名），
     # 连续两季最末才提议退役/降配；只提议不动资金分配。失败记 ALERT 不阻断主链（季评是观察件）。
     & $py -u paper_quarterly_review.py *>> $log
@@ -107,6 +114,9 @@ try {
     if ($tfExit -ne 0) {
         Add-Content -Path $log -Value "[$stamp] SOLD-FWD-ALERT track_sold_forward 异常退出 (exit=$tfExit)"
         exit 2
+    }
+    if ($shExit -ne 0) {
+        Add-Content -Path $log -Value "[$stamp] SHADOW-ALERT paper_shadow_b21 异常退出 (exit=$shExit) —— 观察件，不阻断主链，人工核查"
     }
     if ($qrExit -ne 0) {
         Add-Content -Path $log -Value "[$stamp] QUARTERLY-ALERT paper_quarterly_review 异常退出 (exit=$qrExit) ——季评失败不阻断主链，人工核查"
