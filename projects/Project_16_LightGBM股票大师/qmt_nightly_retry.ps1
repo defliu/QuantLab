@@ -46,6 +46,21 @@ function Write-Log([string]$msg) {
     } catch { }
 }
 
+# 飞书卡片：只报「需要人知道的两件事」——补跑成功 / 次数用尽仍失败。
+# WAIT（登录未恢复）不推，否则每 15 分钟刷屏。推送失败只记日志，绝不阻断主流程。
+function Push-Card([string]$title, [string]$body, [string]$level) {
+    $cardBody = Join-Path $sched "qmt_retry_card.txt"
+    try {
+        $pusher = Join-Path $dir "push_alert_card.py"
+        if (!(Test-Path $pusher)) { Write-Log "SKIP 推送器不存在，不推卡"; return }
+        [IO.File]::WriteAllText($cardBody, $body, (New-Object Text.UTF8Encoding($false)))
+        $out = (& $py $pusher --title $title --body-file $cardBody --level $level 2>&1 | Out-String).Trim()
+        Write-Log ("PUSH[{0}] {1}" -f $level, ($out -replace "\s+", " "))
+    } catch {
+        Write-Log ("PUSH-FAIL {0}" -f $_.Exception.Message)
+    }
+}
+
 if (Test-Path $offFile) { Write-Log ("SKIP 停机开关存在 {0}" -f $offFile); exit 0 }
 if (Test-Path $mark) { exit 0 }   # 今天已经 PASS，安静退出
 
@@ -59,6 +74,7 @@ if (Test-Path $reportJson) {
         if (($ageH -lt 4) -and ($d0.verdict -eq "OK")) {
             Set-Content -Path $mark -Value ("{0} 复用已有 OK 报告 BUILD_TAG={1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $d0.deploy.tag) -Encoding UTF8
             Write-Log ("SKIP 最近 {0:N1}h 内已有 verdict=OK 报告（BUILD_TAG={1}），不重复补跑" -f $ageH, $d0.deploy.tag)
+            Push-Card "[QMT] 夜间闭环已 PASS（复用已有报告）" ("沙箱夜间闭环已有一轮 verdict=OK，无需补跑。`nBUILD_TAG={0}`n报告时间距今 {1:N1} 小时（由 21:10 定时任务或人工跑出）。`n今日补跑任务已静默收工。" -f $d0.deploy.tag, $ageH) "info"
             exit 0
         }
     } catch { Write-Log "WARN latest.json 预读失败（继续走补跑判定）" }
@@ -76,6 +92,7 @@ $attempts = 0
 if (Test-Path $cntFile) { [void]([int]::TryParse((Get-Content $cntFile -Raw).Trim(), [ref]$attempts)) }
 if ($attempts -ge 6 -and -not $Force) {
     Write-Log ("SKIP 当日已补跑 {0} 次仍未 PASS，停手待人工（读 {1} 尾部 + results\qmt_nightly\latest.json）" -f $attempts, $log)
+    Push-Card "[QMT] 夜间闭环补跑 6 次仍未 PASS" ("当日已补跑 {0} 次仍 verdict<>OK，任务已停手（不再重启沙箱）。`n请先读 data\schedules\qmt_nightly_retry.log 尾部 + results\qmt_nightly\latest.json 的 deploy.result：`n  - 若 rc=4 且探针判已登录 ⇒ 部署侧新问题（模型未注册 / 产物非法）；`n  - 若一直 WAIT 未登录 ⇒ 券商柜台仍未恢复，属外部问题。`n人工排障可加 -Force 越过时段闸与次数上限；临时停用请建 data\schedules\qmt_retry_off。" -f $attempts) "error"
     exit 0
 }
 
@@ -123,7 +140,9 @@ if (Test-Path $reportJson) {
 if ($verdict -eq "OK") {
     Set-Content -Path $mark -Value ("{0} BUILD_TAG={1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $tag) -Encoding UTF8
     Write-Log ("PASS 夜间闭环补跑成功 verdict=OK deploy={0} BUILD_TAG={1}，当日不再重试" -f $deployResult, $tag)
+    Push-Card "[QMT] 夜间闭环补跑 PASS" ("沙箱登录已恢复，夜间闭环补跑成功。`nBUILD_TAG={0}`ndeploy={1}`n第 {2} 次补跑`n今日不再重试（已落 {3}）。" -f $tag, $deployResult, $attempts, (Split-Path $mark -Leaf)) "info"
     exit 0
 }
 Write-Log ("FAIL 补跑未过 verdict={0} deploy={1} 期望 BUILD_TAG={2}（exit={3}）" -f $verdict, $deployResult, $tag, $rc)
+Push-Card "[QMT] 夜间闭环补跑 FAIL" ("沙箱已登录但闭环仍 FAIL。`nverdict={0} deploy={1}`n期望 BUILD_TAG={2}，deploy 退出码={3}`n第 {4} 次补跑（上限 6 次）。`n注意：已登录仍出不了 TAG ⇒ 不再是券商登录问题，需查产物/模型注册。" -f $verdict, $deployResult, $tag, $rc, $attempts) "error"
 exit 1
