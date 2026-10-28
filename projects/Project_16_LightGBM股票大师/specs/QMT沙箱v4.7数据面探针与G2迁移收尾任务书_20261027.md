@@ -71,7 +71,7 @@ gen_g2_signal_snapshots.py（生成器）
 
 1. **撤探针**：提醒诚哥从国金客户端删除 QMT_SANDBOX_PROBE 策略（探针会随 bar 反复跑，Formula 日志 10-26 已 230 MB，10-27 至 11:24 已 18.7 MB）。客户端内策略文件加密读不到，删除只能诚哥在客户端 UI 手工做。
 2. **删残留库**：`D:\QMT_POOL\` 下 **6 个**（不是复审写的 4 个）：`_probe4_1793009783 / _probe4_1793010229 / _probe4_1793011856 / _probe4_1793012280 / _probe4_1793068101 / _probe4_1793070440`（各 8192 字节，沙箱内 `os.remove` 被 `Foribdden fileIO` 拒，必须在客户端外删；保留 `_probe_persist.db`——它是跨重启证据）。
-3. **git 提交**：报告（untracked）+ `AGENTS.md`（modified）+ `broker/qmt_sandbox_probe.py`（modified，git 里只有 v2/v3）+ 本任务书 + 复审报告，一次收口。提交前让诚哥确认。
+3. **git 提交**：报告（untracked）+ `AGENTS.md`（modified）+ `broker/qmt_sandbox_probe.py`（modified，git 里只有 v2/v3）+ 本任务书 + 复审报告，一次收口。~~提交前让诚哥确认。~~（2026-10-28 诚哥改为全局自动提交，见 `AGENTS.md` 开发原则「Git 提交自动化」，本条作废）
 4. **看板登记**：`全局控制台.md` T-20261026-001 行按实际结果更新（若 T1/T2 完成，登记结论）。
 
 ### T4（治理）：AGENTS 红线修订条款
