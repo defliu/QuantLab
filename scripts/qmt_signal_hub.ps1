@@ -21,7 +21,13 @@ $ErrorActionPreference = "Continue"
 $dir    = "D:\QuantLab\projects\Project_16_LightGBM股票大师"
 $sched  = Join-Path $dir "data\schedules"
 $log    = Join-Path $sched "qmt_signal_hub.log"
-$python = "C:\Users\Administrator\.workbuddy\binaries\python\envs\miniqmt\Scripts\python.exe"
+# hub 与 mirror 只用标准库，**不依赖 miniQMT / xtquant** —— 直接用系统 3.11。
+# （`envs\miniqmt\Scripts\python.exe` 这个名字是历史遗留：当初为跑 xtquant 装的 3.11 venv；
+#   而且它是 wrapper，会再拉起 `D:\Python311\python.exe` 子进程，杀父时子进程消失会让 Stop 判失败。
+#   直连后一个进程搞定，也免得再有人以为这条链要靠 miniQMT。）
+$python = "D:\Python311\python.exe"
+$pythonFallback = "C:\Users\Administrator\.workbuddy\binaries\python\envs\miniqmt\Scripts\python.exe"
+if (!(Test-Path $python)) { $python = $pythonFallback }
 $hubPy  = Join-Path $dir "qmt_signal_hub.py"
 $mirror = Join-Path $dir "qmt_signal_mirror.py"
 
@@ -114,10 +120,16 @@ foreach ($i in $instances) {
         }
     }
     try {
-        Start-Process -FilePath $python `
-            -ArgumentList @((Split-Path $hubPy -Leaf), "--plan-dir", $i.PlanDir,
-                            "--account", $i.Account, "--port", "$($i.Port)") `
-            -WorkingDirectory $dir -WindowStyle Hidden | Out-Null
+        # ★ 不能用 Start-Process：它起的子进程会被计划任务的 job 收编，任务于是「一直在运行」
+        # （LastTaskResult=0x41301），30 分钟执行上限一到就把 hub 一起 TERMINATE 掉。
+        # Win32_Process.Create 建的是独立进程（父进程是 services），任务可以立刻以 0 结束。
+        $outLog = Join-Path $sched ("qmt_signal_hub_{0}.out.log" -f $i.Port)
+        $cmdLine = 'cmd.exe /c ""{0}" "{1}" --plan-dir "{2}" --account {3} --port {4} >> "{5}" 2>&1"' -f `
+            $python, $hubPy, $i.PlanDir, $i.Account, $i.Port, $outLog
+        $r = Invoke-CimMethod -ClassName Win32_Process -MethodName Create `
+            -Arguments @{ CommandLine = $cmdLine; CurrentDirectory = $dir }
+        if ($r.ReturnValue -ne 0) { throw ("Win32_Process.Create ReturnValue=" + $r.ReturnValue) }
+        Write-Log ("SPAWN port={0} launcherPid={1} out={2}" -f $i.Port, $r.ProcessId, $outLog)
     } catch {
         Write-Log ("FAIL port={0} 启动异常：{1}" -f $i.Port, $_.Exception.Message); $rc = 2; continue
     }
