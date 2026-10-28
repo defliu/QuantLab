@@ -127,3 +127,6 @@ browse/*.jsonl
 
 # agent 工具会话残留（organize-* 一次性目录，不入库；2026-10-25 补）
 organize-*/
+
+# QMT 夜间闭环日报（每次运行重新生成，仅本地留档；2026-10-28 补）
+projects/Project_16_LightGBM股票大师/results/qmt_nightly/

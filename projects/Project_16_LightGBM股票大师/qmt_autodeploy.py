@@ -75,10 +75,26 @@ def in_block_window(now=None):
 # PowerShell 辅助
 # ------------------------------------------------------------------
 def ps_run(script, timeout=60):
+    """执行 PowerShell 片段，返回 (rc, text)。
+
+    2026-10-28 修（中文路径变空列表）：子进程的 stdout 编码跟随父进程的
+    [Console]::OutputEncoding。qmt_nightly_deploy.ps1 为写日志把控制台设成 UTF-8
+    且同控制台里调用本脚本 → 这里的子 PowerShell 也跟着吐 UTF-8，旧代码一律按 GBK 解，
+    中文路径（D:\\QMT交易端模拟）解成乱码 → startswith 比对失败 → list_client_pids()
+    返回空（既杀不到也认不到，部署报「全程未见进程」而客户端其实起来了）。
+    现在：①显式要求子进程用 UTF-8 输出；②解码先 utf-8 再 gbk 兜底。
+    """
+    wrapped = "[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;" + script
     p = subprocess.run(
-        ["powershell", "-NoProfile", "-NonInteractive", "-Command", script],
+        ["powershell", "-NoProfile", "-NonInteractive", "-Command", wrapped],
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout)
-    return p.returncode, p.stdout.decode("gbk", "replace")
+    raw = p.stdout
+    for enc in ("utf-8", "gbk"):
+        try:
+            return p.returncode, raw.decode(enc)
+        except UnicodeDecodeError:
+            continue
+    return p.returncode, raw.decode("gbk", "replace")
 
 
 def list_client_pids(qmt_dir):
@@ -129,19 +145,45 @@ def kill_clients(qmt_dir, grace_sec=12):
     return pids
 
 
-def start_client(qmt_dir):
+def start_client(qmt_dir, wait_sec=90, stable_sec=8, exclude=()):
+    """启动客户端并等待其稳定运行。
+
+    2026-10-28 修（假失败）：单实例交接会「先起一个进程→自查已存在实例→自杀→
+    由存活实例/新进程接管登录」，启动初期 3 秒内进程可能根本不可见或 PID 会变。
+    旧实现 sleep(3) 后只查一次 → 误报 fail(5)，而客户端实际已拉起（16:08 实证）。
+    现在改为轮询：可见进程连续存在 stable_sec 秒才算成功，最长等 wait_sec 秒。
+    """
     exe = os.path.join(qmt_dir, CLIENT_EXE_REL)
     if not os.path.exists(exe):
         fail(6, "客户端 exe 不存在: %s" % exe)
     # 必须带 'reboot' 参数：不带参数启动会停在「Proxy client not logged」，
     # 一个策略都不跑（2026-10-28 实证）。
     ps_run("Start-Process -FilePath '%s' -ArgumentList 'reboot'" % exe, timeout=30)
-    time.sleep(3)
-    pids = list_client_pids(qmt_dir)
-    if not pids:
-        fail(5, "启动后未发现客户端进程")
-    log("客户端已启动 PID=%s（reboot 模式）" % ",".join(str(p) for p in pids))
-    return pids
+    exclude = set(int(p) for p in exclude)
+    deadline = time.time() + wait_sec
+    up_since = None
+    last = []
+    while time.time() < deadline:
+        time.sleep(2)
+        pids = [p for p in list_client_pids(qmt_dir) if p not in exclude]
+        if not pids:
+            if up_since is not None:
+                log("[WARN] 客户端进程短暂消失（单实例交接），继续等待…")
+            up_since = None
+            continue
+        last = pids
+        if up_since is None:
+            up_since = time.time()
+            log("检测到客户端进程 PID=%s，等待稳定 %ds 后确认…"
+                % (",".join(str(p) for p in pids), stable_sec))
+            continue
+        if time.time() - up_since >= stable_sec:
+            log("客户端已稳定运行 PID=%s（reboot 模式）"
+                % ",".join(str(p) for p in pids))
+            return pids
+    detail = ("最后可见 PID=%s" % last) if last else "全程未见进程"
+    fail(5, "启动后 %ds 内客户端未稳定运行（%s）。请人工确认客户端是否起来。"
+            % (wait_sec, detail))
 
 
 # ------------------------------------------------------------------
@@ -178,6 +220,13 @@ def read_from(path, offset):
     with open(path, "rb") as f:
         f.seek(offset)
         chunk = f.read()
+    # 2026-10-28 修：XtClient_FormulaOutput_*.log 实际是 UTF-8（直接按 GBK 解会
+    # 'gbk' codec can't decode byte 0xaf），XtClient_*.log 多为 GBK → 两种都试。
+    for enc in ("utf-8", "gbk"):
+        try:
+            return chunk.decode(enc), offset + len(chunk)
+        except Exception:
+            continue
     return chunk.decode("gbk", "replace"), offset + len(chunk)
 
 
@@ -342,8 +391,8 @@ def main():
         return 0
 
     # 5) 重启 + 等 TAG
-    kill_clients(args.qmt_dir)
-    start_client(args.qmt_dir)
+    killed = kill_clients(args.qmt_dir)
+    start_client(args.qmt_dir, exclude=killed)
     ok, reason, excerpt = wait_for_tag(args.qmt_dir, args.model, tag, timeout_sec=args.timeout)
 
     if excerpt:
