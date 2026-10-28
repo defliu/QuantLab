@@ -189,14 +189,45 @@ def build_snapshot(with_bp_hist=False):
     return snap, stats
 
 
+def _read_capital_base():
+    """读 config/value_smallcap_v2_config.yaml 的 capital_base（无 pyyaml 依赖，正则兜底）。
+
+    读不到返回 None —— 只跳过校验并在日志里大声提示，不阻断构建。
+    """
+    cfg = os.path.join(HERE, "..", "..", "config", "value_smallcap_v2_config.yaml")
+    try:
+        with io.open(cfg, "r", encoding="utf-8") as f:
+            text = f.read()
+    except Exception as exc:
+        print("[cash-guard] 读不到 %s（%s），跳过额度校验" % (cfg, exc))
+        return None
+    m = re.search(r"^\s*capital_base:\s*([0-9_]+(?:\.[0-9]+)?)", text, re.M)
+    if not m:
+        print("[cash-guard] 配置里没有 capital_base 字段，跳过额度校验")
+        return None
+    return float(m.group(1).replace("_", ""))
+
+
 def build_ledger():
     path = os.path.join(DATA_DIR, "v2_holdings_state.json")
     with io.open(path, "r", encoding="utf-8") as f:
         state = json.load(f)
+    # 现金闸（2026-10-29 立）：state["cash"] 会被烧成 SNAPSHOT 的 cash_hint，
+    # 策略 rebuild 时 `_cash = cash_val` 直接拿它当专属资金池。10-23 那次手工重置
+    # 误把「账户总资产」1008 万写进 cash（应为 capital_base=10 万），一旦按此重建
+    # 部署，V2 会以 1008 万规模建仓 → 击穿共享账户资金分配红线。偏差超 2 倍即拒绝。
+    cash = float(state.get("cash", 0.0))
+    capital_base = _read_capital_base()
+    if capital_base and cash > capital_base * 2.0:
+        raise SystemExit(
+            "[cash-guard] FAIL: v2_holdings_state.json cash=%.2f 是 capital_base=%.0f 的 %.1f 倍，"
+            "疑似被写入账户总资产。cash_hint 会进 SNAPSHOT 并被当作策略专属资金池使用。"
+            "先按 reset_v2_state.py 的口径把 cash 改回 capital_base（或确认收益滚动后的真实额度）再重建。"
+            % (cash, capital_base, cash / capital_base))
     ledger = {
         "account_id": state.get("account_id", ""),
         "asof_date": "2026-10-16",
-        "cash_hint": float(state.get("cash", 0.0)),
+        "cash_hint": cash,
         "nav_peak": float(state.get("nav_peak", 1.0)),
         "holdings": {},
         "suspended_sells": [str(s) for s in state.get("suspended_sells", [])],
