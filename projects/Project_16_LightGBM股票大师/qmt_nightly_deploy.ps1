@@ -25,6 +25,15 @@ $ts = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 $mode = if ($Rehearsal) { "演练：不重启" } else { "构建+部署+重启" }
 Add-Content -Path $log -Value "[$ts] ==== QMT 夜间闭环（$mode）开始 ====" -Encoding UTF8
 
+# ---- 部署互斥锁 ----
+# 闭环会「关闭客户端 → 带 reboot 参数重启」，中途存在几十秒的无进程窗口。
+# scripts/qmt_watch_login.ps1 每 10 分钟探一次，看到客户端不在跑就会抢先 Start-Process 拉起，
+# 与闭环自己的重启撞车（单实例交接 → PID 抖动，历史上已因此产生过「假失败」）。
+# 因此闭环期间落一个锁文件，watch_login 见到新鲜锁文件就跳过本轮。
+# 锁不做后台清理：脚本若被强杀会留残锁，watch_login 按 40 分钟龄期自动失效。
+$lock = "$dir/data/schedules/qmt_deploy.lock"
+Set-Content -Path $lock -Value ("PID={0} START={1} MODE={2}" -f $PID, $ts, $mode) -Encoding UTF8
+
 # ---- 报告留存清理：只留最近 60 天（md/json 同名，逐对删）----
 if (Test-Path $reportDir) {
     $cut = (Get-Date).AddDays(-60)
@@ -66,5 +75,6 @@ if (Test-Path "$reportDir/latest.json") {
     Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] latest.json -> $v" -Encoding UTF8
 }
 try { [Console]::OutputEncoding = $oldEnc } catch { }
-Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] ==== QMT 夜间闭环结束 ====" -Encoding UTF8
+Remove-Item -LiteralPath $lock -Force -ErrorAction SilentlyContinue
+Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] ==== QMT 夜间闭环结束（部署锁已释放）====" -Encoding UTF8
 exit $rc

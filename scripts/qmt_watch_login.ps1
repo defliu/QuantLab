@@ -6,8 +6,10 @@
 #   1) 只探 56001（登录/代理），不通就直接退出，不碰客户端
 #   2) 只按 -ClientDirs 白名单处理（默认主号 + 沙箱），绝不触碰交易版
 #   3) 已有活实例（Threads>0）则跳过，不重复启动
-#   4) 启动后 90 秒回读日志，写 login success / 未登录 的结论
+#   4) 启动后 90 秒交回 scripts/qmt_login_probe.py 判定（TCP 通 ≠ 已登录，别用日志正则猜）
 #   5) 停机开关：存在 data\schedules\qmt_watch_off 文件时什么都不做（人工维护用）
+#   6) 部署互斥：存在新鲜的 data\schedules\qmt_deploy.lock（<40 分钟）时本轮不拉起客户端，
+#      避让夜间闭环自己的「关闭 → reboot 重启」，防止两个写者抢同一个客户端实例
 
 param(
     [string[]]$ClientDirs = @("D:\国金QMT交易端模拟", "D:\QMT交易端模拟"),
@@ -29,6 +31,20 @@ function Write-Log([string]$msg) {
 }
 
 if (Test-Path $offFile) { Write-Log "SKIP 存在停机开关 $offFile"; exit 0 }
+
+# ---- 0) 部署互斥：夜间闭环正在「关客户端 → 重启」时绝不抢跑 ----
+# 闭环中途有几十秒的无进程窗口，本守护若此时按「客户端不在跑」抢先 Start-Process，
+# 就会和闭环自己的 reboot 重启撞车（单实例交接 → PID 抖动 → 部署误判失败）。
+# 锁由 qmt_nightly_deploy.ps1 建/删；脚本被强杀会留残锁，故按 40 分钟龄期自动失效。
+$lock = Join-Path $logDir "qmt_deploy.lock"
+if (Test-Path $lock) {
+    $lockAge = ((Get-Date) - (Get-Item $lock).LastWriteTime).TotalMinutes
+    if ($lockAge -lt 40) {
+        Write-Log ("SKIP 夜间闭环部署中（锁建于 {0:N0} 分钟前），本轮不拉起客户端" -f $lockAge)
+        exit 0
+    }
+    Write-Log ("STALE 部署锁已 {0:N0} 分钟未更新（闭环可能被强杀），忽略锁继续" -f $lockAge)
+}
 
 # ---- 1) 探登录服务 ----
 $ok = $false
@@ -84,16 +100,31 @@ foreach ($dir in $ClientDirs) {
 if ($started.Count -eq 0) { exit 0 }
 
 # ---- 3) 90 秒后回读登录结果 ----
+# 判定一律交给 scripts/qmt_login_probe.py，不在这里用正则猜日志：
+# 「Proxy client not logged」只说明还没登上，分不清是 TCP 断、柜台不应答还是缺验证码，
+# 2026-10-28 夜就是被这句误导成「等人工点登录」，实际券商侧 200003 超时、点了也一样超时。
 Start-Sleep -Seconds 90
-$today = Get-Date -Format "yyyyMMdd"
+$probe = "D:\QuantLab\scripts\qmt_login_probe.py"
+$pyExe = "C:\Users\Administrator\.workbuddy\binaries\python\envs\miniqmt\Scripts\python.exe"
+if (!(Test-Path $pyExe)) { $pyExe = "D:\Python311\python.exe" }
 foreach ($dir in $started) {
-    $f = Join-Path $dir ("userdata\log\XtClient_FormulaOutput_{0}.log" -f $today)
-    $m = Join-Path $dir ("userdata\log\XtClient_{0}.log" -f $today)
     $hit = "无日志"
-    if (Test-Path $m) {
-        $tail = Get-Content -Path $m -Tail 400 -Encoding UTF8 -ErrorAction SilentlyContinue
-        if ($tail -match "login success") { $hit = "login success" }
-        elseif ($tail -match "Proxy client not logged") { $hit = "停在登录框（需人工/验证码）" }
+    if ((Test-Path $probe) -and (Test-Path $pyExe)) {
+        $env:PYTHONIOENCODING = "utf-8"
+        $oldEnc = $null
+        try { $oldEnc = [Console]::OutputEncoding; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch { }
+        $pv = (& $pyExe $probe --verdict --client $dir 2>&1 | Out-String).Trim()
+        $mState = [regex]::Match($pv, "STATE=(.+)$")
+        $state = if ($mState.Success) { $mState.Groups[1].Value } else { ($pv -replace "`r?`n", " | ") }
+        try { if ($oldEnc) { [Console]::OutputEncoding = $oldEnc } } catch { }
+        if ($pv -match "LOGGED=1") { $hit = "login success" } else { $hit = ("未登录：{0}" -f $state) }
+    } else {
+        $m = Join-Path $dir ("userdata\log\XtClient_{0}.log" -f (Get-Date -Format "yyyyMMdd"))
+        if (Test-Path $m) {
+            $tail = Get-Content -Path $m -Tail 400 -Encoding UTF8 -ErrorAction SilentlyContinue
+            if ($tail -match "login success") { $hit = "login success" }
+            elseif ($tail -match "Proxy client not logged") { $hit = "未登录（探针不可用，日志兜底）" }
+        }
     }
     Write-Log ("RESULT [{0}] {1}" -f $dir, $hit)
 }
