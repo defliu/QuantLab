@@ -74,7 +74,13 @@
 ## QMT 红线
 
 - 所有 QMT 运行产物必须是 GBK 编码，并且首行必须是 `# coding=gbk`。
-- **QMT 策略必须经客户端策略编辑器「粘贴」部署，直接把文件生成/复制到 `<QMT>\python\` 运行目录无效**（2026-09-10 实证：客户端对策略加密存储，python\ 下的明文文件不会被加载）。唯一生效流程：`build.py` 构建+四道校验 → 记事本打开产物 → **人工粘贴**进客户端策略编辑器 → 查日志 `BUILD_TAG` 核对「本地构建版本 = 实际运行版本」。QMT 为自绘 UI（无 UIA 控件、无子 HWND、最小化时窗口 rect=-32000），**粘贴不可自动化**，人工粘贴是设计内动作，不要浪费时间尝试脚本化（失败方案存档 `projects/Project_16_LightGBM股票大师/deploy_paste_qmt.ps1`）。
+- **★★ 2026-10-28 部署方式推翻旧红线：明文文件写入 `<QMT>\python\<模型名>.py` 会被客户端直接加载执行**。旧规则「必须人工经策略编辑器粘贴、python\ 下明文不会被加载」（2026-09-10）**已被实证推翻**——用明文 GBK 探针覆盖已注册模型文件后重启，日志产出 5.6 万行 `[CANARY2]` 输出；且客户端不会把明文重新加密或还原（正常跑完一轮、强杀进程后 md5 均不变）。
+  - **默认流程（零介入）**：`build.py` 构建 → `python projects/Project_16_LightGBM股票大师/qmt_autodeploy.py --build <builder> --product <产物> --model <模型名> --qmt-dir <客户端目录>` → 脚本自动校验 GBK/BOM/首行/BUILD_TAG → 备份旧模型到 `_deploy_bak/` → 落盘 → **`CloseMainWindow` 优雅关闭（12s 超时后强杀）** → 以 **`reboot` 参数**重启 `XtItClient.exe` → 轮询 `userdata\log\XtClient_FormulaOutput_<date>.log` 匹配 `BUILD_TAG` → PASS/FAIL。
+  - **唯一例外（一次性人工）**：**从未在客户端注册过的新模型名**仍需在界面里创建一次（任意内容的同名策略即可）。注册信息在二进制 `indexConfig\configFormula`（`XTF1`，1.29MB，模型名不以明文编码存放），仅靠往 `config/indexUserConfig.xml` + `indexConfig/formulainitstepsinof` 插入条目**无效**——客户端会打 `configFormula not exist, continue` 后静默跳过，只留一条 `auto run timeout`、零 Python 输出。已注册名字之后所有部署全自动。
+  - **必须带 `reboot` 参数启动**：`XtItClient.exe` 不带参数会停在 `Proxy client not logged`，**一个策略都不跑**（10-28 实测）。`auto run timeout` 与 `loadFile [X] parse error` 是每次重启都有的**正常噪声**，不能当失败判据；判定只认 `BUILD_TAG=<期望值>`。
+  - **沙箱不拦这条路**：`Foribdden FileIO` 拦的是策略进程内部的 open/read，客户端自身加载器读 `python\*.py` 不经过该拦截——两者必须区分开。
+  - **护栏（脚本内置）**：09:00–15:05 拒绝重启（`--force-offhours` 才越过）；只杀 `ExecutablePath` 在 `--qmt-dir` 下的进程（绝不误杀另一台客户端）；只接受无 BOM、GBK、首行 `# coding=gbk`、含 `BUILD_TAG` 的产物。**覆盖前必须备份到客户端目录之外**（10-28 事故：探针覆盖后回滚时误删备份，导致该客户端 G2 加密原件丢失）。
+  - 详细证据与操作手册：`projects/Project_16_LightGBM股票大师/specs/QMT零介入部署方案_20261028.md`。失败方案存档 `deploy_paste_qmt.ps1`（UI 自动化，已被本方案取代）不再使用。
 - **含中文的 `.ps1` 脚本（定时任务用）必须带 UTF-8 BOM**：Windows PowerShell 5.1 对无 BOM 文件按 ANSI/GBK 解码 → 中文变乱码 → 字符串引号被吞 → 级联「意外的标记」解析错误；**每次编辑含中文的 .ps1 后必须校验 BOM 仍在**（教训 T-20260903-015：编辑工具改写时丢 BOM，导致 run_scheduled.ps1 在 powershell.exe 下解析崩溃，09-14 周训将依赖此规则）。
 - **计划任务注册规范（2026-09-21 立，T-20260921-001/002）**：①注册/重建含中文路径的 schtasks 一律用 `Register-ScheduledTask`/`Set-ScheduledTask` + `New-ScheduledTaskAction` 对象方式，**禁止 XML/schtasks 命令行拼接**（中文路径会 UTF-8→Latin-1 乱码写入任务定义，Intraday_Review 因此静默停摆 3 个交易日）；注册后必须回读 `Actions.Arguments` 核对实际存储值。②LogonType 一律 **S4U**（`New-ScheduledTaskPrincipal -LogonType S4U`），禁止 Interactive（每 30 分钟在桌面弹 PowerShell 窗口）；全部 39 个 Quant* 任务已切换，xtquant 在 S4U session 0 连 miniQMT 实测可用。
 - QMT 运行环境按 Python 3.6.8 兼容处理。
@@ -124,7 +130,7 @@
   2. ~~**xtquant 外部进程**（miniQMT 外部 Python 下单，P16 V1.3 现役架构）——交易信号在 QMT 外部进程产生，违反「信号完全在 QMT 内部产生」~~ **← 2026-10-19 已解禁（见上方修订条款）：P16 V1.3 继续使用此通道，不再属禁止路线；但新策略不得以此为默认架构**；
   3. **申请豁免/白名单**（方案A）——客服已确认无豁免，`m_pythonWhiteList` 字段存在但不可用；
   4. **绕过沙箱**（方案C）——不推荐且违反本红线。
-- **QMT 内置策略的唯一合法模式（方案B 自闭环，DE 方案 `specs/QMT沙箱自闭环改造方案_20261015.md`）**：策略=QMT 内置 Python 单文件（人工粘贴部署不变），**信号、风控、执行、状态全部自包含**——行情用 `C.get_market_data_ex`/`C.get_full_tick`（QMT 内部 API，不属外部交互）；状态三层模型 L1 会话内存（全局变量）/ L2 账户即账本（`get_trade_detail_data` position/order/deal，唯一跨重启状态源）/ L3 期初账本快照（源码硬编码字面量，粘贴时更新）；跨重启去重=sid+init 扫当日 order 反查 remark 重建水位；监控=策略 `print` → FormulaOutput 日志 → 沙箱外 schtasks 旁路读日志推飞书（**策略进程零外部交互**，旁路在 QMT 外属独立观察者不违规）。
+- **QMT 内置策略的唯一合法模式（方案B 自闭环，DE 方案 `specs/QMT沙箱自闭环改造方案_20261015.md`）**：策略=QMT 内置 Python 单文件（部署走 `qmt_autodeploy.py` 自动落盘+重启，2026-10-28 起；新模型名需先注册一次），**信号、风控、执行、状态全部自包含**——行情用 `C.get_market_data_ex`/`C.get_full_tick`（QMT 内部 API，不属外部交互）；状态三层模型 L1 会话内存（全局变量）/ L2 账户即账本（`get_trade_detail_data` position/order/deal，唯一跨重启状态源）/ L3 期初账本快照（源码硬编码字面量，粘贴时更新）；跨重启去重=sid+init 扫当日 order 反查 remark 重建水位；监控=策略 `print` → FormulaOutput 日志 → 沙箱外 schtasks 旁路读日志推飞书（**策略进程零外部交互**，旁路在 QMT 外属独立观察者不违规）。
 - **改造顺序（四步全部已完成，2026-10-18 复核）**：V13（纯风控自闭环，S）**✅ build 20261016-020830** → V2（快照内嵌+期初账本，M-L）**✅ build 20261016-075943**（另有 10-16 盘中 P0 对账缺陷修复版 20261016-150143）→ G2/ENS 纯风控版（S）**✅ build 20261016-083453 / 085414** → **G2/ENS 信号内产版（L）✅ 已上线**（原「需重训内置可算特征版 LightGBM」已完成：B21 k=1500 dump 纯 Python 树 + 21 特征内置计算模块；产物 **BUILD_TAG=20261017-235317 / 235319**）。**2026-10-18 23:3x 日志实测**：`d:\QMT交易端模拟` 上 G2 与 ENS 均以 `mode=自闭环信号内产(零文件)` 运行、`passive=False`、`pending=0`、positions=1、零 `Foribdden` ⇒ **信号内产版确已人工粘贴部署并在跑**（比 10-17 看板登记的「⏳待人工粘贴」更新一步）。降级预案（维持风控版/换线性评分卡）未启用；**ENS 臂去留仍待拍板**（T-20261017-004 策略级回测：G2 臂年化 +18.8% vs ENS 臂 +5.1%，建议仅上 G2 臂）。
 - **遗留处置**：改造完成前，现役文件桥策略（G2/ENS）在沙箱下转被动属**预期行为**（宁可不交易也不违规交互）；`D:/QMT_POOL/` 下存量 cmd/state 文件仅作历史证据与外部监控旁路数据源，策略侧不再读写。
 
@@ -217,7 +223,7 @@
 
 - 每个策略项目独立目录：`projects/Project_XX_名称/`。
 - 标准结构：`strategy/`（模块化代码）、`config/`（参数）、`results/`（回测结果）、`specs/`（需求文档）。
-- **QMT 构建物自包含**：每个项目的 `build/` 子目录存放 QMT 部署文件（GBK 单文件），不在项目间共享或拷贝到公共目录。开发流程：编辑源码 → `python build.py`（语法检查+GBK转码） → `build/` 下生成部署文件 → **人工粘贴进 QMT 客户端策略编辑器**（见「QMT 红线」）→ 日志核对 BUILD_TAG。
+- **QMT 构建物自包含**：每个项目的 `build/` 子目录存放 QMT 部署文件（GBK 单文件），不在项目间共享或拷贝到公共目录。开发流程：编辑源码 → `python build.py`（语法检查+GBK转码） → `build/` 下生成部署文件 → **`qmt_autodeploy.py` 自动落盘 + 重启 + 日志核对 BUILD_TAG**（2026-10-28 起，见「QMT 红线」；新模型名需先在客户端注册一次）。
 - 新策略项目必须经过回测验证（B 模块）和鲁棒性测试（D 模块）才能进入实盘候选。
 - 不推荐的策略（负年化）保留记录但不删除，作为对照参考。
 
@@ -265,7 +271,7 @@
 ## 与实盘策略工程的关系
 
 - 实盘策略工程资产已收拢至 `D:\QuantLab`（原 `D:/QMT_STRATEGIES`，注意真身在 **D:** 不在 E:），侧重实盘策略构建与分层卖出风控。
-- **QMT 部署文件不再拷贝到公共目录**：每个项目的 `build/` 子目录自包含 QMT 部署文件（GBK 单文件）；部署时人工从 `build/` 经客户端策略编辑器**粘贴**进 QMT（直接复制到运行目录无效，见「QMT 红线」）。
+- **QMT 部署文件不再拷贝到公共目录**：每个项目的 `build/` 子目录自包含 QMT 部署文件（GBK 单文件）；部署由 `qmt_autodeploy.py` 自动写入 `<QMT>\python\<模型名>.py` 并重启客户端核对 BUILD_TAG（见「QMT 红线」，2026-10-28 起明文落盘有效）。
 - 实盘与 QMT 共用 `D:/QMT_POOL/` 文件交换目录（预生成 CSV 数据）。
 - `SellStrategyEngine` 是核心风控模块，如需复用应通过明确接口调用，不得绕过。
 - 修改收拢后的实盘模块前，需遵守本仓库 AGENTS.md 规则。

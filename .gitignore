@@ -75,6 +75,9 @@ config/data_source_keys.json
 *.compare_base*
 *.lock
 
+# QMT 零介入部署（qmt_autodeploy.py）覆盖前的模型备份，本地留存不入库（2026-10-28）
+**/_deploy_bak/
+
 # DE 遗留的临时运行文件
 _de_run_fix.cmd
 _de_smoke_out.json
