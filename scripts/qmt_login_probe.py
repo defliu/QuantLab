@@ -96,12 +96,36 @@ def tcp_ok(host, port, timeout=3.0):
         s.close()
 
 
+def norm_client_dir(dir_path):
+    """把调用方给的客户端目录归一成 WMI `ExecutablePath` 能对齐的反斜杠形式。
+
+    WMI 的 ExecutablePath 永远是 `D:\\QMT交易端模拟\\bin.x64\\XtItClient.exe`（反斜杠、
+    大小写随安装），而调用方完全可能传正斜杠（`D:/QMT交易端模拟`，配置文件里很常见）或多带
+    尾分隔符。原样做 StartsWith 会**静默匹配不到** ⇒ pid=None ⇒ 报 EXIT=4「客户端进程不在
+    （未启动）」。这个误报比漏报更贵：EXIT=4 的排障方向是「本机没启动/计划任务没拉起」，
+    能把一上午的判定带偏（真根因是券商侧 200003 超时，EXIT=2）。
+    """
+
+    d = os.path.normpath(str(dir_path).strip())
+    return d.rstrip("\\/")
+
+
+def log_age_seconds(path):
+    """主日志距上次写入多少秒；文件不存在/读不到返回 None（只读，绝不创建）。"""
+    try:
+        return (dt.datetime.now() - dt.datetime.fromtimestamp(os.path.getmtime(path))).total_seconds()
+    except OSError:
+        return None
+
+
 def find_process_start(dir_path):
     """用 WMI 查该目录下 XtItClient.exe 的启动时间（只读查询，不碰进程）。"""
+    base = norm_client_dir(dir_path) + "\\"  # 带尾分隔符再前缀匹配，防 D:\\X 误配 D:\\X2
     ps = (
         "$d='%s'; $r=@(); Get-CimInstance Win32_Process -Filter \"Name='XtItClient.exe'\" | "
-        "ForEach-Object { if ($_.ExecutablePath -and $_.ExecutablePath.StartsWith($d)) { "
-        "$r += ('{0}|{1}' -f $_.ProcessId, $_.CreationDate) } }; $r -join ';'" % dir_path.replace("'", "''")
+        "ForEach-Object { if ($_.ExecutablePath -and $_.ExecutablePath.StartsWith($d, "
+        "[StringComparison]::OrdinalIgnoreCase)) { "
+        "$r += ('{0}|{1}' -f $_.ProcessId, $_.CreationDate) } }; $r -join ';'" % base.replace("'", "''")
     )
     import subprocess
 
@@ -146,6 +170,9 @@ def probe_client(dir_path, date_str=None, as_of=None):
         res["state"] = "禁止扫描真实交易客户端"
         res["detail"] = "命中 %s" % FORBIDDEN_MARK
         return res, 5
+
+    dir_path = norm_client_dir(dir_path)
+    res["client"] = dir_path
 
     live = as_of is None
     pid, start, err = find_process_start(dir_path) if live else (None, None, None)
@@ -220,6 +247,16 @@ def probe_client(dir_path, date_str=None, as_of=None):
         res["state"] = "未登录：本轮进程启动（%s）之后尚无 login success" % start.strftime("%H:%M:%S")
 
     if live and pid is None and not res["logged_in"]:
+        # 兜底：pid 匹配不到有两种可能——进程真没起，或目录串没对齐/WMI 出错。
+        # 主日志只有客户端进程自己在写，因此「刚才还在写」就是它在跑的硬证据，
+        # 此时按 EXIT=2（在跑但未登录）处理，绝不报 EXIT=4 把排障方向带去「本机没启动」。
+        age = log_age_seconds(main_log)
+        if age is not None and age < 90:
+            res["state"] = (
+                "未登录：按目录匹配不到 XtItClient 进程，但主日志 %.0f 秒前仍在写（进程在跑，勿判为未启动）；"
+                "日志签名：%s" % (age, res["state"] or "无")
+            )
+            return res, 2
         res["state"] = "客户端进程不在（未启动）"
         return res, 4
 
@@ -239,6 +276,14 @@ def probe_client(dir_path, date_str=None, as_of=None):
 
 
 def main():
+    # 输出可能是中文状态串；GBK 控制台的编码由调用方（PowerShell 把 [Console]::OutputEncoding
+    # 设为 UTF-8）决定，这里只兜底「遇到当前编码放不下的字符不要抛 UnicodeEncodeError 把整个
+    # 判定吞掉」——探针崩了定时任务就只剩 rc，比读到乱码严重得多。
+    try:
+        sys.stdout.reconfigure(errors="replace")
+    except Exception:  # noqa: BLE001
+        pass
+
     ap = argparse.ArgumentParser(description="QMT 客户端登录状态探针（只读）")
     ap.add_argument("--client", action="append", default=None,
                     help="客户端目录，可多次；默认主号 + 沙箱")
