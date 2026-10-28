@@ -71,6 +71,30 @@ if (-not $Rehearsal) {
 # 因此闭环期间落一个锁文件，watch_login 见到新鲜锁文件就跳过本轮。
 # 锁不做后台清理：脚本若被强杀会留残锁，watch_login 按 40 分钟龄期自动失效。
 $lock = "$dir/data/schedules/qmt_deploy.lock"
+# ★ 锁必须「互斥」而不只是「占位」（2026-10-29 02:1x 补，T-20261029-002）：
+#   21:10 主任务与 21:30 起的补跑调的是**同一个脚本**，而一次闭环可近 15 分钟 ⇒
+#   登录恢复的当晚两者极易重叠；原先后半段无条件 Set-Content 覆盖锁，等于两边都认为自己持锁，
+#   各自跑一遍「关闭客户端 → 带 reboot 重启」→ PID 交接抖动 + 后写者覆盖 latest.json
+#   ⇒ 产出一条本可避免的假 FAIL（与本轮已修的 watch_login 抢拉起同族事故形态）。
+#   判定三条件同时成立才算「别人在跑」：锁存在 + 锁龄 <40 分钟（沿用 watch_login 的失效口径，
+#   脚本被强杀留下的残锁不会永久堵路）+ 锁里 PID 仍存活。命中则整轮跳过、退 0：
+#   补跑侧读到「rc=0 且 latest.json 非本轮新写」会记 SKIP、不推卡、15 分钟后再试（不会误判 FAIL）。
+if (Test-Path $lock) {
+    $lockAge = ((Get-Date) - (Get-Item $lock).LastWriteTime).TotalMinutes
+    $lockPid = 0
+    try {
+        $lockTxt = Get-Content $lock -Raw -Encoding UTF8
+        if ($lockTxt -match "PID=(\d+)") { $lockPid = [int]$Matches[1] }
+    } catch { }
+    $holder = if ($lockPid -gt 0) { Get-Process -Id $lockPid -ErrorAction SilentlyContinue } else { $null }
+    if (($lockAge -lt 40) -and ($null -ne $holder)) {
+        $nowTs = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+        Add-Content -Path $log -Value ("[{0}] SKIP 另一实例正持部署锁（PID={1} 锁龄 {2:N0} 分钟）⇒ 本轮整轮跳过，不 build/不落盘/不重启，15 分钟后再试" -f $nowTs, $lockPid, $lockAge) -Encoding UTF8
+        Add-Content -Path $log -Value ("[{0}] ==== QMT 夜间闭环跳过（部署锁被占用）====" -f $nowTs) -Encoding UTF8
+        exit 0
+    }
+    Add-Content -Path $log -Value ("[{0}] LOCK-STALE 残锁（PID={1} 存活={2} 锁龄 {3:N0} 分钟）⇒ 判定持有者已退出，本轮接管" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $lockPid, ($null -ne $holder), $lockAge) -Encoding UTF8
+}
 Set-Content -Path $lock -Value ("PID={0} START={1} MODE={2}" -f $PID, $ts, $mode) -Encoding UTF8
 
 # ---- 闭环执行 ----
