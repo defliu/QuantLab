@@ -49,8 +49,9 @@ function Write-Log([string]$msg) {
     } catch { }
 }
 
-# 飞书卡片：只报「需要人知道的两件事」——补跑成功 / 次数用尽仍失败。
-# WAIT（登录未恢复）不推，否则每 15 分钟刷屏。推送失败只记日志，绝不阻断主流程。
+# 飞书卡片：只报「需要人知道的事」——补跑成功 / 次数用尽仍失败 / 复用已有 OK /
+# 整夜未登录的收口提醒（08:30-08:45 那最后两槽，每日至多一张）。
+# WAIT 中途不推，否则每 15 分钟刷屏。推送失败只记日志，绝不阻断主流程。
 function Push-Card([string]$title, [string]$body, [string]$level) {
     $cardBody = Join-Path $sched "qmt_retry_card.txt"
     try {
@@ -126,6 +127,18 @@ try { if ($oldEnc) { [Console]::OutputEncoding = $oldEnc } } catch { }
 
 if (-not $logged) {
     Write-Log ("WAIT 沙箱未登录：{0}" -f $state)
+    # 收口提醒（2026-10-29 加）：WAIT 按设计不推卡（否则每 15 分钟刷屏），但整夜维护窗口
+    # 一路 WAIT 到补跑窗口关闭（08:45）时也**一张卡都没有** ⇒ 没人知道"这一晚到底跑没跑、
+    # 为什么没有 PASS"。所以在窗口关闭前最后一次触发时推一张汇总卡，每日至多一张。
+    # 窗口是 21:30→次日 08:45，而 "HHmm" 是字符串比较："2130" -ge "0830" 也为真，
+    # 单写下限会让它在 21:30 第一槽就推卡。必须同时封住上限，只留 08:30 / 08:45 最后两槽。
+    if ($hhmm -ge "0830" -and $hhmm -lt "0900") {
+        $wakeMark = Join-Path $sched ("qmt_retry_wakecard_{0}.mark" -f $today)
+        if (!(Test-Path $wakeMark)) {
+            Set-Content -Path $wakeMark -Value (Get-Date -Format "yyyy-MM-dd HH:mm:ss") -Encoding UTF8
+            Push-Card "[QMT] 夜间闭环整夜未登录，窗口 08:45 关闭" ("沙箱（70180771）整夜登录未恢复，补跑窗口即将关闭，本轮期**零部署动作**（不 build/不落盘/不重启），因此没有 PASS 也没有 FAIL 报告。`n最后一次探针：{0}`n今晚 21:10 主任务 + 21:30 起每 15 分钟补跑会自动继续，登录一恢复即自动补出 PASS 并推卡。`n本地已无可修项：柜台登录报文 200003 超时属券商模拟环境侧，且穷举两台模拟客户端配置共 26 个服务端地址仅 4 个可达、登录节点只有 180.169.107.19:56001 一个（无备用可切）。若需尽快恢复，可联系国金客服确认维护窗口。" -f $state) "warn"
+        }
+    }
     exit 0
 }
 Write-Log ("UP 沙箱已登录（{0}），补跑夜间闭环（第 {1} 次）" -f $state, ($attempts + 1))
