@@ -26,7 +26,7 @@
 
 退出码:
   0  PASS（客户端已加载并打印期望 BUILD_TAG）
-  2  时段闸拒绝（交易时段内不允许重启；--force-offhours 可越过）
+  2  时段闸拒绝（仅对非沙箱客户端；--force-offhours 可越过）
   3  产物校验失败（非 GBK / 首行非 # coding=gbk / 取不到 BUILD_TAG）
   4  部署后未看到 BUILD_TAG（含模型名未预注册的诊断）
   5  客户端重启失败（起不来 / 进程不在）
@@ -45,9 +45,14 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 CLIENT_EXE_REL = os.path.join("bin.x64", "XtItClient.exe")
 
-# 重启禁区：09:00-15:05 一律不许重启客户端（含午休，避免任何盘中抖动）
+# 重启禁区：09:00-15:05 不许重启客户端（含午休，避免任何盘中抖动）。
+# **只对「承载在跑策略、需要干净交易日证据」的客户端生效**（主号 67014907）。
+# 沙箱 70180771（D:\QMT交易端模拟）是纯验证目标：策略永远 passive 空转、不出信号不建仓，
+# 重启不产生任何需要保留的盘中证据，也没有真钱风险 ⇒ **免闸**，任何时间都可部署/重启
+# （2026-10-29 诚哥拍板：主号与沙箱都是模拟账号，沙箱更没有理由锁死）。
 BLOCK_START = (9, 0)
 BLOCK_END = (15, 5)
+SANDBOX_DIR = r"D:\QMT交易端模拟"
 
 TAG_RE = re.compile(r"""BUILD_TAG\s*=\s*["']([0-9A-Za-z._\-]+)["']""")
 
@@ -69,6 +74,22 @@ def in_block_window(now=None):
     now = now or time.localtime()
     hm = (now.tm_hour, now.tm_min)
     return BLOCK_START <= hm < BLOCK_END
+
+
+def is_gate_exempt(qmt_dir):
+    """沙箱客户端免时段闸。
+
+    路径必须先归一：调用方常传 D:/xxx 或带尾分隔符，原样比较会静默失配，把沙箱
+    当成主号去拦（2026-10-29 「判定类脚本必须有第二证据」条的同类坑）。
+    """
+    if not qmt_dir:
+        return False
+    try:
+        a = os.path.normcase(os.path.normpath(os.path.abspath(qmt_dir)))
+        b = os.path.normcase(os.path.normpath(os.path.abspath(SANDBOX_DIR)))
+    except Exception:
+        return False
+    return a == b
 
 
 # ------------------------------------------------------------------
@@ -347,13 +368,17 @@ def main():
     if not os.path.isdir(py_dir):
         fail(6, "QMT python 目录不存在: %s" % py_dir)
 
-    # 1) 时段闸
+    # 1) 时段闸（沙箱免闸）
     if not args.no_restart and in_block_window():
-        if args.force_offhours:
+        if is_gate_exempt(args.qmt_dir):
+            log("[INFO] 沙箱客户端免时段闸（纯验证目标，策略 passive 空转、无真钱、无盘中证据要保）"
+                "——交易时段内照常部署/重启")
+        elif args.force_offhours:
             log("[WARN] 处于交易时段（09:00-15:05），但因 --force-offhours 继续重启")
         else:
             fail(2, "当前处于交易时段（09:00-15:05），拒绝重启客户端。"
-                    "请在收盘后 / 开盘前执行，或确认风险后加 --force-offhours。")
+                    "请在收盘后 / 开盘前执行，或确认风险后加 --force-offhours。"
+                    "（沙箱 D:\\QMT交易端模拟 已免闸，此拦截只会命中主号等承载在跑策略的客户端）")
 
     # 2) 可选构建
     if args.build:

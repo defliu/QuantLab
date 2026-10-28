@@ -111,15 +111,21 @@ def build_env(tmp, logged=None, exit_code=None, state=None, scenario=None,
     return env
 
 
-def new_case():
-    """Fresh temp tree with the real script (paths redirected) + stubs."""
+def new_case(sandbox=None):
+    """Fresh temp tree with the real script (paths redirected) + stubs.
+
+    sandbox: 覆盖 `$sandbox` 的取值。默认用 temp 下的 fake_client（= 非沙箱 ⇒ 时段闸生效，
+    用来钉住「非沙箱仍被拦」这条分支）；传生产沙箱路径 D:\QMT交易端模拟 则用来钉住
+    「沙箱免时段闸」（2026-10-29 起）。stub 化的是 probe/nightly，所以永远不会碰真客户端。
+    """
     tmp = os.path.join(tempfile.mkdtemp(prefix="qn_retry_"), "proj")
     os.makedirs(os.path.join(tmp, "data", "schedules"))
     os.makedirs(os.path.join(tmp, "results", "qmt_nightly"))
     src = open(SRC, encoding="utf-8-sig").read()
     subs = [
         (r"^\$dir\s*=.*$", '$dir      = "%s"' % tmp.replace("\\", "/")),
-        (r"^\$sandbox\s*=.*$", '$sandbox  = "%s/fake_client"' % tmp.replace("\\", "/")),
+        (r"^\$sandbox\s*=.*$",
+         '$sandbox  = "%s"' % (sandbox if sandbox else "%s/fake_client" % tmp.replace("\\", "/")).replace("\\", "/")),
         (r"^\$probe\s*=.*$", '$probe    = "%s/probe_stub.py"' % tmp.replace("\\", "/")),
         (r"^\$nightly\s*=.*$", '$nightly  = "%s/nightly_stub.ps1"' % tmp.replace("\\", "/")),
         (r"^\$py\s*=.*$", '$py = "%s"' % PYEXE.replace("\\", "/")),
@@ -307,11 +313,14 @@ b = c.cards()[0]["body"] if c.cards() else ""
 check("C10 wake EXIT=4: body says EXIT=4", "EXIT=4" in b)
 check("C10 wake EXIT=4: body must not claim the broker node", "180.169.107.19" not in b)
 
-# --- C11 intraday time gate runs before any deploy --------------------------
+# --- C11 intraday time gate still blocks a NON-sandbox target ---------------
+# 2026-10-29 起沙箱免闸，所以这条钉的是「目标不是沙箱时闸必须还在」这一半；
+# 沙箱那一半见 C23/C24。
 tmp, s = new_case()
 c, rc = run(s, build_env(tmp, logged=1, exit_code=0, scenario="pass_ok", hhmm="1000"), tmp)
-check("C11 time gate 10:00: probe and loop never invoked",
+check("C11 non-sandbox target 10:00: probe and loop never invoked",
       not c.probe_called() and not c.nightly_called() and rc == 0)
+check("C11 non-sandbox target: log names the trading-hours gate", "时段闸" in c.log())
 
 # --- C12 already PASSed today: fully silent --------------------------------
 tmp, s = new_case()
@@ -423,6 +432,24 @@ check("C22 gate-reject: card names the trading-hours gate", "交易时段闸" in
 check("C22 gate-reject: card must NOT send reader to product/model registration",
       "模型未注册" not in b22)
 check("C22 gate-reject: no PASS mark", not any("qmt_nightly_pass_" in x for x in c.marks()))
+
+# --- C23 the production sandbox path is EXEMPT from the trading-hours gate -----
+# 交易日 10:00（老闸的窗口内）也必须能部署：沙箱策略 passive 空转、无真钱、无盘中证据要保。
+SANDBOX = r"D:\QMT交易端模拟"
+tmp, s = new_case(sandbox=SANDBOX)
+c, rc = run(s, build_env(tmp, logged=1, exit_code=0, scenario="pass_ok", hhmm="1000"), tmp)
+check("C23 sandbox 10:00: loop actually runs (gate exempt)", c.nightly_called() and rc == 0)
+check("C23 sandbox 10:00: no trading-hours skip in the log", "时段闸" not in c.log())
+check("C23 sandbox 10:00: day counter used, night counter untouched",
+      c.day_attempts() == "1" and c.attempts() is None)
+
+# --- C24 sandbox + not logged at 10:00 must WAIT, not be gated out -------------
+tmp, s = new_case(sandbox=SANDBOX)
+c, rc = run(s, build_env(tmp, logged=0, exit_code=2, hhmm="1000"), tmp)
+check("C24 sandbox 10:00 not logged: WAIT (no deploy, no card)",
+      not c.nightly_called() and len(c.cards()) == 0 and rc == 0)
+check("C24 sandbox 10:00 not logged: WAIT is attributed to login, not to the gate",
+      "WAIT" in c.log() and "时段闸" not in c.log())
 
 print("")
 if fails:

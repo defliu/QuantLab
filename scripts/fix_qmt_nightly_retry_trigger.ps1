@@ -9,10 +9,11 @@
 #   * A -Daily trigger's .Repetition is $null; you must assign a ClientOnly
 #     MSFT_TaskRepetitionPattern built WITH the properties.
 #
-# 2026-10-29: added a daytime band (daily 15:15 -> 20:00, every 30 min). When the broker
-# login recovers during the day the old window (21:30 -> 08:45) made us wait until 21:10
-# for the next PASS. Daytime guards (last-night PASS / real PASS within 24h / own 2-per-day
-# budget) live in qmt_nightly_retry.ps1, not here.
+# 2026-10-29: added a daytime band (first 15:15 -> 20:00 every 30 min; later the same day the
+# sandbox was exempted from the trading-hours gate, so it was widened to 08:50 -> 20:00 every
+# 30 min). When the broker login recovers during the day this produces the PASS within minutes
+# instead of waiting until 21:10. Daytime guards (real PASS within 24h / own 2-per-day budget)
+# live in qmt_nightly_retry.ps1, not here.
 # Rollback: .\fix_qmt_nightly_retry_trigger.ps1 -NoDaySlot
 # NOTE: keep this file ASCII-only -- without a BOM PowerShell 5.1 decodes it as GBK and
 # Chinese comments turn into parser errors (AGENTS UTF-8 BOM rule).
@@ -34,13 +35,14 @@ function New-RepPattern([string]$interval, [string]$duration) {
 $rep = New-ScheduledTaskTrigger -Daily -At "21:30"
 $rep.Repetition = New-RepPattern "PT15M" "PT11H15M"
 
-# ---- trigger 2: daytime band, every day 15:15 -> 20:00 every 30 min ----
-# Duration PT4H50M so the 20:00 slot definitely fires while 20:30 does not:
-# a deploy run takes ~5-15 min, and the client self-restarts at 20:54.
+# ---- trigger 2: daytime band, every day 08:50 -> 20:00 every 30 min ----
+# 08:50 start because the night band ends 08:45. Duration PT11H10M ends exactly at 20:00,
+# so the 20:00 slot fires while 20:30 does not (a deploy run takes ~5-15 min and the
+# client self-restarts at 20:54).
 $trigList = @($rep)
 if (-not $NoDaySlot) {
-    $day = New-ScheduledTaskTrigger -Daily -At "15:15"
-    $day.Repetition = New-RepPattern "PT30M" "PT4H50M"
+    $day = New-ScheduledTaskTrigger -Daily -At "08:50"
+    $day.Repetition = New-RepPattern "PT30M" "PT11H10M"
     $trigList += $day
 }
 
