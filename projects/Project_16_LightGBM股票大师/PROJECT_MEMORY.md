@@ -1766,3 +1766,16 @@ DE 运行约 25 分钟，**无 `SCOPE_ACK`、无报告正文、CPU 长时间几�
 - **调度**：`paper_forward_daily.ps1` 第 8 步（16:55），失败只写 `SHADOW-ALERT` 不阻断主链。
 - **裁决门槛**：累计 60 个独立信号日再谈显著性；且影子与 live 同时变模型与信号层，不能把差异全归因于特征数。
 - **关联**：全局控制台 T-20261027-004；repowiki P16 卡「特殊配置与命令」；报告 `data/real/paper_shadow_b21_20261027.md`。
+
+## 2026-10-28 · QMT 零介入部署（T-20261028-001，推翻「必须人工粘贴」旧结论）
+
+- **痛点**：诚哥「代码生成了，QMT 内还得我手动粘贴进去再执行，你再读日志，再调试，我再粘贴」——要求全程零介入。
+- **机制实证（本案最重要的一条）**：客户端启动时按**固定路径** `<QMT>\python\<模型名>.py` 读文件执行（日志 `reqid = 0<path>_<id>`）；**明文 GBK .py 可直接加载**，客户端**不回写加密**（md5 全周期一致，含 `Stop-Process -Force` 强杀后仍一致）。⇒ 2026-09-10「复制到 python\ 无效、必须粘贴」的结论**只对「随便放个文件名」成立**，对**已注册模型名覆盖文件**不成立。
+- **硬限制**：模型名必须已存在于客户端二进制 `indexConfig/configFormula`。只写 `config/indexUserConfig.xml` + `indexConfig/formulainitstepsinof` **不够**（客户端打 `configFormula not exist, continue ... utfName:X` 后静默跳过，只剩 `auto run timeout`、零 Python 输出）→ **每上新一个策略名，仍需 UI 建一次模型空壳，之后就永久免粘贴**。
+- **两个坑**：①启动必须带 `reboot` 参数，否则停在 `Proxy client not logged`，一个策略都不跑；②`auto run timeout` / `loadFile [X] parse error` 是每次重启都有的良性噪声，**唯一判据是日志出现 `BUILD_TAG=<期望值>`**。
+- **沙箱边界**：`Foribdden FileIO` 拦的是**运行中的策略**读写文件，**不拦客户端自己的加载器**读 `python\*.py`——两条道要分清。
+- **工具**：`projects/Project_16_LightGBM股票大师/qmt_autodeploy.py`（校验 GBK/无 BOM/首行/含 BUILD_TAG → 备份到项目 `_deploy_bak/`（已 gitignore）→ 写入 → 优雅关窗 12s 后强杀 → `reboot` 重启 → 从日志**当前偏移**轮询 BUILD_TAG → PASS/FAIL）。关闭只按 `ExecutablePath` 前缀命中 `--qmt-dir`，**绝不误伤 `D:\国金QMT交易端模拟`**。退出码 0/2/3/4/5/6。
+- **端到端 PASS（15:50）**：`[DEPLOY] [OK] PASS: 客户端已加载 STRATEGY_P16_G2_SELFCONTAINED，BUILD_TAG=20261027-132907`，运行日志 `passive=True`（70180771 上账号戳不符 + 白名单空，双被动 → 零委托）。
+- **⚠️ 事故教训（写进 AGENTS）**：回滚期间误删了 70180771 上那份加密原始产物（734,366 B / build 20261023-105529）及其备份，用仓库 build 产物（549,296 B / 20261027-132907）补回=**恢复即升级**。硬规则：**覆盖 `python\*.py` 前必须备份到客户端目录之外，覆盖后绝不删除备份**。
+- **未做**：生产端 `D:\国金QMT交易端模拟`（67014907 实盘执行端）未接入，仍跑手工粘贴的 10-27 版；接入需先拍板该客户端能否按同一节奏重启。
+- **关联**：全局控制台 T-20261028-001；`specs/QMT零介入部署方案_20261028.md`；commit `1bd33f6`；repowiki P16 卡「特殊配置与命令」与部署运维文档。
