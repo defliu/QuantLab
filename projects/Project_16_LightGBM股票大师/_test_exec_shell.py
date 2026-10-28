@@ -64,8 +64,16 @@ check("T1 14:57 在时段", mod.in_session(1457))
 check("T1 14:58 不在时段", not mod.in_session(1458))
 check("T1 15:00 收盘后不下单", not mod.in_session(1500))
 
+# --- 1b) 执行窗口 09:50–09:58（与回测口径一致）---
+check("T1b 09:49 不在窗口", not mod.in_exec_window(949))
+check("T1b 09:50 在窗口", mod.in_exec_window(950))
+check("T1b 09:52 在窗口", mod.in_exec_window(952))
+check("T1b 09:58 在窗口（截止）", mod.in_exec_window(958))
+check("T1b 09:59 已过窗口", not mod.in_exec_window(959))
+check("T1b 14:00 在交易时段但不在窗口", mod.in_session(1400) and not mod.in_exec_window(1400))
+
 # --- 2) 正常路径 ---
-legs, info = mod.plan_legs(env(), TODAY, 1000, POS, set(), True)
+legs, info = mod.plan_legs(env(), TODAY, 952, POS, set(), True)
 check("T2 正常信号出 2 条腿", len(legs) == 2 and info.startswith("ok"))
 check("T2 remark 带 signal_id 与腿号",
       legs[0]["remark"] == "g2-20261029-abcdef12-1"
@@ -75,18 +83,19 @@ check("T2 买腿原样", legs[1]["action"] == "BUY" and legs[1]["vol"] == 200)
 
 # --- 3) 夹取后为 0 的卖腿跳过（不报致命）---
 legs, info = mod.plan_legs(env([{"action": "SELL", "code": "600000.SH", "vol": 300, "price": 9.78}]),
-                          TODAY, 1000, {"600000.SH": {"vol": 500, "can_use": 0}}, set(), True)
+                          TODAY, 952, {"600000.SH": {"vol": 500, "can_use": 0}}, set(), True)
 check("T3 无可卖量的卖腿被跳过且不致命", legs == [] and "无可执行腿" in info)
 
 # --- 4) 拒绝路径 ---
 cases = [
-    ("空信号", None, 1000, set(), "无信号"),
-    ("schema 不符", env(schema="v0"), 1000, set(), "schema"),
-    ("日期不符", env(trade_date="20261028"), 1000, set(), "日期不符"),
-    ("账号不符", env(account_id="70180771"), 1000, set(), "账号不符"),
-    ("非交易时段", env(), 1200, set(), "非交易时段"),
+    ("空信号", None, 952, set(), "无信号"),
+    ("schema 不符", env(schema="v0"), 952, set(), "schema"),
+    ("日期不符", env(trade_date="20261028"), 952, set(), "日期不符"),
+    ("账号不符", env(account_id="70180771"), 952, set(), "账号不符"),
+    ("非执行窗口 12:00", env(), 1200, set(), "非执行窗口"),
+    ("非执行窗口 10:30（同口径外时刻）", env(), 1030, set(), "非执行窗口"),
     ("已执行", env(), 1000, {"g2-20261029-abcdef12"}, "已执行"),
-    ("空订单", env(orders=[]), 1000, set(), "订单为空"),
+    ("空订单", env(orders=[]), 952, set(), "订单为空"),
 ]
 for name, e, hm, applied, token in cases:
     legs, info = mod.plan_legs(e, TODAY, hm, POS, applied, True)
@@ -97,19 +106,19 @@ bad_orders = [
     {"action": "BUY", "code": "000001.SZ", "vol": 150, "price": 11.49},   # 非整百
     {"action": "HOLD", "code": "600000.SH", "vol": 100, "price": 9.78},   # 动作非法
 ]
-legs, info = mod.plan_legs(env(bad_orders), TODAY, 1000, POS, set(), True)
+legs, info = mod.plan_legs(env(bad_orders), TODAY, 952, POS, set(), True)
 check("T5 非法股数/动作 -> 整单放弃", legs == [] and "非法" in info)
 
 dup = [
     {"action": "SELL", "code": "600000.SH", "vol": 100, "price": 9.78},
     {"action": "SELL", "code": "600000.SH", "vol": 100, "price": 9.78},
 ]
-legs, info = mod.plan_legs(env(dup), TODAY, 1000, POS, set(), True)
+legs, info = mod.plan_legs(env(dup), TODAY, 952, POS, set(), True)
 check("T5 重复腿 -> 整单放弃", legs == [] and "重复" in info)
 
 # --- 6) 买腿总额上限 ---
 big = [{"action": "BUY", "code": "000001.SZ", "vol": 20000, "price": 11.49}]
-legs, info = mod.plan_legs(env(big), TODAY, 1000, POS, set(), True)
+legs, info = mod.plan_legs(env(big), TODAY, 952, POS, set(), True)
 check("T6 买腿超资金池 -> 拒", legs == [] and "超限" in info)
 
 # --- 7) 字段兜底 ---

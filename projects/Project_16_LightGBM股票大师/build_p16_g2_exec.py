@@ -11,6 +11,7 @@
 """
 from __future__ import print_function
 
+import argparse
 import io
 import os
 import re
@@ -60,9 +61,29 @@ def _inject_vendor(src):
     return head + block + tail
 
 
-def build(dry_run=False):
+def _apply_overrides(src, account=None, port=None, capital=None, live=False):
+    """按账号/端口/资金覆盖常量。每项必须恰好替换 1 处，否则拒绝构建（防漂移）。"""
+    subs = []
+    if account:
+        subs.append((r'^ACCOUNT_ID = "\d+"$', 'ACCOUNT_ID = "%s"' % account))
+    if port:
+        subs.append((r'^SIGNAL_URL = "http://127\.0\.0\.1:\d+/signal"$',
+                     'SIGNAL_URL = "http://127.0.0.1:%d/signal"' % int(port)))
+    if capital:
+        subs.append((r'^CAPITAL_BASE = \d+(\.\d+)?(\s*#.*)?$', 'CAPITAL_BASE = %d.0          # builder 覆盖' % int(capital)))
+    if live:
+        subs.append((r'^DRY_RUN = True(\s*#.*)?$', 'DRY_RUN = False                 # builder --live 覆盖'))
+    for pat, rep in subs:
+        src, n = re.subn(pat, rep, src, count=1, flags=re.M)
+        if n != 1:
+            raise SystemExit("[OVERRIDE-REJECT] 常量未命中: %s" % pat)
+    return src
+
+
+def build(dry_run=False, account=None, port=None, capital=None, live=False):
     src = _read(SRC)
     src = _inject_vendor(src)
+    src = _apply_overrides(src, account, port, capital, live)
 
     tag = time.strftime("%Y%m%d-%H%M%S")
     assign = re.compile(r'BUILD_TAG\s*=\s*"\d{8}-?\d{0,6}"')
@@ -105,17 +126,30 @@ def build(dry_run=False):
 
     if not os.path.isdir(os.path.dirname(OUT)):
         os.makedirs(os.path.dirname(OUT))
-    with open(OUT, "wb") as f:
+    out = OUT
+    if account and account != "67014907":
+        out = OUT.replace(".py", "_%s.py" % account)
+    with open(out, "wb") as f:
         f.write(data)
 
-    back = io.open(OUT, "r", encoding="gbk").read()
+    back = io.open(out, "r", encoding="gbk").read()
     if (not back.lstrip().startswith("# coding=gbk")
             or 'BUILD_TAG = "%s"' % tag not in back
             or "def fetch(" not in back):
         raise SystemExit("[VERIFY-REJECT] 产物写后复核失败（首行/BUILD_TAG/vendor）")
-    print("生成: %s (%d bytes) BUILD_TAG=%s" % (OUT, len(data), tag))
+    if account and ('ACCOUNT_ID = "%s"' % account) not in back:
+        raise SystemExit("[VERIFY-REJECT] 账号覆盖未生效")
+    print("生成: %s (%d bytes) BUILD_TAG=%s" % (out, len(data), tag))
     return tag
 
 
 if __name__ == "__main__":
-    build()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--account", default=None, help="账号（默认源码里的 67014907）")
+    ap.add_argument("--port", type=int, default=None, help="信号 hub 端口（默认源码里的 58610）")
+    ap.add_argument("--capital", type=int, default=None, help="该账号该策略的资金池（元）")
+    ap.add_argument("--live", action="store_true", help="把 DRY_RUN 置 False（危险，需确认）")
+    ap.add_argument("--dry-run", action="store_true", help="只校验不落盘")
+    _a = ap.parse_args()
+    build(dry_run=_a.dry_run, account=_a.account, port=_a.port,
+          capital=_a.capital, live=_a.live)

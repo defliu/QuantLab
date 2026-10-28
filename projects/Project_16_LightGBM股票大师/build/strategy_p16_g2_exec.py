@@ -23,7 +23,7 @@
 `qmt_autodeploy.py --product ... --model STRATEGY_P16_G2_EXEC --qmt-dir D:\QMT交易端模拟`。
 **新模型名需先在客户端手工注册一次**（任意内容的同名策略即可）。
 """
-BUILD_TAG = "20261029-041757"
+BUILD_TAG = "20261029-071051"
 
 import time
 
@@ -34,6 +34,12 @@ SIGNAL_URL = "http://127.0.0.1:58610/signal"
 ACCOUNT_ID = "67014907"
 CAPITAL_BASE = 100000.0          # 与 config/capital_allocation.yaml 的 g2_bridge 一致
 DRY_RUN = True                   # ★ 首次部署必须保持 True，确认日志无误后再改 False 重新构建
+# ★ 执行窗口：必须与回测口径一致。G2 的回测成交价取「开盘价」，实盘既有确认口径是
+#   09:50 触发（原换仓时点）、09:58 未成则当日放弃——见 build/strategy_p16_g2_selfcontained.py
+#   的 SIGNAL_HM / SIGNAL_DEADLINE_HM。执行壳照抄这个窗口，**不允许**在盘中任意时刻执行：
+#   10:30 拿到的信号若照单执行，成交价就与回测口径脱钩了。
+EXEC_HM_START = 950
+EXEC_HM_END = 958
 POLL_MIN_SEC = 5.0               # handlebar 内最小轮询间隔
 HTTP_TIMEOUT = 2.0               # 拉信号超时（绝不允许拖住 handlebar）
 MAX_SIGNAL_AGE_SEC = 600         # 信号超过 10 分钟即视为过期
@@ -103,6 +109,13 @@ def in_session(hhmm):
     if hhmm < 0:
         return False
     return (930 <= hhmm <= 1130) or (1300 <= hhmm <= 1457)
+
+
+def in_exec_window(hhmm):
+    """执行窗口 09:50–09:58（与回测口径对齐，见 EXEC_HM_START 注释）。"""
+    if hhmm < 0:
+        return False
+    return EXEC_HM_START <= hhmm <= EXEC_HM_END
 
 
 def _extract_positions(objs):
@@ -195,14 +208,15 @@ def plan_legs(env, today, hhmm, positions, applied_sids, dry_run):
         return [], "缺 signal_id"
     if applied_sids and sid in applied_sids:
         return [], "已执行(%s)" % sid
-    if not in_session(hhmm):
-        return [], "非交易时段(%s)" % hhmm
+    if not in_exec_window(hhmm):
+        return [], "非执行窗口(%s，要求%d-%d)" % (hhmm, EXEC_HM_START, EXEC_HM_END)
 
     raw = env.get("orders")
     if not isinstance(raw, list) or not raw:
         return [], "订单为空"          # 空订单 ≠ 清仓
 
     legs = []
+    notes = []
     seen = set()
     buy_notional = 0.0
     for idx, o in enumerate(raw):
@@ -226,8 +240,12 @@ def plan_legs(env, today, hhmm, positions, applied_sids, dry_run):
             pos = positions.get(code) or {}
             can = int(pos.get("can_use") or 0)
             if can <= 0:
-                continue                      # 无可卖量：跳过并继续，不算致命
+                # 可能是本账号里另一策略（V1.3）刚挂出卖单占用了可卖量。**留痕跳过**，
+                # 不静默缩量——第二天对账才看得出这是账户竞争而不是信号错误。
+                notes.append("SKIP %s 无可用量(计划=%d)" % (code, vol))
+                continue
             if vol > can:
+                notes.append("TRIM %s %d->%d(可用=%d)" % (code, vol, (can // 100) * 100, can))
                 vol = (can // 100) * 100
             if vol <= 0:
                 continue
@@ -245,6 +263,8 @@ def plan_legs(env, today, hhmm, positions, applied_sids, dry_run):
         return [], "买腿总额超限(%.0f>%.0f)" % (buy_notional, CAPITAL_BASE * PRICE_TOLERANCE)
     if not legs:
         return [], "无可执行腿（卖腿均无可卖量/其余为空）"
+    if notes:
+        return legs, "ok sid=%s n=%d | %s" % (sid, len(legs), "; ".join(notes))
     return legs, "ok sid=%s n=%d" % (sid, len(legs))
 
 

@@ -45,6 +45,12 @@ strategies:
     account_id: "67014907"
     note: "融合版(v3_enh+G2 rank融合w=0.5)换仓top5等权、红线60、live_trail/N10；**2026-10-22 拍板由大QMT 70180771 迁至 miniQMT 67014907 并改为 xtquant 直连下单**；资金池独立 D:/QMT_POOL/p16_ensemble_bridge/ens_strategy_capital.json(67014907戳)，成交账本 ens_trade_log.csv，待补价队列 ens_pending_fills.jsonl，remark=p16_ens_new/p16_ens_risk；与 G2 桥完全隔离、股票重叠自动规避，绝不纳管/卖出他人持仓（2026-09-10 拍板上线）；max_hold 2→5（2026-10-08 拍板，N10 配置对齐）"
 
+  - key: g2_exec_sandbox
+    name: "G2执行壳灰度(70180771 沙箱)"
+    capital_base: 20000
+    max_hold: 3
+    account_id: "70180771"
+    note: "2026-10-29 立：外部信号→QMT内执行通道的**灰度位**。同一份执行壳产物（build/strategy_p16_g2_exec_70180771.py）跑在沙箱 70180771，信号端口 58611，资金 2 万；沙箱未开通 miniQMT，正好用它验证「内置 passorder 执行壳」这条路。★ 该池**不计入前向业绩**，只验证执行链路；同一 signal_id 在主号（g2_bridge）与沙箱各执行一次属**预期**（两账号独立账本），对账时按账号分开。"
   - key: all_weather
     name: "全天候底仓V1(股30/债30/货25/金15)"
     capital_base: 100000
