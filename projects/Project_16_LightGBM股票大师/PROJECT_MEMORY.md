@@ -1839,3 +1839,11 @@ DE 运行约 25 分钟，**无 `SCOPE_ACK`、无报告正文、CPU 长时间几�
 - **⏳ 卡点（不是升级造成的）**：①2.1.33.0 **首次登录多出验证码框**，图无法可靠识别，未猜（防失败次数限制）；②客户端 21:29:30 `login status: 1 description: 由于目标计算机积极拒绝，无法连接`，直连 `180.169.107.19:56001` = **False**，而同主机 `65000`（更新）= True ⇒ **券商登录服务侧不可达**。主号当时仍是 19:46 建立的老会话，所以看不出来。
 - **连带**：21:10 夜间闭环自动重启新客户端 → 停在登录框 → `exit=4 未出 BUILD_TAG`（报告 `results/qmt_nightly/20261028-211001.md`），属预期，不是部署逻辑问题。
 - **明天待办**：①券商登录恢复后登录沙箱（填验证码）→ ②受此启发：**夜间闭环对"新装/未登录"的客户端必然 FAIL**，以后换客户端/重装后必须先把 token 登录好再挂自动部署；③跑一次 `qmt_nightly.py loop` 收尾验证；④新版本若跑不通 → 用备份整目录回滚 2.1.19。
+
+## 2026-10-28 23:4x · 登录守护上线（券商 56001 断线期间自动拉起客户端）
+
+- **触发**：22:2x 复测 `180.169.107.19:56001` **False**（同主机 65000=True、43.179.237.121:59001=True、43.242.96.162:55300=True、175.25.41.69:55300=False）⇒ 券商登录节点断；期间**主号客户端 21:10:07 后自行退出**（日志停在 `Proxy client not logged` + `netThread is alive`，无 closeEvent、无 crash），两台客户端全 idle。
+- **交付**：`scripts/qmt_watch_login.ps1`（UTF-8 BOM 已校验）+ 任务 `QMT_WatchLogin_10min`（Interactive、每 10 分钟、重复 365 天、超时 5 分钟）。逻辑：探 56001（3s）→ 不通且非早盘窗口只记 WAIT → 通了或落在 **08:40–09:20 兜底窗口** 时，对未运行客户端 `reboot` 拉起 → 90s 后回读日志记 `login success` / `停在登录框`。停机开关 `data/schedules/qmt_watch_off`。
+- **顺带修正自启陷阱**：`QMT_Prod_BootStart` / `QMT_Sandbox_BootStart`（S4U / session 0）**已禁用**。证据：session 0 起的客户端有进程无主窗口，`CMainWindow::tryAutoRunStrategy` 不触发 ⇒ 看着起来了但一个策略都不跑。保留 `*_LogonStart`（Interactive）+ 本守护。
+- **验证**：手跑一次 → `WAIT … 不可达，本轮不动客户端`、`LastTaskResult=0`；PowerShell 语法解析 OK；任务回读 `Arguments` 中文路径正确。
+- **局限**：沙箱重装后首次登录需**人工填验证码**，脚本只能把登录窗口拉到前台；主号 token 仍在，可自动登录。
