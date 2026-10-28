@@ -122,6 +122,11 @@ $probeOut = (& $py $probe --verdict --client $sandbox 2>&1 | Out-String).Trim()
 $logged = ($probeOut -match "LOGGED=1")
 $mState = [regex]::Match($probeOut, "STATE=(.+)$")
 $state = if ($mState.Success) { $mState.Groups[1].Value } else { $probeOut }
+# EXIT= 是探针给的分级签名（0 已登录 / 2 进程在跑但未登录 / 4 进程不在 / 5 禁触路径）。
+# 收口卡必须按签名说不同的话：2 是券商侧、本地无解；4 是**本机问题**（客户端没起来），
+# 把后者也说成「券商侧、无人可修」会把排障方向带偏一整天。
+$mExit = [regex]::Match($probeOut, "EXIT=(\d+)")
+$pExit = if ($mExit.Success) { [int]$mExit.Groups[1].Value } else { -1 }
 if (-not $mState.Success) { Write-Log ("WARN 探针输出异常：" + ($probeOut -replace "`r?`n", " | ")) }
 try { if ($oldEnc) { [Console]::OutputEncoding = $oldEnc } } catch { }
 
@@ -135,8 +140,15 @@ if (-not $logged) {
     if ($hhmm -ge "0830" -and $hhmm -lt "0900") {
         $wakeMark = Join-Path $sched ("qmt_retry_wakecard_{0}.mark" -f $today)
         if (!(Test-Path $wakeMark)) {
+            # 按探针签名分级的结论句，别把本机问题写成券商问题
+            $cause = switch ($pExit) {
+                2 { "EXIT=2（TCP 已通、柜台登录报文不应答）属券商模拟环境侧，本机已无可修项；且穷举两台模拟客户端配置共 26 个服务端地址仅 4 个可达、登录节点只有 180.169.107.19:56001 一个（无备用可切）。若需尽快恢复可联系国金客服确认维护窗口。" }
+                4 { "EXIT=4（沙箱客户端进程不在跑）⇒ 这是**本机问题**，不是券商侧：请查 QMT_Sandbox_LogonStart/BootStart 任务与 bin.x64 完整性（日志出现 initPythonEnv failed = 安装不完整，见 AGENTS 客户端启动失败判据），必要时手工启动 XtItClient.exe reboot。" }
+                5 { "EXIT=5（探针拒绝访问的路径）⇒ 脚本被指向了非模拟客户端目录，属调用参数错误，需人工核对任务定义。" }
+                default { "EXIT=$pExit（探针未给明确签名），请读 data\schedules\qmt_nightly_retry.log 尾部人工判定。" }
+            }
             Set-Content -Path $wakeMark -Value (Get-Date -Format "yyyy-MM-dd HH:mm:ss") -Encoding UTF8
-            Push-Card "[QMT] 夜间闭环整夜未登录，窗口 08:45 关闭" ("沙箱（70180771）整夜登录未恢复，补跑窗口即将关闭，本轮期**零部署动作**（不 build/不落盘/不重启），因此没有 PASS 也没有 FAIL 报告。`n最后一次探针：{0}`n今晚 21:10 主任务 + 21:30 起每 15 分钟补跑会自动继续，登录一恢复即自动补出 PASS 并推卡。`n本地已无可修项：柜台登录报文 200003 超时属券商模拟环境侧，且穷举两台模拟客户端配置共 26 个服务端地址仅 4 个可达、登录节点只有 180.169.107.19:56001 一个（无备用可切）。若需尽快恢复，可联系国金客服确认维护窗口。" -f $state) "warn"
+            Push-Card "[QMT] 夜间闭环整夜未登录，窗口 08:45 关闭" ("沙箱（70180771）整夜登录未恢复，补跑窗口即将关闭，本轮期**零部署动作**（不 build/不落盘/不重启），因此没有 PASS 也没有 FAIL 报告。`n最后一次探针：{0}`n今晚 21:10 主任务 + 21:30 起每 15 分钟补跑会自动继续，登录一恢复即自动补出 PASS 并推卡。`n{1}" -f $state, $cause) "warn"
         }
     }
     exit 0
