@@ -10,7 +10,8 @@
 #   4) 构建失败 = 不部署（qmt_autodeploy --build 返回非 0 直接退出）。
 #
 # 调度：每日 21:10（非交易时段；20:54 客户端自重启之后，21:20 夸克备份之前）。
-# 演练：powershell -File qmt_nightly_deploy.ps1 -Rehearsal（只校验+落盘，不重启，跳过 TAG 核对）。
+# 演练：powershell -File qmt_nightly_deploy.ps1 -Rehearsal（只构建+校验，**不落盘、不重启**，
+#       跳过 TAG 核对；报告改名 REHEARSAL_*，且不覆盖 latest.json —— 演练永远不算 PASS）。
 # 失败处置：退非 0，agent/人读 data/schedules/qmt_nightly.log 尾部 +
 #          results/qmt_nightly/latest.json（含每模型 BUILD_TAG / 被动 / 异常签名）接手。
 param(
@@ -70,9 +71,18 @@ Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] qmt_nightly loop
 
 # ---- 结论回显（供 agent 直接读日志尾部定位）----
 # 注意：UTF-8 控制台编码必须保持到这里，否则下面这次 python 输出又被当 GBK 解 → 中文乱码。
-if (Test-Path "$reportDir/latest.json") {
-    $v = & $py -c "import json,sys; f=open(sys.argv[1],encoding='utf-8'); d=json.load(f); f.close(); print('verdict=%s deploy=%s tag=%s' % (d['verdict'], (d.get('deploy') or {}).get('result'), (d.get('deploy') or {}).get('tag')))" "$reportDir/latest.json" 2>&1
-    Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] latest.json -> $v" -Encoding UTF8
+# 演练（-Rehearsal）不写 latest.json（qmt_nightly.py 里已拦），所以这里演练时要改读
+# 最新的 REHEARSAL_*.json 并明确标 REHEARSAL，否则日志会拿上一轮真实报告冒充本轮结论。
+$echoFile = "$reportDir/latest.json"
+$echoTag = ""
+if ($Rehearsal) {
+    $rh = Get-ChildItem -Path $reportDir -Filter "REHEARSAL_*.json" -File -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    if ($rh) { $echoFile = $rh.FullName; $echoTag = " [REHEARSAL 演练，不计 PASS]" }
+}
+if (Test-Path $echoFile) {
+    $v = & $py -c "import json,sys; f=open(sys.argv[1],encoding='utf-8'); d=json.load(f); f.close(); print('verdict=%s deploy=%s tag=%s' % (d['verdict'], (d.get('deploy') or {}).get('result'), (d.get('deploy') or {}).get('tag')))" "$echoFile" 2>&1
+    Add-Content -Path $log -Value "[$(Get-Date -Format 'HH:mm:ss')] $(Split-Path $echoFile -Leaf) -> $v$echoTag" -Encoding UTF8
 }
 try { [Console]::OutputEncoding = $oldEnc } catch { }
 Remove-Item -LiteralPath $lock -Force -ErrorAction SilentlyContinue

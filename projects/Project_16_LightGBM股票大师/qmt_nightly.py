@@ -230,7 +230,8 @@ def fmt_model_row(model, info):
 
 def render_md(stamp, deploy, scans, verdict):
     L = []
-    L.append("# QMT 夜间闭环报告 · %s" % stamp)
+    dry = bool(deploy and deploy.get("dry_run"))
+    L.append("# QMT 夜间闭环报告 · %s%s" % ("[REHEARSAL 演练] " if dry else "", stamp))
     L.append("")
     L.append("## 一、结论")
     L.append("")
@@ -239,6 +240,9 @@ def render_md(stamp, deploy, scans, verdict):
         L.append("- **部署：%s**（模型 `%s`，BUILD_TAG `%s`，退出码 %s）"
                  % (deploy.get("result"), deploy.get("model"),
                     deploy.get("tag") or "-", deploy.get("rc")))
+        if deploy.get("dry_run"):
+            L.append("- ⚠️ **本报告是演练（dry-run）**：未落盘、未重启、未回读运行日志，"
+                     "**不算夜间闭环 PASS**，不参与补跑判定。")
         if deploy.get("detail"):
             L.append("- 部署细节：%s" % deploy["detail"])
     else:
@@ -312,7 +316,10 @@ def render_md(stamp, deploy, scans, verdict):
 def write_report(stamp, deploy, scans, verdict):
     if not os.path.isdir(REPORT_DIR):
         os.makedirs(REPORT_DIR)
-    base = os.path.join(REPORT_DIR, stamp)
+    # 演练（dry-run）报告：文件名加 REHEARSAL_ 前缀自我标注，并且**不写 latest.json**——
+    # latest 的语义是「最近一次真实闭环」，qmt_nightly_retry.ps1 靠它判断今晚是否已 PASS。
+    dry_run = bool(deploy and deploy.get("dry_run"))
+    base = os.path.join(REPORT_DIR, (("REHEARSAL_" + stamp) if dry_run else stamp))
     payload = {
         "stamp": stamp,
         "verdict": verdict,
@@ -324,8 +331,9 @@ def write_report(stamp, deploy, scans, verdict):
     md = render_md(stamp, deploy, scans, verdict)
     with open(base + ".md", "w", encoding="utf-8") as f:
         f.write(md)
-    with open(os.path.join(REPORT_DIR, "latest.json"), "w", encoding="utf-8") as f:
-        json.dump(payload, f, ensure_ascii=False, indent=2)
+    if not dry_run:
+        with open(os.path.join(REPORT_DIR, "latest.json"), "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, indent=2)
     return base + ".md", base + ".json"
 
 
@@ -391,6 +399,11 @@ def cmd_loop(args):
 
     # 演练模式（不重启）不做「必须出现该模型」的期望，否则会把演练误判成 FAIL
     rehearsal = args.no_restart or args.deploy_dry_run
+    # 演练报告的 result 也可能是 "PASS"（产物校验通过、autodeploy rc=0），但它从未真正
+    # 「落盘 → 重启 → 回读 BUILD_TAG」，不能算闭环成功。落一个显式标志，让
+    # qmt_nightly_retry.ps1 的补跑判据与「复用已有成功报告」护栏都把它排除，
+    # 否则一次 -Rehearsal 会把当晚真正的补跑永久压掉（2026-10-29 01:08 实测踩过）。
+    deploy["dry_run"] = bool(rehearsal)
     scans = [scan_client(d, time.strftime("%Y%m%d"),
                          (args.model,) if (d == args.qmt_dir and not rehearsal) else (),
                          since=(deploy_start if d == args.qmt_dir else None))
