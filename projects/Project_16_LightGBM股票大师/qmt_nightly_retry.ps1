@@ -39,6 +39,9 @@ $py = "C:\Users\Administrator\.workbuddy\binaries\python\envs\miniqmt\Scripts\py
 if (!(Test-Path $py)) { $py = "D:\Python311\python.exe" }
 
 function Write-Log([string]$msg) {
+    # 一个事件一行：任何调用方传进多行文本（探针原始输出 / 异常 ToString）都会被
+    # Add-Content 拆成多行，时间戳只在第一行 ⇒ 事后 grep 会把续行当成孤立记录漏读。
+    $msg = ($msg -replace "\r?\n", " | ")
     $line = "[{0}] {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $msg
     try {
         if (!(Test-Path $sched)) { New-Item -ItemType Directory -Force -Path $sched | Out-Null }
