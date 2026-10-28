@@ -432,14 +432,32 @@ def load_positions_log():
 
 
 def _connect():
+    """连接 miniQMT 并校验「账号真的可读」，不可读一律抛错（拒绝在登录态不明时下单）。
+
+    T-20261029-003 加的两道 fail-safe（原实现只看 connect()，把「客户端没登录」当成「账户空仓」）：
+      ① subscribe() 返回码原先被丢弃 —— 70180771 实测正是 connect()=0 而 subscribe()=-1，
+         此时持仓/资产/委托查询全空，看起来「什么都没持有」，其实是柜台根本没给数据。
+      ② query_stock_asset() 返回 None 同样属「不可读」，不能当成「现金 0」。
+    未登录/未授权 ⇒ 抛错退出，不下任何单，也不写成交记录（宁可不换仓，绝不按假空仓重买）。
+    """
     from xtquant import xttrader, xttype
     trader = xttrader.XtQuantTrader(C.USERDATA, int(time.time()))
     trader.start()
     if trader.connect() != 0:
         raise RuntimeError("连接 miniQMT 失败")
     account = xttype.StockAccount(C.ACCOUNT_ID)
-    trader.subscribe(account)
+    sub = trader.subscribe(account)
     time.sleep(3)
+    if sub != 0:
+        raise RuntimeError(
+            "miniQMT 账号订阅失败 subscribe=%s（账户 %s）⇒ 客户端很可能【未登录/登录超时】，"
+            "此时持仓与资产查询一律返回空，属『不可读』而非『空仓』，本次拒绝下单"
+            % (sub, C.ACCOUNT_ID))
+    asset = trader.query_stock_asset(account)
+    if asset is None:
+        raise RuntimeError(
+            "miniQMT query_stock_asset 返回 None（账户 %s）⇒ 账户不可读（未登录/未授权），"
+            "本次拒绝下单" % C.ACCOUNT_ID)
     return trader, account
 
 
@@ -777,7 +795,10 @@ def main():
     from xtquant import xtconstant
     trader, account = _connect()
     asset = trader.query_stock_asset(account)
-    cash = float(asset.cash) if asset else 0.0
+    if asset is None:
+        # _connect() 已校验过一次，这里再确认——防「校验通过后账号掉线」这一窄窗口
+        raise RuntimeError("query_stock_asset 返回 None ⇒ 账号在下单前掉线/未登录，本次拒绝下单")
+    cash = float(asset.cash)
     print(f"  [LIVE] 账户可用资金 {cash:,.2f} | 策略资金池 {capital:,.0f} 元 | 每只目标市值 ≈ {target_value:,.0f} 元")
     log_rows = []
     guard_note = []  # 委托守护结果汇总
