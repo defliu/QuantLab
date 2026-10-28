@@ -1811,3 +1811,22 @@ DE 运行约 25 分钟，**无 `SCOPE_ACK`、无报告正文、CPU 长时间几�
   3. **夜间闭环（21:10）继续只打 `D:\QMT交易端模拟`（70180771）**，生产端接入必须另设「优雅重启」路径（让客户端自己按 20:54/08:52 自重启节奏加载，而不是我们杀它）。
   4. 生产端恢复前：G2/V13 都在 passive（零委托），本次事故的**交易影响为零**，但监控断档。
 - **事故时的现场事实（留档）**：生产 G2 = 加密 `BUILD_TAG=20261027-132907`（已还原）、`passive=True whitelist=0`；V13 = `P16_V13_RISK` 84138 B（10-23 11:09）全天 `[P16V13][PASSIVE] 白名单为空`。即**两台客户端今天本来就都没在下单**。
+
+## 2026-10-28 20:0x · ✅ 生产客户端恢复 + **推翻前一条事故定性**（真因：bin.x64 缺 138 个文件）
+
+> ⚠️ 本节**覆盖**上面「18:30-19:00 生产端强制重启失败事故」里「2.1.33.0 强杀会卡死、只能重启 OS」的结论——那条是**错误归因**（重启 OS 也没修好，正好证明不是进程/驱动状态问题）。
+
+- **真实根因（实证）**：`D:\国金QMT交易端模拟\bin.x64` 缺 **138 个文件**，含 `PythonFormula36.dll`(7,240,056B)、`python36.dll`(4,170,240B)、`pythonw.exe`、`icudtl.dat`、`d3dcompiler_47.dll` 以及一大批 `*_mini.dll` / 面板 DLL。文件缺失**在磁盘上早已存在**，只是运行中的客户端从内存加载、无感；18:31 我们强杀后重启才把它暴露出来（所以「强杀」是触发点，不是原因）。
+- **故障表现链（三条日志分别是三个层次）**：①`bin.x64\debug.log` → `Invalid file descriptor to ICU data received`；②Windows 应用事件 → `libcef.dll 0x80000003`（偏移 `0x323fa86`，文件补齐后变为 GPU 段 `0x30cf760`）；③后再现 `GPU process launch failed / crashed 6 time(s) / FATAL:gpu_data_manager_impl_private.cc(450) GPU process isn't usable. Goodbye.`；④策略层 → `initPythonEnv failed:[模块错误] 模块 PythonFormula36.dll 未找到，请确认安装包完整`。
+- **修复步骤（可复用）**：
+  1. 解包官方安装包：`C:\Temp\7z\7z.exe x "<...2.1.33.0.exe>" -oD:\Temp\qmt_pkg -y`（7-Zip 24.08；NSIS 包；7-Zip 静默安装需 `MSYS_NO_PATHCONV=1` 且 `/D=` 放最后，否则 MSYS 会改写开关导致弹 GUI）。
+  2. 补齐：`cp -rn D:\Temp\qmt_pkg\bin.x64\. D:\国金QMT交易端模拟\bin.x64\`（**只补缺、不覆盖**）。
+  3. 核对：脚本比对包/现装 `bin.x64` 文件名与大小 → `problems: 0`；`icudtl.dat` md5 `c6ae43f9d596f3dd0d86fb3e62a5b5de` 与包一致。
+  4. 重启：`XtItClient.exe reboot`（**单参数即可**，不需要 `--no-sandbox/--disable-gpu`；之前以为要这些开关，其实是文件缺失造成的假象）。
+- **恢复判据（三件套全中才算好）**：①进程 `MainWindowTitle = "67014907 - 国金QMT交易端模拟 2.1.33.0"`；②`XtClient_FormulaOutput_<date>.log` 有**新增**行；③`[P16G2I][BUILD] BUILD_TAG=20261027-132907` + `[P16V13][BUILD] BUILD_TAG=20261023-110053` 双策略回归、`initPythonEnv failed` 零命中。本次 20:06:10 起 FormulaOutput 恢复，G2 心跳 + V13 PASSIVE 均正常（仍 passive，白名单空，零委托）。
+- **★ 教训（写进 AGENTS）**：
+  1. 见到 `模块 XXX.dll 未找到，请确认安装包完整` 一律先比对官方安装包文件清单，**不要**再去查沙箱/权限/账号/网络——那是客户端安装不完整。
+  2. **不要**把「强杀后客户端起不来」当成版本特性写进红线；先怀疑磁盘文件完整性。
+  3. 厂家更新服务器可用：`http://download.thinktrader.net:8800/download/update36.cfg` → `Python36x64_<date>.zip`（`isforceupdate=1`，md5 校验通过，含 `python36.dll`/`DLLs`/`Lib`/`pythonw.exe`，**不含** `PythonFormula36.dll`，后者只能从客户端安装包取）；国金包更新：`http://180.169.107.19:65000/download/update_QMT.cfg`。
+  4. 凭据（诚哥 2026-10-28 提供）已存 **Windows 凭据管理器**：`QMT_PROD_67014907` / `QMT_TEST_70180771`（DPAPI 加密），**不入仓库、不进文档、不写日志**。
+  5. 遗留：解包目录 `D:\Temp\qmt_pkg`（843MB）与 `C:\Temp\7z`（7-Zip 24.08）为本次排障副产品，确认无需留档后可删。
