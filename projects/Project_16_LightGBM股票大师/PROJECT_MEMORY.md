@@ -1796,3 +1796,18 @@ DE 运行约 25 分钟，**无 `SCOPE_ACK`、无报告正文、CPU 长时间几�
 - **遗留**：①生产端（67014907）接入部署待拍板；~~②一次只能部署一个模型（G2 与 ENS 需两次运行）~~ → **已关闭，见下条拍板**；③`--verify-only` 只体检不部署模式未做。
 - **✅ 拍板（2026-10-28 诚哥原话「Ens 搁置，不部署」）**：夜间闭环**固定只部署 `STRATEGY_P16_G2_SELFCONTAINED`**，不加 ENS/融合部署腿，不新增第二模型注册位。承接 10-24「先搁置」，这次把"优化冻结"升级为**"部署也排除"**——ENS 既不跑也不上。**重启前置（未变）**：`g2_ens_hold_dates.json` 仍留 4 只陈旧持仓（600691.SH/002841.SZ/002762.SZ/688758.SH，updated_at 10-15），恢复 ENS 前必须先清理，否则 G2 侧重叠规避会误跳过候选票。**注意**：`config/capital_allocation.yaml` 里 `p16_ensemble_bridge` 的 10 万额度**仍占着**（本次未动分配表——拍板只说"不部署"，没说退额度；要退需单独拍板并跑 `check_capital_allocation.py`）。
 - **关联**：全局控制台 T-20261028-002；`specs/QMT零介入部署方案_20261028.md` §九；repowiki P16 卡「特殊配置与命令」与部署运维文档。
+
+## 2026-10-28 18:30-19:00 · ❌ 生产端（67014907）强制重启失败事故——客户端卡死需重启 Windows
+
+- **动机**：诚哥「1 吧，这是最新版的 Qmt」= 把零介入部署的目标从沙箱客户端 `D:\QMT交易端模拟`（70180771）切到生产客户端 `D:\国金QMT交易端模拟`（67014907，2.1.33.0）。理由是生产端账号戳与产物一致，部署才有交易意义。
+- **动作**：`qmt_autodeploy.py --product build/strategy_p16_g2_selfcontained.py --model STRATEGY_P16_G2_SELFCONTAINED --qmt-dir "D:\国金QMT交易端模拟"`。产物校验/备份/落盘全部 PASS（备份 727,054 B 加密原件 → 项目 `_deploy_bak/STRATEGY_P16_G2_SELFCONTAINED.20261028-183142.py`；另有 `D:\QMT_upgrade_bak_20261028-1840\` 双份）。**这一步的备份是有效的，加密原件未丢**。
+- **失败经过**：停 10136（CloseMainWindow 12s 超时→强杀）→ 起 `XtItClient.exe reboot` → 启动器 24648 **在 libcef.dll 崩溃**（`0x80000003`，`debug.log: Invalid file descriptor to ICU data received`）→ 子进程 5880 完成登录（`trade server login success` 18:32:06）后**卡在 `doInitPersist` + `initExtraExpression` FATAL 之后**，不再写日志、不出主窗口、不 AutoRunStrategy → 变 0 线程无窗口进程，`Stop-Process`/`taskkill /F` 一律 `Access is denied`。
+- **排查过并排除的**：（a）明文产物不是原因——把加密原件 md5 `9fcf1c19…` 还原回去仍然起不来；（b）不是单实例/另一台客户端占用——杀掉 70180771 客户端后依然失败；（c）不是网络——56001/65000 均通；（d）不是配置损坏——`config/user/root/{UiSettingConfig,configFormula,lua}` 完好（16:08）；（e）不是 CEF 缓存——改名 `data/Cefcache` 无改善；（f）`config/token` 0 字节是常态（另两台同样 0 字节）。
+- **失败后的所有启动方式都无效**：桌面会话直起（无声退出 `-1`）、WMI `Win32_Process.Create`、S4U 计划任务（session 0 能登录但 `Proxy client not logged` 后不跑策略）、Interactive 计划任务——**2.1.33.0 的策略自动运行依赖主窗口，无窗口就不 AutoRunStrategy**。
+- **恢复手段**：只能重启 Windows 清僵尸。已注册 `QMT_Prod_AutoStart`（AtLogOn +45s，Interactive，`XtItClient.exe reboot`）在登录后自动拉起。**代价：本机未开 autologon，重启后必须人工登录一次 Windows**。
+- **★★ 硬教训（写进 AGENTS/记忆）**：
+  1. **`D:\国金QMT交易端模拟`（2.1.33.0）禁止被 qmt_autodeploy 强杀重启**。2.1.19.200（沙箱那台）强杀后能干净重起，2.1.33.0 会连带 CEF/UI 初始化一起卡死，现场只能重启 OS。
+  2. **明文落盘在 2.1.33.0 上至今未验证成功**（每次都没走到 loadFile 就卡死）→ 不能声称「生产端也能明文部署」。
+  3. **夜间闭环（21:10）继续只打 `D:\QMT交易端模拟`（70180771）**，生产端接入必须另设「优雅重启」路径（让客户端自己按 20:54/08:52 自重启节奏加载，而不是我们杀它）。
+  4. 生产端恢复前：G2/V13 都在 passive（零委托），本次事故的**交易影响为零**，但监控断档。
+- **事故时的现场事实（留档）**：生产 G2 = 加密 `BUILD_TAG=20261027-132907`（已还原）、`passive=True whitelist=0`；V13 = `P16_V13_RISK` 84138 B（10-23 11:09）全天 `[P16V13][PASSIVE] 白名单为空`。即**两台客户端今天本来就都没在下单**。
