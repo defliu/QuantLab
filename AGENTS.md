@@ -73,6 +73,16 @@
 
 ## QMT 红线
 
+- **两台客户端简称（2026-10-28 诚哥定，此后对话/文档/脚本注释统一用这两个词）**：
+
+  | 简称 | 账号 | 客户端目录 | 版本 | 实际加载的策略 | 权限 |
+  |---|---|---|---|---|---|
+  | **主号** | `67014907` | `D:\国金QMT交易端模拟` | 2.1.33.0（新） | `P16_V13_RISK` + `STRATEGY_P16_G2_SELFCONTAINED` | **只读扫描；禁止 `qmt_autodeploy` 杀进程重启**（另设优雅重启路径，未拍板前不动） |
+  | **沙箱** | `70180771` | `D:\QMT交易端模拟` | 2.1.19.200（旧） | `STRATEGY_P16_G2_SELFCONTAINED`（永远 passive 空转） | **可任意重启**，零介入部署/夜间闭环的验证与日常目标 |
+
+  - 记法：**主号**＝真实账号在跑生产策略的那台（账号老、客户端新）；**沙箱**＝拿来做部署验证、绝不下单的那台（账号新、客户端旧）。**不要**按“新旧”称呼账号或客户端，二者方向相反，必混。
+  - 计划任务对应：`QMT_Prod_*` = 主号，`QMT_Sandbox_*` = 沙箱；夜间闭环 `Quant_P16_QMT_NightlyDeploy`（21:10）**只对沙箱**。
+  - 凭据在 Windows 凭据管理器：主号 `QMT_PROD_67014907`、沙箱 `QMT_TEST_70180771`（禁写入仓库/文档/日志）。
 - 所有 QMT 运行产物必须是 GBK 编码，并且首行必须是 `# coding=gbk`。
 - **★★ 2026-10-28 部署方式推翻旧红线：明文文件写入 `<QMT>\python\<模型名>.py` 会被客户端直接加载执行**。旧规则「必须人工经策略编辑器粘贴、python\ 下明文不会被加载」（2026-09-10）**已被实证推翻**——用明文 GBK 探针覆盖已注册模型文件后重启，日志产出 5.6 万行 `[CANARY2]` 输出；且客户端不会把明文重新加密或还原（正常跑完一轮、强杀进程后 md5 均不变）。
   - **默认流程（零介入）**：`build.py` 构建 → `python projects/Project_16_LightGBM股票大师/qmt_autodeploy.py --build <builder> --product <产物> --model <模型名> --qmt-dir <客户端目录>` → 脚本自动校验 GBK/BOM/首行/BUILD_TAG → 备份旧模型到 `_deploy_bak/` → 落盘 → **`CloseMainWindow` 优雅关闭（12s 超时后强杀）** → 以 **`reboot` 参数**重启 `XtItClient.exe` → 轮询 `userdata\log\XtClient_FormulaOutput_<date>.log` 匹配 `BUILD_TAG` → PASS/FAIL。
