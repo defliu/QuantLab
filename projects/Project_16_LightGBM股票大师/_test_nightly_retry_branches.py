@@ -11,6 +11,11 @@ Isolation: every path constant in a temp copy is rewritten to a fresh temp dir, 
 production marks, counters, latest.json and the feishu pusher are never touched.
 The stub pusher records cards to <tmp>/cards.jsonl instead of pushing.
 
+2026-10-29 additions: C17-C22 cover the daytime band (15:15-20:00, added so a broker
+login that recovers during the day gets its PASS the same evening instead of at
+21:10) and the graded FAIL-card causes (deploy=拒绝（交易时段） must not send the
+reader to "check the product / model registration").
+
 Run: <venv python> _test_nightly_retry_branches.py
 """
 import json
@@ -76,7 +81,8 @@ switch ($sc) {
     "pass_attention"{ $json = '{"ts":"stub","verdict":"ATTENTION","deploy":{"result":"PASS","tag":"TAGATT","dry_run":false}}' }
     "pass_dryrun"   { $json = '{"ts":"stub","verdict":"OK","deploy":{"result":"PASS","tag":"TAGDRY","dry_run":true}}' }
     "stale_pass"    { $json = '{"ts":"stub","verdict":"OK","deploy":{"result":"PASS","tag":"TAGSTALE","dry_run":false}}'; $stale = $true }
-    "fail_report"   { $json = '{"ts":"stub","verdict":"FAIL","deploy":{"result":"FAIL","tag":"","dry_run":false}}' }
+    "fail_report"   { $json = '{"ts":"stub","verdict":"FAIL","deploy":{"result":"FAIL（未出 BUILD_TAG）","tag":"","dry_run":false}}' }
+    "gate_reject"   { $json = '{"ts":"stub","verdict":"OK","deploy":{"result":"拒绝（交易时段）","tag":"","dry_run":false}}' }
     default         { }
 }
 if ($json) {
@@ -132,7 +138,10 @@ def new_case():
         f.write(PROBE_STUB)
     with open(os.path.join(tmp, "push_alert_card.py"), "w", encoding="utf-8") as f:
         f.write(PUSHER_STUB)
-    with open(os.path.join(tmp, "nightly_stub.ps1"), "w", encoding="utf-8") as f:
+    with open(os.path.join(tmp, "nightly_stub.ps1"), "w", encoding="utf-8-sig") as f:
+        # BOM 必须带上：stub 里的 latest.json 字面量含中文（deploy.result「拒绝（交易时段）」），
+        # PS 5.1 读无 BOM 的 .ps1 按 GBK 解 → 中文变乱码 → 被测脚本的 switch 匹配不到，
+        # 测的就不是生产行为而是编码问题了。
         f.write(NIGHTLY_STUB)
     return tmp, script
 
@@ -146,6 +155,21 @@ def seed_report(tmp, text, age_hours=2.0):
         f.write(text)
     ts = time.time() - age_hours * 3600
     os.utime(p, (ts, ts))
+    return p
+
+
+def seed_day_counter(tmp, n):
+    p = os.path.join(tmp, "data", "schedules",
+                    "qmt_nightly_retry_day_%s.txt" % time.strftime("%Y%m%d"))
+    open(p, "w", encoding="utf-8").write(str(n))
+    return p
+
+
+def seed_yesterday_mark(tmp):
+    """昨晚那一轮（21:30-23:59 之间）成功时，PASS 标记落在**昨天**的名字下。"""
+    yday = time.strftime("%Y%m%d", time.localtime(time.time() - 86400))
+    p = os.path.join(tmp, "data", "schedules", "qmt_nightly_pass_%s.mark" % yday)
+    open(p, "w", encoding="utf-8").write("seeded last-night PASS")
     return p
 
 
@@ -180,6 +204,13 @@ class Case(object):
         d = self.path("data", "schedules")
         for x in os.listdir(d):
             if x.startswith("qmt_nightly_retry_attempts_"):
+                return open(os.path.join(d, x), encoding="utf-8-sig").read().strip()
+        return None
+
+    def day_attempts(self):
+        d = self.path("data", "schedules")
+        for x in os.listdir(d):
+            if x.startswith("qmt_nightly_retry_day_"):
                 return open(os.path.join(d, x), encoding="utf-8-sig").read().strip()
         return None
 
@@ -240,6 +271,12 @@ c, rc = run(s, build_env(tmp, logged=1, exit_code=0, scenario="fail_report", rc=
 check("C6 FAIL: exit 1", rc == 1)
 check("C6 FAIL: error card", len(c.cards()) == 1 and c.cards()[0]["level"] == "error")
 check("C6 FAIL: no mark", not any("qmt_nightly_pass_" in x for x in c.marks()))
+# 分级结论：deploy=FAIL（未出 BUILD_TAG）应当指向「模型未注册 / 明文不加载」，
+# 而不是把 4 类故障一律写成同一句话（同一条规则在收口卡上已落地）。
+check("C6 FAIL(未出 TAG): card points at model registration",
+      "模型未注册" in c.cards()[0]["body"])
+check("C6 FAIL(未出 TAG): card must not blame the trading-hours gate",
+      "交易时段闸" not in c.cards()[0]["body"])
 
 # --- C7 WAIT outside the wake window: zero cards ----------------------------
 tmp, s = new_case()
@@ -320,6 +357,72 @@ check("C16 rehearsal report not reused: no mark",
       not any("qmt_nightly_pass_" in x for x in c.marks()))
 check("C16 rehearsal: falls through to WAIT (probe ran, loop skipped, no card)",
       c.probe_called() and not c.nightly_called() and len(c.cards()) == 0)
+
+# --- C17 daytime slot (15:20) actually deploys when nothing succeeded ----------
+tmp, s = new_case()
+c, rc = run(s, build_env(tmp, logged=1, exit_code=0, scenario="pass_ok", hhmm="1520"), tmp)
+check("C17 day slot: loop invoked, exit 0", c.nightly_called() and rc == 0)
+check("C17 day slot: PASS mark written", any("qmt_nightly_pass_" in x for x in c.marks()))
+check("C17 day slot: DAY counter = 1", c.day_attempts() == "1")
+check("C17 day slot: NIGHT counter untouched", c.attempts() is None)
+check("C17 day slot: card says 日间槽", len(c.cards()) == 1 and "日间" in c.cards()[0]["body"])
+
+# --- C18 a stale yesterday PASS mark must NOT block the daytime slot -----------
+# Guard ① was rejected at design time: the mark filename only records WHICH DAY wrote it,
+# not whether last night actually succeeded. Yesterday 16:xx manual PASS + last night real
+# FAIL is exactly the case the daytime band exists to cover, so the truth source is the
+# latest real closed-loop report, not the mark file.
+tmp, s = new_case()
+seed_yesterday_mark(tmp)
+seed_report(tmp, '{"ts":"seed","verdict":"FAIL","deploy":{"result":"FAIL（未出 BUILD_TAG）","tag":"","dry_run":false}}',
+            age_hours=7.0)
+c, rc = run(s, build_env(tmp, logged=1, exit_code=0, scenario="pass_ok", hhmm="1520"), tmp)
+check("C18 stale yesterday mark + FAIL report: day slot still RUNS",
+      c.nightly_called() and rc == 0)
+check("C18 stale yesterday mark: no 'last night PASS' guard in the log",
+      "昨晚已 PASS" not in c.log())
+check("C18 day slot burns the DAY counter only", c.day_attempts() == "1" and c.attempts() is None)
+
+# --- C19 a real PASS report within 24h also blocks the daytime slot -------------
+tmp, s = new_case()
+seed_report(tmp, '{"ts":"seed","verdict":"OK","deploy":{"result":"PASS","tag":"TAG6H","dry_run":false}}',
+            age_hours=6.0)
+c, rc = run(s, build_env(tmp, logged=1, exit_code=0, scenario="pass_ok", hhmm="1545"), tmp)
+check("C19 day slot + PASS 6h ago: loop skipped (>4h so guard 0 did not fire)",
+      not c.nightly_called() and rc == 0 and len(c.cards()) == 0)
+check("C19 day slot: no day counter burned", c.day_attempts() is None)
+# same report at a NIGHT slot must still run (night retries even after a success)
+c, rc = run(s, build_env(tmp, logged=1, exit_code=0, scenario="pass_ok", hhmm="0200"), tmp)
+check("C19 night slot ignores the 24h rule: loop invoked", c.nightly_called())
+
+# --- C20 daytime budget is 2/day and independent of the night cap --------------
+tmp, s = new_case()
+seed_day_counter(tmp, 2)
+open(os.path.join(tmp, "data", "schedules",
+                  "qmt_nightly_retry_attempts_%s.txt" % today), "w", encoding="utf-8").write("0")
+c, rc = run(s, build_env(tmp, logged=1, exit_code=0, scenario="pass_ok", hhmm="1515"), tmp)
+check("C20 day budget spent: loop skipped, no card", not c.nightly_called()
+      and len(c.cards()) == 0 and rc == 0)
+check("C20 day budget: night counter not incremented", c.attempts() == "0")
+
+# --- C21 a burned night cap must not silence the daytime slot ------------------
+tmp, s = new_case()
+open(os.path.join(tmp, "data", "schedules",
+                  "qmt_nightly_retry_attempts_%s.txt" % today), "w", encoding="utf-8").write("6")
+c, rc = run(s, build_env(tmp, logged=1, exit_code=0, scenario="pass_ok", hhmm="0200"), tmp)
+check("C21 night cap 6 hits before the daytime band: loop skipped + error card",
+      not c.nightly_called() and len(c.cards()) == 1)
+
+# --- C22 graded FAIL cause: trading-hours rejection is NOT a product bug -------
+tmp, s = new_case()
+c, rc = run(s, build_env(tmp, logged=1, exit_code=0, scenario="gate_reject", rc=2, hhmm="0845"), tmp)
+check("C22 gate-reject: exit 1 + error card", rc == 1 and len(c.cards()) == 1
+      and c.cards()[0]["level"] == "error")
+b22 = c.cards()[0]["body"] if c.cards() else ""
+check("C22 gate-reject: card names the trading-hours gate", "交易时段闸" in b22)
+check("C22 gate-reject: card must NOT send reader to product/model registration",
+      "模型未注册" not in b22)
+check("C22 gate-reject: no PASS mark", not any("qmt_nightly_pass_" in x for x in c.marks()))
 
 print("")
 if fails:

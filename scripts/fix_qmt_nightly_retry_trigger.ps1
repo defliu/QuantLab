@@ -8,6 +8,15 @@
 #     (Daily parameter set has no repetition params -> AmbiguousParameterSet).
 #   * A -Daily trigger's .Repetition is $null; you must assign a ClientOnly
 #     MSFT_TaskRepetitionPattern built WITH the properties.
+#
+# 2026-10-29: added a daytime band (daily 15:15 -> 20:00, every 30 min). When the broker
+# login recovers during the day the old window (21:30 -> 08:45) made us wait until 21:10
+# for the next PASS. Daytime guards (last-night PASS / real PASS within 24h / own 2-per-day
+# budget) live in qmt_nightly_retry.ps1, not here.
+# Rollback: .\fix_qmt_nightly_retry_trigger.ps1 -NoDaySlot
+# NOTE: keep this file ASCII-only -- without a BOM PowerShell 5.1 decodes it as GBK and
+# Chinese comments turn into parser errors (AGENTS UTF-8 BOM rule).
+param([switch]$NoDaySlot)
 $ErrorActionPreference = "Stop"
 $name = "Quant_P16_QMT_NightlyRetry"
 $t = Get-ScheduledTask -TaskName $name
@@ -25,15 +34,33 @@ function New-RepPattern([string]$interval, [string]$duration) {
 $rep = New-ScheduledTaskTrigger -Daily -At "21:30"
 $rep.Repetition = New-RepPattern "PT15M" "PT11H15M"
 
-# ---- trigger 2: bridge for the rest of tonight (daily window only opens at 21:30) ----
-$bridgeStart = (Get-Date).AddMinutes(2)
-$bridgeEnd   = (Get-Date).Date.AddHours(8).AddMinutes(45)
-$bridgeMins  = [math]::Ceiling(($bridgeEnd - $bridgeStart).TotalMinutes)
-if ($bridgeMins -lt 15) { $bridgeMins = 15 }
-$bridge = New-ScheduledTaskTrigger -Once -At $bridgeStart
-$bridge.Repetition = New-RepPattern "PT15M" ("PT{0}M" -f $bridgeMins)
+# ---- trigger 2: daytime band, every day 15:15 -> 20:00 every 30 min ----
+# Duration PT4H50M so the 20:00 slot definitely fires while 20:30 does not:
+# a deploy run takes ~5-15 min, and the client self-restarts at 20:54.
+$trigList = @($rep)
+if (-not $NoDaySlot) {
+    $day = New-ScheduledTaskTrigger -Daily -At "15:15"
+    $day.Repetition = New-RepPattern "PT30M" "PT4H50M"
+    $trigList += $day
+}
 
-$triggers = @($rep, $bridge)
+# ---- trigger 3: bridge for the rest of the current night window ----
+# Only meaningful while the night window is still open (i.e. local time < 08:45):
+# the daily -At 21:30 trigger only opened yesterday evening, so if this script is
+# re-run in the afternoon the bridge would create a bogus 15-minute daytime burst.
+$nightEnd = (Get-Date).Date.AddHours(8).AddMinutes(45)
+if ((Get-Date) -lt $nightEnd) {
+    $bridgeStart = (Get-Date).AddMinutes(2)
+    $bridgeMins  = [math]::Ceiling(($nightEnd - $bridgeStart).TotalMinutes)
+    if ($bridgeMins -lt 15) { $bridgeMins = 15 }
+    $bridge = New-ScheduledTaskTrigger -Once -At $bridgeStart
+    $bridge.Repetition = New-RepPattern "PT15M" ("PT{0}M" -f $bridgeMins)
+    $trigList += $bridge
+} else {
+    Write-Host "SKIP-BRIDGE not inside the night window (now >= 08:45), no bridge trigger built"
+}
+
+$triggers = $trigList
 foreach ($x in $triggers) {
     Write-Host ("BUILD class={0} start={1} interval={2} duration={3}" -f `
             $x.CimClass.CimClassName, $x.StartBoundary, $x.Repetition.Interval, $x.Repetition.Duration)

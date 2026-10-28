@@ -1,9 +1,15 @@
-"""ASCII-only test harness for the 2026-10-29 false-PASS hardening.
+"""Test harness for the 2026-10-29 false-PASS hardening.
 
 Two layers:
   A) python: qmt_nightly.write_report must not touch latest.json when deploy.dry_run,
      and must prefix the filename with REHEARSAL_.
-  B) powershell semantics: the retry guard's JSON->decision expression.
+  B) powershell semantics: the retry guard's JSON->decision expression
+     (the injected .ps1 snippet is ASCII-only; the JSON fixtures are not, since
+      deploy.result carries Chinese strings such as "FAIL（未出 BUILD_TAG）").
+Console note: this harness echoes the PowerShell output, which contains U+FFFD once
+utf-8 decoding met a non-utf8 byte. A GBK console cannot even print that -> the
+UnicodeEncodeError used to kill the run before the RESULT line (2026-10-29 03:1x).
+stdout is therefore reconfigured with errors="replace" so the checks still report.
 Run: <venv python> _test_nightly_dryrun_guard.py
 """
 import json
@@ -11,6 +17,11 @@ import os
 import subprocess
 import sys
 import tempfile
+
+try:
+    sys.stdout.reconfigure(errors="replace")
+except Exception:
+    pass
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)

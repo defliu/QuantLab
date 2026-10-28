@@ -13,12 +13,18 @@
 #   1) 只处理沙箱 D:\QMT交易端模拟（模拟盘，可任意重启）；主号只由闭环只读扫描；
 #      交易版 D:\国金证券QMT交易端 不出现在任何参数里，探针内置硬拒绝；
 #   2) 08:50-15:10 一律不动作（防重启撞上开盘/盘中）；
-#   3) 当日最多补跑 6 次，防「登录正常但部署另有问题」时无限重启客户端；
+#   3) 当日最多补跑 6 次（夜间窗口计数），防「登录正常但部署另有问题」时无限重启客户端；
 #   4) 停机开关：存在 data\schedules\qmt_retry_off 文件时直接退出；
-#   5) 登录未恢复时不构建、不落盘、不重启（零副作用）。
+#   5) 登录未恢复时不构建、不落盘、不重启（零副作用）；
+#   6) 日间槽（15:15-20:00，2026-10-29 加）另有一组专属护栏，都拦在探针之前：
+#      24h 内已有真实（非演练）PASS、日间额度 2 次/日；且用**独立**计数不挤占夜间的 6 次上限。
 #
-# 调度：Quant_P16_QMT_NightlyRetry（Interactive/Highest + 隐藏窗口，21:30 起每 15 分钟，
-#       持续 11 小时覆盖整夜）。之所以用 Interactive 而非 AGENTS 默认的 S4U：它要重启
+# 调度：Quant_P16_QMT_NightlyRetry（Interactive/Highest + 隐藏窗口）
+#       ①每日 21:30 → 次日 08:45 每 15 分钟（夜间窗口，收盘后部署）；
+#       ②每日 15:15 → 20:00 每 30 分钟（日间补档：登录若在白天恢复，当天收盘后就能出 PASS，
+#         不必干等 21:10；20:00 收尾以避开客户端 20:54 自重启）。
+#       触发器由 scripts/fix_qmt_nightly_retry_trigger.ps1 幂等重建（-NoDaySlot 可撤掉日间槽）。
+#       之所以用 Interactive 而非 AGENTS 默认的 S4U：它要重启
 #       GUI 客户端，S4U 会把窗口起在 session 0，人看不到登录框，与 qmt_autostart /
 #       QMT_WatchLogin 两个任务的先例保持一致。
 param(
@@ -35,6 +41,20 @@ $nightly  = Join-Path $dir "qmt_nightly_deploy.ps1"
 $today    = Get-Date -Format "yyyyMMdd"
 $mark     = Join-Path $sched ("qmt_nightly_pass_{0}.mark" -f $today)
 $cntFile  = Join-Path $sched ("qmt_nightly_retry_attempts_{0}.txt" -f $today)
+# 日间补跑槽（收盘后 15:15-20:00，2026-10-29 加）专属的独立**小额度**计数：
+# 绝不与夜间的 6 次/日 上限共用（否则日间 10 个槽会把额度吃光，把真正该重试的
+# 21:30 起夜间窗口饿死）。
+# 曾考虑再加一条「昨日 PASS 标记存在 ⇒ 日间槽跳过」的护栏，**已否决**：标记名字只说明
+# 「哪天写的」，不说明「昨晚那一轮成没成」——昨天 16:xx 手工跑出的 PASS 会让今天的日间槽
+# 误以为昨晚没事，而 latest.json 里躺着的可能正是昨晚那条 FAIL。判据只认**最近一次真实
+# 闭环报告**（见下面 $recentRealPass），不认标记文件名。
+$dayCnt   = Join-Path $sched ("qmt_nightly_retry_day_{0}.txt" -f $today)
+$dayTried = 0
+if (Test-Path $dayCnt) { [void]([int]::TryParse((Get-Content $dayCnt -Raw).Trim(), [ref]$dayTried)) }
+# $hhmm 在这里算，guard 0（报告复用）与 1b（日间槽护栏）都要用它。
+# 注意 "HHmm" 是**字符串**：只在「同一自然日内、不跨零点」的区间上单写界才安全（spec §10.3）。
+$hhmm = Get-Date -Format "HHmm"
+$isDaySlot = ($hhmm -gt "1510" -and $hhmm -lt "2100")
 $py = "C:\Users\Administrator\.workbuddy\binaries\python\envs\miniqmt\Scripts\python.exe"
 if (!(Test-Path $py)) { $py = "D:\Python311\python.exe" }
 
@@ -71,6 +91,9 @@ if (Test-Path $mark) { exit 0 }   # 今天已经 PASS，安静退出
 # ---- 0) 若最近一份闭环报告已是 OK（比如 21:10 定时任务自己跑成了），直接补记标记收工，
 #         避免本任务在 21:30 再重启一次客户端做无谓的重复部署。
 $reportJson = Join-Path $dir "results\qmt_nightly\latest.json"
+# $recentRealPass：24h 内是否有一次**真实**（非演练）deploy=PASS。夜间不看它（<4h 已由上面
+# 的复用护栏拦掉，整夜本来就该重试）；日间槽看它——夜里已经成了就不必在收盘后再重启一次客户端。
+$recentRealPass = $false
 if (Test-Path $reportJson) {
     try {
         $ageH = ((Get-Date) - (Get-Item $reportJson).LastWriteTime).TotalHours
@@ -81,6 +104,7 @@ if (Test-Path $reportJson) {
         # 「落盘 → 重启 → 回读 BUILD_TAG」，deploy.result 也可能是 PASS，绝不能当成功复用。
         # 旧报告没有该字段 → $null → [bool]$null = False，判定不受影响。
         $d0Dry    = if ($d0.deploy) { [bool]$d0.deploy.dry_run } else { $false }
+        $recentRealPass = (($ageH -lt 24) -and ($d0Deploy -eq "PASS") -and (-not $d0Dry))
         # 同样只认 deploy=PASS（=回读到 BUILD_TAG），verdict=ATTENTION 也算这一轮已经成了，
         # 再补跑一次只会白重启客户端。
         if ($d0Dry) {
@@ -96,10 +120,33 @@ if (Test-Path $reportJson) {
 }
 
 # ---- 1) 时段闸 ----
-$hhmm = Get-Date -Format "HHmm"
 if ($hhmm -ge "0850" -and $hhmm -le "1510") {
     if (-not $Force) { Write-Log ("SKIP 时段闸（{0}）不重启客户端" -f $hhmm); exit 0 }
     Write-Log ("FORCE 越过时段闸（{0}）" -f $hhmm)
+}
+
+# ---- 1b) 日间槽专属护栏（2026-10-29 加）----
+# 为什么日间也要有槽：补跑窗口原先只有 21:30→次日 08:45，而登录若在**白天**恢复（券商维护
+# 常在日间收尾），当天 08:50-15:10 被时段闸拦住、15:10-21:10 又根本没有触发器 ⇒ 明明已经能部署，
+# 却要干等到 21:10 才出 PASS。加一条「收盘后 15:15→20:00 每 30 分钟」的日间触发器，
+# 登录一恢复当天就能出结果。但日间槽比夜间槽危险得多（客户端重启会打断 70180771 那台
+# 内置策略的当日收尾），所以护栏必须先跑在探针之前：
+#   ①24h 内有过一次**真实** deploy=PASS（非演练）⇒ 没什么要修的，跳过。这条同时也是
+#     「昨晚那轮成了」的判据（夜里的 PASS 报告到 15:15 大约 7-10h，仍 <24h）。刻意**不**用
+#     「昨日 PASS 标记文件是否存在」来判：标记名只说明哪天写的、不说明成没成，会把
+#     「昨天手工 PASS 过 + 昨晚真跑 FAIL 了」这种最需要白天补跑的情形误拦掉。
+#   ②日间独立额度 2 次/日 ⇒ 用**单独**的计数文件，不占用夜间的 6 次上限（10 个日间槽若与
+#     夜间共用额度，会把夜里真正该重试的次数先吃光，等于把夜间链饿死）。
+# 20:00 是最后一个日间槽：一次闭环约 5-15 分钟，留足余量避开客户端 20:54 的自重启。
+if ($isDaySlot -and -not $Force) {
+    if ($recentRealPass) {
+        Write-Log "SKIP 日间槽：24h 内已有真实 deploy=PASS 报告，收盘后不再重复部署（额度留给夜里真出问题的那晚）"
+        exit 0
+    }
+    if ($dayTried -ge 2) {
+        Write-Log ("SKIP 日间槽：今日 {0} 次额度已用尽（夜间 6 次上限不受影响），等今晚 21:30 起的补跑窗口" -f $dayTried)
+        exit 0
+    }
 }
 
 # ---- 2) 补跑次数上限 ----
@@ -153,14 +200,23 @@ if (-not $logged) {
     }
     exit 0
 }
-Write-Log ("UP 沙箱已登录（{0}），补跑夜间闭环（第 {1} 次）" -f $state, ($attempts + 1))
+$runNo = $attempts + 1
+if ($isDaySlot) { $runNo = $dayTried + 1 }
+Write-Log ("UP 沙箱已登录（{0}），补跑夜间闭环（{1}槽 第 {2} 次）" -f $state, $(if ($isDaySlot) { "日间" } else { "夜间" }), $runNo)
 
 # ---- 4) 补跑闭环 ----
 $runStart = Get-Date
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $nightly | Out-Null
 $rc = $LASTEXITCODE
-$attempts += 1
-Set-Content -Path $cntFile -Value $attempts -Encoding UTF8
+# 计数按槽位分开写：日间只加日间额度，夜间只加夜间上限（两者共用一个计数会让
+# 白天的 10 个槽把夜里真正需要重试的 6 次机会先吃光）。
+if ($isDaySlot) {
+    $dayTried += 1
+    Set-Content -Path $dayCnt -Value $dayTried -Encoding UTF8
+} else {
+    $attempts += 1
+    Set-Content -Path $cntFile -Value $attempts -Encoding UTF8
+}
 
 $verdict = "无报告"
 $tag = ""
@@ -193,7 +249,7 @@ if (($deployResult -eq "PASS") -and ($tag -ne "") -and ($fresh) -and (-not $dryR
     Set-Content -Path $mark -Value ("{0} BUILD_TAG={1} verdict={2}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $tag, $verdict) -Encoding UTF8
     Write-Log ("PASS 夜间闭环补跑成功 deploy=PASS BUILD_TAG={0} 总判定={1}，当日不再重试" -f $tag, $verdict)
     $extra = if ($verdict -eq "OK") { "" } else { "`n[注意] 总判定=$verdict（部署与 BUILD_TAG 已核对通过，但日志体检有关注项）`n请读 results\qmt_nightly\latest.md 的「客户端扫描」一节。" }
-    Push-Card "[QMT] 夜间闭环补跑 PASS" ("沙箱登录已恢复，夜间闭环补跑成功。`nBUILD_TAG={0}`ndeploy={1}（退出码 {2}）`n第 {3} 次补跑`n今日不再重试（已落 {4}）。{5}" -f $tag, $deployResult, $rc, $attempts, (Split-Path $mark -Leaf), $extra) "info"
+    Push-Card "[QMT] 夜间闭环补跑 PASS" ("沙箱登录已恢复，夜间闭环补跑成功。`nBUILD_TAG={0}`ndeploy={1}（退出码 {2}）`n第 {3} 次补跑（{4}槽）`n今日不再重试（已落 {5}）。{6}" -f $tag, $deployResult, $rc, $runNo, $(if ($isDaySlot) { "日间" } else { "夜间" }), (Split-Path $mark -Leaf), $extra) "info"
     exit 0
 }
 # 闭环自己也被登录前置闸拦过一次（探针判已登录后账号又掉线）⇒ 它整轮跳过、不写报告，
@@ -204,5 +260,17 @@ if (($rc -eq 0) -and (-not $fresh)) {
     exit 0
 }
 Write-Log ("FAIL 补跑未过 deploy={0} verdict={1} 期望 BUILD_TAG={2}（exit={3} 报告本轮新写={4} 演练={5}）" -f $deployResult, $verdict, $tag, $rc, $fresh, $dryRun)
-Push-Card "[QMT] 夜间闭环补跑 FAIL" ("沙箱已登录但闭环仍 FAIL。`ndeploy={0} verdict={1}`n期望 BUILD_TAG={2}，deploy 退出码={3}`n第 {4} 次补跑（上限 6 次）。`n注意：已登录仍出不了 TAG ⇒ 不再是券商登录问题，需查产物/模型注册（读 data\schedules\qmt_nightly.log 尾部 + results\qmt_nightly\latest.md）。" -f $deployResult, $verdict, $tag, $rc, $attempts) "error"
+# ★ 卡片必须按 deploy.result 分级给结论（与收口卡同一条规则：EXIT/结论不是中性信息，
+#   它是「往哪个方向查」的指令）。原先无论什么原因都写「需查产物/模型注册」，
+#   而 qmt_nightly.py 的 deploy.result 本身就带原因（拒绝（交易时段）/ 构建产物 / 未出 TAG /
+#   重启失败），拿它分级就能把 4 类完全不同的故障分开指路。
+$why = switch -Regex ($deployResult) {
+    "拒绝"      { "[原因] 被闭环自带的交易时段闸（09:00-15:05）拒绝重启 ⇒ 补跑起得太靠近开盘，不是产物也不是模型注册问题。15:10 之后（或今晚 21:10）会自动再来一轮，无需人工。" }
+    "构建|产物"  { "[原因] 构建或产物校验没过（GBK 编码 / 首行 # coding=gbk / BUILD_TAG / 静态扫描）。请读 data\schedules\qmt_nightly.log 的构建段与 [DEPLOY] 行。" }
+    "未出|TAG"   { "[原因] 已落盘重启但日志回读不到期望 BUILD_TAG ⇒ 优先怀疑模型未注册（configFormula not exist）或该客户端版本不加载明文 python\*.py。读 results\qmt_nightly\latest.md 的「客户端扫描」一节；必要时按 spec §10.11 的回滚预案在 2.1.19 对照组复现。" }
+    "重启失败"   { "[原因] 客户端进程起不来（缺文件/安装不完整）。日志出现 initPythonEnv failed 即按 AGENTS「客户端启动失败判据」补 bin.x64。" }
+    "未执行"     { "[原因] 闭环报告里 deploy 段是「未执行」⇒ 本轮在部署前就中断（构建腿之外的异常），读 latest.md 全文定位。" }
+    default      { "[原因] 未归类的失败签名（deploy={0}），请读 results\qmt_nightly\latest.md。" -f $deployResult }
+}
+Push-Card "[QMT] 夜间闭环补跑 FAIL" ("沙箱已登录但闭环仍 FAIL（{0}槽 第 {1} 次补跑）。`ndeploy={2} verdict={3}`n期望 BUILD_TAG={4}，deploy 退出码={5}`n{6}`n注意：已登录 ⇒ 不再是券商登录问题；但具体往哪查以上面【原因】为准，别一律当成产物/模型注册。临时停用请建 data\schedules\qmt_retry_off。" -f $(if ($isDaySlot) { "日间" } else { "夜间" }), $runNo, $deployResult, $verdict, $tag, $rc, $why) "error"
 exit 1
