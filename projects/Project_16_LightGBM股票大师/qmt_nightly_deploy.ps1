@@ -14,6 +14,8 @@
 #       跳过 TAG 核对；报告改名 REHEARSAL_*，且不覆盖 latest.json —— 演练永远不算 PASS）。
 # 失败处置：退非 0，agent/人读 data/schedules/qmt_nightly.log 尾部 +
 #          results/qmt_nightly/latest.json（含每模型 BUILD_TAG / 被动 / 异常签名）接手。
+# 登录前置闸：真实闭环前先问 scripts/qmt_login_probe.py；判「未登录」（rc=2）则整轮跳过、
+#          退 0 并记 WAIT（不 build/不落盘/不重启，见上文）。rc=4（进程不在）不拦。
 param(
     [switch]$Rehearsal
 )
@@ -25,6 +27,30 @@ New-Item -ItemType Directory -Force -Path "$dir/data/schedules" | Out-Null
 $ts = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 $mode = if ($Rehearsal) { "演练：不重启" } else { "构建+部署+重启" }
 Add-Content -Path $log -Value "[$ts] ==== QMT 夜间闭环（$mode）开始 ====" -Encoding UTF8
+
+# ---- 登录前置闸（2026-10-29 立，T-20261029-002）----
+# 客户端没登录券商账号时 handlebar 永不触发 ⇒ 本轮部署必然回读不到 BUILD_TAG，
+# 结果是「白耗一次客户端重启 + 一条假 FAIL 报告，还会覆盖 latest.json」。
+# 所以真实闭环之前先问只读探针 scripts/qmt_login_probe.py：
+#   退出码 2（进程在跑但未登录，最常见是柜台 200003 超时）⇒ 整轮跳过，不 build / 不落盘 /
+#     不重启，只记一行 WAIT（当日 08:45 前每 15 分钟由 Quant_P16_QMT_NightlyRetry 再试）；
+#   退出码 4（客户端进程不在）⇒ 不拦，autodeploy 会带 reboot 把它拉起来，正是恢复路径；
+#   -Rehearsal ⇒ 不拦（演练本来就不碰客户端）。
+if (-not $Rehearsal) {
+    $env:PYTHONIOENCODING = "utf-8"
+    $encBak = [Console]::OutputEncoding
+    try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch { }
+    $probeOut = & $py "D:/QuantLab/scripts/qmt_login_probe.py" --verdict --client "D:\QMT交易端模拟" 2>&1
+    $probeRc = $LASTEXITCODE
+    try { [Console]::OutputEncoding = $encBak } catch { }
+    $probeLine = (($probeOut | Out-String) -replace "\s+", " ").Trim()
+    if ($probeRc -eq 2) {
+        Add-Content -Path $log -Value "[$ts] WAIT 沙箱未登录，本轮闭环整轮跳过（不 build/不落盘/不重启）：$probeLine" -Encoding UTF8
+        Add-Content -Path $log -Value "[$ts] ==== QMT 夜间闭环跳过（登录前置闸）====" -Encoding UTF8
+        exit 0
+    }
+    Add-Content -Path $log -Value "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] PROBE rc=$probeRc $probeLine" -Encoding UTF8
+}
 
 # ---- 部署互斥锁 ----
 # 闭环会「关闭客户端 → 带 reboot 参数重启」，中途存在几十秒的无进程窗口。

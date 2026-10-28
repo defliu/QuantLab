@@ -171,6 +171,13 @@ if (($deployResult -eq "PASS") -and ($tag -ne "") -and ($fresh) -and (-not $dryR
     Push-Card "[QMT] 夜间闭环补跑 PASS" ("沙箱登录已恢复，夜间闭环补跑成功。`nBUILD_TAG={0}`ndeploy={1}（退出码 {2}）`n第 {3} 次补跑`n今日不再重试（已落 {4}）。{5}" -f $tag, $deployResult, $rc, $attempts, (Split-Path $mark -Leaf), $extra) "info"
     exit 0
 }
+# 闭环自己也被登录前置闸拦过一次（探针判已登录后账号又掉线）⇒ 它整轮跳过、不写报告，
+# 于是 latest.json 不是本轮的。这是「仍未登录」，不是闭环坏了：记 SKIP 不记 FAIL，
+# 免得推「已登录但闭环 FAIL」这种会把排障方向带偏的卡。
+if (($rc -eq 0) -and (-not $fresh)) {
+    Write-Log "SKIP 闭环本轮被自身的登录前置闸拦下（latest.json 非本轮新写），未产生报告；沙箱应仍未登录，15 分钟后再试"
+    exit 0
+}
 Write-Log ("FAIL 补跑未过 deploy={0} verdict={1} 期望 BUILD_TAG={2}（exit={3} 报告本轮新写={4} 演练={5}）" -f $deployResult, $verdict, $tag, $rc, $fresh, $dryRun)
 Push-Card "[QMT] 夜间闭环补跑 FAIL" ("沙箱已登录但闭环仍 FAIL。`ndeploy={0} verdict={1}`n期望 BUILD_TAG={2}，deploy 退出码={3}`n第 {4} 次补跑（上限 6 次）。`n注意：已登录仍出不了 TAG ⇒ 不再是券商登录问题，需查产物/模型注册（读 data\schedules\qmt_nightly.log 尾部 + results\qmt_nightly\latest.md）。" -f $deployResult, $verdict, $tag, $rc, $attempts) "error"
 exit 1
