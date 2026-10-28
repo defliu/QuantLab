@@ -28,6 +28,18 @@ $ts = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 $mode = if ($Rehearsal) { "演练：不重启" } else { "构建+部署+重启" }
 Add-Content -Path $log -Value "[$ts] ==== QMT 夜间闭环（$mode）开始 ====" -Encoding UTF8
 
+# ---- 报告留存清理：只留最近 60 天（md/json 同名，逐对删）----
+# 放在登录前置闸**之前**：清理与部署无关，券商登录长时间不恢复时每轮都 WAIT 退出，
+# 若放在闸后就再也不会执行，过期报告会一直堆下去。
+if (Test-Path $reportDir) {
+    $cut = (Get-Date).AddDays(-60)
+    Get-ChildItem -Path $reportDir -Filter "*.md" -File | Where-Object { $_.LastWriteTime -lt $cut } | ForEach-Object {
+        $base = $_.FullName.Substring(0, $_.FullName.Length - 3)
+        Remove-Item -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath ($base + ".json") -Force -ErrorAction SilentlyContinue
+    }
+}
+
 # ---- 登录前置闸（2026-10-29 立，T-20261029-002）----
 # 客户端没登录券商账号时 handlebar 永不触发 ⇒ 本轮部署必然回读不到 BUILD_TAG，
 # 结果是「白耗一次客户端重启 + 一条假 FAIL 报告，还会覆盖 latest.json」。
@@ -60,16 +72,6 @@ if (-not $Rehearsal) {
 # 锁不做后台清理：脚本若被强杀会留残锁，watch_login 按 40 分钟龄期自动失效。
 $lock = "$dir/data/schedules/qmt_deploy.lock"
 Set-Content -Path $lock -Value ("PID={0} START={1} MODE={2}" -f $PID, $ts, $mode) -Encoding UTF8
-
-# ---- 报告留存清理：只留最近 60 天（md/json 同名，逐对删）----
-if (Test-Path $reportDir) {
-    $cut = (Get-Date).AddDays(-60)
-    Get-ChildItem -Path $reportDir -Filter "*.md" -File | Where-Object { $_.LastWriteTime -lt $cut } | ForEach-Object {
-        $base = $_.FullName.Substring(0, $_.FullName.Length - 3)
-        Remove-Item -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue
-        Remove-Item -LiteralPath ($base + ".json") -Force -ErrorAction SilentlyContinue
-    }
-}
 
 # ---- 闭环执行 ----
 # python 侧输出 UTF-8；PS 5.1 的原生命令输出按 [Console]::OutputEncoding 解码，
