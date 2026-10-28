@@ -176,6 +176,38 @@ check("H5 hub 不可达 -> (None, err) 且不抛", dead is None and err is not N
 ok, reasons, orders = cli.validate(dead, today(), "67014907", int(time.time()))
 check("H5 拿不到信号 = 不下单", (not ok) and orders == [])
 
+# --- M1..M5 沙箱镜像器（主号计划 -> 沙箱计划）---
+import qmt_signal_mirror as mir
+
+src_plan = {
+    "date": today(), "account_id": "67014907", "capital": 100000.0, "written": True,
+    "orders": [
+        {"action": "SELL", "code": "600000.SH", "vol": 500, "price": 9.78, "reason": "a"},
+        {"action": "BUY", "code": "000001.SZ", "vol": 1000, "price": 11.49, "reason": "b"},
+        {"action": "BUY", "code": "000002.SZ", "vol": 200, "price": 8.0, "reason": "tiny"},
+    ],
+}
+sp = os.path.join(tmp, "rebalance_g2_%s.json" % today())
+with open(sp, "w", encoding="utf-8") as f:
+    json.dump(src_plan, f, ensure_ascii=False)
+dst_dir = os.path.join(tmp, "sbx")
+dp, out = mir.mirror(sp, dst_dir, "70180771", 20000.0)
+check("M1 账号改写为沙箱", out["account_id"] == "70180771")
+check("M2 资金改写且股数按 1/5 缩放", out["capital"] == 20000.0
+      and out["orders"][0]["vol"] == 100 and out["orders"][1]["vol"] == 200)
+check("M3 缩放到 0 股的腿被丢弃并留原因",
+      len(out["orders"]) == 2 and len(out["mirror"]["dropped"]) == 1
+      and out["mirror"]["dropped"][0]["code"] == "000002.SZ")
+check("M4 落盘为目标日期文件名且可复读",
+      os.path.basename(dp) == "rebalance_g2_%s.json" % today() and os.path.exists(dp))
+# 镜像产物是「计划」不是「信封」：要用 hub 的 build_envelope 包一层，再跑客户端校验，
+# 这样 M5 验的才是真实链路（mirror -> hub -> client）。
+import qmt_signal_hub as hub
+_env = hub.build_envelope(out, json.dumps(out, ensure_ascii=False), "70180771", dp)
+_ok5, _why5, _legs5 = cli.validate(_env, today(), "70180771", int(time.time()))
+check("M5 镜像计划经 hub 装信封后能过客户端校验",
+      _ok5 and len(_legs5) == 2)
+
 print("")
 if fails:
     print("FAILED %d: %s" % (len(fails), " | ".join(fails)))
