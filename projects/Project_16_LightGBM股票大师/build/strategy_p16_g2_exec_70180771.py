@@ -23,7 +23,7 @@
 `qmt_autodeploy.py --product ... --model STRATEGY_P16_G2_EXEC --qmt-dir D:\QMT交易端模拟`。
 **新模型名需先在客户端手工注册一次**（任意内容的同名策略即可）。
 """
-BUILD_TAG = "20261029-071059"
+BUILD_TAG = "20261029-104642"
 
 import time
 
@@ -87,6 +87,14 @@ def _qmt_now(C):
             return "", -1, int(time.time())
     else:
         src = "QMT"
+    if hasattr(t, "tm_year"):                   # time.struct_time（QMT 实测就返回这个）
+        d = "%04d%02d%02d" % (t.tm_year, t.tm_mon, t.tm_mday)
+        hm = t.tm_hour * 100 + t.tm_min
+        try:
+            ts = int(time.mktime(t))
+        except Exception:
+            ts = int(time.time())
+        return d, hm, ts
     if hasattr(t, "year"):                      # datetime / date
         d = "%04d%02d%02d" % (t.year, t.month, t.day)
         hm = t.hour * 100 + t.minute
@@ -94,14 +102,25 @@ def _qmt_now(C):
             ts = int(t.timestamp())
         except Exception:
             ts = int(time.time())
-    else:                                       # 'YYYYMMDDHHMMSS' / int
-        s = str(t)
-        d = s[:8]
-        hm = int(s[8:12]) if len(s) >= 12 else -1
-        ts = int(time.time())
-    if src == "LOCAL":
         return d, hm, ts
-    return d, hm, ts
+    # ★ 2026-10-29 修：C.get_current_time() 不保证是 'YYYYMMDDHHMMSS' 纯数字串
+    #   （实测拿到过含 'product_' 的对象 repr，直接 int(s[8:12]) 抛 ValueError，
+    #   结果 handlebar 每轮都异常、永远不下单）。只接受「前 12 位全是数字」的串，
+    #   其余一律退回本机时间并把原始值打一次，便于事后定位。
+    s = str(t)
+    if len(s) >= 12 and s[:12].isdigit():
+        return s[:8], int(s[8:12]), int(time.time())
+    if s.isdigit() and len(s) >= 14:            # 可能是秒级时间戳
+        try:
+            lt = time.localtime(int(s[:10]))
+            return time.strftime("%Y%m%d", lt), lt.tm_hour * 100 + lt.tm_min, int(time.time())
+        except Exception:
+            pass
+    if not _g.get("bad_time_logged"):
+        _g["bad_time_logged"] = True
+        _log("WARN C.get_current_time() 返回不可解析值 %r，退回本机时间" % (s[:80],))
+    lt = time.localtime()
+    return time.strftime("%Y%m%d", lt), lt.tm_hour * 100 + lt.tm_min, int(time.time())
 
 
 def in_session(hhmm):

@@ -61,7 +61,7 @@ def _inject_vendor(src):
     return head + block + tail
 
 
-def _apply_overrides(src, account=None, port=None, capital=None, live=False):
+def _apply_overrides(src, account=None, port=None, capital=None, live=False, window=None):
     """按账号/端口/资金覆盖常量。每项必须恰好替换 1 处，否则拒绝构建（防漂移）。"""
     subs = []
     if account:
@@ -73,6 +73,10 @@ def _apply_overrides(src, account=None, port=None, capital=None, live=False):
         subs.append((r'^CAPITAL_BASE = \d+(\.\d+)?(\s*#.*)?$', 'CAPITAL_BASE = %d.0          # builder 覆盖' % int(capital)))
     if live:
         subs.append((r'^DRY_RUN = True(\s*#.*)?$', 'DRY_RUN = False                 # builder --live 覆盖'))
+    if window:
+        a, b = window.split("-")
+        subs.append((r'^EXEC_HM_START = \d+$', 'EXEC_HM_START = %s    # builder --window 覆盖（仅测试用）' % a.strip()))
+        subs.append((r'^EXEC_HM_END = \d+$', 'EXEC_HM_END = %s      # builder --window 覆盖（仅测试用）' % b.strip()))
     for pat, rep in subs:
         src, n = re.subn(pat, rep, src, count=1, flags=re.M)
         if n != 1:
@@ -80,10 +84,10 @@ def _apply_overrides(src, account=None, port=None, capital=None, live=False):
     return src
 
 
-def build(dry_run=False, account=None, port=None, capital=None, live=False):
+def build(dry_run=False, account=None, port=None, capital=None, live=False, window=None):
     src = _read(SRC)
     src = _inject_vendor(src)
-    src = _apply_overrides(src, account, port, capital, live)
+    src = _apply_overrides(src, account, port, capital, live, window)
 
     tag = time.strftime("%Y%m%d-%H%M%S")
     assign = re.compile(r'BUILD_TAG\s*=\s*"\d{8}-?\d{0,6}"')
@@ -149,7 +153,8 @@ if __name__ == "__main__":
     ap.add_argument("--port", type=int, default=None, help="信号 hub 端口（默认源码里的 58610）")
     ap.add_argument("--capital", type=int, default=None, help="该账号该策略的资金池（元）")
     ap.add_argument("--live", action="store_true", help="把 DRY_RUN 置 False（危险，需确认）")
+    ap.add_argument("--window", default=None, help="覆盖执行窗口 HHMM-HHMM（仅联调测试用）")
     ap.add_argument("--dry-run", action="store_true", help="只校验不落盘")
     _a = ap.parse_args()
     build(dry_run=_a.dry_run, account=_a.account, port=_a.port,
-          capital=_a.capital, live=_a.live)
+          capital=_a.capital, live=_a.live, window=_a.window)
