@@ -52,6 +52,7 @@ ORDER_TYPE_VOL = 1101
 PRTYPE_LATEST = 5       # 最新价（实测模拟端＝按当时价挂限价，价格一走就挂着不成交）
 PRTYPE_LIMIT = 11       # 指定价（用 price 做限价；执行壳改用这个 + 让价）
 PRICE_SLIP_BPS = 30     # 让价 0.30%：BUY 加价 / SELL 降价，保证能穿价成交
+ORDER_VERIFY_SEC = 12   # 下单后回查账户委托的超时（查不到=>大概率仍在模拟模式）
 
 _g = {
     "last_poll": 0.0,
@@ -192,6 +193,23 @@ def _extract_remarks(objs):
             except Exception:
                 continue
     return out
+
+
+def _verify_order_visible(C, leg, timeout=12):
+    """下单后回查账户委托列表里有没有我们这条 remark。
+
+    为什么需要：客户端「运行模式=模拟」时 passorder 只在内部记账、**不进柜台委托列表**
+    （2026-10-29 实测 10:46 那笔即如此，且日志层完全看不出来）。这里用「委托能不能查到」
+    做第二证据，查不到就打一条显式 WARN，避免"以为下了单、实际只在模拟里转"。
+    """
+    t0 = time.time()
+    while time.time() - t0 < timeout:
+        remarks = _extract_remarks(_tdd(C, "order"))
+        for r in remarks:
+            if leg["remark"] and leg["remark"] in r:
+                return True
+        time.sleep(2)
+    return False
 
 
 def _extract_deals(objs):
@@ -416,6 +434,9 @@ def handlebar(C):
             ret, px, prtype = _place(C, leg)
             _g["n_legs"] += 1
             _log("ORDER ret=%s prtype=%s px=%.2f %s" % (ret, prtype, px, line))
+            if not _verify_order_visible(C, leg, ORDER_VERIFY_SEC):
+                _log("WARN 委托未出现在账户委托列表（remark=%s）——极可能还在「模拟」运行模式；"
+                     "请在客户端停止策略并以「实盘」重新启动" % leg["remark"])
         if sid:
             _g["placed_sids"].add(sid)
             _g["last_sid"] = sid
