@@ -281,19 +281,20 @@ def wait_for_tag(qmt_dir, model, tag, timeout_sec=300, interval=3):
         fo, mo = log_paths(qmt_dir, date_str)
         txt, formula_off = read_from(fo, formula_off)
         if txt:
-            for line in txt.splitlines():
-                if "BUILD_TAG=%s" % tag in line or ("BUILD_TAG=" in line and tag in line):
-                    excerpt.append(line.strip()[:300])
-            if excerpt:
-                return True, "matched", excerpt
+            # ★ 2026-10-29 修「假 PASS」：原来 excerpt 既是「命中缓冲」又是「失败展示缓冲」，
+            #   上一轮的 fallback 行留在里面，下一轮 `if excerpt: return True` 就会在**没有命中
+            #   TAG** 的情况下报 PASS（实测：执行壳根本没加载，却因别的策略的 [INIT] 行被判 PASS）。
+            #   现在「命中缓冲」每轮重建、只由 TAG 决定；fallback 只用于超时时的展示。
+            matched = [line.strip()[:300] for line in txt.splitlines()
+                       if "BUILD_TAG=%s" % tag in line or ("BUILD_TAG=" in line and tag in line)]
+            if matched:
+                return True, "matched", matched
             # 影子诊断：模型名未预注册（客户端 configFormula 里没有这个名字）
             if "configFormula not exist" in txt and model in txt:
                 return False, "MODEL_NOT_SEEDED", [l.strip()[:300] for l in txt.splitlines() if model in l][-3:]
-            # 保底：把关键行塞进 excerpt 供失败时展示
-            for line in txt.splitlines():
-                if "[INIT]" in line or "[BUILD]" in line or "Traceback" in line or "Error" in line:
-                    excerpt.append(line.strip()[:300])
-            excerpt = excerpt[-12:]
+            # 保底：仅用于「超时后」展示，绝不参与 PASS 判定
+            excerpt = [l.strip()[:300] for l in txt.splitlines()
+                       if "[INIT]" in l or "[BUILD]" in l or "Traceback" in l or "Error" in l][-12:]
         mtxt, main_off = read_from(mo, main_off)
         if mtxt:
             if not_seeded_marker in mtxt and "configFormula not exist" in mtxt:
