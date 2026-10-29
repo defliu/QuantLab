@@ -35,8 +35,11 @@ $mirror = Join-Path $dir "qmt_signal_mirror.py"
 $instances = @(
     # ★ 计划目录必须跟 rebalance_g2.py 的 G.DATA_DIR 走（**项目目录**下），不是 D:\QuantLab\data。
     #   2026-10-29 实测踩到：hub 指 D:\QuantLab\data\rebalance_g2 时 /signal 永远 404——脚本把计划写在项目目录里。
-    @{ Port = 58610; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2";     Account = "67014907"; Capital = 100000; Mirror = $false },
-    @{ Port = 58611; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2\sbx"; Account = "70180771"; Capital = 20000;  Mirror = $true  }
+    # ★ 端口不能再用 58610/58611：58610 是 QMT xtdata 的本地数据端口，hub 占了它会让
+    #   xtdata 连上来收到 HTTP 垃圾包（日志 "package len error"）——2026-10-29 实测踩到。
+    @{ Port = 58710; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2";     Account = "67014907"; Capital = 100000; Mirror = $false },
+    @{ Port = 58711; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2\sbx"; Account = "70180771"; Capital = 20000;  Mirror = $true  },
+    @{ Port = 58712; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_v13";    Account = "67014907"; Capital = 100000; Mirror = $false }
 )
 
 function Write-Log([string]$msg) {

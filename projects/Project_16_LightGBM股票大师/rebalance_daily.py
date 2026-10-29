@@ -461,6 +461,34 @@ def _connect():
     return trader, account
 
 
+def _fetch_price_tencent(code):
+    """腾讯行情兜底取价（2026-10-29 加）。
+
+    为什么需要：xtquant 在 2.1.33 上已不可用（`XtMiniQmt.exe` 不再自带、`connect` 返 rc=-1），
+    `_fetch_price` 走 xtdata 一律「无法连接行情服务」→ 连「只出计划」都算不出股数。
+    腾讯接口是项目既有通道（market_tier / rebalance_g2 同源），这里只取最新价。
+    """
+    import urllib.request
+    code = str(code).strip().upper()
+    if "." in code:
+        num, ex = code.split(".", 1)
+        sym = ("sh" if ex == "SH" else "sz" if ex == "SZ" else "bj") + num
+    else:
+        sym = code
+    try:
+        url = "http://qt.gtimg.cn/q=" + sym
+        raw = urllib.request.urlopen(url, timeout=3).read().decode("gbk", "replace")
+        body = raw.split('"')[1] if '"' in raw else ""
+        parts = body.split("~")
+        if len(parts) > 3:
+            px = float(parts[3])
+            if px > 0:
+                return px
+    except Exception:
+        pass
+    return None
+
+
 def _fetch_price(code):
     try:
         from xtquant import xtdata
@@ -468,9 +496,15 @@ def _fetch_price(code):
         time.sleep(0.3)
         tick = xtdata.get_full_tick([code]).get(code)
         if tick:
-            return float(tick.get("lastPrice", 0))
+            px = float(tick.get("lastPrice", 0))
+            if px > 0:
+                return px
     except Exception as e:
-        print(f"    !! 取价失败 {code}: {e}")
+        print(f"    !! xtdata 取价失败 {code}: {str(e)[:60]}（改用腾讯行情）")
+    px = _fetch_price_tencent(code)
+    if px:
+        return px
+    print(f"    !! 取价失败 {code}: xtdata 与腾讯均不可用")
     return None
 
 
@@ -532,6 +566,8 @@ def main():
                     help="T档或目标持仓数：0=清仓 / 1=半仓持1只 / >=2=按TOP_N满仓（上游09:45/10:05传T档，脚本内部归一)")
     ap.add_argument("--hold-days", type=int, default=HOLD_DAYS, help="持有期满交易日数（到期制卖出，替代 PK_OUT 日频翻转）")
     ap.add_argument("--live", action="store_true", help="真实换仓（默认 dry-run）")
+    ap.add_argument("--plan-only", action="store_true",
+                    help="只生成正式计划 data/rebalance_v13/<date>.plan.json 供回环执行壳，不下单")
     args = ap.parse_args()
 
     # --- --top 归一化（2026-09-22 修复，T-20260922-003）---
@@ -757,6 +793,46 @@ def main():
     for o in trim_orders:
         print(f"  {o['code']:<14}{o['held_value']:>12,.0f}→{target_value:>10,.0f}  {o['action']}")
     print("=" * 64)
+
+    if getattr(args, "plan_only", False):
+        # 2026-10-29：给「外部信号 → QMT 内置执行壳」出正式计划。
+        # 关键：写**独立文件名** .plan.json —— 10:05 guard 靠 `rebalance_<date>.json` 是否存在
+        # 判断「今天执行过没有」，计划若写成同名会把真单挡掉。本分支不抢 LIVE 锁、不连 xtquant、
+        # 不下单，因此 xtquant 在 2.1.33 上不可用时它仍然可用。
+        _legs = []
+        for _s in sell_plan:
+            _px = 0.0
+            try:
+                _px = float(_fetch_price(_s["code"]) or 0.0)
+            except Exception:
+                _px = 0.0
+            if _px <= 0:
+                _px = float(_s.get("cost") or 0.0)
+            _legs.append({"action": "SELL", "code": _s["code"], "vol": int(_s["vol"]),
+                          "price": round(_px, 3), "reason": _s.get("reason", "mature")})
+        for _o in list(trim_orders) + list(exec_buys):
+            if not _o.get("vol"):
+                continue
+            _act = "SELL" if str(_o.get("action", "")).startswith("减仓") else "BUY"
+            _legs.append({"action": _act, "code": _o["code"], "vol": int(_o["vol"]),
+                          "price": round(float(_o.get("price") or 0.0), 3),
+                          "reason": _o.get("action", "")})
+        _plan_dir = os.path.join(os.path.dirname(C.TRADE_LOG), "rebalance_v13")
+        if not os.path.isdir(_plan_dir):
+            os.makedirs(_plan_dir)
+        _out = os.path.join(_plan_dir, "rebalance_v13_%s.plan.json" % args.date)
+        _payload = {"date": args.date, "account_id": C.ACCOUNT_ID, "capital": round(capital, 2),
+                    "tier": args.top, "eff_top": eff_top, "orders": _legs,
+                    "selection_sha256": cand_meta.get("candidate_sha256"),
+                    "degraded": cand_meta.get("degraded", ""),
+                    "note": "v13 plan-only：供内置执行壳（passorder），未下单"}
+        _tmp = _out + ".tmp"
+        with open(_tmp, "w", encoding="utf-8") as _f:
+            json.dump(_payload, _f, ensure_ascii=False, indent=2, default=str)
+        os.replace(_tmp, _out)
+        print("PLAN-ONLY：已生成正式计划（%d 腿）-> %s" % (len(_legs), _out))
+        print("          该计划不下单；由 hub 转发给 QMT 内置执行壳执行。")
+        return
 
     if not args.live:
         print("DRY-RUN：未产生委托。确认后加 --live 执行真实换仓。")

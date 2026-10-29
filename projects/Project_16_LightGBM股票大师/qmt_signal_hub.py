@@ -66,7 +66,7 @@ def load_plan(plan_path):
     return plan, raw.decode("utf-8", "replace")
 
 
-def build_envelope(plan, raw_text, account_id, plan_path, now=None):
+def build_envelope(plan, raw_text, account_id, plan_path, now=None, strategy="g2"):
     """把外部 plan 包装成可校验、可去重的信号信封。
 
     幂等键 signal_id = 日期 + 计划内容哈希：同一份计划重复发布得到同一个 id，
@@ -87,10 +87,10 @@ def build_envelope(plan, raw_text, account_id, plan_path, now=None):
         })
     env = {
         "schema": SCHEMA,
-        "signal_id": "g2-%s-%s" % (trade_date, digest),
+        "signal_id": "%s-%s-%s" % (strategy, trade_date, digest),
         "trade_date": trade_date,
         "account_id": str(plan.get("account_id") or account_id or ""),
-        "strategy": "g2",
+        "strategy": strategy,
         "capital": float(plan.get("capital") or 0.0),
         "generated_at": str(plan.get("generated_at") or plan.get("ts") or ""),
         "served_at": now.strftime("%Y-%m-%d %H:%M:%S"),
@@ -122,10 +122,12 @@ class _State(object):
         date = _today()
         # 优先取「只生成计划」的产物（09:40 纯脚本任务写 .plan.json，不下单）；
         # 没有才回退到 live 产物 .json。两者内容同源，前者是执行壳的常规输入。
-        plan_only = os.path.join(a.plan_dir, "rebalance_g2_%s.plan.json" % date)
+        # 文件名前缀随策略（g2 / v13），否则 v13 目录里找不到计划
+        prefix = "rebalance_%s_" % (getattr(a, "strategy", None) or "g2")
+        plan_only = os.path.join(a.plan_dir, prefix + "%s.plan.json" % date)
         if os.path.exists(plan_only):
             return plan_only
-        return os.path.join(a.plan_dir, "rebalance_g2_%s.json" % date)
+        return os.path.join(a.plan_dir, prefix + "%s.json" % date)
 
     def current(self):
         """返回 (envelope|None, reason)。按 mtime 缓存，避免每 3 秒重算哈希。"""
@@ -140,7 +142,8 @@ class _State(object):
             plan, raw = load_plan(path)
             if plan is None:
                 return None, "plan_file_unreadable:%s" % path
-            env = build_envelope(plan, raw, self.args.account, path)
+            env = build_envelope(plan, raw, self.args.account, path,
+                                 strategy=getattr(self.args, "strategy", "g2"))
             if env["trade_date"] != _today() and not self.args.allow_stale_date:
                 return None, "plan_date_not_today:%s" % env["trade_date"]
             self.cache = (path, mtime, env)
@@ -197,10 +200,14 @@ def main():
     ap.add_argument("--plan-dir", default=r"D:\\QuantLab\\data\\rebalance_g2")
     ap.add_argument("--account", default="67014907")
     ap.add_argument("--port", type=int, default=58610)
+    ap.add_argument("--strategy", default=None,
+                    help="signal_id 前缀（g2 / v13 / ...，缺省按计划目录推断）")
     ap.add_argument("--allow-stale-date", action="store_true",
                     help="允许发布非当天计划（仅调试；生产必须关闭）")
     args = ap.parse_args()
 
+    if not args.strategy:
+        args.strategy = "v13" if "v13" in os.path.basename(os.path.normpath(args.plan_dir)) else "g2"
     state = _State(args)
     env, reason = state.current()
     if env is None:

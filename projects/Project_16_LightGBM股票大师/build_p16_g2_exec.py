@@ -74,7 +74,7 @@ def _apply_overrides(src, account=None, port=None, capital=None, live=False, win
     if live:
         subs.append((r'^DRY_RUN = True(\s*#.*)?$', 'DRY_RUN = False                 # builder --live 覆盖'))
     if window:
-        a, b = window.split("-")
+        a, b = [str(int(x.strip())) for x in window.split("-")]   # 0940 → 940（py3 不许前导零）
         subs.append((r'^EXEC_HM_START = \d+$', 'EXEC_HM_START = %s    # builder --window 覆盖（仅测试用）' % a.strip()))
         subs.append((r'^EXEC_HM_END = \d+$', 'EXEC_HM_END = %s      # builder --window 覆盖（仅测试用）' % b.strip()))
     for pat, rep in subs:
@@ -84,7 +84,7 @@ def _apply_overrides(src, account=None, port=None, capital=None, live=False, win
     return src
 
 
-def build(dry_run=False, account=None, port=None, capital=None, live=False, window=None):
+def build(dry_run=False, account=None, port=None, capital=None, live=False, window=None, out_name=None):
     src = _read(SRC)
     src = _inject_vendor(src)
     src = _apply_overrides(src, account, port, capital, live, window)
@@ -131,7 +131,9 @@ def build(dry_run=False, account=None, port=None, capital=None, live=False, wind
     if not os.path.isdir(os.path.dirname(OUT)):
         os.makedirs(os.path.dirname(OUT))
     out = OUT
-    if account and account != "67014907":
+    if out_name:
+        out = os.path.join(HERE, "build", out_name)
+    elif account and account != "67014907":
         out = OUT.replace(".py", "_%s.py" % account)
     with open(out, "wb") as f:
         f.write(data)
@@ -154,7 +156,8 @@ if __name__ == "__main__":
     ap.add_argument("--capital", type=int, default=None, help="该账号该策略的资金池（元）")
     ap.add_argument("--live", action="store_true", help="把 DRY_RUN 置 False（危险，需确认）")
     ap.add_argument("--window", default=None, help="覆盖执行窗口 HHMM-HHMM（仅联调测试用）")
+    ap.add_argument("--out", default=None, help="产物文件名（如 strategy_p16_v13_exec.py）")
     ap.add_argument("--dry-run", action="store_true", help="只校验不落盘")
     _a = ap.parse_args()
     build(dry_run=_a.dry_run, account=_a.account, port=_a.port,
-          capital=_a.capital, live=_a.live, window=_a.window)
+          capital=_a.capital, live=_a.live, window=_a.window, out_name=_a.out)
