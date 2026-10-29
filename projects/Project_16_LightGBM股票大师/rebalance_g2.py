@@ -623,6 +623,18 @@ def main():
         print("  %s %s %s %5d股 @%.3f %s" % (o["action"], o["code"], o["strategy_order_id"], o["vol"], o["price"], o["reason"]))
 
     if args.live:
+        # ★ 执行壳接管闸（2026-10-29）：G2 现在有两条**互斥**下单腿——
+        #   (a) 本脚本的 xtquant 外部下单（09:50 TRAE 主任务 / 10:07 guard 兜底都在用）；
+        #   (b) QMT 内置执行壳 STRATEGY_P16_G2_EXEC 的 passorder（信号走回环 HTTP）。
+        # 两条同时开 = 同一天把同一份计划下两遍单。所以上线执行壳时建这个标记文件，
+        # 本脚本的 --live 一律拒绝（dry-run 不受影响，DE 对比/回测重算照常可用）。
+        # 回退：删掉标记文件即可，无需改代码。
+        _takeover = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                 "data", "schedules", "g2_exec_shell_live")
+        if os.path.exists(_takeover):
+            print("[ABORT] 执行壳已接管 G2 下单（标记 %s 存在）⇒ 本脚本拒绝 --live，"
+                  "避免与内置执行壳重复下单。如需回到 xtquant 腿：删除该标记文件。" % _takeover)
+            return 1
         # 2026-10-22 拍板：改为 xtquant 直连真实下单（原「写桥 cmd/orders_*.json」通道作废，
         # QMT 沙箱下内置侧读不到）。桥心跳检查随之删除——不再依赖文件桥。
         import xt_exec
