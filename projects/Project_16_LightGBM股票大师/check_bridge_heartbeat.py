@@ -1,144 +1,164 @@
 # coding: utf-8
-"""桥心跳超时告警（DE 体检 P0 加固，2026-09-11）：盘中每 30 分钟巡检三桥（G2/ENS/V13），
-任一最新 heart 文件超过 MAX_AGE 秒未刷新 → 飞书告警 + 打印。
-交易日 09:30-15:10 窗口内才检查（脚本由每 30 分钟的 Windows 任务调度，窗口外零动作）。
+"""P16 链路健康巡检（原「桥心跳超时告警」，2026-10-29 重写）。
 
-用法：python check_bridge_heartbeat.py
-退出码：0=正常；2=发现桥心跳超时（已告警）。
+**为什么重写**：旧版盯 `D:/QMT_POOL/*/state/heart_*.json`——文件桥 2026-10-15 起作废、
+心跳文件再没人写（ENS/V13 的停在 10-16），于是每次巡检必报「心跳超时 112 万秒」这种
+**结构性假警**（2026-10-29 15:00 实测）。现在的下单链路是「外部计划 → 回环 hub → 内置执行壳
+passorder」，心跳该看的东西全变了。
+
+**现在检查什么（交易日 09:30–15:10 窗口内）**：
+  1. 回环 hub 是否在听（58710 G2主号 / 58711 G2沙箱 / 58712 V13主号）；
+  2. 各执行壳今天是否有 `[P16SIG][EXEC] INIT BUILD_TAG=`（= 策略加载并运行）；
+  3. 09:45 之后是否已生成当天计划文件（hub 的输入）；
+  4. 执行窗口内是否出现过 `[P16SIG][EXEC] PLAN`（= 真拿到了信号，不是空转）。
+
+**ENS 不再监控**：它的 xtquant 外部腿在 2.1.33 上已不可用（`XtMiniQmt.exe` 不再自带），
+本条只留一行 SKIP 说明，不当故障报。
+
+退出码：0 正常 / 2 发现异常（已告警）。
 """
+from __future__ import print_function
+
 import json
 import os
+import socket
 import sys
 import time
 from datetime import datetime
 
-sys.stdout.reconfigure(encoding="utf-8")
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import is_trade_day as ITD
-from qmt_bridge_client import notify_feishu
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import is_trade_day as ITD  # noqa: E402
 
-MAX_AGE_SEC = 600  # 心跳最大允许间隔（G2/ENS/V13 均 ~2 分钟一写，10 分钟未刷新=异常）
-# 午休感知（2026-09-21 修复，T-20260921-002）：A 股午休 11:30~13:00 无行情推送，桥心跳随 handlebar
-# 停更（实测 09-18/09-21 两天 12:00 恒报 ~1801 秒、12:30 恒报 ~3600 秒、13:00:03 心跳 0 秒前准时恢复）。
-# 午休窗口内阈值放宽为「距午休开始的时长 + MAX_AGE_SEC」：健康桥（最后心跳 11:30:0x）不告警；
-# 午休前已死的桥（如 11:00 起停更）仍会被抓到（12:00 时 age=3600 > 阈值 2400）。
-LUNCH_START_SEC = 11 * 3600 + 30 * 60  # 11:30:00
-LUNCH_END_SEC = 13 * 3600  # 13:00:00
+MAX_PLAN_WAIT_SEC = 900      # 09:45 之后 15 分钟内计划应就绪
+PROJ = HERE
 
-
-def _effective_max_age(now_sec):
-    """午休窗口内（11:30~13:00）按已进入午休的时长放宽阈值，避免结构性误报。"""
-    if LUNCH_START_SEC < now_sec <= LUNCH_END_SEC:
-        return (now_sec - LUNCH_START_SEC) + MAX_AGE_SEC
-    return MAX_AGE_SEC
-
-BRIDGES = {
-    "G2": "D:/QMT_POOL/g2_bridge/state",
-    "ENS": "D:/QMT_POOL/p16_ensemble_bridge/state",
-    "V13": "D:/QMT_POOL/p16_v13_risk/state",
+# 逻辑名 -> (客户端目录, 模型名, hub 端口, 计划目录, 计划文件名模板)
+SHELLS = {
+    "G2-main": (r"D:\国金QMT交易端模拟", "STRATEGY_P16_G2_EXEC", 58710,
+                os.path.join(PROJ, "data", "rebalance_g2"), "rebalance_g2_%s.plan.json"),
+    "G2-sbx": (r"D:\QMT交易端模拟", "STRATEGY_P16_G2_EXEC_SBX", 58711,
+               os.path.join(PROJ, "data", "rebalance_g2", "sbx"), "rebalance_g2_%s.json"),
+    "V13-main": (r"D:\国金QMT交易端模拟", "STRATEGY_P16_V13_EXEC", 58712,
+                 os.path.join(PROJ, "data", "rebalance_v13"), "rebalance_v13_%s.plan.json"),
 }
-# 自闭环心跳（2026-10-20，T-20261020-001）：三策略 2026-10-15~16 起零文件运行，
-# heart_*.json 停写，唯一通道是 print [P16xx][HEART] → FormulaOutput 日志。
-# 双客户端并存（AGENTS.md）：G2/ENS 在 D:\QMT交易端模拟，V13 在 D:\国金QMT交易端模拟。
-LOG_ROOTS = [r"D:\国金QMT交易端模拟", r"D:\QMT交易端模拟"]
-# 2026-10-20 改名（T-20261020-004）：G2/ENS 新前缀带 I 后缀；_latest_heart_log 同时认旧前缀。
-LOG_TAGS = {"G2": "P16G2I", "ENS": "P16ENSI", "V13": "P16V13"}
 
 
-def _latest_heart(dirpath):
-    """返回该目录最新 heart_<date>.json 的 (path, mtime_epoch)；无文件返回 None。"""
+def _today():
+    return time.strftime("%Y%m%d")
+
+
+def _hhmm():
+    return time.strftime("%H%M")
+
+
+def _port_open(port, timeout=1.0):
+    s = socket.socket()
+    s.settimeout(timeout)
     try:
-        files = [f for f in os.listdir(dirpath) if f.startswith("heart_") and f.endswith(".json")]
-        if not files:
-            return None
-        files.sort(reverse=True)
-        p = os.path.join(dirpath, files[0])
-        return p, os.path.getmtime(p)
+        s.connect(("127.0.0.1", int(port)))
+        return True
     except Exception:
-        return None
-
-
-def _latest_heart_log(tag):
-    """自闭环心跳（2026-10-20，T-20261020-001）：从 QMT FormulaOutput 日志取该策略
-    最新 [HEART] 行，返回 (ts_str, epoch) 或 None。取最近 3 个日志文件兜底。"""
-    import re
-    _tags = [tag] + ([tag[:-1]] if tag.endswith("I") else [])
-    pat = re.compile(r"\[(?:%s)\]\[HEART\]\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})"
-                     % "|".join(re.escape(t) for t in _tags))
-    best = None
-    for root in LOG_ROOTS:
-        d = os.path.join(root, "userdata", "log")
-        if not os.path.isdir(d):
-            continue
+        return False
+    finally:
         try:
-            logs = sorted([f for f in os.listdir(d)
-                           if f.startswith("XtClient_FormulaOutput_") and f.endswith(".log")],
-                          reverse=True)[:3]
-        except OSError:
-            continue
-        for fn in logs:
-            try:
-                with open(os.path.join(d, fn), "r", encoding="utf-8", errors="replace") as f:
-                    for line in f:
-                        m = pat.search(line)
-                        if m and (best is None or m.group(1) > best[0]):
-                            best = (m.group(1), os.path.join(d, fn))
-            except Exception:
-                continue
-    if not best:
-        return None
+            s.close()
+        except Exception:
+            pass
+
+
+def _read_log(client_dir, date):
+    p = os.path.join(client_dir, "userdata", "log", "XtClient_FormulaOutput_%s.log" % date)
+    if not os.path.exists(p):
+        return "", p
     try:
-        ep = time.mktime(time.strptime(best[0], "%Y-%m-%d %H:%M:%S"))
+        return open(p, "rb").read().decode("utf-8", "replace"), p
     except Exception:
-        return None
-    return best[0], ep
+        return "", p
+
+
+def check_shell(name, client_dir, model, port, plan_dir, plan_tpl):
+    """返回 (level, 说明)；level: OK / ALERT / WARN。"""
+    date = _today()
+    txt, logp = _read_log(client_dir, date)
+    inited = ("[P16SIG][EXEC] INIT BUILD_TAG=" in txt)
+    planned = ("[P16SIG][EXEC] PLAN" in txt)
+    running_init = ("[P16SIG][EXEC] MODE=" in txt) or inited
+
+    problems = []
+    if not _port_open(port):
+        problems.append("hub %d 未监听" % port)
+    if not inited:
+        problems.append("策略 %s 今天没有 INIT（未启动/未加载）" % model)
+    # 计划文件：09:45 之后必须有（G2 09:40 / V13 09:36 出计划）
+    plan_path = os.path.join(plan_dir, plan_tpl % date)
+    if _hhmm() >= "0945" and not os.path.exists(plan_path):
+        try:
+            late = int(_hhmm()[:2]) * 3600 + int(_hhmm()[2:]) * 60 - (9 * 3600 + 45 * 60)
+        except Exception:
+            late = 0
+        if late > MAX_PLAN_WAIT_SEC:
+            problems.append("计划未生成 %s（09:40/09:36 任务失败？）" % os.path.basename(plan_path))
+    # 窗口内应见过 PLAN 行（09:50 起；只在窗口内提示，不当硬故障）
+    if "0950" <= _hhmm() <= "1000" and inited and not planned:
+        problems.append("执行窗口内未见 PLAN 行（hub 无信号或校验被拒）")
+
+    if problems:
+        return "ALERT", " | ".join(problems)
+    if inited and planned:
+        return "OK", "已加载并拿到信号"
+    if running_init:
+        return "OK", "已加载（窗口外/尚未到窗口）"
+    return "WARN", "未加载"
 
 
 def main():
     try:
-        cal = ITD.load_calendar()
-        res = ITD.is_trade_day(datetime.now().date(), cal)
-        if not res.get("is_trade_day", False):
-            return 0
-    except Exception:
+        _cal = ITD.load_calendar()
+        _res = ITD.is_trade_day(datetime.now().date(), _cal)
+        _is_td = bool(_res.get("is_trade_day")) if isinstance(_res, dict) else bool(_res)
+    except Exception as e:
+        _is_td = True          # 判不出来就按交易日跑（宁可多查一次，不静默跳过）
+        print("[CHAIN] WARN 交易日判定失败(%s)，按交易日继续" % (str(e)[:80],))
+    if not _is_td:
+        print("[CHAIN] 非交易日，跳过")
         return 0
-    hhmm = int(time.strftime("%H%M"))
-    if hhmm < 930 or hhmm > 1510:
+    hh = _hhmm()
+    if hh < "0930" or hh > "1510":
+        print("[CHAIN] 窗口外（%s），跳过" % hh)
         return 0
 
-    stale = []
-    eff_max_age = _effective_max_age(int(time.strftime("%H")) * 3600 + int(time.strftime("%M")) * 60 + int(time.strftime("%S")))
-    for name, d in BRIDGES.items():
-        # 自闭环优先：日志 [HEART] vs 文件心跳取较新者（旧 heart json 恒存在且恒陈旧，
-        # 直接读文件会让每 30 分钟都误报「桥心跳超时」并推飞书，2026-10-16~20 实测 5 天）
-        got = _latest_heart(d)
-        file_age = (time.time() - got[1]) if got else None
-        lgot = _latest_heart_log(LOG_TAGS.get(name, ""))
-        log_age = (time.time() - lgot[1]) if lgot else None
-        if log_age is not None and (file_age is None or log_age < file_age):
-            age, src = log_age, "日志 %s" % lgot[0]
-        elif got:
-            age, src = file_age, os.path.basename(got[0])
-        else:
-            stale.append((name, "无心跳（文件与 FormulaOutput 日志均无）"))
-            continue
-        if age > eff_max_age:
-            stale.append((name, "%s 已 %d 秒未刷新" % (src, int(age))))
-        else:
-            print("[OK] %s 心跳 %d 秒前（%s）" % (name, int(age), src))
+    alerts = []
+    print("[CHAIN] %s 巡检开始" % time.strftime("%Y-%m-%d %H:%M:%S"))
+    for name, args in SHELLS.items():
+        level, msg = check_shell(name, *args)
+        print("  [%s] %-9s %s" % (level, name, msg))
+        if level == "ALERT":
+            alerts.append("%s: %s" % (name, msg))
+    print("  [SKIP] ENS      已下线（xtquant 在 2.1.33 不可用，无外部下单腿）")
 
-    if stale:
-        msg = "【P16桥心跳告警】%s 桥心跳超时（>%d秒）：\n%s" % (
-            time.strftime("%Y-%m-%d %H:%M"), eff_max_age, "\n".join("  %s: %s" % s for s in stale))
-        print(msg)
-        try:
-            notify_feishu(msg)
-        except Exception as e:
-            print("飞书告警失败: %s" % e)
-        return 2
-    print("[OK] 三桥心跳均正常（%s）" % time.strftime("%H:%M"))
-    return 0
+    if not alerts:
+        print("[CHAIN] 全部正常")
+        return 0
+
+    body = ("链路巡检发现异常（%s）：\n" % time.strftime("%H:%M")) + "\n".join("- " + a for a in alerts) + \
+           "\n\n排查方向：hub 未听 → `scripts/qmt_signal_hub.ps1 -Mode Start`；" \
+           "无 INIT → 客户端里该策略未启动；计划未生成 → 看 09:36/09:40 计划任务日志。"
+    try:
+        import subprocess
+        env = dict(os.environ)
+        env["LARK_SRC_TAG"] = "[QD]"
+        subprocess.call([sys.executable, os.path.join(PROJ, "push_alert_card.py"),
+                         "--title", "P16 链路巡检异常", "--body", body, "--level", "warn"],
+                        cwd=PROJ, env=env, timeout=60)
+    except Exception as e:
+        print("  [PUSH-FAIL] %s" % (str(e)[:120],))
+    return 2
 
 
 if __name__ == "__main__":
