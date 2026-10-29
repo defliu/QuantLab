@@ -294,6 +294,15 @@
 - **大盘风控 T 档已脚本化（2026-09-14 立，`market_tier.py`）**：开盘实时复核的 T 值判断（沪深300 → 空仓/半仓/正常）从"agent 读行情手工判断"改为确定性脚本——复用 `rebalance_g2.load_hs300_pct()`（腾讯行情实时取价）+ `_calc_tier()`（三档门控），数据缺失自动 fail-safe T=1 半仓。**agent 只读脚本输出的 tier 字段作为 --top 参数，禁止自行用其他行情源重算 T 值**（消除模型能力导致的仓位误判）。
 - **新建定时任务必须带降级条款**（复制上方标准条款到 message 末尾）；核心交易类任务必须引用已就绪脚本而非让模型自主推理。
 
+## 调度层分工（2026-10-29 变更：TRAE → Qoder）
+
+- **TRAE Agent 面板已退役**（本机 `Get-Process trae` 实测 0 进程），P16 的 agent 层任务迁到 **Qoder 自动化**（`qoder_cron`，cron + Asia/Shanghai，cwd 固定项目目录）。
+- **Qoder 侧现行任务**：09:25 集合竞价预判（只读）、**09:38 V1.3 复核+换仓**、**09:50 G2 换仓**、**09:52 融合换仓**（后三条 `--live` 真下单）；15:45/15:50 两条对账与 19:30 moneyflow 刷新**保持 disabled**（Windows `Quant_P16_Reconcile_1550` / `Quant_Tushare_Moneyflow_Refresh` 已覆盖，避免双推双写）。
+- **硬前提**：Qoder 三条下单任务是**唯一下单方**，TRAE 侧同名任务必须保持停用，否则当日双下单。切换前后各跑一次 `Get-Process trae` 与看板三查。
+- **时序红线（与 Windows guard 咬合）**：Qoder 必须在 guard 之前落盘——V1.3 10:05 / G2 10:07 / 融合 10:08；临近则宁可不做并推告警，绝不事后下单、绝不伪造产物标记。
+- **来源标记**：Qoder 侧推送一律 `LARK_SRC_TAG=[QD]`（TRAE 时代是 `[WB]`），便于在飞书区分是谁推的。
+- **两条与其它机制咬合的闸**：①G2 任务先看 `data/schedules/g2_exec_shell_live`，存在即只出 dry-run 不下单（执行壳接管）；②券商未登录时 `--live` 返回 `[ABORT] 连接失败、未下任何单` 属 fail-safe，**如实记录即可，不许重试或换通道**。
+
 ## 与实盘策略工程的关系
 
 - 实盘策略工程资产已收拢至 `D:\QuantLab`（原 `D:/QMT_STRATEGIES`，注意真身在 **D:** 不在 E:），侧重实盘策略构建与分层卖出风控。
