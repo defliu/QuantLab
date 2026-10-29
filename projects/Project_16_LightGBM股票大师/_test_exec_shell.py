@@ -6,6 +6,7 @@
 以及「vendor 是否真的注入了」。
 """
 import importlib.util
+import io
 import os
 import sys
 
@@ -50,7 +51,10 @@ POS = {"600000.SH": {"vol": 500, "can_use": 300}, "000001.SZ": {"vol": 0, "can_u
 check("P0 产物可 import（GBK + coding 声明）", mod is not None)
 check("P0 vendor 已注入 fetch", callable(getattr(mod, "fetch", None)))
 check("P0 vendor 已注入 already_applied", callable(getattr(mod, "already_applied", None)))
-check("P0 DRY_RUN 默认 True（首次部署必须只读）", mod.DRY_RUN is True)
+# 产物可能被 builder --live 覆盖成 False；「默认必须 True」这条应该钉在**源码**上
+_src = io.open(os.path.join(HERE, "strategy_p16_g2_exec.py"), encoding="utf-8").read()
+check("P0 源码 DRY_RUN 默认为 True（--live 才覆盖）", "DRY_RUN = True" in _src)
+check("P0 产物 dry_run 取值只可能是 True/False", mod.DRY_RUN in (True, False))
 check("P0 BUILD_TAG 已替换成时间戳", mod.BUILD_TAG != "00000000-000000")
 check("P0 ACCOUNT_ID 与资金池一致", mod.ACCOUNT_ID == "67014907")
 

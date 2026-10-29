@@ -23,7 +23,7 @@
 `qmt_autodeploy.py --product ... --model STRATEGY_P16_G2_EXEC --qmt-dir D:\QMT交易端模拟`。
 **新模型名需先在客户端手工注册一次**（任意内容的同名策略即可）。
 """
-BUILD_TAG = "20261029-104642"
+BUILD_TAG = "20261029-110831"
 
 import time
 
@@ -49,7 +49,9 @@ PRICE_TOLERANCE = 1.02           # 买腿总额允许上浮 2%（价格漂移）
 OP_BUY = 23
 OP_SELL = 24
 ORDER_TYPE_VOL = 1101
-PRTYPE_LATEST = 5
+PRTYPE_LATEST = 5       # 最新价（实测模拟端＝按当时价挂限价，价格一走就挂着不成交）
+PRTYPE_LIMIT = 11       # 指定价（用 price 做限价；执行壳改用这个 + 让价）
+PRICE_SLIP_BPS = 30     # 让价 0.30%：BUY 加价 / SELL 降价，保证能穿价成交
 
 _g = {
     "last_poll": 0.0,
@@ -57,6 +59,7 @@ _g = {
     "last_reject": "",
     "last_reject_ts": 0.0,
     "placed_sids": set(),
+    "fills_seen": set(),
     "n_legs": 0,
 }
 
@@ -191,6 +194,43 @@ def _extract_remarks(objs):
     return out
 
 
+def _extract_deals(objs):
+    """把 deal 对象转成 [(code, vol, price)]，字段名多版本兜底。"""
+    out = []
+    for o in objs or []:
+        try:
+            code = _obj_code(o)
+            if not code:
+                continue
+            vol = _obj_int(o, ("m_nVolume", "m_nDealVolume"))
+            px = 0.0
+            for n in ("m_dPrice", "m_dDealPrice", "m_nPrice"):
+                try:
+                    v = getattr(o, n, None)
+                    if v is not None:
+                        px = float(v)
+                        break
+                except Exception:
+                    continue
+            out.append((code, vol, px))
+        except Exception:
+            continue
+    return out
+
+
+def _log_new_fills(C, sid_marker):
+    """把当日成交里属于本 signal_id 的腿打出来（每个 (code,vol,px) 只打一次）。"""
+    for code, vol, px in _extract_deals(_tdd(C, "deal")):
+        key = (code, vol, px)
+        if key in _g["fills_seen"]:
+            continue
+        _g["fills_seen"].add(key)
+        if sid_marker:
+            _log("FILL %s %d@%.3f" % (code, vol, px))
+        else:
+            _log("FILL? %s %d@%.3f" % (code, vol, px))
+
+
 def _tdd(C, kind):
     """get_trade_detail_data 兜底调用（全局函数优先，其次 C 方法）。"""
     f = globals().get("get_trade_detail_data")
@@ -290,15 +330,26 @@ def plan_legs(env, today, hhmm, positions, applied_sids, dry_run):
 # ============================================================
 # 下单
 # ============================================================
+def _limit_price(leg):
+    """BUY 加价、SELL 降价，保证穿价成交（回测按开盘价成交，一点点让价反而更贴口径）。"""
+    p = float(leg.get("price") or 0.0)
+    if p <= 0:
+        return 0.0
+    k = 1.0 + PRICE_SLIP_BPS / 10000.0 if leg["action"] == "BUY" else 1.0 - PRICE_SLIP_BPS / 10000.0
+    return round(p * k, 2)
+
+
 def _place(C, leg):
     op = OP_BUY if leg["action"] == "BUY" else OP_SELL
+    px = _limit_price(leg)
+    prtype = PRTYPE_LIMIT if px > 0 else PRTYPE_LATEST
     try:
-        ret = passorder(op, ORDER_TYPE_VOL, ACCOUNT_ID, leg["code"], PRTYPE_LATEST,
-                        leg["price"], leg["vol"], leg["remark"], 2, "", C)
-        return ret
+        ret = passorder(op, ORDER_TYPE_VOL, ACCOUNT_ID, leg["code"], prtype,
+                        px, leg["vol"], leg["remark"], 2, "", C)
+        return ret, px, prtype
     except Exception as e:
         _log("PASSORDER-ERR %s %s: %s" % (leg["action"], leg["code"], e))
-        return None
+        return None, px, prtype
 
 
 # ============================================================
@@ -325,6 +376,11 @@ def handlebar(C):
                 _g["off_ts"] = now
                 _log("OFFSESSION hhmm=%s 不下单" % hhmm)
             return
+
+        try:
+            _log_new_fills(C, _g.get("last_sid"))
+        except Exception:
+            pass
 
         env, err = fetch(SIGNAL_URL, HTTP_TIMEOUT)
         if env is None:
@@ -357,9 +413,9 @@ def handlebar(C):
             if DRY_RUN:
                 _log("DRY " + line)
                 continue
-            ret = _place(C, leg)
+            ret, px, prtype = _place(C, leg)
             _g["n_legs"] += 1
-            _log("ORDER ret=%s %s" % (ret, line))
+            _log("ORDER ret=%s prtype=%s px=%.2f %s" % (ret, prtype, px, line))
         if sid:
             _g["placed_sids"].add(sid)
             _g["last_sid"] = sid
