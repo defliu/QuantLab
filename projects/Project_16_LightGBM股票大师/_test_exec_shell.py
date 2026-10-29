@@ -145,6 +145,28 @@ check("T8 remark 命中即视为已执行",
       mod.already_applied("g2-20261029-abcdef12", ["g2-20261029-abcdef12-2"]))
 check("T8 无命中则未执行", not mod.already_applied("g2-xxx", ["other"]))
 
+# --- T9 QMT 时间解析必须抗脏值（2026-10-29 实测 'product_...' 抛 ValueError）---
+class _FakeC(object):
+    def __init__(self, v):
+        self.v = v
+
+    def get_current_time(self):
+        return self.v
+
+
+import datetime as _dt
+d9, hm9, _ = mod._qmt_now(_FakeC("20261029100845"))
+check("T9 纯数字串 20261029100845 解析正确", d9 == "20261029" and hm9 == 1008)
+d9, hm9, _ = mod._qmt_now(_FakeC(_dt.datetime(2026, 10, 29, 9, 52)))
+check("T9 datetime 解析正确", d9 == "20261029" and hm9 == 952)
+import time as _time
+d9, hm9, _ = mod._qmt_now(_FakeC(_time.struct_time((2026, 10, 29, 9, 52, 0, 3, 302, 0))))
+check("T9 struct_time（QMT 真实返回类型）解析正确", d9 == "20261029" and hm9 == 952)
+d9, hm9, _ = mod._qmt_now(_FakeC("product_abc_xyz"))
+check("T9 脏值不抛异常且退回本机时间", len(d9) == 8 and d9.isdigit() and hm9 >= 0)
+d9, hm9, _ = mod._qmt_now(_FakeC(None))
+check("T9 None 不抛异常", len(d9) == 8 and d9.isdigit())
+
 print("")
 if fails:
     print("FAILED %d: %s" % (len(fails), " | ".join(fails)))
