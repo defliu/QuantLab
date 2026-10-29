@@ -120,10 +120,12 @@ class _State(object):
         if a.plan:
             return a.plan
         date = _today()
-        cand = os.path.join(a.plan_dir, "rebalance_g2_%s.json" % date)
-        if os.path.exists(cand):
-            return cand
-        return cand          # 不存在也返回，由调用方判
+        # 优先取「只生成计划」的产物（09:40 纯脚本任务写 .plan.json，不下单）；
+        # 没有才回退到 live 产物 .json。两者内容同源，前者是执行壳的常规输入。
+        plan_only = os.path.join(a.plan_dir, "rebalance_g2_%s.plan.json" % date)
+        if os.path.exists(plan_only):
+            return plan_only
+        return os.path.join(a.plan_dir, "rebalance_g2_%s.json" % date)
 
     def current(self):
         """返回 (envelope|None, reason)。按 mtime 缓存，避免每 3 秒重算哈希。"""

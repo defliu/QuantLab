@@ -33,8 +33,10 @@ $mirror = Join-Path $dir "qmt_signal_mirror.py"
 
 # port | 计划目录 | 账号 | 资金 | 是否先镜像
 $instances = @(
-    @{ Port = 58610; PlanDir = "D:\QuantLab\data\rebalance_g2";      Account = "67014907"; Capital = 100000; Mirror = $false },
-    @{ Port = 58611; PlanDir = "D:\QuantLab\data\rebalance_g2\sbx";  Account = "70180771"; Capital = 20000;  Mirror = $true  }
+    # ★ 计划目录必须跟 rebalance_g2.py 的 G.DATA_DIR 走（**项目目录**下），不是 D:\QuantLab\data。
+    #   2026-10-29 实测踩到：hub 指 D:\QuantLab\data\rebalance_g2 时 /signal 永远 404——脚本把计划写在项目目录里。
+    @{ Port = 58610; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2";     Account = "67014907"; Capital = 100000; Mirror = $false },
+    @{ Port = 58611; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2\sbx"; Account = "70180771"; Capital = 20000;  Mirror = $true  }
 )
 
 function Write-Log([string]$msg) {
@@ -105,19 +107,23 @@ if (!(Test-Path $hubPy)) { Write-Log ("FAIL hub 脚本不存在：{0}" -f $hubPy
 
 $rc = 0
 foreach ($i in $instances) {
-    if ((Test-Port $i.Port) -or (Get-HubProcs $i.Port)) {
-        Write-Log ("SKIP port={0} 已在监听（幂等）" -f $i.Port)
-        continue
-    }
     # 沙箱要先把主号计划镜像成自己账号/资金的计划；源不存在只记一条，不阻断主号实例
     if ($i.Mirror) {
-        $src = Join-Path $instances[0].PlanDir ("rebalance_g2_{0}.json" -f (Get-Date -Format "yyyyMMdd"))
+        # 优先镜像 09:40 的 .plan.json（不下单的正式计划），没有才回退 live 产物
+        $src = Join-Path $instances[0].PlanDir ("rebalance_g2_{0}.plan.json" -f (Get-Date -Format "yyyyMMdd"))
+        if (!(Test-Path $src)) {
+            $src = Join-Path $instances[0].PlanDir ("rebalance_g2_{0}.json" -f (Get-Date -Format "yyyyMMdd"))
+        }
         if (Test-Path $src) {
             $mo = & $python $mirror --src $src --dst-dir $i.PlanDir --account $i.Account --capital $i.Capital 2>&1
             Write-Log ("MIRROR " + (($mo | Out-String).Trim()))
         } else {
             Write-Log ("MIRROR skip 源计划不存在：{0}" -f $src)
         }
+    }
+    if ((Test-Port $i.Port) -or (Get-HubProcs $i.Port)) {
+        Write-Log ("SKIP port={0} 已在监听（幂等）" -f $i.Port)
+        continue
     }
     try {
         # ★ 不能用 Start-Process：它起的子进程会被计划任务的 job 收编，任务于是「一直在运行」

@@ -596,6 +596,8 @@ def main():
     ap.add_argument("--top", type=int, default=G.SELECT_TOP, help="候选池大小（默认10，对齐回测 TOP10）")
     ap.add_argument("--capital", type=float, default=None, help="资金池覆盖（默认读 g2_strategy_capital.json）")
     ap.add_argument("--live", action="store_true", help="真写桥 cmd/orders_<date>.json（缺省 dry-run）")
+    ap.add_argument("--plan-only", action="store_true",
+                    help="只生成正式计划（rebalance_g2_<date>.plan.json）供回环 hub 转发，不下单")
     args = ap.parse_args()
 
     date = args.date or today_str()
@@ -607,7 +609,11 @@ def main():
     print("资金池: %.0f 元（%s）" % (capital, G.G2_CAPITAL_FILE))
 
     orders, plan = build_plan(date, capital)
-    plan["written"] = bool(args.live)   # dry-run 写旁路文件，防覆盖当日 live 执行记录（DE 体检 P2-9）
+    plan["written"] = bool(args.live)
+    # --plan-only（2026-10-29）：给「外部信号→QMT 执行壳」链路产出正式计划。
+    # 必须写在**另一个文件名**（.plan.json）里：Windows guard 用 rebalance_g2_<date>.json
+    # 的存在与否判断「今天是否已执行」，绝不能让它把计划误当成已下单。
+    plan["_plan_only"] = bool(getattr(args, "plan_only", False))   # dry-run 写旁路文件，防覆盖当日 live 执行记录（DE 体检 P2-9）
     print(plan["note"])
     # N=10 持有期跳过项（掉出 top2 但未满持有期）
     for sk in plan.get("skips", []):
@@ -672,7 +678,10 @@ def main():
         plan["hold_dates_after"] = hd
         # 注：positions_cfg 成本锚随文件桥作废，不再生成（内置风控改为硬编码白名单，见方案 P0-5）
     else:
-        print("DRY-RUN：未写桥。确认后加 --live。")
+        if getattr(args, "plan_only", False):
+            print("PLAN-ONLY：已生成正式计划（.plan.json）供回环 hub 转发给 QMT 执行壳，未下任何单。")
+        else:
+            print("DRY-RUN：未写桥。确认后加 --live。")
         plan["written"] = False
         # dry-run 预览建仓日变化（不落盘）
         hd_prev = _update_hold_dates(plan, date)
@@ -686,7 +695,10 @@ def main():
 def _save_plan(plan, date):
     out_dir = os.path.join(G.DATA_DIR, "rebalance_g2")
     os.makedirs(out_dir, exist_ok=True)
-    suffix = "" if plan.get("written") else ".dryrun"
+    if plan.get("_plan_only"):
+        suffix = ".plan"
+    else:
+        suffix = "" if plan.get("written") else ".dryrun"
     jp = os.path.join(out_dir, "rebalance_g2_%s%s.json" % (date, suffix))
     with open(jp, "w", encoding="utf-8") as f:
         json.dump(plan, f, ensure_ascii=False, indent=2)

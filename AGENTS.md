@@ -296,8 +296,8 @@
 
 ## 调度层分工（2026-10-29 变更：TRAE → Qoder）
 
-- **TRAE Agent 面板已退役**（本机 `Get-Process trae` 实测 0 进程），P16 的 agent 层任务迁到 **Qoder 自动化**（`qoder_cron`，cron + Asia/Shanghai，cwd 固定项目目录）。
-- **Qoder 侧现行任务**：09:25 集合竞价预判（只读）、**09:38 V1.3 复核+换仓**、**09:50 G2 换仓**、**09:52 融合换仓**（后三条 `--live` 真下单）；15:45/15:50 两条对账与 19:30 moneyflow 刷新**保持 disabled**（Windows `Quant_P16_Reconcile_1550` / `Quant_Tushare_Moneyflow_Refresh` 已覆盖，避免双推双写）。
+- **TRAE 的自动化是云端调度：本机没有进程也会照跑**（2026-10-29 实证：本机 `Get-Process trae`=0、TRAE 日志目录止于 10-25，但 `data/rebalance_20261028.trae_note.json` 写于 **10-28 09:57**、`session` 字段自称「TRAE 09:50 主任务」，且仓库里没有任何脚本写这个文件）。⇒ **「杀掉本机 TRAE 进程」不等于停掉它的定时任务**，判断是否已停只能看次日 09:38–09:52 有没有新的 `*.trae_note.json`。P16 的 agent 层已迁到 **Qoder 自动化**（`qoder_cron`，cron + Asia/Shanghai，cwd 固定项目目录）。
+- **Qoder 侧现行任务**：09:25 集合竞价预判（只读）、**09:38 V1.3 复核+换仓**、**09:50 G2 换仓**、**09:52 融合换仓**（后三条 `--live` 真下单）；15:45/15:50 两条对账与 19:30 moneyflow 刷新**保持 disabled**（Windows `Quant_P16_Reconcile_1550` / `Quant_Tushare_Moneyflow_Refresh` 已覆盖，避免双推双写）。**⚠️ 截至 2026-10-29 08:4x，三条下单任务在 Qoder 侧仍是 `disabled`**——因为 TRAE 云端仍在跑（见上条证据），同时点亮会双下单；**待 TRAE 面板那三条确认停用后再 enable**（一条命令即可，prompt 已按当前体系改好）。
 - **硬前提**：Qoder 三条下单任务是**唯一下单方**，TRAE 侧同名任务必须保持停用，否则当日双下单。切换前后各跑一次 `Get-Process trae` 与看板三查。
 - **时序红线（与 Windows guard 咬合）**：Qoder 必须在 guard 之前落盘——V1.3 10:05 / G2 10:07 / 融合 10:08；临近则宁可不做并推告警，绝不事后下单、绝不伪造产物标记。
 - **来源标记**：Qoder 侧推送一律 `LARK_SRC_TAG=[QD]`（TRAE 时代是 `[WB]`），便于在飞书区分是谁推的。

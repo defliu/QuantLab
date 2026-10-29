@@ -79,7 +79,8 @@ def mirror(src_path, dst_dir, account, capital):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--src", required=True)
-    ap.add_argument("--dst-dir", default=r"D:\QuantLab\data\rebalance_g2\sbx")
+    ap.add_argument("--dst-dir",
+                    default=r"D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2\sbx")
     ap.add_argument("--account", default="70180771")
     ap.add_argument("--capital", type=float, default=20000.0)
     a = ap.parse_args()
