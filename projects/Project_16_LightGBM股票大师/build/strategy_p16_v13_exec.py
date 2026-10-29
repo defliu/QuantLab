@@ -23,7 +23,7 @@
 `qmt_autodeploy.py --product ... --model STRATEGY_P16_G2_EXEC --qmt-dir D:\QMT交易端模拟`。
 **新模型名需先在客户端手工注册一次**（任意内容的同名策略即可）。
 """
-BUILD_TAG = "20261029-124314"
+BUILD_TAG = "20261029-194713"
 
 import time
 
@@ -33,7 +33,7 @@ SCHEMA = "p16.signal.v1"
 SIGNAL_URL = "http://127.0.0.1:58712/signal"
 ACCOUNT_ID = "67014907"
 CAPITAL_BASE = 100000.0          # builder 覆盖
-DRY_RUN = True                   # ★ 首次部署必须保持 True，确认日志无误后再改 False 重新构建
+DRY_RUN = False                 # builder --live 覆盖
 # ★ 执行窗口：必须与回测口径一致。G2 的回测成交价取「开盘价」，实盘既有确认口径是
 #   09:50 触发（原换仓时点）、09:58 未成则当日放弃——见 build/strategy_p16_g2_selfcontained.py
 #   的 SIGNAL_HM / SIGNAL_DEADLINE_HM。执行壳照抄这个窗口，**不允许**在盘中任意时刻执行：

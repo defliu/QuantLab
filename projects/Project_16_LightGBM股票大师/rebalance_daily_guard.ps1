@@ -53,6 +53,17 @@ try {
     if ($LASTEXITCODE -ne 0) { Log "非 A 股交易日，跳过 [$Date]"; exit 0 }
     Log "确认 A 股交易日，检查 09:45 换仓是否已执行 [$Date]"
 
+    # ---- 执行壳接管闸（2026-10-29）----
+    # STRATEGY_P16_V13_EXEC 上线后，下单在 QMT 内置侧完成（信号走回环 58712），
+    # 不再产生 rebalance_<date>.json 的 executed_live 标记；此时若继续兜底 --live，
+    # 会每天白跑一次 xtquant（2.1.33 上必失败）并推假告警。标记存在即整轮跳过。
+    # 路径用 Join-Path 串联，避免反斜杠字面量在编辑/传输中被吃掉（2026-10-29 踩过）。
+    $takeover = Join-Path $proj (Join-Path "data" (Join-Path "schedules" "v13_exec_shell_live"))
+    if (Test-Path $takeover) {
+        Log "执行壳已接管 V1.3 下单（标记 v13_exec_shell_live 存在）=> 本 guard 不再兜底，跳过"
+        exit 0
+    }
+
     # ---- in-flight 进程扫描（T-20261008-009）：标记检查看不见「正在跑」的换仓 ----
     # 2026-10-08 事故：TRAE 09:45 任务迟到（~10:02 才启动）→ 本 guard 10:05 按「无标记」
     # 误判未执行 → 与 in-flight 的 TRAE run 并发 --live（重复卖出 + 50 笔废单）。

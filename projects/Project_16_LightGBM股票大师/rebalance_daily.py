@@ -858,6 +858,16 @@ def main():
         print("    计划已保存（DRY-RUN 旁路）:", out)
         return
 
+    # ---- 执行壳接管闸（2026-10-29）----
+    # STRATEGY_P16_V13_EXEC 上线后，下单由 QMT 内置执行壳完成（passorder），
+    # 外部 xtquant 腿已无意义（2.1.33 上 connect 恒 rc=-1）。标记存在时一律拒绝 --live，
+    # 避免「执行壳下一遍 + 外部再下一遍」；--plan-only 不受影响。
+    _takeover = os.path.join(os.path.dirname(C.TRADE_LOG), "schedules", "v13_exec_shell_live")
+    if os.path.exists(_takeover):
+        print("[ABORT] 执行壳已接管 V1.3 下单（标记 %s 存在）=> 本脚本拒绝 --live。" % _takeover)
+        print("        下单由 QMT 内置 STRATEGY_P16_V13_EXEC 在 09:40–09:50 窗口完成；如需回退请删该标记。")
+        return
+
     # ---- LIVE 执行：先卖后买（等权对齐，资金池为基准，委托守护重试）----
     # LIVE 互斥锁（T-20261008-005）：TRAE 主任务 / guard 兜底 / agent 重试多入口
     # 并发 --live 会双卖双买（2026-10-08 事故 4 进程并发）。抢锁失败直接放弃本次执行。
