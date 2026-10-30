@@ -80,8 +80,23 @@ def _fetch_day(pro, day):
     df["trade_date"] = pd.to_datetime(df["trade_date"], format="%Y%m%d")
     df["suspend_timing"] = ""
     df["suspend_type"] = ""
-    df["is_st"] = None
-    df["listed_days"] = None
+    # is_st / listed_days 必须填：面板构建会按这两列过滤/计算，留 None 会让新行整批被丢掉
+    # （2026-10-30 实测：补数后面板仍停在 10-16，就是这两列全空导致新行被筛掉）
+    try:
+        basic = pro.stock_basic(exchange="", list_status="L",
+                                fields="ts_code,name,list_date")
+        b = basic.set_index("ts_code")
+        names = b["name"].to_dict()
+        ldates = pd.to_datetime(b["list_date"], format="%Y%m%d", errors="coerce").to_dict()
+        df["is_st"] = df["ts_code"].map(lambda c: 1.0 if "ST" in str(names.get(c, "")) else 0.0)
+        df["listed_days"] = df.apply(
+            lambda r: float((r["trade_date"] - ldates[r["ts_code"]]).days)
+            if ldates.get(r["ts_code"]) is not None and not pd.isna(ldates.get(r["ts_code"])) else None,
+            axis=1)
+    except Exception as e:
+        log("WARN stock_basic 取不到，is_st/listed_days 留空: %s" % (str(e)[:80],))
+        df["is_st"] = None
+        df["listed_days"] = None
     for c in COLS:
         if c not in df.columns:
             df[c] = None
