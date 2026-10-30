@@ -27,7 +27,7 @@
 
 逻辑：
   - F2(资金) = f(Tushare moneyflow T-1 权威, 实时量比)（无数据回退实时/5.0）
-  - F3(催化) = 实时 catalyst_score（AI 结合新闻/公告给出 0-10；无数据回退 0）
+  - F3(催化) = 实时 catalyst_score（AI 结合新闻/公告给出 0-10；**无数据回退中性 5.0**，2026-10-30 拍板）
   - F5(板块) = f(申万一级行业信号日全天涨幅，本地自算)（对齐回测口径；无数据回退中性 5.0）
   - F1/F4 沿用 deploy 面板代理分；F6 = 信号日 Tushare daily_basic PE/换手打分（对齐回测 est 口径），
     缺失回退面板 SC_F6；实时 PE 仅作差异>50% 提示，不参与打分
@@ -64,6 +64,12 @@ DEFAULT_REVIEW = os.path.join(HERE, "data", "tdx_review.json")
 MF_PATH = "D:/astock/moneyflow/moneyflow.parquet"
 
 SC_WEIGHTS = {"F1": 0.25, "F2": 0.20, "F3": 0.20, "F4": 0.15, "F5": 0.10, "F6": 0.10}
+# ★ 2026-10-30 拍板：F3（催化）**缺失时按中性 5.0 计**，不再按 0 计。
+# 理由：F3 权重 20%，缺失按 0 等于系统性砍 20 分——AI 采集任务挂掉的那天会把所有候选
+# 一刀砍到红线以下（2026-10-30 实测：10 只候选 F3 全 0 → 最高 54 分 < 红线 58 → 0 腿；
+# 按中性 5 则最高 64、2 只过线）。语义上「没有催化信息」≠「负面催化」。
+# 回测侧同一口径：F3 缺失一律按 5.0（历史回测里 catalyst 缺失即走中性）。
+F3_NEUTRAL = 5.0
 
 
 def score_f2(net_inflow, liangbi):
@@ -291,7 +297,7 @@ def main():
             cur = s.get("catalyst_score")
             if cur is None or (isinstance(cur, float) and np.isnan(cur)):
                 cs = c.get("catalyst_score")
-                s["catalyst_score"] = float(cs) if cs is not None else 0.0
+                s["catalyst_score"] = float(cs) if cs is not None else F3_NEUTRAL
                 s["catalyst_note"] = c.get("catalyst_note", "") or ""
                 src = str(s.get("source", "") or "")
                 s["source"] = (src + "+cache") if src else "cache"
@@ -405,8 +411,23 @@ def main():
                 f3 = float(ea["score"])
                 f3_note = ea["note"]
                 f3_src = "tushare_anns"
-        if np.isnan(f3):
-            f3 = 0.0
+        # ★ 缺失时的回退顺序（2026-10-30 拍板，优先级：与回测同口径 > 中性）：
+        #   1) 面板代理分 SC_F3 —— 与 backtest_b21_strategy.py 的 F3 公式**完全同源**
+        #      （4 + 3*(fc<=90|ex<=90) + 2*(fc_pchg>20) + 1*(dv>1)，上限 10）；
+        #   2) 都没有才用中性 5.0。
+        # 为什么优先 SC_F3：实时 catalyst_score 是 AI 读新闻给的 0-10，**回测里没有这一项**，
+        # 拿它当主源会让实盘偏离回测口径；SC_F3 才是回测真正用的那个分。
+        if (np.isnan(f3) or (f3 == 0.0 and not f3_note)):
+            try:
+                _sc3 = float(r.get("SC_F3", np.nan))
+            except Exception:
+                _sc3 = np.nan
+            if not np.isnan(_sc3):
+                f3 = _sc3
+                f3_src = "panel_SC_F3"
+            else:
+                f3 = F3_NEUTRAL
+                f3_src = "neutral_5.0"
         # F5 板块：申万一级行业信号日全天涨幅（对齐回测 scorecard_real 口径，T-20261024 A 方案）。
         # 唯一主源=sw_l1 自算；缺失 → 中性 5.0（与回测 score_f5(nan) 一致），不再用实时 industry_pct 打分
         # （实时值是执行日 T+1 时点，与回测信号日口径不同日不同尺度，混用会破坏 110% 回测验证的口径）。

@@ -4,8 +4,23 @@
   "capital": 83611.93,
   "tier": 2,
   "eff_top": 5,
-  "orders": [],
-  "selection_sha256": "a748e3b66f95e07d47dace784262371c0e2b5e02354674648ed0deea3f0302b6",
+  "orders": [
+    {
+      "action": "BUY",
+      "code": "603162.SH",
+      "vol": 3800,
+      "price": 10.73,
+      "reason": "新晋"
+    },
+    {
+      "action": "BUY",
+      "code": "300531.SZ",
+      "vol": 2800,
+      "price": 14.53,
+      "reason": "新晋"
+    }
+  ],
+  "selection_sha256": "50b336f4e3550637daa3cfb938d7b7550a6bbc8210d5b12fb54e6d8adaf9a585",
   "degraded": "",
   "note": "v13 plan-only：供内置执行壳（passorder），未下单"
 }
