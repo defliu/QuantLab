@@ -28,6 +28,9 @@ $log    = Join-Path $sched "qmt_signal_hub.log"
 $python = "D:\Python311\python.exe"
 $pythonFallback = "C:\Users\Administrator\.workbuddy\binaries\python\envs\miniqmt\Scripts\python.exe"
 if (!(Test-Path $python)) { $python = $pythonFallback }
+# pythonw + run_hidden.py：常驻 hub 起在无控制台的进程里，不再占一个黑窗口。
+$pythonw   = Join-Path (Split-Path $python -Parent) "pythonw.exe"
+$runHidden = "D:\QuantLab\scripts\run_hidden.py"
 $hubPy  = Join-Path $dir "qmt_signal_hub.py"
 $mirror = Join-Path $dir "qmt_signal_mirror.py"
 
@@ -109,6 +112,8 @@ if ($Mode -eq "Stop") {
 
 # ---- Start ----
 if (!(Test-Path $python)) { Write-Log ("FAIL python 不存在：{0}" -f $python); exit 3 }
+if (!(Test-Path $pythonw)) { Write-Log ("FAIL pythonw 不存在：{0}" -f $pythonw); exit 3 }
+if (!(Test-Path $runHidden)) { Write-Log ("FAIL 隐藏启动器不存在：{0}" -f $runHidden); exit 3 }
 if (!(Test-Path $hubPy)) { Write-Log ("FAIL hub 脚本不存在：{0}" -f $hubPy); exit 3 }
 
 $rc = 0
@@ -135,13 +140,19 @@ foreach ($i in $instances) {
         # ★ 不能用 Start-Process：它起的子进程会被计划任务的 job 收编，任务于是「一直在运行」
         # （LastTaskResult=0x41301），30 分钟执行上限一到就把 hub 一起 TERMINATE 掉。
         # Win32_Process.Create 建的是独立进程（父进程是 services），任务可以立刻以 0 结束。
+        #
+        # ★ 也不能用 cmd.exe /c：Win11 把控制台交给 Windows Terminal，会一直占着一个黑窗口
+        # 到 15:10 Stop 才消失。改用 pythonw.exe + scripts\run_hidden.py：pythonw 是 GUI 子系统
+        # 进程本身没有控制台，子进程用 CREATE_NO_WINDOW 起，全程零窗口，日志由启动器写。
         $outLog = Join-Path $sched ("qmt_signal_hub_{0}.out.log" -f $i.Port)
         $ledgerArg = ""
         if ($i.ContainsKey("Ledger") -and $i.Ledger) {
             $ledgerArg = ' --ledger "{0}" --ledger-style {1}' -f $i.Ledger, $i.LedgerStyle
         }
-        $cmdLine = 'cmd.exe /c ""{0}" "{1}" --plan-dir "{2}" --account {3} --port {4}{5} >> "{6}" 2>&1"' -f `
-            $python, $hubPy, $i.PlanDir, $i.Account, $i.Port, $ledgerArg, $outLog
+        $hubArgs = '--plan-dir "{0}" --account {1} --port {2}{3}' -f `
+            $i.PlanDir, $i.Account, $i.Port, $ledgerArg
+        $cmdLine = '"{0}" "{1}" --log "{2}" -- "{3}" "{4}" {5}' -f `
+            $pythonw, $runHidden, $outLog, $python, $hubPy, $hubArgs
         $r = Invoke-CimMethod -ClassName Win32_Process -MethodName Create `
             -Arguments @{ CommandLine = $cmdLine; CurrentDirectory = $dir }
         if ($r.ReturnValue -ne 0) { throw ("Win32_Process.Create ReturnValue=" + $r.ReturnValue) }
