@@ -1,0 +1,11 @@
+{
+  "date": "20261030",
+  "account_id": "67014907",
+  "capital": 83611.93,
+  "tier": 2,
+  "eff_top": 5,
+  "orders": [],
+  "selection_sha256": "a748e3b66f95e07d47dace784262371c0e2b5e02354674648ed0deea3f0302b6",
+  "degraded": "",
+  "note": "v13 plan-only：供内置执行壳（passorder），未下单"
+}

@@ -220,6 +220,23 @@ def _crosscheck_warns(cc, code):
     return warns
 
 
+def _safe_num(v, default=np.nan):
+    """把可能为 None/字符串的值转成 float；失败返回 default（NaN）。"""
+    try:
+        if v is None:
+            return default
+        return float(v)
+    except Exception:
+        return default
+
+
+def _isnan_safe(v):
+    try:
+        return bool(np.isnan(v))
+    except Exception:
+        return True
+
+
 def _resolve_rdate(args_date, review_date):
     """T-20261009-004：输出日期锚 fail-closed。
 
@@ -473,9 +490,12 @@ def main():
         return
     print("[2/3] 完整版评分：")
     show = out[["ts_code", "name", "quote_pct", "model_prob", "F1", "F2", "F3", "F4", "F5", "F6", "total"]].copy()
-    show["quote_pct"] = show["quote_pct"].round(2)
-    show["model_prob"] = show["model_prob"].round(3)
-    show["pass"] = np.where(out["total"] >= args.threshold, "✅", "")
+    # 2026-10-30 修：多源回退可能给出 quote_pct=None（当日行情取不到），
+    # Series.round 遇到 None 会抛 TypeError: type NoneType doesn't define __round__。
+    # 用 pd.to_numeric 强制成数值（None→NaN），NaN 的 round 是安全的。
+    show["quote_pct"] = pd.to_numeric(show["quote_pct"], errors="coerce").round(2)
+    show["model_prob"] = pd.to_numeric(show["model_prob"], errors="coerce").round(3)
+    show["pass"] = np.where(out["total"] >= args.threshold, "PASS", "")
     print(show.to_string(index=False))
 
     print("[3/3] 输出完整版清单 ...")
@@ -496,7 +516,8 @@ def main():
         "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for i, (_, r) in enumerate(out.iterrows(), 1):
-        pct = f"{r['quote_pct']:.2f}%" if not np.isnan(r["quote_pct"]) else "—"
+        _qp = _safe_num(r["quote_pct"])
+        pct = ("%.2f%%" % _qp) if not _isnan_safe(_qp) else "—"
         p = "✅" if r["total"] >= args.threshold else "⚠️"
         lines.append(
             f"| {i} | {r['ts_code']} | {r['name']} | {pct} | {r['F1']:.0f} | {r['F2']:.0f} | {r['F3']:.0f} "
@@ -504,7 +525,8 @@ def main():
         )
     lines += ["", "## 实时复核明细"]
     for i, (_, r) in enumerate(out.iterrows(), 1):
-        net = f"{r['main_net_inflow']/1e4:.0f} 万" if not np.isnan(r["main_net_inflow"]) else "—"
+        _net = _safe_num(r["main_net_inflow"])
+        net = ("%.0f 万" % (_net / 1e4)) if not _isnan_safe(_net) else "—"
         ind = f"{r['ind_used']:.2f}%" if not np.isnan(r["ind_used"]) else "—"
         lb = f"{r['liangbi']:.2f}" if not np.isnan(r["liangbi"]) else "—"
         src = f" (来源: {r['source']})" if r.get("source") else ""
