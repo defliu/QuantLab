@@ -7,20 +7,27 @@
   "orders": [
     {
       "action": "BUY",
-      "code": "603162.SH",
-      "vol": 3800,
-      "price": 10.73,
+      "code": "000906.SZ",
+      "vol": 5200,
+      "price": 5.2,
       "reason": "新晋"
     },
     {
       "action": "BUY",
-      "code": "300531.SZ",
-      "vol": 2800,
-      "price": 14.53,
+      "code": "301173.SZ",
+      "vol": 900,
+      "price": 28.29,
+      "reason": "新晋"
+    },
+    {
+      "action": "BUY",
+      "code": "300851.SZ",
+      "vol": 1200,
+      "price": 21.7,
       "reason": "新晋"
     }
   ],
-  "selection_sha256": "50b336f4e3550637daa3cfb938d7b7550a6bbc8210d5b12fb54e6d8adaf9a585",
+  "selection_sha256": "e6d2b058ed39025811e234ebefdc7a24e77271e6e58c93200f717cf5844a8a1b",
   "degraded": "",
   "note": "v13 plan-only：供内置执行壳（passorder），未下单"
 }
