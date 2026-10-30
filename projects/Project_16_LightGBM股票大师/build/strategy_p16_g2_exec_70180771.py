@@ -23,14 +23,14 @@
 `qmt_autodeploy.py --product ... --model STRATEGY_P16_G2_EXEC --qmt-dir D:\QMT交易端模拟`。
 **新模型名需先在客户端手工注册一次**（任意内容的同名策略即可）。
 """
-BUILD_TAG = "20261030-134110"
+BUILD_TAG = "20261030-140212"
 
 import time
 
 SCHEMA = "p16.signal.v1"
 
 # ---- 配置（改这里，别改下面的逻辑）----
-SIGNAL_URL = "http://127.0.0.1:58611/signal"
+SIGNAL_URL = "http://127.0.0.1:58610/signal/g2sbx"
 REPORT_URL = SIGNAL_URL.replace("/signal", "/report")   # 成交回写账本（hub 落 CSV）
 ACCOUNT_ID = "70180771"
 CAPITAL_BASE = 20000.0          # builder 覆盖

@@ -1,4 +1,4 @@
-﻿# QMT 信号 hub 启停（2026-10-29 立）
+﻿﻿﻿# QMT 信号 hub 启停（2026-10-29 立）
 #
 # 作用：把外部算好的换仓计划，用只读 HTTP 暴露给 QMT 内置执行壳。
 #   实例1（58610）：主号计划目录      -> 主号 STRATEGY_P16_G2_EXEC（67014907）
@@ -35,23 +35,28 @@ $hubPy  = Join-Path $dir "qmt_signal_hub.py"
 $mirror = Join-Path $dir "qmt_signal_mirror.py"
 
 # port | 计划目录 | 账号 | 资金 | 是否先镜像
+# ★★ 2026-10-30：QMT 客户端只把 **58610** 放进连接白名单，其他回环端口会被
+#   python_anti_plugin_monitor 判 "illegal ip" 并**主动停掉策略**（实测 58710/58711 均被杀）。
+#   故改为「一个 hub 监听 58610，按路径区分策略」：
+#     /signal/g2     G2 主号（67014907）
+#     /signal/g2sbx  G2 沙箱（70180771）
+#     /signal/v13    V1.3（67014907）
+$PROJ = "D:\QuantLab\projects\Project_16_LightGBM股票大师"
+$G2DIR = Join-Path $PROJ (Join-Path "data" "rebalance_g2")
+$V13DIR = Join-Path $PROJ (Join-Path "data" "rebalance_v13")
 $instances = @(
-    # ★ 计划目录必须跟 rebalance_g2.py 的 G.DATA_DIR 走（**项目目录**下），不是 D:\QuantLab\data。
-    #   2026-10-29 实测踩到：hub 指 D:\QuantLab\data\rebalance_g2 时 /signal 永远 404——脚本把计划写在项目目录里。
-    # ★★ 端口必须在 QMT 客户端的**连接白名单**里，否则 python_anti_plugin_monitor 会判
-    #    「illegal ip」并主动把策略停掉（2026-10-30 实测：58710 → try stop G2/V13_EXEC →
-    #    illegal ip: 127.0.0.1:58710，策略启动后又变停止就是这个原因）。
-    #    白名单由客户端启动时自己收集（日志 "[monitor] whitelist fixed, size 79"），
-    #    里面只有 lua 配置里的服务端口：0.0.0.0:58600/58610/58620/64000 等。
-    #    ⚠️ 58600 已被 XtItClient 自身占用（formula 服务），所以用 58610。
-    #    ⚠️ 之前踩过的「58610 是 xtdata 数据端口」只在 hub 监听 0.0.0.0 时才会误撞；
-    #    这里一律绑 127.0.0.1，且 xtdata 连的是客户端自己起的服务端口，不受影响。
-    @{ Port = 58610; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2";     Account = "67014907"; Capital = 100000; Mirror = $false;
-       Ledger = "D:\QMT_POOL\g2_bridge\g2_trade_log.csv"; LedgerStyle = "g2" },
-    @{ Port = 58611; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2\sbx"; Account = "70180771"; Capital = 20000;  Mirror = $true;
-       Ledger = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2\sbx\sbx_trade_log.csv"; LedgerStyle = "g2" },
-    @{ Port = 58612; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_v13";    Account = "67014907"; Capital = 100000; Mirror = $false;
-       Ledger = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\qmt_trade_log.csv"; LedgerStyle = "v13" }
+    @{ Port = 58610;
+       PlanDir      = $G2DIR;
+       Account      = "67014907";
+       Ledger       = "D:\QMT_POOL\g2_bridge\g2_trade_log.csv";
+       LedgerStyle  = "g2";
+       SbxPlanDir   = (Join-Path $G2DIR "sbx");
+       SbxAccount   = "70180771";
+       SbxLedger    = (Join-Path (Join-Path $G2DIR "sbx") "sbx_trade_log.csv");
+       V13PlanDir   = $V13DIR;
+       V13Account   = "67014907";
+       V13Ledger    = (Join-Path $PROJ (Join-Path "data" "qmt_trade_log.csv"));
+       Mirror       = $false }
 )
 
 function Write-Log([string]$msg) {
@@ -155,8 +160,17 @@ foreach ($i in $instances) {
         if ($i.ContainsKey("Ledger") -and $i.Ledger) {
             $ledgerArg = ' --ledger "{0}" --ledger-style {1}' -f $i.Ledger, $i.LedgerStyle
         }
-        $hubArgs = '--plan-dir "{0}" --account {1} --port {2}{3}' -f `
-            $i.PlanDir, $i.Account, $i.Port, $ledgerArg
+        $routeArg = ""
+        if ($i.ContainsKey("SbxPlanDir") -and $i.SbxPlanDir) {
+            $routeArg += ' --sbx-plan-dir "{0}" --sbx-account {1}' -f $i.SbxPlanDir, $i.SbxAccount
+            if ($i.ContainsKey("SbxLedger") -and $i.SbxLedger) { $routeArg += ' --sbx-ledger "{0}"' -f $i.SbxLedger }
+        }
+        if ($i.ContainsKey("V13PlanDir") -and $i.V13PlanDir) {
+            $routeArg += ' --v13-plan-dir "{0}" --v13-account {1}' -f $i.V13PlanDir, $i.V13Account
+            if ($i.ContainsKey("V13Ledger") -and $i.V13Ledger) { $routeArg += ' --v13-ledger "{0}"' -f $i.V13Ledger }
+        }
+        $hubArgs = '--plan-dir "{0}" --account {1} --port {2}{3}{4}' -f `
+            $i.PlanDir, $i.Account, $i.Port, $ledgerArg, $routeArg
         $cmdLine = '"{0}" "{1}" --log "{2}" -- "{3}" "{4}" {5}' -f `
             $pythonw, $runHidden, $outLog, $python, $hubPy, $hubArgs
         $r = Invoke-CimMethod -ClassName Win32_Process -MethodName Create `

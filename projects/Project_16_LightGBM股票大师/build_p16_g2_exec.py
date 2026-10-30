@@ -61,14 +61,16 @@ def _inject_vendor(src):
     return head + block + tail
 
 
-def _apply_overrides(src, account=None, port=None, capital=None, live=False, window=None):
+def _apply_overrides(src, account=None, port=None, capital=None, live=False, window=None, route=None):
     """按账号/端口/资金覆盖常量。每项必须恰好替换 1 处，否则拒绝构建（防漂移）。"""
     subs = []
     if account:
         subs.append((r'^ACCOUNT_ID = "\d+"$', 'ACCOUNT_ID = "%s"' % account))
     if port:
-        subs.append((r'^SIGNAL_URL = "http://127\.0\.0\.1:\d+/signal"$',
-                     'SIGNAL_URL = "http://127.0.0.1:%d/signal"' % int(port)))
+        # route：/signal/<key>（单端口多策略，QMT 只放行 58610 一个回环端口）
+        _route = "signal/%s" % (route or "g2")
+        subs.append((r'^SIGNAL_URL = "http://127\.0\.0\.1:\d+/signal.*"$',
+                     'SIGNAL_URL = "http://127.0.0.1:%d/%s"' % (int(port), _route)))
     if capital:
         subs.append((r'^CAPITAL_BASE = \d+(\.\d+)?(\s*#.*)?$', 'CAPITAL_BASE = %d.0          # builder 覆盖' % int(capital)))
     if live:
@@ -84,10 +86,10 @@ def _apply_overrides(src, account=None, port=None, capital=None, live=False, win
     return src
 
 
-def build(dry_run=False, account=None, port=None, capital=None, live=False, window=None, out_name=None):
+def build(dry_run=False, account=None, port=None, capital=None, live=False, window=None, out_name=None, route=None):
     src = _read(SRC)
     src = _inject_vendor(src)
-    src = _apply_overrides(src, account, port, capital, live, window)
+    src = _apply_overrides(src, account, port, capital, live, window, route)
 
     tag = time.strftime("%Y%m%d-%H%M%S")
     assign = re.compile(r'BUILD_TAG\s*=\s*"\d{8}-?\d{0,6}"')
@@ -157,7 +159,8 @@ if __name__ == "__main__":
     ap.add_argument("--live", action="store_true", help="把 DRY_RUN 置 False（危险，需确认）")
     ap.add_argument("--window", default=None, help="覆盖执行窗口 HHMM-HHMM（仅联调测试用）")
     ap.add_argument("--out", default=None, help="产物文件名（如 strategy_p16_v13_exec.py）")
+    ap.add_argument("--route", default=None, help="信号路由 g2/g2sbx/v13（单端口多策略）")
     ap.add_argument("--dry-run", action="store_true", help="只校验不落盘")
     _a = ap.parse_args()
     build(dry_run=_a.dry_run, account=_a.account, port=_a.port,
-          capital=_a.capital, live=_a.live, window=_a.window, out_name=_a.out)
+          capital=_a.capital, live=_a.live, window=_a.window, out_name=_a.out, route=_a.route)

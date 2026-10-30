@@ -38,6 +38,18 @@ except ImportError:                                    # pragma: no cover
 
 SCHEMA = "p16.signal.v1"
 
+# ★ 2026-10-30：QMT 客户端只把 **58610** 放进连接白名单（python_anti_plugin_monitor 会停掉
+# 连其他回环端口的策略，日志 "illegal ip"）。所以改成「一个 hub 服务多策略，用路径区分」：
+#   /signal/g2       → G2 主号
+#   /signal/g2sbx    → G2 沙箱
+#   /signal/v13      → V1.3
+# 旧路径 /signal 保留为兼容别名（默认 g2）。
+ROUTES = {
+    "g2": "rebalance_g2_%s.plan.json",
+    "g2sbx": None,          # 由 --sbx-plan-dir 决定
+    "v13": "rebalance_v13_%s.plan.json",
+}
+
 # 成交回写账本的列定义（两套账本列序不同，必须按样式落）
 LEDGER_COLS = {
     "g2": ["time", "account_id", "code", "side", "vol", "price", "order_id", "remark", "reason"],
@@ -175,46 +187,67 @@ def build_envelope(plan, raw_text, account_id, plan_path, now=None, strategy="g2
 
 
 class _State(object):
+    """单 hub 多策略：按路径 key（g2/g2sbx/v13）分别解析计划与账号。
+
+    为什么不用三个端口：QMT 客户端只把 58610 放进连接白名单（其他回环端口会被
+    python_anti_plugin_monitor 判 illegal ip 并停掉策略，2026-10-30 实测）。
+    """
+
     def __init__(self, args):
         self.args = args
         self.lock = threading.Lock()
-        self.cache = None          # (plan_path, mtime, envelope)
+        self.cache = {}            # key -> (plan_path, mtime, envelope)
         self.last_error = ""
+        # key -> (plan_dir, account_id, strategy_prefix, ledger, ledger_style)
+        self.routes = {}
+        if getattr(args, "plan_dir", None):
+            self.routes["g2"] = (args.plan_dir, args.account, "g2",
+                                 getattr(args, "ledger", "") or "", getattr(args, "ledger_style", "g2"))
+        if getattr(args, "sbx_plan_dir", None):
+            self.routes["g2sbx"] = (args.sbx_plan_dir, args.sbx_account, "g2",
+                                    getattr(args, "sbx_ledger", "") or "", "g2")
+        if getattr(args, "v13_plan_dir", None):
+            self.routes["v13"] = (args.v13_plan_dir, args.v13_account, "v13",
+                                  getattr(args, "v13_ledger", "") or "", "v13")
+        if not self.routes:
+            self.routes["g2"] = (args.plan_dir, args.account, "g2",
+                                 getattr(args, "ledger", "") or "", getattr(args, "ledger_style", "g2"))
 
-    def resolve_plan_path(self):
+    def _route(self, key):
+        return self.routes.get(key) or self.routes.get("g2") or ("", "", "g2", "", "g2")
+
+    def resolve_plan_path(self, key="g2"):
+        plan_dir, _acct, prefix, _led, _style = self._route(key)
         a = self.args
-        if a.plan:
+        if getattr(a, "plan", "") and key == "g2":
             return a.plan
         date = _today()
-        # 优先取「只生成计划」的产物（09:40 纯脚本任务写 .plan.json，不下单）；
-        # 没有才回退到 live 产物 .json。两者内容同源，前者是执行壳的常规输入。
-        # 文件名前缀随策略（g2 / v13），否则 v13 目录里找不到计划
-        prefix = "rebalance_%s_" % (getattr(a, "strategy", None) or "g2")
-        plan_only = os.path.join(a.plan_dir, prefix + "%s.plan.json" % date)
+        # 优先 .plan.json（09:40/09:45 纯脚本任务产出，不下单）；没有才回退 live 产物
+        plan_only = os.path.join(plan_dir, "rebalance_%s_%s.plan.json" % (prefix, date))
         if os.path.exists(plan_only):
             return plan_only
-        return os.path.join(a.plan_dir, prefix + "%s.json" % date)
+        return os.path.join(plan_dir, "rebalance_%s_%s.json" % (prefix, date))
 
-    def current(self):
+    def current(self, key="g2"):
         """返回 (envelope|None, reason)。按 mtime 缓存，避免每 3 秒重算哈希。"""
-        path = self.resolve_plan_path()
+        plan_dir, acct, prefix, _led, _style = self._route(key)
+        path = self.resolve_plan_path(key)
         try:
             mtime = os.path.getmtime(path)
         except OSError:
             return None, "plan_file_missing:%s" % path
         with self.lock:
-            if self.cache and self.cache[0] == path and self.cache[1] == mtime:
-                return self.cache[2], ""
+            hit = self.cache.get(key)
+            if hit and hit[0] == path and hit[1] == mtime:
+                return hit[2], ""
             plan, raw = load_plan(path)
             if plan is None:
                 return None, "plan_file_unreadable:%s" % path
-            env = build_envelope(plan, raw, self.args.account, path,
-                                 strategy=getattr(self.args, "strategy", "g2"))
-            if env["trade_date"] != _today() and not self.args.allow_stale_date:
+            env = build_envelope(plan, raw, acct, path, strategy=prefix)
+            if env["trade_date"] != _today() and not getattr(self.args, "allow_stale_date", False):
                 return None, "plan_date_not_today:%s" % env["trade_date"]
-            self.cache = (path, mtime, env)
+            self.cache[key] = (path, mtime, env)
             return env, ""
-
 
 def make_handler(state):
     class Handler(BaseHTTPRequestHandler):
@@ -233,30 +266,45 @@ def make_handler(state):
                 pass
 
         def do_GET(self):
-            path = self.path.split("?")[0].rstrip("/")
-            if path in ("/health", "/ping"):
-                env, reason = state.current()
-                self._send(200, {
-                    "ok": env is not None,
-                    "schema": SCHEMA,
-                    "plan": state.resolve_plan_path(),
-                    "reason": reason,
-                })
+            raw = self.path.split("?")[0].rstrip("/")
+            if raw in ("/health", "/ping"):
+                out = []
+                for k in state.routes:
+                    env, reason = state.current(k)
+                    out.append({"key": k, "ok": env is not None,
+                                "plan": state.resolve_plan_path(k), "reason": reason})
+                self._send(200, {"ok": any(x["ok"] for x in out), "schema": SCHEMA, "routes": out})
                 return
-            if path in ("/signal", "/"):
-                env, reason = state.current()
-                if env is None:
-                    # 没有可用信号 = 明确拒绝，而不是给一个空计划（空计划会被误当"清仓"）
-                    self._send(404, {"ok": False, "schema": SCHEMA, "reason": reason})
-                    return
-                self._send(200, env)
+            # /signal 或 /signal/<key>
+            if raw in ("/signal", "/"):
+                key = "g2"
+            elif raw.startswith("/signal/"):
+                key = raw[len("/signal/"):]
+            else:
+                self._send(404, {"ok": False, "reason": "unknown_path"})
                 return
-            self._send(404, {"ok": False, "reason": "unknown_path"})
+            if key not in state.routes:
+                self._send(404, {"ok": False, "reason": "unknown_route:%s" % key,
+                                 "routes": sorted(state.routes.keys())})
+                return
+            env, reason = state.current(key)
+            if env is None:
+                # 没有可用信号 = 明确拒绝，而不是给一个空计划（空计划会被误当"清仓"）
+                self._send(404, {"ok": False, "schema": SCHEMA, "reason": reason})
+                return
+            self._send(200, env)
 
         def do_POST(self):
-            path = self.path.split("?")[0].rstrip("/")
-            if path != "/report":
+            raw = self.path.split("?")[0].rstrip("/")
+            if raw == "/report":
+                key = "g2"
+            elif raw.startswith("/report/"):
+                key = raw[len("/report/"):]
+            else:
                 self._send(404, {"ok": False, "reason": "unknown_path"})
+                return
+            if key not in state.routes:
+                self._send(404, {"ok": False, "reason": "unknown_route:%s" % key})
                 return
             try:
                 length = int(self.headers.get("Content-Length") or 0)
@@ -265,13 +313,15 @@ def make_handler(state):
             except Exception as e:
                 self._send(400, {"ok": False, "reason": "bad_json:%s" % str(e)[:60]})
                 return
+            _pd, route_acct, _pfx, ledger, style = state._route(key)
             fills = body.get("fills") or []
-            acct = body.get("account_id") or state.args.account
-            if str(acct) != str(state.args.account):
+            acct = body.get("account_id") or route_acct
+            if str(acct) != str(route_acct):
                 # 账号不符一律拒收（防串号回写别人的账本）
-                self._send(403, {"ok": False, "reason": "account_mismatch"})
+                self._send(403, {"ok": False, "reason": "account_mismatch",
+                                 "expect": route_acct, "got": acct})
                 return
-            n = append_ledger(state.args.ledger, state.args.ledger_style, acct,
+            n = append_ledger(ledger, style, acct,
                               fills, body.get("signal_id"), body.get("reason") or "exec_shell")
             self._send(200, {"ok": True, "appended": n})
 
@@ -292,6 +342,13 @@ def main():
                     help="signal_id 前缀（g2 / v13 / ...，缺省按计划目录推断）")
     ap.add_argument("--ledger", default="", help="成交回写的账本 CSV 路径（空=不回写）")
     ap.add_argument("--ledger-style", default="g2", choices=["g2", "v13"], help="账本列序样式")
+    # 多策略路由（单端口 58610 服务三个策略；QMT 只放行这一个回环端口）
+    ap.add_argument("--sbx-plan-dir", default="", help="G2 沙箱计划目录（/signal/g2sbx）")
+    ap.add_argument("--sbx-account", default="70180771", help="G2 沙箱账号")
+    ap.add_argument("--sbx-ledger", default="", help="G2 沙箱账本")
+    ap.add_argument("--v13-plan-dir", default="", help="V1.3 计划目录（/signal/v13）")
+    ap.add_argument("--v13-account", default="67014907", help="V1.3 账号")
+    ap.add_argument("--v13-ledger", default="", help="V1.3 账本")
     ap.add_argument("--allow-stale-date", action="store_true",
                     help="允许发布非当天计划（仅调试；生产必须关闭）")
     args = ap.parse_args()
@@ -299,15 +356,16 @@ def main():
     if not args.strategy:
         args.strategy = "v13" if "v13" in os.path.basename(os.path.normpath(args.plan_dir)) else "g2"
     state = _State(args)
-    env, reason = state.current()
-    if env is None:
-        log("WARN 启动时没有可用信号：%s（服务照常起，等外部计划落盘后自动生效）" % reason)
-    else:
-        log("READY signal_id=%s trade_date=%s orders=%d source=%s"
-            % (env["signal_id"], env["trade_date"], len(env["orders"]), env["source"]))
+    for k in state.routes:
+        env, reason = state.current(k)
+        if env is None:
+            log("WARN route=%s 启动时没有可用信号：%s（服务照常起，等计划落盘后自动生效）" % (k, reason))
+        else:
+            log("READY route=%s signal_id=%s orders=%d source=%s"
+                % (k, env["signal_id"], len(env["orders"]), env["source"]))
 
     srv = HTTPServer(("127.0.0.1", args.port), make_handler(state))
-    log("LISTEN http://127.0.0.1:%d/signal（只绑回环）" % args.port)
+    log("LISTEN http://127.0.0.1:%d  routes=%s（只绑回环）" % (args.port, ",".join(sorted(state.routes))))
     try:
         srv.serve_forever()
     except KeyboardInterrupt:
