@@ -38,6 +38,12 @@ except ImportError:                                    # pragma: no cover
 
 SCHEMA = "p16.signal.v1"
 
+# 成交回写账本的列定义（两套账本列序不同，必须按样式落）
+LEDGER_COLS = {
+    "g2": ["time", "account_id", "code", "side", "vol", "price", "order_id", "remark", "reason"],
+    "v13": ["time", "code", "side", "vol", "price", "score", "order_id", "account_id"],
+}
+
 
 def log(msg):
     print("[HUB] " + msg)
@@ -50,6 +56,66 @@ def _today():
 
 def _sha8(text):
     return hashlib.sha256(text.encode("utf-8")).hexdigest()[:8]
+
+
+def append_ledger(ledger_path, style, account_id, fills, sid, reason="exec_shell"):
+    """把执行壳回报的成交追加到账本（去重：同一天 + code + side + vol + price 只记一次）。"""
+    if not ledger_path or not fills:
+        return 0
+    cols = LEDGER_COLS.get(style or "g2") or LEDGER_COLS["g2"]
+    d = os.path.dirname(ledger_path)
+    if d and not os.path.isdir(d):
+        try:
+            os.makedirs(d)
+        except Exception:
+            pass
+    existing = set()
+    if os.path.exists(ledger_path):
+        try:
+            with open(ledger_path, "r", encoding="utf-8") as f:
+                rows = f.read().splitlines()
+            hdr = [x.strip() for x in rows[0].split(",")] if rows else cols
+            for line in rows[1:]:
+                parts = line.split(",")
+                if len(parts) != len(hdr):
+                    continue
+                rec = dict(zip(hdr, parts))
+                existing.add((rec.get("time", "")[:10], rec.get("code", ""),
+                              rec.get("side", ""), rec.get("vol", ""), rec.get("price", "")))
+        except Exception:
+            pass
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    n = 0
+    try:
+        need_header = not os.path.exists(ledger_path)
+        with open(ledger_path, "a", encoding="utf-8") as f:
+            if need_header:
+                f.write(",".join(cols) + "\n")
+            for x in fills:
+                try:
+                    code = str(x.get("code") or "")
+                    side = str(x.get("side") or "BUY").upper()
+                    vol = int(x.get("vol") or 0)
+                    px = float(x.get("price") or 0)
+                except Exception:
+                    continue
+                if not code or vol <= 0:
+                    continue
+                key = (now[:10], code, side, str(vol), str(px))
+                if key in existing:
+                    continue
+                row = {
+                    "time": now, "account_id": str(account_id or ""), "code": code,
+                    "side": side, "vol": vol, "price": px, "order_id": "",
+                    "remark": ("exec:%s" % (sid or ""))[:60], "reason": reason,
+                    "score": "",
+                }
+                f.write(",".join(str(row.get(c, "")) for c in cols) + "\n")
+                existing.add(key)
+                n += 1
+    except Exception:
+        return n
+    return n
 
 
 def load_plan(plan_path):
@@ -187,6 +253,28 @@ def make_handler(state):
                 return
             self._send(404, {"ok": False, "reason": "unknown_path"})
 
+        def do_POST(self):
+            path = self.path.split("?")[0].rstrip("/")
+            if path != "/report":
+                self._send(404, {"ok": False, "reason": "unknown_path"})
+                return
+            try:
+                length = int(self.headers.get("Content-Length") or 0)
+                raw = self.rfile.read(length) if length > 0 else b"{}"
+                body = json.loads(raw.decode("utf-8"))
+            except Exception as e:
+                self._send(400, {"ok": False, "reason": "bad_json:%s" % str(e)[:60]})
+                return
+            fills = body.get("fills") or []
+            acct = body.get("account_id") or state.args.account
+            if str(acct) != str(state.args.account):
+                # 账号不符一律拒收（防串号回写别人的账本）
+                self._send(403, {"ok": False, "reason": "account_mismatch"})
+                return
+            n = append_ledger(state.args.ledger, state.args.ledger_style, acct,
+                              fills, body.get("signal_id"), body.get("reason") or "exec_shell")
+            self._send(200, {"ok": True, "appended": n})
+
         def log_message(self, fmt, *args):
             # 客户端每 3 秒轮询一次，不逐条刷日志；只在启动与异常时说话
             return
@@ -202,6 +290,8 @@ def main():
     ap.add_argument("--port", type=int, default=58610)
     ap.add_argument("--strategy", default=None,
                     help="signal_id 前缀（g2 / v13 / ...，缺省按计划目录推断）")
+    ap.add_argument("--ledger", default="", help="成交回写的账本 CSV 路径（空=不回写）")
+    ap.add_argument("--ledger-style", default="g2", choices=["g2", "v13"], help="账本列序样式")
     ap.add_argument("--allow-stale-date", action="store_true",
                     help="允许发布非当天计划（仅调试；生产必须关闭）")
     args = ap.parse_args()

@@ -23,7 +23,7 @@
 `qmt_autodeploy.py --product ... --model STRATEGY_P16_G2_EXEC --qmt-dir D:\QMT交易端模拟`。
 **新模型名需先在客户端手工注册一次**（任意内容的同名策略即可）。
 """
-BUILD_TAG = "20261029-195335"
+BUILD_TAG = "20261030-101114"
 
 import time
 
@@ -31,6 +31,7 @@ SCHEMA = "p16.signal.v1"
 
 # ---- 配置（改这里，别改下面的逻辑）----
 SIGNAL_URL = "http://127.0.0.1:58710/signal"
+REPORT_URL = SIGNAL_URL.replace("/signal", "/report")   # 成交回写账本（hub 落 CSV）
 ACCOUNT_ID = "67014907"
 CAPITAL_BASE = 100000.0          # 与 config/capital_allocation.yaml 的 g2_bridge 一致
 DRY_RUN = False                 # builder --live 覆盖
@@ -61,6 +62,7 @@ _g = {
     "last_reject_ts": 0.0,
     "placed_sids": set(),
     "fills_seen": set(),
+    "legs_side": {},
     "n_legs": 0,
 }
 
@@ -236,17 +238,52 @@ def _extract_deals(objs):
     return out
 
 
+def _report_fills(fills):
+    """把新成交 POST 回 hub，由 hub 追加到外部账本（G2: g2_trade_log.csv / V13: qmt_trade_log.csv）。
+
+    为什么：执行壳在 QMT 内置侧下单，外部账本不会自动更新；不回写的话次日计划仍以为空仓
+    → 重复建仓。上报失败只打日志，绝不影响下单主流程。
+    """
+    if not fills:
+        return
+    try:
+        import json as _json
+        try:
+            from urllib.request import Request, urlopen
+        except ImportError:
+            from urllib2 import Request, urlopen
+        payload = _json.dumps({
+            "account_id": ACCOUNT_ID,
+            "signal_id": _g.get("last_sid") or "",
+            "reason": "exec_shell",
+            "fills": fills,
+        }).encode("utf-8")
+        req = Request(REPORT_URL, data=payload,
+                      headers={"Content-Type": "application/json"})
+        resp = urlopen(req, timeout=HTTP_TIMEOUT)
+        body = resp.read()
+        resp.close()
+        _log("REPORT fills=%d -> %s" % (len(fills), body.decode("utf-8", "replace")[:120]))
+    except Exception as e:
+        _log("REPORT-FAIL %s" % (str(e)[:120],))
+
+
 def _log_new_fills(C, sid_marker):
-    """把当日成交里属于本 signal_id 的腿打出来（每个 (code,vol,px) 只打一次）。"""
+    """把当日成交里属于本 signal_id 的腿打出来（每个 (code,vol,px) 只打一次），并回写账本。"""
+    fresh = []
     for code, vol, px in _extract_deals(_tdd(C, "deal")):
         key = (code, vol, px)
         if key in _g["fills_seen"]:
             continue
         _g["fills_seen"].add(key)
+        side = _g["legs_side"].get(code, "BUY")
+        fresh.append({"code": code, "side": side, "vol": vol, "price": px})
         if sid_marker:
             _log("FILL %s %d@%.3f" % (code, vol, px))
         else:
             _log("FILL? %s %d@%.3f" % (code, vol, px))
+    if fresh:
+        _report_fills(fresh)
 
 
 def _tdd(C, kind):
@@ -432,6 +469,7 @@ def handlebar(C):
                 _log("DRY " + line)
                 continue
             ret, px, prtype = _place(C, leg)
+            _g["legs_side"][leg["code"]] = leg["action"]
             _g["n_legs"] += 1
             _log("ORDER ret=%s prtype=%s px=%.2f %s" % (ret, prtype, px, line))
             if not _verify_order_visible(C, leg, ORDER_VERIFY_SEC):

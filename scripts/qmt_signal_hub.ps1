@@ -37,9 +37,12 @@ $instances = @(
     #   2026-10-29 实测踩到：hub 指 D:\QuantLab\data\rebalance_g2 时 /signal 永远 404——脚本把计划写在项目目录里。
     # ★ 端口不能再用 58610/58611：58610 是 QMT xtdata 的本地数据端口，hub 占了它会让
     #   xtdata 连上来收到 HTTP 垃圾包（日志 "package len error"）——2026-10-29 实测踩到。
-    @{ Port = 58710; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2";     Account = "67014907"; Capital = 100000; Mirror = $false },
-    @{ Port = 58711; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2\sbx"; Account = "70180771"; Capital = 20000;  Mirror = $true  },
-    @{ Port = 58712; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_v13";    Account = "67014907"; Capital = 100000; Mirror = $false }
+    @{ Port = 58710; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2";     Account = "67014907"; Capital = 100000; Mirror = $false;
+       Ledger = "D:\QMT_POOL\g2_bridge\g2_trade_log.csv"; LedgerStyle = "g2" },
+    @{ Port = 58711; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2\sbx"; Account = "70180771"; Capital = 20000;  Mirror = $true;
+       Ledger = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2\sbx\sbx_trade_log.csv"; LedgerStyle = "g2" },
+    @{ Port = 58712; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_v13";    Account = "67014907"; Capital = 100000; Mirror = $false;
+       Ledger = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\qmt_trade_log.csv"; LedgerStyle = "v13" }
 )
 
 function Write-Log([string]$msg) {
@@ -133,8 +136,12 @@ foreach ($i in $instances) {
         # （LastTaskResult=0x41301），30 分钟执行上限一到就把 hub 一起 TERMINATE 掉。
         # Win32_Process.Create 建的是独立进程（父进程是 services），任务可以立刻以 0 结束。
         $outLog = Join-Path $sched ("qmt_signal_hub_{0}.out.log" -f $i.Port)
-        $cmdLine = 'cmd.exe /c ""{0}" "{1}" --plan-dir "{2}" --account {3} --port {4} >> "{5}" 2>&1"' -f `
-            $python, $hubPy, $i.PlanDir, $i.Account, $i.Port, $outLog
+        $ledgerArg = ""
+        if ($i.ContainsKey("Ledger") -and $i.Ledger) {
+            $ledgerArg = ' --ledger "{0}" --ledger-style {1}' -f $i.Ledger, $i.LedgerStyle
+        }
+        $cmdLine = 'cmd.exe /c ""{0}" "{1}" --plan-dir "{2}" --account {3} --port {4}{5} >> "{6}" 2>&1"' -f `
+            $python, $hubPy, $i.PlanDir, $i.Account, $i.Port, $ledgerArg, $outLog
         $r = Invoke-CimMethod -ClassName Win32_Process -MethodName Create `
             -Arguments @{ CommandLine = $cmdLine; CurrentDirectory = $dir }
         if ($r.ReturnValue -ne 0) { throw ("Win32_Process.Create ReturnValue=" + $r.ReturnValue) }
