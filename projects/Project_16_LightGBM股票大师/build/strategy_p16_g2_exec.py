@@ -23,7 +23,7 @@
 `qmt_autodeploy.py --product ... --model STRATEGY_P16_G2_EXEC --qmt-dir D:\QMT交易端模拟`。
 **新模型名需先在客户端手工注册一次**（任意内容的同名策略即可）。
 """
-BUILD_TAG = "20261030-140212"
+BUILD_TAG = "20261030-180615"
 
 import time
 
@@ -62,6 +62,7 @@ _g = {
     "last_reject_ts": 0.0,
     "placed_sids": set(),
     "fills_seen": set(),
+    "fill_no_remark_warned": False,
     "legs_side": {},
     "n_legs": 0,
 }
@@ -214,8 +215,36 @@ def _verify_order_visible(C, leg, timeout=12):
     return False
 
 
+def _obj_remark(o):
+    for n in ("m_strRemark", "m_strRemarkEx", "m_strOrderRef"):
+        try:
+            v = getattr(o, n, None)
+            if v:
+                return str(v)
+        except Exception:
+            continue
+    return ""
+
+
+def _obj_side(o):
+    """成交方向：优先 m_strOptName 中文操作名（AGENTS 实盘红线：判方向用它，别用未实测的码值）。"""
+    try:
+        nm = str(getattr(o, "m_strOptName", "") or "")
+        if "买" in nm:
+            return "BUY"
+        if "卖" in nm:
+            return "SELL"
+    except Exception:
+        pass
+    return ""
+
+
 def _extract_deals(objs):
-    """把 deal 对象转成 [(code, vol, price)]，字段名多版本兜底。"""
+    """把 deal 对象转成 [(code, vol, price, remark, side)]，字段名多版本兜底。
+
+    remark 是判断「这笔成交属于哪个策略」的唯一依据：G2 与 V1.3 同账号 67014907、
+    各自 capital_base 独立，只能靠 remark 里的 signal_id 前缀区分。
+    """
     out = []
     for o in objs or []:
         try:
@@ -232,7 +261,7 @@ def _extract_deals(objs):
                         break
                 except Exception:
                     continue
-            out.append((code, vol, px))
+            out.append((code, vol, px, _obj_remark(o), _obj_side(o)))
         except Exception:
             continue
     return out
@@ -269,19 +298,44 @@ def _report_fills(fills):
 
 
 def _log_new_fills(C, sid_marker):
-    """把当日成交里属于本 signal_id 的腿打出来（每个 (code,vol,px) 只打一次），并回写账本。"""
+    """把当日成交里**属于本 signal_id** 的腿打出来并回写账本。
+
+    ★ 归属判定（2026-10-30 修，串账事故）：G2 与 V1.3 共用账号 67014907、各自 capital_base
+    独立，`get_trade_detail_data(acct,'stock','deal')` 返回的是**整个账号当日全部成交**。
+    早期实现不过滤就把别人的成交也 POST 回自己的账本 → 次日计划误以为已建仓/已卖出。
+    现口径（照抄自包含版 `_query_deals` 的教训）：
+      1. 只认 remark 里含本策略 signal_id 的成交（remark = "<sid>-<腿号>"，sid 本身带策略前缀）；
+      2. 当日成交**一条 remark 都没有** 则无法归属，一律不上报（只打一行告警），宁可漏记也不串账；
+      3. 有 remark 但不属于本策略，打 `FILL?` 留痕，**绝不回写**；
+      4. sid_marker 为空（本轮没拿到信号，如重启后），只做 `FILL?` 留痕，不上报。
+    """
+    sid = str(sid_marker or "")
+    deals = _extract_deals(_tdd(C, "deal"))
+    if not deals:
+        return
+    any_remark = any(d[3] for d in deals)
+    if not any_remark:
+        # 无 remark 字段/全为空 = 无法判断归属。只打一次，避免每 tick 刷屏。
+        if not _g.get("fill_no_remark_warned"):
+            _g["fill_no_remark_warned"] = True
+            _log("WARN 当日成交无 remark 字段，无法归属到本策略——本次不回写账本（宁可漏记不串账）")
+        return
     fresh = []
-    for code, vol, px in _extract_deals(_tdd(C, "deal")):
-        key = (code, vol, px)
+    foreign = 0
+    for code, vol, px, remark, dside in deals:
+        key = (code, vol, px, remark)
         if key in _g["fills_seen"]:
             continue
         _g["fills_seen"].add(key)
-        side = _g["legs_side"].get(code, "BUY")
+        mine = bool(sid) and (sid in remark)
+        if not mine:
+            foreign += 1
+            _log("FILL? %s %d@%.3f remark=%s（非本策略，不回写）" % (code, vol, px, remark or "-"))
+            continue
+        # 方向：成交对象自带的操作名最可靠；取不到才退回本轮下过的腿方向（重启后为空则按 BUY）
+        side = dside or _g["legs_side"].get(code) or "BUY"
         fresh.append({"code": code, "side": side, "vol": vol, "price": px})
-        if sid_marker:
-            _log("FILL %s %d@%.3f" % (code, vol, px))
-        else:
-            _log("FILL? %s %d@%.3f" % (code, vol, px))
+        _log("FILL %s %s %d@%.3f remark=%s" % (code, side, vol, px, remark))
     if fresh:
         _report_fills(fresh)
 

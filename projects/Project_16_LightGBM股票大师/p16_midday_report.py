@@ -6,7 +6,8 @@
 而且持仓数根本无法实测（xtquant 在 2.1.33 不可用）。
 
 **新口径（只报可验证的事实）**：
-  1. 三个 hub 端口是否在听（58710/58711/58712）；
+  1. hub **单实例 58610** 是否在听，以及 `/health` 里 g2 / g2sbx / v13 三条路由各自 ok
+     （2026-10-30 改：旧版查 58710/58711/58712，hub 收成单端口多路由后每天固定三条假警）；
   2. 当天**计划腿**（G2 主号 / G2 沙箱 / V13 主号）与执行壳日志里的 **ORDER / FILL** 对齐，
      直接给出「计划 N 腿 → 下单 M 腿 → 成交 K 腿」以及逐腿差异；
   3. **不推测持仓**：外部没有可靠持仓源，报告明写「以客户端为准」。
@@ -39,14 +40,16 @@ D = time.strftime("%Y%m%d")
 SCHED = os.path.join(HERE, "data", "schedules")
 
 SHELLS = [
-    # 名字, 计划文件, 客户端日志目录, hub 端口, 是否 DRY
+    # 名字, 计划文件, 客户端日志目录, hub 路由 key, 模型名, 是否 DRY
     ("G2 主号", os.path.join(HERE, "data", "rebalance_g2", "rebalance_g2_%s.plan.json" % D),
-     r"D:\国金QMT交易端模拟", 58710, False),
+     r"D:\国金QMT交易端模拟", "g2", "STRATEGY_P16_G2_EXEC", False),
     ("G2 沙箱", os.path.join(HERE, "data", "rebalance_g2", "sbx", "rebalance_g2_%s.json" % D),
-     r"D:\QMT交易端模拟", 58711, True),
+     r"D:\QMT交易端模拟", "g2sbx", "STRATEGY_P16_G2_EXEC_SBX", True),
     ("V13 主号", os.path.join(HERE, "data", "rebalance_v13", "rebalance_v13_%s.plan.json" % D),
-     r"D:\国金QMT交易端模拟", 58712, True),
+     r"D:\国金QMT交易端模拟", "v13", "STRATEGY_P16_V13_EXEC", False),
 ]
+
+HUB_PORT = 58610             # 白名单内唯一可用的回环端口
 
 LINE_RE = re.compile(r"\[P16SIG\]\[EXEC\] ([A-Z?\-]+)\s*(.*)$")
 ORDER_RE = re.compile(r"(BUY|SELL)\s+([0-9]{6}\.[A-Z]{2})\s+(\d+)@([0-9.]+)")
@@ -68,6 +71,25 @@ def _port_open(port):
             pass
 
 
+def _hub_health(port, timeout=3.0):
+    """GET /health → {route_key: (ok, reason)}；不可达返回 None。"""
+    try:
+        from urllib.request import urlopen
+    except ImportError:
+        from urllib2 import urlopen
+    try:
+        resp = urlopen("http://127.0.0.1:%d/health" % int(port), timeout=timeout)
+        body = resp.read()
+        resp.close()
+        data = json.loads(body.decode("utf-8"))
+    except Exception:
+        return None
+    out = {}
+    for r in data.get("routes") or []:
+        out[str(r.get("key"))] = (bool(r.get("ok")), str(r.get("reason") or ""))
+    return out
+
+
 def _load_plan(path):
     if not os.path.exists(path):
         return None
@@ -77,7 +99,13 @@ def _load_plan(path):
         return None
 
 
-def _scan_log(client_dir):
+def _scan_log(client_dir, model):
+    """只扫**本模型**的事件行。
+
+    日志是各策略混写在同一个 FormulaOutput 文件里；不过滤则三条 shell 会各自看到
+    别人的 INIT/ORDER/FILL（2026-10-30 前实测：V13 面板把 G2 的成交算成自己的）。
+    用「模型名.py」精确匹配，避免 `..._G2_EXEC` 吃掉 `..._G2_EXEC_SBX`。
+    """
     p = os.path.join(client_dir, "userdata", "log", "XtClient_FormulaOutput_%s.log" % D)
     if not os.path.exists(p):
         return []
@@ -85,8 +113,11 @@ def _scan_log(client_dir):
         txt = open(p, "rb").read().decode("utf-8", "replace")
     except Exception:
         return []
+    key = "%s.py" % model
     out = []
     for line in txt.splitlines():
+        if key not in line:
+            continue
         m = LINE_RE.search(line)
         if m:
             out.append((m.group(1).strip(), m.group(2).strip(), line[:19]))
@@ -138,17 +169,26 @@ def main():
         return 0
 
     lines = ["P16 午间链路复盘 %s %s" % (D, time.strftime("%H:%M")), ""]
-    if "0915" <= _hhmm() <= "1510":
-        lines.append("【hub】" + " / ".join(
-            "%d%s" % (p, "✔" if _port_open(p) else "✘") for p in (58710, 58711, 58712)))
+    health = None
+    if in_hub_window:
+        if _port_open(HUB_PORT):
+            health = _hub_health(HUB_PORT)
+            if health is None:
+                lines.append("【hub】%d 在听但 /health 无响应" % HUB_PORT)
+            else:
+                lines.append("【hub】%d " % HUB_PORT + " / ".join(
+                    "%s%s" % (k, "✔" if health[k][0] else "✘")
+                    for k in sorted(health.keys())))
+        else:
+            lines.append("【hub】%d ✘ 未监听" % HUB_PORT)
     else:
         lines.append("【hub】窗口外（09:15–15:10 之外不判）")
     lines.append("")
 
     problems = []
-    for name, plan_path, log_dir, port, dry in SHELLS:
+    for name, plan_path, log_dir, route_key, model, dry in SHELLS:
         plan = _load_plan(plan_path)
-        evts = _scan_log(log_dir)
+        evts = _scan_log(log_dir, model)
         tag, orders, fills, counts = _summarize_events(evts)
         lines.append("【%s】%s计划 %s ｜ %s下单 %d 腿 ｜ 成交 %d 腿" % (
             name,
@@ -173,8 +213,14 @@ def main():
             problems.append("%s 计划文件缺失：%s" % (name, os.path.basename(plan_path)))
         if not tag:
             problems.append("%s 无 INIT（策略未启动/未加载）" % name)
-        if in_hub_window and not _port_open(port):
-            problems.append("%s hub %d 未监听" % (name, port))
+        if in_hub_window:
+            if health is None:
+                problems.append("%s hub %d 未监听/不可达" % (name, HUB_PORT))
+            elif route_key not in health:
+                problems.append("%s hub 缺路由 %s" % (name, route_key))
+            elif not health[route_key][0]:
+                problems.append("%s hub 路由 %s 无信号（%s）" % (
+                    name, route_key, health[route_key][1] or "原因未给"))
         lines.append("")
 
     lines.append("【持仓】外部无可用持仓源（xtquant 在 2.1.33 不可用）；仓位请以 QMT 客户端为准，本报告不推测。")

@@ -171,6 +171,101 @@ check("T9 脏值不抛异常且退回本机时间", len(d9) == 8 and d9.isdigit(
 d9, hm9, _ = mod._qmt_now(_FakeC(None))
 check("T9 None 不抛异常", len(d9) == 8 and d9.isdigit())
 
+# --- T10 成交归属：同账号多策略绝不能串账（2026-10-30 修）---
+# G2 与 V1.3 共用 67014907，deal 接口返回整个账号的成交；只有 remark 能区分归属。
+class D(object):
+    def __init__(self, code, vol, px, remark, opt="证券买入"):
+        self.m_strInstrumentID = code.split(".")[0]
+        self.m_strExchangeID = code.split(".")[1]
+        self.m_nVolume = vol
+        self.m_dPrice = px
+        self.m_strRemark = remark
+        self.m_strOptName = opt
+
+
+class _DealC(object):
+    def __init__(self, deals):
+        self.deals = deals
+
+    def get_current_time(self):
+        return "20261029100845"
+
+    def get_trade_detail_data(self, acct, kind1, kind2):
+        return self.deals if kind2 == "deal" else []
+
+
+def _reset_fills():
+    mod._g["fills_seen"] = set()
+    mod._g["fill_no_remark_warned"] = False
+    mod._g["legs_side"] = {}
+
+
+reported = []
+mod._report_fills_orig = getattr(mod, "_report_fills", None)
+logs = []
+mod._log_orig = getattr(mod, "_log", None)
+
+
+def _spy(fills):
+    reported.append(list(fills))
+
+
+def _log_spy(msg):
+    logs.append(str(msg))
+
+
+mod._report_fills = _spy
+mod._log = _log_spy
+
+# 10a 本策略的成交必须上报，且方向取成交对象自带的操作名
+_reset_fills()
+mod._log_new_fills(_DealC([D("600000.SH", 300, 9.78, "g2-20261029-abcdef12-1")]), "g2-20261029-abcdef12")
+check("T10a 本策略成交上报 1 笔", len(reported) == 1 and len(reported[0]) == 1)
+check("T10a 方向取自 m_strOptName", reported[0][0]["side"] == "BUY")
+
+# 10b 别的策略（V1.3）的成交绝不能被 G2 上报 —— 串账核心用例
+reported[:] = []
+_reset_fills()
+mod._log_new_fills(
+    _DealC([D("000906.SZ", 5200, 5.2, "v13-20261030-4ba709aa-1")]), "g2-20261030-23af1b58")
+check("T10b 他人成交不上报（串账防线）", reported == [])
+check("T10b 他人成交只打 FILL? 留痕", any("FILL?" in x for x in logs))
+
+# 10c 同一批里既有本策略又有他人的，只上报本策略那条
+reported[:] = []
+_reset_fills()
+mod._log_new_fills(_DealC([
+    D("600000.SH", 300, 9.78, "g2-20261030-23af1b58-1"),
+    D("000906.SZ", 5200, 5.2, "v13-20261030-4ba709aa-1"),
+]), "g2-20261030-23af1b58")
+check("T10c 混合批次只上报本策略 1 笔", len(reported) == 1 and len(reported[0]) == 1)
+check("T10c 上报的是本策略标的", reported[0][0]["code"] == "600000.SH")
+
+# 10d 全无 remark ⇒ 无法归属，一律不上报（宁可漏记不串账）
+reported[:] = []
+_reset_fills()
+mod._log_new_fills(_DealC([D("600000.SH", 300, 9.78, "")]), "g2-20261030-23af1b58")
+check("T10d 无 remark 不上报", reported == [])
+
+# 10e 本轮无 sid（如重启后 last_sid 为空）⇒ 只留痕不上报
+reported[:] = []
+_reset_fills()
+mod._log_new_fills(_DealC([D("600000.SH", 300, 9.78, "g2-20261030-23af1b58-1")]), None)
+check("T10e 无 sid 不上报", reported == [])
+
+# 10f 同一笔重复扫到只上报一次
+reported[:] = []
+_reset_fills()
+d = D("600000.SH", 300, 9.78, "g2-20261030-23af1b58-1")
+mod._log_new_fills(_DealC([d]), "g2-20261030-23af1b58")
+mod._log_new_fills(_DealC([d]), "g2-20261030-23af1b58")
+check("T10f 重复扫描只上报一次", len(reported) == 1)
+
+if mod._report_fills_orig:
+    mod._report_fills = mod._report_fills_orig
+if mod._log_orig:
+    mod._log = mod._log_orig
+
 print("")
 if fails:
     print("FAILED %d: %s" % (len(fails), " | ".join(fails)))

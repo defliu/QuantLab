@@ -73,16 +73,25 @@ def main():
 
     hh = time.strftime("%H%M")
     lines = ["P16 盘后复盘 %s %s" % (D, time.strftime("%H:%M")), ""]
-    lines.append("【hub】" + ("尾盘后已停（正常）" if hh > "1510" else " / ".join(
-        "%d%s" % (p, "✔" if M._port_open(p) else "✘") for p in (58710, 58711, 58712))))
+    if hh > "1510":
+        lines.append("【hub】尾盘后已停（正常）")
+    elif M._port_open(M.HUB_PORT):
+        health = M._hub_health(M.HUB_PORT)
+        if health is None:
+            lines.append("【hub】%d 在听但 /health 无响应" % M.HUB_PORT)
+        else:
+            lines.append("【hub】%d " % M.HUB_PORT + " / ".join(
+                "%s%s" % (k, "✔" if health[k][0] else "✘") for k in sorted(health.keys())))
+    else:
+        lines.append("【hub】%d ✘ 未监听" % M.HUB_PORT)
     lines.append("")
 
     problems = []
-    for name, plan_path, log_dir, port, dry in M.SHELLS:
+    for name, plan_path, log_dir, route_key, model, dry in M.SHELLS:
         plan = M._load_plan(plan_path)
         # 只统计到 15:10 为止：hub 15:10 定时停，之后执行壳的 fetch 失败/窗口外 SKIP
         # 是设计行为，不该算进当日故障口径
-        _evts = [e for e in M._scan_log(log_dir) if e[2][11:16] <= "15:10"]
+        _evts = [e for e in M._scan_log(log_dir, model) if e[2][11:16] <= "15:10"]
         tag, orders, fills, counts = M._summarize_events(_evts)
         lines.append("【%s】%s计划 %s ｜ %s下单 %d 腿 ｜ 成交 %d 腿 ｜ 窗口外SKIP %d / TRIM %d / 取信号失败 %d" % (
             name, ("INIT %s " % tag) if tag else "**无 INIT** ", M._fmt_plan(plan),
@@ -109,6 +118,24 @@ def main():
     lines.append("【对账】")
     for name, path in RECONCILE:
         lines.append(_reconcile_line(name, path))
+    lines.append("")
+
+    # ★ 运行态 TAG（2026-10-30 立）：盘上产物 ≠ 正在跑的代码时，「已部署」这个结论不成立。
+    #   --no-restart 落盘会把新产物写进 python\ 但不加载，必须靠日志 INIT 行判运行态。
+    lines.append("【运行态 TAG】")
+    try:
+        import check_running_tag as TC
+        for model, qmt_dir in TC.TARGETS:
+            r = TC.check_one(model, qmt_dir, D)
+            lines.append("  [%s] %s 盘上 %s / 运行 %s" % (
+                r["status"], model, r.get("disk") or "-", r.get("running") or "-"))
+            if r["status"] == "STALE":
+                problems.append("%s 盘上 %s ≠ 运行 %s（--no-restart 落盘后未加载）" % (
+                    model, r.get("disk"), r.get("running")))
+            elif r["status"] in ("NOT_RUNNING", "NO_DISK"):
+                problems.append("%s %s" % (model, r.get("note") or r["status"]))
+    except Exception as e:
+        lines.append("  [WARN] 运行态核对失败：%s" % (str(e)[:80],))
     lines.append("")
 
     lines.append("【持仓】外部无可用持仓源（xtquant 在 2.1.33 不可用）；仓位与遗留仓请以 QMT 客户端为准，本报告不推测。")

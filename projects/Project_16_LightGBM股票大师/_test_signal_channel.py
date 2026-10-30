@@ -162,7 +162,15 @@ try:
     env3, err3 = cli.fetch("http://127.0.0.1:%d/signal" % port2, timeout=2.0)
     check("H4 非当天计划不被发布", env3 is None and err3 is not None)
     h2, _ = cli.fetch("http://127.0.0.1:%d/health" % port2, timeout=2.0)
-    check("H4 health 说明原因", h2 is not None and "plan_date_not_today" in (h2.get("reason") or ""))
+    # /health 契约自 360f130（单端口多路由）起改为 routes 数组：
+    #   {"ok":bool, "routes":[{"key","ok","plan","reason"}, ...]}
+    # 旧断言取顶层 h2["reason"] 已失效，改为在 routes 里找 g2 的 reason。
+    _reasons = ""
+    if h2:
+        for _r in h2.get("routes") or []:
+            if str(_r.get("key")) == "g2":
+                _reasons = str(_r.get("reason") or "")
+    check("H4 health 说明原因", "plan_date_not_today" in _reasons)
     stop(hub)
 finally:
     try:

@@ -102,6 +102,8 @@ check_*.py
 !scripts/check_scorecard_health.py
 !scripts/check_ens_health.py
 !scripts/check_v13_health.py
+# 例外：P16 长期巡检/核对脚本（2026-10-30 补，随 hub 链路一起长期运行）
+!projects/Project_16_LightGBM股票大师/check_running_tag.py
 scripts/_qk_*.py
 scripts/_qk_*.js
 scripts/_qk_*.ps1

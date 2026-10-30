@@ -29,11 +29,14 @@ import hashlib
 import json
 import os
 import re
+import socket
 import sys
 import threading
 try:
-    from http.server import BaseHTTPRequestHandler, HTTPServer
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 except ImportError:                                    # pragma: no cover
+    BaseHTTPRequestHandler = None
+    ThreadingHTTPServer = None
     from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
 SCHEMA = "p16.signal.v1"
@@ -364,7 +367,12 @@ def main():
             log("READY route=%s signal_id=%s orders=%d source=%s"
                 % (k, env["signal_id"], len(env["orders"]), env["source"]))
 
-    srv = HTTPServer(("127.0.0.1", args.port), make_handler(state))
+    # ★ 2026-10-30 修：必须用 ThreadingHTTPServer。
+    #   早期用单线程 HTTPServer，QMT 执行壳每 3 秒轮询一次；一旦客户端留下半开连接
+    #   （实测 18:0x 堆积 CLOSE_WAIT/FIN_WAIT_2），唯一线程就卡在 readline 上，
+    #   整个 hub 对**所有**路由失去响应（/health 8 秒超时无返回）——巡检据此误判「hub 未监听」。
+    #   线程化后单个慢连接只占自己的线程；daemon_threads 让 Ctrl-C/Stop 能立刻退出。
+    srv = _make_server(args.port, state)
     log("LISTEN http://127.0.0.1:%d  routes=%s（只绑回环）" % (args.port, ",".join(sorted(state.routes))))
     try:
         srv.serve_forever()
@@ -373,6 +381,19 @@ def main():
     finally:
         srv.server_close()
     return 0
+
+
+def _make_server(port, state):
+    if ThreadingHTTPServer is not None:
+        class _Srv(ThreadingHTTPServer):
+            daemon_threads = True
+            # 半开连接不应无限期占着线程：读超时 + 允许地址复用（重启后立刻可再绑）
+            allow_reuse_address = True
+
+            def handle_timeout(self):
+                pass
+        return _Srv(("127.0.0.1", int(port)), make_handler(state))
+    return HTTPServer(("127.0.0.1", int(port)), make_handler(state))
 
 
 if __name__ == "__main__":

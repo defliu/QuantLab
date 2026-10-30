@@ -66,11 +66,17 @@ def _apply_overrides(src, account=None, port=None, capital=None, live=False, win
     subs = []
     if account:
         subs.append((r'^ACCOUNT_ID = "\d+"$', 'ACCOUNT_ID = "%s"' % account))
-    if port:
-        # route：/signal/<key>（单端口多策略，QMT 只放行 58610 一个回环端口）
+    # ★ 2026-10-30 修：route 必须能独立生效。早期写成 `if port:` 里才拼 route，
+    #   于是 `--route v13` 单独传入时**静默不生效**，V13 产物回落到 /signal（= G2 的计划）——
+    #   而两者同账号 67014907，plan_legs 的账号校验会通过，等于拿 G2 的计划下 V13 的单。
+    #   现改为：route 与 port 各自独立可覆盖；端口缺省时保留源码里的端口。
+    if route or port:
         _route = "signal/%s" % (route or "g2")
-        subs.append((r'^SIGNAL_URL = "http://127\.0\.0\.1:\d+/signal.*"$',
-                     'SIGNAL_URL = "http://127.0.0.1:%d/%s"' % (int(port), _route)))
+        if port:
+            _url = 'SIGNAL_URL = "http://127.0.0.1:%d/%s"' % (int(port), _route)
+        else:
+            _url = 'SIGNAL_URL = "http://127.0.0.1:58610/%s"' % _route
+        subs.append((r'^SIGNAL_URL = "http://127\.0\.0\.1:\d+/signal.*"$', _url))
     if capital:
         subs.append((r'^CAPITAL_BASE = \d+(\.\d+)?(\s*#.*)?$', 'CAPITAL_BASE = %d.0          # builder 覆盖' % int(capital)))
     if live:

@@ -1,14 +1,21 @@
 # coding: utf-8
-"""P16 链路健康巡检（原「桥心跳超时告警」，2026-10-29 重写）。
+"""P16 链路健康巡检（原「桥心跳超时告警」，2026-10-29 重写；2026-10-30 改单端口多路由）。
 
 **为什么重写**：旧版盯 `D:/QMT_POOL/*/state/heart_*.json`——文件桥 2026-10-15 起作废、
 心跳文件再没人写（ENS/V13 的停在 10-16），于是每次巡检必报「心跳超时 112 万秒」这种
 **结构性假警**（2026-10-29 15:00 实测）。现在的下单链路是「外部计划 → 回环 hub → 内置执行壳
 passorder」，心跳该看的东西全变了。
 
+**为什么改端口（2026-10-30 实测）**：QMT 客户端 `python_anti_plugin_monitor` 只放行白名单里的
+回环端口，本机可用端口只有 **58610**；连 5871x 会被判 `illegal ip` 并 `try stop` 策略。
+所以 hub 收成**单实例 58610 + 路径路由**（`/signal/g2`、`/signal/g2sbx`、`/signal/v13`）。
+旧版这里硬编码 58710/58711/58712，在 hub 改端口后**每天固定推三条假警**
+（2026-10-30 14:00 实测：三个端口全报未监听，而 `/health` 三路由其实全 ok）。
+
 **现在检查什么（交易日 09:30–15:10 窗口内）**：
-  1. 回环 hub 是否在听（58710 G2主号 / 58711 G2沙箱 / 58712 V13主号）；
-  2. 各执行壳今天是否有 `[P16SIG][EXEC] INIT BUILD_TAG=`（= 策略加载并运行）；
+  1. 回环 hub 58610 是否在听，且 `/health` 里 g2 / g2sbx / v13 三条路由各自 ok；
+  2. 各执行壳今天是否有 `[P16SIG][EXEC] INIT BUILD_TAG=`（**按模型名过滤**——日志是各策略
+     混写的，不过滤则任一策略起来就全判「已加载」）；
   3. 09:45 之后是否已生成当天计划文件（hub 的输入）；
   4. 执行窗口内是否出现过 `[P16SIG][EXEC] PLAN`（= 真拿到了信号，不是空转）。
 
@@ -37,14 +44,15 @@ import is_trade_day as ITD  # noqa: E402
 
 MAX_PLAN_WAIT_SEC = 900      # 09:45 之后 15 分钟内计划应就绪
 PROJ = HERE
+HUB_PORT = 58610             # 白名单内唯一可用的回环端口（改前先 grep 客户端日志 whitelist）
 
-# 逻辑名 -> (客户端目录, 模型名, hub 端口, 计划目录, 计划文件名模板)
+# 逻辑名 -> (客户端目录, 模型名, hub 路由 key, 计划目录, 计划文件名模板)
 SHELLS = {
-    "G2-main": (r"D:\国金QMT交易端模拟", "STRATEGY_P16_G2_EXEC", 58710,
+    "G2-main": (r"D:\国金QMT交易端模拟", "STRATEGY_P16_G2_EXEC", "g2",
                 os.path.join(PROJ, "data", "rebalance_g2"), "rebalance_g2_%s.plan.json"),
-    "G2-sbx": (r"D:\QMT交易端模拟", "STRATEGY_P16_G2_EXEC_SBX", 58711,
+    "G2-sbx": (r"D:\QMT交易端模拟", "STRATEGY_P16_G2_EXEC_SBX", "g2sbx",
                os.path.join(PROJ, "data", "rebalance_g2", "sbx"), "rebalance_g2_%s.json"),
-    "V13-main": (r"D:\国金QMT交易端模拟", "STRATEGY_P16_V13_EXEC", 58712,
+    "V13-main": (r"D:\国金QMT交易端模拟", "STRATEGY_P16_V13_EXEC", "v13",
                  os.path.join(PROJ, "data", "rebalance_v13"), "rebalance_v13_%s.plan.json"),
 }
 
@@ -72,6 +80,29 @@ def _port_open(port, timeout=1.0):
             pass
 
 
+def _hub_health(port, timeout=3.0):
+    """GET /health → {"ok":bool, "routes":{key:(ok,reason,plan)}}。
+
+    只用标准库；任何异常返回 None（调用方据此报「hub 未听/不可达」）。
+    """
+    try:
+        from urllib.request import urlopen
+    except ImportError:
+        from urllib2 import urlopen
+    try:
+        resp = urlopen("http://127.0.0.1:%d/health" % int(port), timeout=timeout)
+        body = resp.read()
+        resp.close()
+        data = json.loads(body.decode("utf-8"))
+    except Exception:
+        return None
+    routes = {}
+    for r in data.get("routes") or []:
+        routes[str(r.get("key"))] = (bool(r.get("ok")), str(r.get("reason") or ""),
+                                     str(r.get("plan") or ""))
+    return {"ok": bool(data.get("ok")), "routes": routes}
+
+
 def _read_log(client_dir, date):
     p = os.path.join(client_dir, "userdata", "log", "XtClient_FormulaOutput_%s.log" % date)
     if not os.path.exists(p):
@@ -82,19 +113,40 @@ def _read_log(client_dir, date):
         return "", p
 
 
-def check_shell(name, client_dir, model, port, plan_dir, plan_tpl):
+def _model_lines(txt, model):
+    """只取属于本模型的日志行。
+
+    日志是**各策略混写**在同一个 FormulaOutput 文件里（形如
+    `... python\\STRATEGY_P16_G2_EXEC.py_00030011, output = [P16SIG][EXEC] INIT ...`）。
+    早期实现直接在整份 txt 里搜 `INIT BUILD_TAG=`，于是任一策略起来就全判「已加载」，
+    「策略未启动」这条永远不会触发。这里按「模型名.py」精确过滤，
+    用 `.py` 收尾可避免 `..._G2_EXEC` 吃掉 `..._G2_EXEC_SBX`。
+    """
+    key = "%s.py" % model
+    return [ln for ln in txt.splitlines() if key in ln]
+
+
+def check_shell(name, client_dir, model, route_key, plan_dir, plan_tpl, health):
     """返回 (level, 说明)；level: OK / ALERT / WARN。"""
     date = _today()
     txt, logp = _read_log(client_dir, date)
-    inited = ("[P16SIG][EXEC] INIT BUILD_TAG=" in txt)
-    planned = ("[P16SIG][EXEC] PLAN" in txt)
-    running_init = ("[P16SIG][EXEC] MODE=" in txt) or inited
+    lines = _model_lines(txt, model)
+    inited = any("[P16SIG][EXEC] INIT BUILD_TAG=" in ln for ln in lines)
+    planned = any("[P16SIG][EXEC] PLAN" in ln for ln in lines)
 
     problems = []
-    if not _port_open(port):
-        problems.append("hub %d 未监听" % port)
+    if health is None:
+        problems.append("hub %d 未监听或 /health 不可达" % HUB_PORT)
+    elif route_key not in health["routes"]:
+        problems.append("hub /health 缺路由 %s" % route_key)
+    else:
+        ok, reason, _plan = health["routes"][route_key]
+        if not ok:
+            # 路由 not-ok 通常就是「今天没有计划」或「计划日期不是今天」，直接给原因
+            problems.append("hub 路由 %s 无信号（%s）" % (route_key, reason or "原因未给"))
     if not inited:
         problems.append("策略 %s 今天没有 INIT（未启动/未加载）" % model)
+
     # 计划文件：09:45 之后必须有（G2 09:40 / V13 09:36 出计划）
     plan_path = os.path.join(plan_dir, plan_tpl % date)
     if _hhmm() >= "0945" and not os.path.exists(plan_path):
@@ -104,6 +156,7 @@ def check_shell(name, client_dir, model, port, plan_dir, plan_tpl):
             late = 0
         if late > MAX_PLAN_WAIT_SEC:
             problems.append("计划未生成 %s（09:40/09:36 任务失败？）" % os.path.basename(plan_path))
+
     # 窗口内应见过 PLAN 行（09:50 起；只在窗口内提示，不当硬故障）
     if "0950" <= _hhmm() <= "1000" and inited and not planned:
         problems.append("执行窗口内未见 PLAN 行（hub 无信号或校验被拒）")
@@ -112,7 +165,7 @@ def check_shell(name, client_dir, model, port, plan_dir, plan_tpl):
         return "ALERT", " | ".join(problems)
     if inited and planned:
         return "OK", "已加载并拿到信号"
-    if running_init:
+    if inited:
         return "OK", "已加载（窗口外/尚未到窗口）"
     return "WARN", "未加载"
 
@@ -135,8 +188,23 @@ def main():
 
     alerts = []
     print("[CHAIN] %s 巡检开始" % time.strftime("%Y-%m-%d %H:%M:%S"))
+
+    # hub 只查一次（单实例多路由），三条 shell 共用结果
+    if _port_open(HUB_PORT):
+        health = _hub_health(HUB_PORT)
+        if health is None:
+            print("  [WARN] hub 端口 %d 在听但 /health 无响应" % HUB_PORT)
+        else:
+            keys = sorted(health["routes"].keys())
+            bad = [k for k in keys if not health["routes"][k][0]]
+            print("  [HUB] %d 路由=%s%s" % (HUB_PORT, ",".join(keys),
+                                          (" 无信号=%s" % ",".join(bad)) if bad else " 全部 ok"))
+    else:
+        health = None
+        print("  [ALERT] hub %d 未监听（scripts/qmt_signal_hub.ps1 -Mode Start）" % HUB_PORT)
+
     for name, args in SHELLS.items():
-        level, msg = check_shell(name, *args)
+        level, msg = check_shell(name, args[0], args[1], args[2], args[3], args[4], health)
         print("  [%s] %-9s %s" % (level, name, msg))
         if level == "ALERT":
             alerts.append("%s: %s" % (name, msg))
@@ -148,6 +216,7 @@ def main():
 
     body = ("链路巡检发现异常（%s）：\n" % time.strftime("%H:%M")) + "\n".join("- " + a for a in alerts) + \
            "\n\n排查方向：hub 未听 → `scripts/qmt_signal_hub.ps1 -Mode Start`；" \
+           "路由无信号 → 看计划文件日期/是否当天生成；" \
            "无 INIT → 客户端里该策略未启动；计划未生成 → 看 09:36/09:40 计划任务日志。"
     try:
         import subprocess
