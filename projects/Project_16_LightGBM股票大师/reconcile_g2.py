@@ -21,16 +21,43 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import g2_config as G
+import qmt_bridge_client as QC
 from qmt_bridge_client import read_fills, read_positions, read_asset, read_heart, positions_from_fills, notify_feishu, fetch_price
 
 TERMINAL_STATUS = ("FILLED", "PARTIAL_FILLED", "CANCELED", "REJECTED", "UNCONFIRMED", "ABANDONED")
 
 
+def _state_dir():
+    """state 目录的**唯一**口径（2026-10-31 CC 复核 §5）。
+
+    为什么需要它：`g2_config.STATE_DIR` 与 `qmt_bridge_client.STATE_DIR` 是两个独立模块常量，
+    而真正读文件的 `read_fills`/`read_positions` 用的是**后者**。本文件早期混用两者
+    （`_all_fills` 列举用 G、`_roll_g2_capital` 与 `main()` 查文件用 G），造成「列 A 目录、
+    读 B 目录」的隐患——生产上两者恰好同路径，但靠巧合对齐。
+    现统一取 `QC.STATE_DIR`（读侧口径），并在模块加载时校验两者一致，不等就大声报出来。
+    """
+    return getattr(QC, "STATE_DIR", G.STATE_DIR)
+
+
+if _state_dir() != getattr(G, "STATE_DIR", None):
+    print("[reconcile_g2] WARN STATE_DIR 口径不一致：g2_config=%r / qmt_bridge_client=%r"
+          "（本脚本一律按后者，请核对配置）" % (getattr(G, "STATE_DIR", None), _state_dir()))
+
+
 def _all_fills():
-    """遍历 state 目录所有 fills_<date>.json，按日期序返回全部成交（跨日累计已实现盈亏用）。"""
+    """遍历 state 目录所有 fills_<date>.json，按日期序返回全部成交（跨日累计已实现盈亏用）。
+
+    ★ 2026-10-30 CC 复核 §4.8：这里**列举**用 `G.STATE_DIR`，而真正读文件的是
+    `qmt_bridge_client.read_fills()`，它用的是**另一个模块的** `qmt_bridge_client.STATE_DIR`。
+    两个常量今天恰好指向同一路径（`D:/QMT_POOL/g2_bridge/state`），但它们是靠巧合对齐的——
+    列 A 目录、读 B 目录，谁改了一边就会出现「列得到、读不到」的静默漏算
+    （测试里 monkeypatch `G.STATE_DIR` 也到不了 `read_fills`，导致 K3 变成空断言）。
+    现统一为 `qmt_bridge_client.STATE_DIR`（读侧口径），保证「列」和「读」同源。
+    """
     out = []
     try:
-        files = [f for f in os.listdir(G.STATE_DIR) if f.startswith("fills_") and f.endswith(".json")]
+        base = _state_dir()
+        files = [f for f in os.listdir(base) if f.startswith("fills_") and f.endswith(".json")]
         files.sort()
         for fn in files:
             d = read_fills(fn[len("fills_"):-5])
@@ -133,9 +160,34 @@ def _float_pnl_now():
 
 
 def _roll_g2_capital(date):
-    """资金池滚动（DE 体检 P1-2）：capital = 初始 + 累计已实现盈亏 + 当前持仓浮盈。
-    对账时更新，保证买入预算反映真实策略权益（历史：save_g2_capital 无调用点→恒 10 万超配）。"""
+    """资金池滚动：capital = 初始 + 累计已实现盈亏 + 当前持仓浮盈。
+
+    ★ 2026-10-30 数据源门（审计 §3.4，P0，资金分配口径）：
+      本函数的两个输入都来自**已作废的文件桥**——
+        · `_realized_pnl_from_fills()` 遍历 `state/fills_*.json`（最新 20261013，13 天前）
+        · `_float_pnl_now()` 读 `cmd/positions_cfg_*.json`（最新 20261021，9 天前）
+      而 QMT 内置 `open()` 恒抛 `Foribdden FileIO`（文件桥架构性失效），这两个目录
+      **永远不会再有新文件**。于是算出的 capital 会永久停在旧值、且今日买入的浮盈
+      永远不计入（实测 2026-10-30 写入 93501.0 = 100000 + realized(-6499) + float(0)，
+      当日买入 900 股完全没进 float）。这个数又是次日建仓预算的唯一依据。
+
+      故加门：**当日 state 快照不存在就跳过滚动**，宁可沿用上一次的值（并在日志里说清），
+      也不用死数据算出一个看起来合理、实际永久偏离的数。
+
+      ⚠ 这是**资金分配行为**的改动。它只做「不写」，不做「算得更好」——
+      真正的修复（成交/持仓源从文件桥迁到 `g2_trade_log.csv` 或回环 hub）是架构改动，
+      需单独评估，不在本条范围内。
+    """
     try:
+        # 数据源门：当日快照必须存在
+        pos_file = os.path.join(_state_dir(), "positions_%s.json" % date)
+        fill_file = os.path.join(_state_dir(), "fills_%s.json" % date)
+        miss = [os.path.basename(f) for f in (pos_file, fill_file) if not os.path.exists(f)]
+        if miss:
+            print("[资金池] 数据源缺当日快照（%s 不存在），本次**不滚动**"
+                  "——文件桥已作废，继续算只会永久偏离真实权益" % ",".join(miss))
+            return None
+
         realized = _realized_pnl_from_fills()
         float_pnl = _float_pnl_now()
         capital = G.START_CAPITAL + realized + float_pnl
@@ -222,14 +274,49 @@ def main():
     # 差额循环 diff=acct-ledger 全负，会误报"账本比账户多 N 股（卖出未回写/丢失）"
     # （2026-09-25 中秋休市实测：G2 3 条假阳性，人工核对真实差额=0）。
     # 此时跳过差额/孤儿判定，提示写 notes 不进 issues（防 de_guard_runner 以 issues 非空误触发 DE 兜底）。
-    snapshot_missing = (not acct) and bool(ledger)
+    #
+    # ★ 2026-10-30 修（审计 §3.3，P0）：原条件 `(not acct) and bool(ledger)` 漏掉了「两边都空」——
+    #   而 state 目录自文件桥作废（QMT 内置 open() 恒抛 Foribdden FileIO）起就**永远**是两边都空，
+    #   于是 snapshot_missing 恒 False、产物恒 `issues: []`，下游一律渲染成「全绿」。
+    #   实测 20261022–20261030 连续 7 个交易日 fills=0/ledger=0/acct=0/issues=0，
+    #   不是因为没问题，是因为这 7 天对账根本没在看。
+    #   现改为「按文件是否在」判定，并用 source_unavailable 显式标注「数据源无当日快照」。
+    # 数据源状态：当日 state 文件是否存在（不存在 ≠ 空仓，AGENTS「账号不可读≠空仓」）
+    try:
+        _pos_file = os.path.join(_state_dir(), "positions_%s.json" % date)
+        _fill_file = os.path.join(_state_dir(), "fills_%s.json" % date)
+        _has_pos = os.path.exists(_pos_file)
+        _has_fill = os.path.exists(_fill_file)
+    except Exception:
+        _has_pos = _has_fill = False
+    report["source"] = {
+        "state_positions_today": bool(_has_pos),
+        "state_fills_today": bool(_has_fill),
+    }
+    # source_unavailable = 当日快照文件根本不存在（数据源断了，不是账户空仓）
+    report["source_unavailable"] = not _has_pos
+    # ★ 2026-10-30 CC 复核 §4.3 / 10-31 §4：`snapshot_missing` 只保留**一个判据**——
+    #   「当日快照文件是否在」。早期写法 `not acct` 把「文件缺失」与「账户真空仓」揉在一起，
+    #   后来又同时留了 `not acct`（局部）和 `not _has_pos`（发布字段），造成：
+    #     · `report["snapshot_missing"]` 先被写成 `not acct` 再被覆盖（死赋值）；
+    #     · 分支用的是局部 `not acct`，与发布字段 `not _has_pos` 可能分叉。
+    #   现在统一：字段 = 分支 = `not _has_pos`。
+    snapshot_missing = not _has_pos
     report["snapshot_missing"] = snapshot_missing
     deltas = {}
     if snapshot_missing:
         report.setdefault("notes", [])
         report["notes"].append(
             "SNAPSHOT_MISSING：账户快照不存在，差额与孤儿判定已跳过，请人工核对上一交易日快照")
+        report["notes"].append(
+            "SOURCE_UNAVAILABLE：当日 positions_%s.json 不存在（文件桥已作废），"
+            "本次对账**未覆盖**成交/持仓——不是「无差额」，是「没在看」" % date)
     else:
+        if not acct:
+            # 文件在、positions 空 = 真空仓（这是有效结论，不是缺失）
+            report.setdefault("notes", [])
+            report["notes"].append(
+                "EMPTY_POSITIONS：当日快照存在且 positions 为空（账户真空仓），已按空仓对账")
         # 差额对账：超额=账户多（孤儿/重复建仓），不足=账本多（卖出未回写/丢失）
         for code in set(ledger) | set(acct):
             diff = acct.get(code, 0) - ledger.get(code, 0)

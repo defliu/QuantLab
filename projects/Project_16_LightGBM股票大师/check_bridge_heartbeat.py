@@ -28,6 +28,7 @@ from __future__ import print_function
 
 import json
 import os
+import re
 import socket
 import sys
 import time
@@ -45,6 +46,9 @@ import is_trade_day as ITD  # noqa: E402
 MAX_PLAN_WAIT_SEC = 900      # 09:45 之后 15 分钟内计划应就绪
 PROJ = HERE
 HUB_PORT = 58610             # 白名单内唯一可用的回环端口（改前先 grep 客户端日志 whitelist）
+
+# 归属标记：reqid 行里的 `...\python\<模型>.py_NNN`。取模型名做等值比较，不用子串。
+MODEL_RE = re.compile(r"\\python\\([A-Za-z0-9_]+)\.py_\d+")
 
 # 逻辑名 -> (客户端目录, 模型名, hub 路由 key, 计划目录, 计划文件名模板)
 SHELLS = {
@@ -114,16 +118,39 @@ def _read_log(client_dir, date):
 
 
 def _model_lines(txt, model):
-    """只取属于本模型的日志行。
+    """按「归属态」取属于本模型的日志行（含续行）。
 
-    日志是**各策略混写**在同一个 FormulaOutput 文件里（形如
-    `... python\\STRATEGY_P16_G2_EXEC.py_00030011, output = [P16SIG][EXEC] INIT ...`）。
-    早期实现直接在整份 txt 里搜 `INIT BUILD_TAG=`，于是任一策略起来就全判「已加载」，
-    「策略未启动」这条永远不会触发。这里按「模型名.py」精确过滤，
-    用 `.py` 收尾可避免 `..._G2_EXEC` 吃掉 `..._G2_EXEC_SBX`。
+    日志是**各策略混写**在同一个 FormulaOutput 文件里，格式为「一条 print 的首行带
+    `reqid = 0<路径>\\python\\<模型>.py_NNN, output = ` 前缀，多行 print 的后续行裸写」。
+
+    ★ 2026-10-30 修（审计 §2.5）：旧实现用 `模型名.py in line` 子串过滤，有两个毛病：
+      ① 只能命中每次打印的首行 —— 续行（裸写）全丢；
+      ② `_G2_EXEC` 会吃掉 `_G2_EXEC_SBX`（子串匹配没有边界）。
+    现改为：用正则取模型名做**等值比较**，并让续行继承上一条归属。
+    今天 INIT 恰好都带前缀所以旧实现"看起来对"，但那是运气——INIT 一旦打印成多行就会误判 NOT_RUNNING。
     """
-    key = "%s.py" % model
-    return [ln for ln in txt.splitlines() if key in ln]
+    owner = ""
+    out = []
+    for ln in txt.splitlines():
+        m = MODEL_RE.search(ln)
+        if m:
+            owner = m.group(1)
+        if owner == model:
+            out.append(ln)
+    return out
+
+
+def _has_init(lines):
+    """是否出现过 INIT。
+
+    ★ 2026-10-31 CC 复核 §7.1：早期版本写了三个分支（本行有 TAG / 下一行有 TAG / 都没有）
+    但**三条路径全返回 True**，等价于 `any("[P16SIG][EXEC] INIT" in ln)`。前两条是装饰性的，
+    会让读者以为多行 INIT 真的做了判断。压成一行并说明取舍：
+      · 这里只判「INIT 是否出现过」——多行 INIT（首行 `INIT`、次行 `BUILD_TAG=`）两种形态
+        都会命中 `INIT`，因此不需要分支；
+      · TAG 的**具体取值**核对交给 `check_running_tag.py`（那边按归属态解析、支持多行）。
+    """
+    return any("[P16SIG][EXEC] INIT" in ln for ln in lines)
 
 
 def check_shell(name, client_dir, model, route_key, plan_dir, plan_tpl, health):
@@ -131,7 +158,7 @@ def check_shell(name, client_dir, model, route_key, plan_dir, plan_tpl, health):
     date = _today()
     txt, logp = _read_log(client_dir, date)
     lines = _model_lines(txt, model)
-    inited = any("[P16SIG][EXEC] INIT BUILD_TAG=" in ln for ln in lines)
+    inited = _has_init(lines)
     planned = any("[P16SIG][EXEC] PLAN" in ln for ln in lines)
 
     problems = []

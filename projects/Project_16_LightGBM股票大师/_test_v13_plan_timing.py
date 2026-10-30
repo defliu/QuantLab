@@ -105,20 +105,23 @@ try:
     check("V3a 早于窗口不推告警",
           not os.path.exists(os.path.join(tmp, "pushed.txt")))
 
-    # 3b 晚于窗口 => rc=4 且推告警（「落盘了但晚了」必须显式失败）
+    # 3b 晚于窗口 => rc=4，且**不得落盘**（先破坏后报警的修复点）
+    #    先删掉计划文件，跑完必须仍不存在 —— 证明 rebalance_daily 根本没被调用。
+    if os.path.exists(plan_file):
+        os.remove(plan_file)
     P._hhmm = lambda: P.EXEC_HM_START + 5
     rc = P.main()
     check("V3b 晚于窗口 rc=4（不静默成功）", rc == 4)
+    check("V3b 晚于窗口不落盘（时间门在 subprocess 之前）", not os.path.exists(plan_file))
     pushed = io.open(os.path.join(tmp, "pushed.txt"), encoding="utf-8").read()
-    check("V3b 晚于窗口推了告警", "晚于执行窗口" in pushed)
+    check("V3b 晚于窗口推了告警", "跳过" in pushed)
 
-    # 3c 计划缺失 => rc=3 且推告警
-    os.remove(plan_file)
-    # 桩会重写文件；这里让 rebalance_daily 桩失败，制造「rc=0 但无产物」不可能，
-    # 改为直接把桩改成不写文件 + 返回 0，模拟「命令成功但产物没落」
+    # 3c 计划缺失 => rc=3 且推告警（命令成功但产物没落）
+    #    先把桩改成不写文件 + 返回 0
     io.open(os.path.join(tmp, "rebalance_daily.py"), "w", encoding="utf-8").write("pass\n")
     if os.path.exists(plan_file):
         os.remove(plan_file)
+    P._hhmm = lambda: P.EXEC_HM_START - 20
     rc = P.main()
     check("V3c 计划缺失 rc=3", rc == 3)
     pushed = io.open(os.path.join(tmp, "pushed.txt"), encoding="utf-8").read()
@@ -142,11 +145,11 @@ finally:
 check("V4 _push 内部 try/except（推送失败不阻断）",
       "PUSH-FAIL" in io.open(os.path.join(HERE, "v13_plan_daily.py"), encoding="utf-8").read())
 
-# --- V5 时序自检必须在计划生成**之后**（不能挡住正常出计划）---
+# --- V5 时间门必须在**出计划之前**（先破坏后报警的修复点）---
 src = io.open(os.path.join(HERE, "v13_plan_daily.py"), encoding="utf-8").read()
-i_plan = src.find("rebalance_daily.py")
-i_check = src.find("时序自检")
-check("V5 自检在出计划之后", i_plan != -1 and i_check != -1 and i_check > i_plan)
+i_gate = src.find("if hhmm >= EXEC_HM_START")
+i_call = src.find("rc = subprocess.call(cmd")      # 真正执行出计划的那一行
+check("V5 时间门在出计划之前", i_gate != -1 and i_call != -1 and i_gate < i_call)
 
 print("")
 if fails:

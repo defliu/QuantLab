@@ -41,6 +41,21 @@ def today_str():
     return time.strftime("%Y%m%d")
 
 
+# --plan-only 的落盘截止时刻（HHMM）= 执行壳窗口**终点**（G2 窗口 09:50–09:58，见
+# build/strategy_p16_g2_exec.py 的 EXEC_HM_START=950 / EXEC_HM_END=958）。
+# 取 958 而非 950：窗口内每 5 秒轮询（同日 POLL_MIN_SEC），09:50–09:58 落盘的计划
+# 仍会被执行壳消费，按 950 卡会白丢这段；窗口关后再写则只剩「污染当日记录」的坏处
+# （2026-10-30 19:22 时钟跳变补跑就是这一路）。
+PLAN_ONLY_DEADLINE_HM = 958
+
+# 窗口内**不覆盖**已就位计划的 mtime 阈值（HHMM）= 执行壳窗口**起点**。
+# 必须与上面的 958 分开：signal_id 是「策略-日期-计划内容哈希」（qmt_signal_hub.py:171），
+# 而执行壳只对同一个 sid 去重（placed_sids + already_applied）。窗口内把计划内容换掉
+# ⇒ 新 sid ⇒ 同一批腿再下一遍单。mtime >= 950 说明这份计划是窗口内写的、可能已被消费，
+# 一律不覆盖。（09:40 正常落盘的计划 mtime < 950，不受此限，仍可在 09:5x 被修正。）
+PLAN_ONLY_FROZEN_HM = 950
+
+
 def _count_trade_days(start, end):
     """数 start(含) 到 end(不含) 之间的交易日数（start<end）。用 is_trade_day 判断每个自然日。
     主库日历快照可能滞后（如只到 8/20），is_trade_day 对未覆盖日期走「默认交易日 + 节假日表」fallback，
@@ -601,6 +616,34 @@ def main():
     args = ap.parse_args()
 
     date = args.date or today_str()
+
+    # ★★ 落盘前时间门（2026-10-30 审计 §4.4(1) 补，只对 --plan-only 生效）
+    #    为什么必须在**落盘之前**：计划文件是 hub / 执行壳 / 人肉复盘的输入，写坏了就是已造成损害。
+    #    2026-10-30 19:22 系统时钟前跳触发补跑（Quant_P16_G2_PlanOnly_0940 的
+    #    StartWhenAvailable=true），把当日计划从「2 腿 BUY（800/100）」覆盖成「1 腿 SELL 100」——
+    #    语义与实际下单**相反**，且该文件**未入 git、不可恢复**（V13 那份可恢复，G2 这份不行）。
+    #    早期只在 V13 的调用方 v13_plan_daily.py 加了门，而 G2 的计划任务是直接调本脚本、
+    #    中间没有 wrapper ⇒ 那半条一直原样暴露。
+    #    门设在执行壳窗口**打开之前**（G2 窗口 09:50–09:58，见 build/strategy_p16_g2_exec.py 的
+    #    EXEC_HM_START/END）：过窗口再写，计划已不会被消费，只会污染记录。
+    #    --live 不受此门约束（它的窗口本来就是 09:50 之后）。
+    if args.plan_only and not args.date:
+        _hhmm = int(time.strftime("%H%M"))
+        if _hhmm >= PLAN_ONLY_DEADLINE_HM:
+            print("[SKIP] 已过执行窗口（现在 %04d >= 截止 %04d）——不生成计划，避免覆盖当日正式计划"
+                  % (_hhmm, PLAN_ONLY_DEADLINE_HM))
+            print("        若这是补跑，属正常跳过；若每日都如此，排查任务触发时点（应 09:40）。")
+            return 4
+        # 窗口内也不覆盖「已就位」的计划：mtime 落在 950 之后 = 它是窗口内写的，
+        # 执行壳可能已经消费过。换掉内容会得到新的 signal_id，导致同一批腿二次下单。
+        _pp = os.path.join(G.DATA_DIR, "rebalance_g2", "rebalance_g2_%s.plan.json" % date)
+        if os.path.exists(_pp):
+            _mt = int(time.strftime("%H%M", time.localtime(os.path.getmtime(_pp))))
+            if _mt >= PLAN_ONLY_FROZEN_HM:
+                print("[SKIP] 当日计划已就位（%s mtime %04d 落在窗口内）——不覆盖，避免执行壳二次下单"
+                      % (os.path.basename(_pp), _mt))
+                return 5
+
     G.SELECT_TOP = args.top
     capital = args.capital or G.load_g2_capital()
 

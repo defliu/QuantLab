@@ -42,21 +42,99 @@ RECONCILE = [
 ]
 
 
+def _last_artifact_date(dirpath):
+    """该目录下最近一个 YYYYMMDD 命名的产物日期；无则返回 None。"""
+    import glob
+    import re as _re
+    if not os.path.isdir(dirpath):
+        return None
+    ds = []
+    for f in glob.glob(os.path.join(dirpath, "*")):
+        m = _re.search(r"(20\d{6})", os.path.basename(f))
+        if m:
+            ds.append(m.group(1))
+    return max(ds) if ds else None
+
+
+def _natural_days_between(d1, d2):
+    """d1→d2 之间的**自然日**数（不是交易日数）。
+
+    ★ CC 复核 §4.6：原名 `_trading_days_between` 名实不符——实现只做日期差，
+    不查交易日历。20261022→20261030 渲染成「已断 8 天」，实际是 6 个交易日。
+    改名 + 文案统一写「自然日」，避免下一个读代码的人误以为它在数交易日。
+    真要数交易日就调 is_trade_day，但这里刻意不查：断档提醒宁可按自然日粗算也不静默。
+    """
+    try:
+        a = datetime.strptime(d1, "%Y%m%d")
+        b = datetime.strptime(d2, "%Y%m%d")
+        return max(0, (b - a).days)
+    except Exception:
+        return 0
+
+
 def _reconcile_line(name, path):
+    """渲染一条对账产物。返回 (文本, 是否异常)。
+
+    ★ 2026-10-30 审计 §3.1/§3.5（P0）：旧实现把两类**失败**渲染成了正常产出：
+      · `data/reconcile/reconcile_<date>.json` 是 `list[2]`，两条元素都是
+        `{"connected": false, "error": "连接 miniQMT 失败 rc=-1"}`，
+        旧实现走 `isinstance(d, list) → "同步 %d 条"`，读成「同步 2 条」（实际是 2 条连接失败）；
+      · 产物缺失时只写「产物缺失」，不区分「今天没跑」与「已经断了一周」
+        （ENS 实测已断 6 个交易日，每天一行「产物缺失」看起来像单日偶发）。
+    """
     if not os.path.exists(path):
-        return "  %s：产物缺失（%s）" % (name, os.path.basename(path))
+        last = _last_artifact_date(os.path.dirname(path))
+        if last:
+            gap = _natural_days_between(last, D)
+            return ("  %s：✘ 产物缺失（最近产物 %s，已断 %d 个自然日）" % (name, last, gap), True)
+        return ("  %s：✘ 产物缺失（目录内无任何历史产物）" % name, True)
     try:
         d = json.load(io.open(path, encoding="utf-8"))
     except Exception as e:
-        return "  %s：读取失败 %s" % (name, str(e)[:60])
+        return ("  %s：✘ 读取失败 %s" % (name, str(e)[:60]), True)
+
+    # 列表形态（reconcile / sync_deals 的多策略返回）：先看有没有连接失败
     if isinstance(d, list):
-        return "  %s：同步 %d 条" % (name, len(d))
+        if not d:
+            return ("  %s：✘ 空产物（0 条记录，未实际执行）" % name, True)
+        bad = [x for x in d if isinstance(x, dict) and x.get("connected") is False]
+        if bad:
+            errs = []
+            for x in bad:
+                errs.append("%s: %s" % (x.get("strategy") or "?", str(x.get("error") or "")[:60]))
+            return ("  %s：✘ 连接失败 %d/%d（%s）" % (name, len(bad), len(d), " | ".join(errs)), True)
+        return ("  %s：✔ 同步 %d 条" % (name, len(d)), False)
+
+    if d.get("connected") is False:
+        return ("  %s：✘ 连接失败（%s）" % (name, str(d.get("error") or "")[:80]), True)
+
     issues = d.get("issues") or []
     pending = d.get("pending") or []
     orphans = d.get("orphans") or []
-    return "  %s：成交 %s ｜ pending %d ｜ 孤儿 %d ｜ issues %d%s" % (
+    # ★ 2026-10-30 CC 复核 §4.2：`source_unavailable` 必须**接进渲染**，不能只写不读。
+    #   它是产物里明确的「当日快照文件不存在」标记，比 `empty_all` 启发式更准——
+    #   后者会把「文件在、positions 真空仓」也误判成「数据源不可读」。
+    source_unavail = d.get("source_unavailable")
+    empty_all = (not (d.get("fills") or []) and not (d.get("ledger") or {})
+                 and not (d.get("account_positions") or {}))
+    if source_unavail is True:
+        txt = ("  %s：⚠ 数据源不可用（当日快照文件不存在）——本次对账未覆盖成交/持仓"
+               "（成交 %s ｜ pending %d ｜ 孤儿 %d ｜ issues %d）"
+               % (name, d.get("fills_total", "?"), len(pending), len(orphans), len(issues)))
+        return (txt, True)
+    if d.get("snapshot_missing") or empty_all:
+        txt = ("  %s：⚠ 未做差额判定（成交 %s ｜ pending %d ｜ 孤儿 %d ｜ issues %d）"
+               % (name, d.get("fills_total", "?"), len(pending), len(orphans), len(issues)))
+        if d.get("snapshot_missing"):
+            txt += " ※账户快照缺失"
+        if empty_all:
+            txt += " ※成交/账本/持仓三者全空"
+        return (txt, True)
+
+    return ("  %s：成交 %s ｜ pending %d ｜ 孤儿 %d ｜ issues %d%s" % (
         name, d.get("fills_total", "?"), len(pending), len(orphans), len(issues),
-        ("（" + "; ".join(str(x)[:40] for x in issues[:3]) + "）") if issues else "")
+        ("（" + "; ".join(str(x)[:40] for x in issues[:3]) + "）") if issues else ""),
+        bool(issues))
 
 
 def main():
@@ -90,34 +168,51 @@ def main():
     for name, plan_path, log_dir, route_key, model, dry in M.SHELLS:
         plan = M._load_plan(plan_path)
         # 只统计到 15:10 为止：hub 15:10 定时停，之后执行壳的 fetch 失败/窗口外 SKIP
-        # 是设计行为，不该算进当日故障口径
+        # 是设计行为，不该算进当日故障口径。
+        # ★ `_scan_log` 已按归属态给**每条事件**配上真实时间戳（续行继承首行），
+        #   所以这里的 `e[2][11:16]` 就是 HH:MM。旧实现对续行切 `line[:19]` 得到
+        #   `[P16SIG][EXEC] FILL`，`[11:16]` 取到 `EC] F`，字符串比较恒 False ⇒ 续行全丢。
         _evts = [e for e in M._scan_log(log_dir, model) if e[2][11:16] <= "15:10"]
-        tag, orders, fills, counts = M._summarize_events(_evts)
-        lines.append("【%s】%s计划 %s ｜ %s下单 %d 腿 ｜ 成交 %d 腿 ｜ 窗口外SKIP %d / TRIM %d / 取信号失败 %d" % (
+        tag, orders, fills, counts, foreign = M._summarize_events(_evts)
+        lines.append("【%s】%s计划 %s ｜ %s下单 %d 腿 ｜ 成交 %d 腿 ｜ 窗口外SKIP %d / TRIM %d / 取信号失败 %d%s" % (
             name, ("INIT %s " % tag) if tag else "**无 INIT** ", M._fmt_plan(plan),
             "DRY " if dry else "", len(orders), len(fills),
-            counts.get("SKIP", 0), counts.get("TRIM", 0), counts.get("REJECT", 0)))
+            counts.get("SKIP", 0), counts.get("TRIM", 0), counts.get("REJECT", 0),
+            (" ｜ 他人成交留痕 %d 条" % foreign) if foreign else ""))
         if plan and plan.get("orders"):
             filled = {}
-            for code, vol, px in fills:
-                filled[code] = filled.get(code, 0) + vol
+            for code, vol, px, side in fills:
+                filled[(side, code)] = filled.get((side, code), 0) + vol
             for leg in plan["orders"]:
                 code = leg.get("code")
+                act = str(leg.get("action") or "").upper()
                 pv = int(leg.get("vol") or 0)
-                fv = filled.get(code, 0)
+                fv = filled.get((act, code), 0)
                 mark = "✔" if fv >= pv and pv > 0 else ("◐" if fv > 0 else "✘")
-                lines.append("  %s %s 计划 %d / 成交 %d" % (mark, code, pv, fv))
+                lines.append("  %s %s %s 计划 %d / 成交 %d" % (mark, act, code, pv, fv))
                 if not dry and fv < pv:
-                    problems.append("%s %s 未完成（计划 %d / 成交 %d）" % (name, code, pv, fv))
-        elif not dry:
+                    rev = filled.get(("SELL" if act == "BUY" else "BUY", code), 0)
+                    extra = ("（另有反向成交 %d 股，方向不匹配不计入）" % rev) if rev else ""
+                    problems.append("%s %s %s 未完成（计划 %d / 成交 %d）%s"
+                                    % (name, act, code, pv, fv, extra))
+        elif plan is None and not dry:
             problems.append("%s 计划文件缺失" % name)
+        elif not dry:
+            problems.append("%s 计划为 0 腿（文件存在但 orders 为空）" % name)
         if not tag:
             problems.append("%s 无 INIT（策略未启动/未加载）" % name)
         lines.append("")
 
     lines.append("【对账】")
     for name, path in RECONCILE:
-        lines.append(_reconcile_line(name, path))
+        txt, bad = _reconcile_line(name, path)
+        lines.append(txt)
+        if bad:
+            # 剥掉行首缩进与「名字：」前缀，避免 problems 里出现「对账 V13：V13：…」
+            detail = txt.strip()
+            if detail.startswith(name + "："):
+                detail = detail[len(name) + 1:]
+            problems.append("对账 %s %s" % (name, detail))
     lines.append("")
 
     # ★ 运行态 TAG（2026-10-30 立）：盘上产物 ≠ 正在跑的代码时，「已部署」这个结论不成立。

@@ -22,7 +22,7 @@ from datetime import datetime
 # ============================================================
 # ³£Á¿
 # ============================================================
-BUILD_TAG = "20261029-010836"
+BUILD_TAG = "20261031-004508"
 
 BRIDGE_DIR = "D:/QMT_POOL/g2_bridge"
 CMD_DIR = os.path.join(BRIDGE_DIR, "cmd")

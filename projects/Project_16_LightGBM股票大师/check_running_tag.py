@@ -39,8 +39,12 @@ TARGETS = [
     ("STRATEGY_P16_G2_EXEC_SBX", r"D:\QMT交易端模拟"),
 ]
 
-TAG_RE = re.compile(r'BUILD_TAG\s*=\s*"([0-9A-Za-z._\-]+)"')
+TAG_RE = re.compile(r'BUILD_TAG\s*=\s*"([0-9A-Za-z._\-]+)"')          # 盘上源码形态（带引号）
+BARE_TAG_RE = re.compile(r"BUILD_TAG\s*=\s*([0-9A-Za-z._\-]+)")         # 日志形态（不带引号）
 INIT_TAG_RE = re.compile(r"INIT BUILD_TAG=([0-9A-Za-z._\-]+)")
+# 归属标记：reqid 行里的 `...\python\<模型>.py_NNN`。取模型名做等值比较，不用子串
+# （子串匹配会让 `_G2_EXEC` 吃掉 `_G2_EXEC_SBX`，且漏掉裸写的续行）。
+MODEL_RE = re.compile(r"\\python\\([A-Za-z0-9_]+)\.py_\d+")
 
 
 def _norm(p):
@@ -68,12 +72,35 @@ def disk_tag(qmt_dir, model):
 
 
 def _model_lines(txt, model):
-    key = "%s.py" % model
-    return [ln for ln in txt.splitlines() if key in ln]
+    """按「归属态」取本模型的日志行（含续行）。
+
+    ★ 2026-10-30 修：旧实现用 `模型名.py in line` 子串过滤，只能命中每次 print 的首行，
+    续行全丢；且 `_G2_EXEC` 会吃掉 `_G2_EXEC_SBX`。改为正则取模型名做**等值比较**，
+    续行继承上一条归属。今天 INIT 恰好都带前缀所以旧实现"看起来对"，但那是运气。
+
+    ★ 注意：取 tag 时仍用**行序最后一条**（`tags[-1]`），不要改成按时间戳排序——
+    日志是追加写，行序 = 真实最后状态；而本机曾发生时钟前跳（2026-10-30 19:22 前跳
+    19 小时），按时间戳排序会把更早的老 TAG 当成最新的。
+    """
+    owner = ""
+    out = []
+    for ln in txt.splitlines():
+        m = MODEL_RE.search(ln)
+        if m:
+            owner = m.group(1)
+        if owner == model:
+            out.append(ln)
+    return out
 
 
 def running_tag(qmt_dir, model, date_str=None):
-    """当天日志里该模型最后一条 INIT 的 BUILD_TAG。返回 (tag, 原因)。"""
+    """当天日志里该模型最后一条 INIT 的 BUILD_TAG。返回 (tag, 原因)。
+
+    ★ 支持 INIT 打印成多行：首行 `... INIT`、次行 `  BUILD_TAG=xxxx`（续行）。
+      旧实现只在单行里找 `INIT BUILD_TAG=`，多行时取不到 → 误判 NOT_RUNNING。
+    ★ 取**行序最后一条**，不按时间戳排序：日志是追加写，行序 = 真实最后状态；
+      本机 2026-10-30 19:22 发生过时钟前跳 19 小时，按时间戳排序会把老 TAG 当最新。
+    """
     date_str = date_str or time.strftime("%Y%m%d")
     p = os.path.join(qmt_dir, "userdata", "log", "XtClient_FormulaOutput_%s.log" % date_str)
     if not os.path.exists(p):
@@ -83,10 +110,22 @@ def running_tag(qmt_dir, model, date_str=None):
     except Exception as e:
         return None, "日志读取失败: %s" % str(e)[:60]
     tags = []
+    prev_was_init = False
     for ln in _model_lines(txt, model):
         m = INIT_TAG_RE.search(ln)
         if m:
             tags.append(m.group(1))
+            prev_was_init = False
+            continue
+        if prev_was_init:
+            # 上一行是 `... INIT`（未带 TAG）⇒ 本续行里找 BUILD_TAG（日志形态不带引号）
+            m2 = BARE_TAG_RE.search(ln)
+            if m2:
+                tags.append(m2.group(1))
+            prev_was_init = False
+            continue
+        if "INIT" in ln:
+            prev_was_init = True
     if not tags:
         return None, "日志里没有该模型的 INIT（策略未启动/未加载）"
     return tags[-1], ""
