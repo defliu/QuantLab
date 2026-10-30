@@ -38,13 +38,19 @@ $mirror = Join-Path $dir "qmt_signal_mirror.py"
 $instances = @(
     # ★ 计划目录必须跟 rebalance_g2.py 的 G.DATA_DIR 走（**项目目录**下），不是 D:\QuantLab\data。
     #   2026-10-29 实测踩到：hub 指 D:\QuantLab\data\rebalance_g2 时 /signal 永远 404——脚本把计划写在项目目录里。
-    # ★ 端口不能再用 58610/58611：58610 是 QMT xtdata 的本地数据端口，hub 占了它会让
-    #   xtdata 连上来收到 HTTP 垃圾包（日志 "package len error"）——2026-10-29 实测踩到。
-    @{ Port = 58710; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2";     Account = "67014907"; Capital = 100000; Mirror = $false;
+    # ★★ 端口必须在 QMT 客户端的**连接白名单**里，否则 python_anti_plugin_monitor 会判
+    #    「illegal ip」并主动把策略停掉（2026-10-30 实测：58710 → try stop G2/V13_EXEC →
+    #    illegal ip: 127.0.0.1:58710，策略启动后又变停止就是这个原因）。
+    #    白名单由客户端启动时自己收集（日志 "[monitor] whitelist fixed, size 79"），
+    #    里面只有 lua 配置里的服务端口：0.0.0.0:58600/58610/58620/64000 等。
+    #    ⚠️ 58600 已被 XtItClient 自身占用（formula 服务），所以用 58610。
+    #    ⚠️ 之前踩过的「58610 是 xtdata 数据端口」只在 hub 监听 0.0.0.0 时才会误撞；
+    #    这里一律绑 127.0.0.1，且 xtdata 连的是客户端自己起的服务端口，不受影响。
+    @{ Port = 58610; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2";     Account = "67014907"; Capital = 100000; Mirror = $false;
        Ledger = "D:\QMT_POOL\g2_bridge\g2_trade_log.csv"; LedgerStyle = "g2" },
-    @{ Port = 58711; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2\sbx"; Account = "70180771"; Capital = 20000;  Mirror = $true;
+    @{ Port = 58611; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2\sbx"; Account = "70180771"; Capital = 20000;  Mirror = $true;
        Ledger = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_g2\sbx\sbx_trade_log.csv"; LedgerStyle = "g2" },
-    @{ Port = 58712; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_v13";    Account = "67014907"; Capital = 100000; Mirror = $false;
+    @{ Port = 58612; PlanDir = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\rebalance_v13";    Account = "67014907"; Capital = 100000; Mirror = $false;
        Ledger = "D:\QuantLab\projects\Project_16_LightGBM股票大师\data\qmt_trade_log.csv"; LedgerStyle = "v13" }
 )
 
