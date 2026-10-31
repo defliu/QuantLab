@@ -13,6 +13,7 @@
 纯离线：monkeypatch 端口探测与日志读取，不连 hub、不碰 QMT。
 """
 import importlib.util
+import json
 import os
 import sys
 
@@ -121,11 +122,13 @@ check("P4b SBX 自有成交为 0（DRY 不得把 FILL? 当成交）", len(fills_
 check("P4b SBX 的 FILL? 计入 foreign=1", foreign_sbx == 1)
 
 # C) 时间戳随归属继承：15:10 之后的事件必须能被时间窗过滤掉
+#    ★ CC 复核 R24：旧 fixture 里那条 `15:20:01 hhmm=1520` 是虚构的（真实日志 0 命中），
+#      现在换成真实存在的 20:54 事件（XtClient_FormulaOutput_20261030.log:304）。
 late = [e for e in e_g2 if e[2][11:16] > "15:10"]
-check("P4c 15:10 后事件带真实时间戳（续行不再切出 'EC] F'）", len(late) == 2)
-check("P4c 15:10 前事件保留", len([e for e in e_g2 if e[2][11:16] <= "15:10"]) == len(e_g2) - 2)
-check("P4c 15:10 后的续行也继承到正确时间",
-      all(e[2][11:16] == "15:20" for e in late))
+check("P4c 15:10 后事件带真实时间戳（续行不再切出 'EC] F'）", len(late) == 1)
+check("P4c 15:10 前事件保留", len([e for e in e_g2 if e[2][11:16] <= "15:10"]) == len(e_g2) - 1)
+check("P4c 15:10 后的事件继承到真实时间 20:54",
+      all(e[2][11:16] == "20:54" for e in late))
 
 # F) 多行 INIT（CC 复核 §3/§4.1）：必须走**完整链路** `_scan_log → _summarize_events`
 #    ★ 上一轮 P4f 直接喂事件元组、且 rest 里已带 BUILD_TAG，既没测真实链路也没测新代码，
@@ -232,6 +235,37 @@ check("P4e 该腿不得判 ✔", not (_fv >= _pv and _pv > 0))
 check("P4e 反向成交仍可见（800 股 BUY 记录在案）",
       _filled.get(("BUY", "603529.SH"), 0) == 800)
 
+# H) ★ P0（CC 复核 N1）：FILL 行两种格式都必须能解析
+#    旧产物 `FILL 603529.SH 300@19.260`（无方向）
+#    新产物 `FILL 603529.SH BUY 300@19.266 remark=…`（带方向，已落盘 20261030-180615）
+#    旧正则要求「代码紧跟 数字@价」，新格式会因为中间夹 BUY 而整条丢弃 ⇒ 成交读成 0 腿。
+_NEW_FILL_LOG = (
+    _PFX + "[P16SIG][EXEC] ORDER ret=0 prtype=11 px=19.29 BUY 603529.SH 800@19.23 remark=g2-x-1\n"
+    + _PFX + "[P16SIG][EXEC] FILL 603529.SH BUY 300@19.266 remark=g2-x-1\n"
+    "[P16SIG][EXEC] FILL 603529.SH BUY 500@19.270 remark=g2-x-1\n"
+)
+_ev_new = _scan_text(_NEW_FILL_LOG, "STRATEGY_P16_G2_EXEC")
+_tn, _on, _fn, _cn, _fgn = MD._summarize_events(_ev_new)
+check("P4h 新产物格式（带方向）FILL 能被解析", len(_fn) == 2)
+check("P4h 新格式方向取自日志自带 side", [s for _c, _v, _p, s in _fn] == ["BUY", "BUY"])
+check("P4h 新格式成交量正确", [v for _c, v, _p, _s in _fn] == [300, 500])
+
+_OLD_FILL_LOG = (
+    _PFX + "[P16SIG][EXEC] ORDER ret=0 prtype=11 px=19.29 BUY 603529.SH 800@19.23 remark=g2-x-1\n"
+    "[P16SIG][EXEC] FILL 603529.SH 300@19.260\n"
+)
+_fo = MD._summarize_events(_scan_text(_OLD_FILL_LOG, "STRATEGY_P16_G2_EXEC"))[2]
+check("P4h 旧格式（无方向）仍能解析", len(_fo) == 1)
+check("P4h 旧格式方向回退到同批 ORDER", _fo[0][3] == "BUY")
+
+_CONFLICT_LOG = (
+    _PFX + "[P16SIG][EXEC] ORDER ret=0 prtype=11 px=9.0 BUY 600000.SH 100@9.0 remark=x-1\n"
+    "[P16SIG][EXEC] FILL 600000.SH SELL 100@9.5 remark=x-1\n"
+)
+_fc = MD._summarize_events(_scan_text(_CONFLICT_LOG, "STRATEGY_P16_G2_EXEC"))[2]
+check("P4h FILL 自带方向优先于 ORDER 推断", _fc[0][3] == "SELL")
+
+
 # --- P5 hub 健康解析：路由不 ok 必须能给出原因 ---
 orig_hh = HB._hub_health
 HB._hub_health = lambda port, timeout=3.0: {"ok": True, "routes": {
@@ -246,8 +280,49 @@ finally:
     HB._hub_health = orig_hh
 
 # 午间报告的 hub 解析用同一形状
-check("P5 午间 _hub_health 返回 {key:(ok,reason)}",
-      isinstance(MD._hub_health, type(MD._hub_health)))
+# ★ 2026-10-31 CC 复核 R25：原断言 `isinstance(MD._hub_health, type(MD._hub_health))`
+#   恒真（任何对象都等于自己的 type），与被测行为无关。改为真解析验证：
+#   起一个桩 HTTP 服务返回 /health JSON，走真 `MD._hub_health`，断言路由被正确解析。
+import threading
+try:
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+except ImportError:
+    BaseHTTPRequestHandler = HTTPServer = None
+
+_health_payload = {}
+
+
+class _HealthStub(BaseHTTPRequestHandler):
+    def do_GET(self):
+        body = json.dumps(_health_payload).encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *a):
+        return
+
+
+if BaseHTTPRequestHandler is not None:
+    _health_payload.update({"ok": True, "routes": [
+        {"key": "g2", "ok": True, "reason": "", "plan": "p"},
+        {"key": "g2sbx", "ok": False, "reason": "plan_date_not_today:20261029", "plan": "p"},
+        {"key": "v13", "ok": True, "reason": "", "plan": "p"},
+    ]})
+    _srv = HTTPServer(("127.0.0.1", 0), _HealthStub)
+    _port = _srv.server_address[1]
+    threading.Thread(target=_srv.serve_forever, daemon=True).start()
+    try:
+        _h = MD._hub_health(_port)
+        check("P5 午间 _hub_health 真解析出三条路由",
+              isinstance(_h, dict) and set(_h.keys()) == {"g2", "g2sbx", "v13"})
+        check("P5 午间 _hub_health 保留 ok 与 reason",
+              _h["g2"][0] is True and _h["g2sbx"][0] is False
+              and "plan_date_not_today" in _h["g2sbx"][1])
+    finally:
+        _srv.shutdown()
 
 # --- P6 hub 整体不可达 => 三条都 ALERT，且不是「端口未监听」误报 ---
 orig_hh2 = HB._hub_health

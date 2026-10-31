@@ -1,34 +1,46 @@
-2026-10-30 08:52:25,515 [INFO] [0x00001114] reqid = 0D:\国金QMT交易端模拟\python\STRATEGY_P16_G2_EXEC.py_00030011, output = [P16SIG][EXEC] INIT BUILD_TAG=20261029-195335 account=67014907 dry_run=False url=http://127.0.0.1:58610/signal/g2 capital=100000
+# 真实日志摘录（2026-10-30），**逐行照抄**，仅做两件事：去掉无关策略的行、按时间排序。
+# 来源与对应行号（可复核）：
+#   A 沙箱 INIT      D:\QMT交易端模拟\userdata\log\XtClient_FormulaOutput_20261030.log:9
+#   B 主号 G2 INIT   D:\国金QMT交易端模拟\...\XtClient_FormulaOutput_20261030.log:9
+#   C 主号 V13 INIT  同上:16
+#   D G2 PLAN/ORDER/FILL  同上:106-116
+#   E V13 的 FILL?        同上:120-122
+#   F G2 重启后的 FILL?   同上:168-173
+#   G 20:54 重启后的 OFFSESSION（>15:10 的真实事件）  同上:304
+# ⚠ 2026-10-31 CC 复核 R24：旧版本这里有一行 `15:20:01 hhmm=1520`，
+#   两份真实 10-30 日志 grep 命中 **0 次**，是虚构的；端口也曾被改写成 58610。
+#   现在一律照抄原文（端口仍是当日的 58710/58711/58712），不再「按当前架构润色」。
 
-2026-10-30 08:52:25,594 [INFO] [0x00001114] reqid = 0D:\国金QMT交易端模拟\python\STRATEGY_P16_V13_EXEC.py_00030013, output = [P16SIG][EXEC] INIT BUILD_TAG=20261029-195336 account=67014907 dry_run=False url=http://127.0.0.1:58610/signal/v13 capital=100000
-
-2026-10-30 08:15:55,773 [INFO] [0x0000504c] reqid = 0D:\QMT交易端模拟\python\STRATEGY_P16_G2_EXEC_SBX.py_0003008, output = [P16SIG][EXEC] INIT BUILD_TAG=20261029-195335 account=70180771 dry_run=True url=http://127.0.0.1:58610/signal/g2sbx capital=20000
+2026-10-30 08:15:55,773 [INFO] [0x0000504c] reqid = 0D:\QMT交易端模拟\python\STRATEGY_P16_G2_EXEC_SBX.py_0003008, output = [P16SIG][EXEC] INIT BUILD_TAG=20261029-195335 account=70180771 dry_run=True url=http://127.0.0.1:58711/signal capital=20000
 [P16SIG][EXEC] FILL? 603529.SH 300@19.100
+
+2026-10-30 08:52:25,515 [INFO] [0x00001114] reqid = 0D:\国金QMT交易端模拟\python\STRATEGY_P16_G2_EXEC.py_00030011, output = [P16SIG][EXEC] INIT BUILD_TAG=20261029-195335 account=67014907 dry_run=False url=http://127.0.0.1:58710/signal capital=100000
+
+2026-10-30 08:52:25,594 [INFO] [0x00001114] reqid = 0D:\国金QMT交易端模拟\python\STRATEGY_P16_V13_EXEC.py_00030013, output = [P16SIG][EXEC] INIT BUILD_TAG=20261029-195336 account=67014907 dry_run=False url=http://127.0.0.1:58712/signal capital=100000
 
 2026-10-30 09:50:01,358 [INFO] [0x00001114] reqid = 0D:\国金QMT交易端模拟\python\STRATEGY_P16_G2_EXEC.py_00030011, output = [P16SIG][EXEC] PLAN ok sid=g2-20261030-23af1b58 n=2 legs=2
 [P16SIG][EXEC] ORDER ret=0 prtype=11 px=19.29 BUY 603529.SH 800@19.23 remark=g2-20261030-23af1b58-1 reason=g2选股Top1(total=64.5)
 
-2026-10-30 09:50:13,391 [INFO] [0x00001114] reqid = 0D:\国金QMT交易端模拟\python\STRATEGY_P16_G2_EXEC.py_00030011, output = [P16SIG][EXEC] WARN 委托未出现在账户委托列表（remark=g2-20261030-23af1b58-1）
+2026-10-30 09:50:13,391 [INFO] [0x00001114] reqid = 0D:\国金QMT交易端模拟\python\STRATEGY_P16_G2_EXEC.py_00030011, output = [P16SIG][EXEC] WARN 委托未出现在账户委托列表（remark=g2-20261030-23af1b58-1）——极可能还在「模拟」运行模式；请在客户端停止策略并以「实盘」重新启动
 [P16SIG][EXEC] ORDER ret=0 prtype=11 px=115.65 BUY 300223.SZ 100@115.30 remark=g2-20261030-23af1b58-2 reason=g2选股Top2(total=64.5)
 
-2026-10-30 09:50:25,420 [INFO] [0x00001114] reqid = 0D:\国金QMT交易端模拟\python\STRATEGY_P16_G2_EXEC.py_00030011, output = [P16SIG][EXEC] WARN 委托未出现在账户委托列表（remark=g2-20261030-23af1b58-2）
+2026-10-30 09:50:25,420 [INFO] [0x00001114] reqid = 0D:\国金QMT交易端模拟\python\STRATEGY_P16_G2_EXEC.py_00030011, output = [P16SIG][EXEC] WARN 委托未出现在账户委托列表（remark=g2-20261030-23af1b58-2）——极可能还在「模拟」运行模式；请在客户端停止策略并以「实盘」重新启动
 [P16SIG][EXEC] FILL 603529.SH 300@19.260
 [P16SIG][EXEC] FILL 603529.SH 500@19.270
 [P16SIG][EXEC] FILL 300223.SZ 100@113.830
 [P16SIG][EXEC] SKIP 已执行(g2-20261030-23af1b58)
 
-2026-10-30 09:50:25,420 [INFO] [0x00001114] reqid = 0D:\国金QMT交易端模拟\python\P16_V13_RISK.py_00030012, output = [P16V13][PASSIVE] 2026-10-30 09:50:25 被动模式运行中（不评估不下单）
+2026-10-30 09:50:25,420 [INFO] [0x00001114] reqid = 0D:\国金QMT交易端模拟\python\P16_V13_RISK.py_00030012, output = [P16V13][PASSIVE] 2026-10-30 09:50:25 被动模式运行中（不评估不下单），查上方 WARN/ERR 行定位真实原因
 
 2026-10-30 09:50:25,420 [INFO] [0x00001114] reqid = 0D:\国金QMT交易端模拟\python\STRATEGY_P16_V13_EXEC.py_00030013, output = [P16SIG][EXEC] FILL? 603529.SH 300@19.260
 [P16SIG][EXEC] FILL? 603529.SH 500@19.270
 [P16SIG][EXEC] FILL? 300223.SZ 100@113.830
 
-2026-10-30 10:00:32,648 [INFO] [0x00001114] reqid = 0D:\国金QMT交易端模拟\python\STRATEGY_P16_G2_EXEC.py_00030016, output = [P16SIG][EXEC] INIT BUILD_TAG=20261029-195335 account=67014907 dry_run=False url=http://127.0.0.1:58610/signal/g2 capital=100000
+2026-10-30 10:00:32,648 [INFO] [0x00001114] reqid = 0D:\国金QMT交易端模拟\python\STRATEGY_P16_G2_EXEC.py_00030016, output = [P16SIG][EXEC] INIT BUILD_TAG=20261029-195335 account=67014907 dry_run=False url=http://127.0.0.1:58710/signal capital=100000
 
 2026-10-30 10:00:32,725 [INFO] [0x00001114] reqid = 0D:\国金QMT交易端模拟\python\STRATEGY_P16_G2_EXEC.py_00030016, output = [P16SIG][EXEC] FILL? 603529.SH 300@19.260
 [P16SIG][EXEC] FILL? 603529.SH 500@19.270
 [P16SIG][EXEC] FILL? 300223.SZ 100@113.830
 [P16SIG][EXEC] SKIP 非执行窗口(1000，要求950-958)
 
-2026-10-30 15:20:01,000 [INFO] [0x00001114] reqid = 0D:\国金QMT交易端模拟\python\STRATEGY_P16_G2_EXEC.py_00030011, output = [P16SIG][EXEC] OFFSESSION hhmm=1520 不下单
-[P16SIG][EXEC] SKIP 已执行(g2-20261030-23af1b58)
+2026-10-30 20:54:31,441 [INFO] [0x0000323c] reqid = 0D:\国金QMT交易端模拟\python\STRATEGY_P16_G2_EXEC.py_0003007, output = [P16SIG][EXEC] OFFSESSION hhmm=2054 不下单

@@ -142,6 +142,34 @@ try:
     finally:
         G.STATE_DIR = orig_g
 
+    # --- K6 ★ 只 patch QC.CMD_DIR（不 patch G.CMD_DIR）也必须生效（CC 复核 N4）---
+    #    同 K5 的分叉消除验证，对象是 CMD_DIR：_float_pnl_now 读 positions_cfg_*。
+    #    早期三处用 G.CMD_DIR，而写这些文件的是 qmt_bridge_client（QC.CMD_DIR）。
+    orig_gc = G.CMD_DIR
+    try:
+        G.CMD_DIR = os.path.join(tmp, "wrong_cmd")
+        os.makedirs(G.CMD_DIR, exist_ok=True)
+        # 在 QC 目录放一份持仓（成本 10、量 100），并让 fetch_price 返回 12 ⇒ 浮盈 +200
+        io.open(os.path.join(cmd, "positions_cfg_%s.json" % DATE), "w", encoding="utf-8").write(
+            json.dumps({"account_id": G.ACCOUNT_ID,
+                        "positions": [{"code": "600000.SH", "vol": 100, "cost": 10.0}]},
+                       ensure_ascii=False))
+        _orig_fetch = R.fetch_price
+        R.fetch_price = lambda code: 12.0
+        try:
+            # 当日快照齐全（K3 建过，K5 删过 ⇒ 重建）
+            io.open(os.path.join(state, "fills_%s.json" % DATE), "w", encoding="utf-8").write(
+                json.dumps({"fills": []}))
+            io.open(os.path.join(state, "positions_%s.json" % DATE), "w", encoding="utf-8").write(
+                json.dumps({"account_id": G.ACCOUNT_ID, "positions": []}))
+            got6 = R._roll_g2_capital(DATE)
+            check("K6 只 patch QC.CMD_DIR 也能读到持仓（CMD 分叉已消除）",
+                  got6 is not None and abs(got6 - (G.START_CAPITAL + 200.0)) < 1e-6)
+        finally:
+            R.fetch_price = _orig_fetch
+    finally:
+        G.CMD_DIR = orig_gc
+
 finally:
     G.STATE_DIR, G.CMD_DIR, G.G2_CAPITAL_FILE, QC.STATE_DIR, QC.CMD_DIR = orig
 

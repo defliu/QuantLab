@@ -44,10 +44,14 @@ spec.loader.exec_module(R)
 
 check("G1 有 PLAN_ONLY_DEADLINE_HM 常量", hasattr(R, "PLAN_ONLY_DEADLINE_HM"))
 check("G1 截止时刻 = 958（= 执行壳窗口终点）", R.PLAN_ONLY_DEADLINE_HM == 958)
-check("G1 有 PLAN_ONLY_FROZEN_HM 常量（窗口内不覆盖阈值）",
+check("G1 有 PLAN_ONLY_FROZEN_HM 常量（当日已就位不覆盖阈值）",
       hasattr(R, "PLAN_ONLY_FROZEN_HM"))
-check("G1 冻结阈值 = 950（= 执行壳窗口起点）", R.PLAN_ONLY_FROZEN_HM == 950)
-check("G1 两个阈值不相等（终点 vs 起点，别合并）",
+# ★ 2026-10-31 CC 复核 R5：阈值由 950 改为 935 —— 原值漏掉了 09:40 那份最常见的
+#   正常计划（mtime=0940 < 950 ⇒ 不被冻结 ⇒ 09:5x 补跑照旧覆盖 ⇒ 二次下单）。
+check("G1 冻结阈值 = 935（覆盖 09:40 正常落盘）", R.PLAN_ONLY_FROZEN_HM == 935)
+check("G1 冻结阈值早于计划任务正常时点 0940",
+      R.PLAN_ONLY_FROZEN_HM < 940)
+check("G1 两个阈值不相等（终点 vs 冻结，别合并）",
       R.PLAN_ONLY_DEADLINE_HM != R.PLAN_ONLY_FROZEN_HM)
 
 # 与执行壳产物的窗口常量对齐（防两处漂移）
@@ -58,9 +62,10 @@ if os.path.exists(prod):
     m_end = re.search(r"^EXEC_HM_END = (\d+)", txt, re.M)
     check("G1 截止时刻与执行壳 EXEC_HM_END 一致",
           m_end and int(m_end.group(1)) == R.PLAN_ONLY_DEADLINE_HM)
-    m_start = re.search(r"^EXEC_HM_START = (\d+)", txt, re.M)
-    check("G1 冻结阈值与执行壳 EXEC_HM_START 一致",
-          m_start and int(m_start.group(1)) == R.PLAN_ONLY_FROZEN_HM)
+
+# --- G1b 冻结判据必须同时比对日期（CC 复核 R5-b）---
+check("G1b 冻结判据含日期比对（防前一日计划误跳过）",
+      "_mdate == date" in src)
 
 # --- G2 门的位置：必须在 build_plan / _save_plan 之前 ---
 i_gate = src.find("if args.plan_only and not args.date:")
@@ -160,23 +165,46 @@ try:
     finally:
         shutil.rmtree(tmp6, ignore_errors=True)
 
-    # --- G6b 反例：mtime 在窗口起点之前（如 09:40）⇒ 允许覆盖 ---
-    #    ★ 没有这条，把冻结判据写成「文件存在就永不覆盖」也能让 G6 通过。
-    #      实际口径是「窗口内写的才冻结」，09:40 正常落盘的仍可在 09:5x 被修正。
+    # --- G6b ★ 09:40 正常计划也必须冻结（CC 复核 R5-a 的修复点）---
+    #    ★ 旧口径 mtime≥950 会把 09:40 那份漏掉（0940 < 950），09:5x 补跑照旧覆盖 ⇒ 二次下单。
+    #      新口径 mtime≥935 ⇒ 09:40 正常落盘也在保护范围内。
     tmp6b = tempfile.mkdtemp()
     try:
         d6b = os.path.join(tmp6b, "rebalance_g2")
         os.makedirs(d6b, exist_ok=True)
         p6b = os.path.join(d6b, "rebalance_g2_%s.plan.json" % time.strftime("%Y%m%d"))
         with io.open(p6b, "w", encoding="utf-8") as f:
-            f.write(u'{"marker": "early"}')
+            f.write(u'{"marker": "normal0940"}')
         _t2 = time.localtime()
         _ts2 = time.mktime((_t2.tm_year, _t2.tm_mon, _t2.tm_mday, 9, 40, 0, 0, 0, -1))
         os.utime(p6b, (_ts2, _ts2))
-        rc6b, _f6b = run_main(["--plan-only"], 945, tmp6b)
-        check("G6b mtime 09:40（窗口前）=> 允许覆盖（rc!=5）", rc6b != 5)
+        rc6b, _f6b = run_main(["--plan-only"], 955, tmp6b)
+        _body6b = io.open(p6b, encoding="utf-8").read()
+        check("G6b 09:40 正常计划在 09:55 补跑时被冻结（rc=5 且未覆盖）",
+              rc6b == 5 and "normal0940" in _body6b)
     finally:
         shutil.rmtree(tmp6b, ignore_errors=True)
+
+    # --- G6c ★ 前一日 20:00 预写的「今日」计划不得冻结（CC 复核 R5-b 的修复点）---
+    #    ★ 旧口径只取 HHMM ⇒ mtime=2000 ≥ 950 ⇒ 09:40 正常跑被误判 rc=5 ⇒ 当日零计划。
+    #      新口径要求 mtime 落在**今天**，跨日计划不冻结。
+    tmp6c = tempfile.mkdtemp()
+    try:
+        d6c = os.path.join(tmp6c, "rebalance_g2")
+        os.makedirs(d6c, exist_ok=True)
+        p6c = os.path.join(d6c, "rebalance_g2_%s.plan.json" % time.strftime("%Y%m%d"))
+        with io.open(p6c, "w", encoding="utf-8") as f:
+            f.write(u'{"marker": "prevday"}')
+        _t3 = time.localtime()
+        # 拨到「昨天 20:00」
+        _ts3 = time.mktime((_t3.tm_year, _t3.tm_mon, _t3.tm_mday - 1, 20, 0, 0, 0, 0, -1))
+        os.utime(p6c, (_ts3, _ts3))
+        rc6c, _f6c = run_main(["--plan-only"], 940, tmp6c)
+        _body6c = io.open(p6c, encoding="utf-8").read()
+        check("G6c 前一日 20:00 的今日计划不被冻结（rc!=5，允许当日正常重算）",
+              rc6c != 5 and "prevday" not in _body6c)
+    finally:
+        shutil.rmtree(tmp6c, ignore_errors=True)
 
     # 5a 过窗口 + --plan-only ⇒ rc=4 且**一个文件都不产生**
     rc, files = run_main(["--plan-only"], 1000, tmp)

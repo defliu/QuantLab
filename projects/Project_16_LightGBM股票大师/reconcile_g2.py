@@ -27,6 +27,25 @@ from qmt_bridge_client import read_fills, read_positions, read_asset, read_heart
 TERMINAL_STATUS = ("FILLED", "PARTIAL_FILLED", "CANCELED", "REJECTED", "UNCONFIRMED", "ABANDONED")
 
 
+def _cmd_dir():
+    """cmd 目录的**唯一**口径（2026-10-31 CC 复核 N4）。
+
+    与 `_state_dir()` 同族问题：`g2_config.CMD_DIR` 与 `qmt_bridge_client.CMD_DIR`
+    是两个独立模块常量，而写 `positions_cfg_*.json` 的是
+    `qmt_bridge_client._positions_cfg_path`（用 QC.CMD_DIR），`gen_positions_cfg_g2.py`
+    也从 QC 导入。本文件早期三处读它却用 `G.CMD_DIR`——「写 A 目录、读 B 目录」。
+    生产上两者同值故今日无错数，但一旦有人改一边就会静默读空
+    （实测：positions_cfg 放 QC、G 指空 ⇒ ledger 空、acct 有票 ⇒ 输出两条假 issue）。
+    现统一取 `QC.CMD_DIR`（写侧口径），并在加载时校验两者一致。
+    """
+    return getattr(QC, "CMD_DIR", G.CMD_DIR)
+
+
+if _cmd_dir() != getattr(G, "CMD_DIR", None):
+    print("[reconcile_g2] WARN CMD_DIR 口径不一致：g2_config=%r / qmt_bridge_client=%r"
+          "（本脚本一律按后者，请核对配置）" % (getattr(G, "CMD_DIR", None), _cmd_dir()))
+
+
 def _state_dir():
     """state 目录的**唯一**口径（2026-10-31 CC 复核 §5）。
 
@@ -132,14 +151,14 @@ def _realized_pnl_from_fills():
 def _float_pnl_now():
     """当前 G2 持仓浮盈 = Σ(现价-成本)×vol。持仓用最新 positions_cfg（成本含费，account 戳校验）。"""
     try:
-        files = [f for f in os.listdir(G.CMD_DIR) if f.startswith("positions_cfg_") and f.endswith(".json")]
+        files = [f for f in os.listdir(_cmd_dir()) if f.startswith("positions_cfg_") and f.endswith(".json")]
         files.sort(reverse=True)
     except Exception:
         files = []
     pos = []
     for fn in files:
         try:
-            with open(os.path.join(G.CMD_DIR, fn), encoding="utf-8") as f:
+            with open(os.path.join(_cmd_dir(), fn), encoding="utf-8") as f:
                 d = json.load(f)
             if str(d.get("account_id", "")) == G.ACCOUNT_ID:
                 pos = d.get("positions", []) or []
@@ -254,7 +273,7 @@ def main():
     # ③ G2 账本 vs 账户持仓 → 孤儿仓
     ledger = {}
     try:
-        cfg = json.load(open(os.path.join(G.CMD_DIR, "positions_cfg_%s.json" % date), encoding="utf-8"))
+        cfg = json.load(open(os.path.join(_cmd_dir(), "positions_cfg_%s.json" % date), encoding="utf-8"))
         if str(cfg.get("account_id", "")) == G.ACCOUNT_ID:
             for p in cfg.get("positions", []):
                 ledger[p["code"]] = int(p.get("vol", 0) or 0)

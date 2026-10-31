@@ -53,7 +53,13 @@ HUB_PORT = 58610             # 白名单内唯一可用的回环端口
 
 LINE_RE = re.compile(r"\[P16SIG\]\[EXEC\] ([A-Z?\-]+)\s*(.*)$")
 ORDER_RE = re.compile(r"(BUY|SELL)\s+([0-9]{6}\.[A-Z]{2})\s+(\d+)@([0-9.]+)")
-FILL_RE = re.compile(r"([0-9]{6}\.[A-Z]{2})\s+(\d+)@([0-9.]+)")
+# FILL 行有两种格式，必须都吃：
+#   旧产物（BUILD_TAG ≤ 20261029-195335）：`FILL 603529.SH 300@19.260`
+#   新产物（≥ 20261030-180615）：            `FILL 603529.SH BUY 300@19.266 remark=g2-…`
+# ★ 2026-10-31 CC 复核 N1（P0）：新产物自 commit 18be561 起在 FILL 行加了 side，
+#   而旧正则要求「代码紧跟 数字@价」，中间夹一个 BUY 就命中失败 ⇒ 部署新产物后
+#   **所有成交在午间/盘后报告里读成 0 腿**。方向组设为可选，两种格式都能解析。
+FILL_RE = re.compile(r"([0-9]{6}\.[A-Z]{2})(?:\s+(BUY|SELL))?\s+(\d+)@([0-9.]+)")
 # 归属态判据：reqid 行里 `...\python\<模型>.py_NNN`。取模型名做**等值比较**，
 # 不用子串匹配（`_G2_EXEC` 会吃掉 `_G2_EXEC_SBX`）。
 MODEL_RE = re.compile(r"\\python\\([A-Za-z0-9_]+)\.py_\d+")
@@ -221,8 +227,12 @@ def _summarize_events(evts):
             m = FILL_RE.search(rest)
             if m:
                 code = m.group(1)
-                fills.append((code, int(m.group(2)), float(m.group(3)),
-                              side_by_code.get(code, "?")))
+                # 方向优先级（2026-10-31 CC 复核 N1）：
+                #   ① 新产物在 FILL 行自带 side（最可靠，单笔成交的真实方向）
+                #   ② 旧产物没带 ⇒ 退回「同 code 最近一条 ORDER 的方向」
+                #   ③ 都没有 ⇒ "?"（让比对判 ✘ 并留痕，不猜）
+                side = (m.group(2) or "").upper() or side_by_code.get(code, "?")
+                fills.append((code, int(m.group(3)), float(m.group(4)), side))
         elif kind == "FILL?":
             foreign_fills += 1
     return init_tag, orders, fills, counts, foreign_fills

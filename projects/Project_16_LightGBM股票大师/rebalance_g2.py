@@ -48,12 +48,20 @@ def today_str():
 # （2026-10-30 19:22 时钟跳变补跑就是这一路）。
 PLAN_ONLY_DEADLINE_HM = 958
 
-# 窗口内**不覆盖**已就位计划的 mtime 阈值（HHMM）= 执行壳窗口**起点**。
+# 窗口内**不覆盖**已就位计划的 mtime 阈值（HHMM）= 计划任务的正常落盘时点之前。
+#
 # 必须与上面的 958 分开：signal_id 是「策略-日期-计划内容哈希」（qmt_signal_hub.py:171），
 # 而执行壳只对同一个 sid 去重（placed_sids + already_applied）。窗口内把计划内容换掉
-# ⇒ 新 sid ⇒ 同一批腿再下一遍单。mtime >= 950 说明这份计划是窗口内写的、可能已被消费，
-# 一律不覆盖。（09:40 正常落盘的计划 mtime < 950，不受此限，仍可在 09:5x 被修正。）
-PLAN_ONLY_FROZEN_HM = 950
+# ⇒ 新 sid ⇒ 同一批腿再下一遍单。
+#
+# ★ 2026-10-31 CC 复核 R5：早期实现 `_mt >= 950` 有两个反向缺陷——
+#   (a) 09:40 正常落盘的计划 mtime=0940 < 950 ⇒ **不被冻结**，09:55 补跑照旧覆盖
+#       ⇒ 正是本判据要防的「窗口内换内容 ⇒ 二次下单」；
+#   (b) 判据只取 HHMM、**丢弃日期** ⇒ 前一日 20:00 预写的「今日」计划 mtime=2000 ≥ 950
+#       ⇒ 09:40 正常跑被误判 rc=5，**当日零计划零下单**。
+#   现在：① mtime 必须落在**今天**（丢弃跨日计划），② 当日 mtime ≥ 09:35 即冻结
+#   （把 09:40 的正常落盘纳入，同时放过 09:00 之前的人工预览产物）。
+PLAN_ONLY_FROZEN_HM = 935
 
 
 def _count_trade_days(start, end):
@@ -634,14 +642,18 @@ def main():
                   % (_hhmm, PLAN_ONLY_DEADLINE_HM))
             print("        若这是补跑，属正常跳过；若每日都如此，排查任务触发时点（应 09:40）。")
             return 4
-        # 窗口内也不覆盖「已就位」的计划：mtime 落在 950 之后 = 它是窗口内写的，
-        # 执行壳可能已经消费过。换掉内容会得到新的 signal_id，导致同一批腿二次下单。
+        # 窗口内也不覆盖「已就位」的计划：当日 mtime 落在 09:35 之后 = 它是今天正常产出
+        # 或窗口内写的，执行壳可能已经消费过。换掉内容会得到新的 signal_id，导致同一批腿二次下单。
+        # ★ 必须同时比对**日期**：只看 HHMM 时，前一日 20:00 预写的今日计划会被误判成
+        #   「窗口内已就位」而跳过当日全部计划（2026-10-31 CC 复核 R5）。
         _pp = os.path.join(G.DATA_DIR, "rebalance_g2", "rebalance_g2_%s.plan.json" % date)
         if os.path.exists(_pp):
-            _mt = int(time.strftime("%H%M", time.localtime(os.path.getmtime(_pp))))
-            if _mt >= PLAN_ONLY_FROZEN_HM:
-                print("[SKIP] 当日计划已就位（%s mtime %04d 落在窗口内）——不覆盖，避免执行壳二次下单"
-                      % (os.path.basename(_pp), _mt))
+            _mtime = time.localtime(os.path.getmtime(_pp))
+            _mdate = time.strftime("%Y%m%d", _mtime)
+            _mhm = int(time.strftime("%H%M", _mtime))
+            if _mdate == date and _mhm >= PLAN_ONLY_FROZEN_HM:
+                print("[SKIP] 当日计划已就位（%s 今日 %04d 已生成过）——不覆盖，避免执行壳二次下单"
+                      % (os.path.basename(_pp), _mhm))
                 return 5
 
     G.SELECT_TOP = args.top
