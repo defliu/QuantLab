@@ -74,6 +74,9 @@ def main():
 
     live_csv = os.path.join(REAL, "paper_forward_live.csv")
     df = pd.read_csv(live_csv, encoding="utf-8-sig")
+    # 2026-10-31：写入侧去重曾失效（10-23 出现 4 组重复，10-31 09:10 追加），
+    # 统计侧兜底按 (date, code) 去重，防「候选累计 / 待回填」被重复行虚增。
+    df = df.drop_duplicates(subset=["date", "code"], keep="last").reset_index(drop=True)
     # 2026-10-19：若台账含 ret_net（扣费净收益），统计改用净收益；毛收益保留为 ret_gross。
     if "ret_net" in df.columns:
         df["ret_gross"] = df["ret"]

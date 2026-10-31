@@ -45,6 +45,7 @@ if HERE not in sys.path:
 
 REAL = os.path.join(HERE, "data", "real")
 SCHED = os.path.join(HERE, "data", "schedules")
+CAL = os.path.join(HERE, "data", "ashare_trade_dates.txt")
 
 import qmt_card as QC  # noqa: E402
 
@@ -209,13 +210,47 @@ def load_downgrade():
         return None
 
 
+def _trade_dates():
+    if not os.path.exists(CAL):
+        return []
+    out = []
+    for line in _read(CAL).splitlines():
+        s = line.strip()
+        if re.match(r"^\d{4}-\d{2}-\d{2}$", s):
+            out.append(s)
+    return sorted(set(out))
+
+
+def latest_trade_date(on_or_before):
+    """<= on_or_before 的最近交易日；日历缺失返回空串。"""
+    ds = [d for d in _trade_dates() if d <= on_or_before]
+    return ds[-1] if ds else ""
+
+
+def count_sessions(after, upto):
+    """(after, upto] 之间的交易日数；任一端为空返回 0。"""
+    if not after or not upto:
+        return 0
+    return len([d for d in _trade_dates() if after < d <= upto])
+
+
+def csv_max_date(path, col="date"):
+    """读 CSV 的日期列最大值（YYYY-MM-DD）；文件缺失/无数据返回空串。"""
+    import csv
+    if not os.path.exists(path):
+        return ""
+    try:
+        with io.open(path, "r", encoding="utf-8-sig", newline="") as f:
+            vals = [r.get(col, "").strip() for r in csv.DictReader(f)]
+        vals = [v for v in vals if re.match(r"^\d{4}-\d{2}-\d{2}$", v)]
+        return max(vals) if vals else ""
+    except Exception:
+        return ""
+
+
 # ---------------------------------------------------------------- 选日期
 def _today():
     return datetime.date.today()
-
-
-def _is_weekday(d):
-    return d.weekday() < 5
 
 
 def _dash(compact):
@@ -238,19 +273,23 @@ def select_date(want, wait_min):
     today = _today()
     if want:
         return _dash(want), warnings
-    d = today.strftime("%Y-%m-%d")
+    today_str = today.strftime("%Y-%m-%d")
+    # 只在「今天本身是交易日」时期待当日报表；周末/节假日取最近交易日，
+    # 否则手工补跑产生的 forward_stats_<周末>.md 会让另外两份报告被误报「当日缺失」。
+    is_trade_today = today_str in _trade_dates()
+    d = today_str if is_trade_today else (latest_trade_date(today_str) or today_str)
     deadline = time.time() + max(0, wait_min) * 60
-    while True:
+    while is_trade_today:
         if os.path.exists(os.path.join(REAL, "forward_stats_%s.md" % today.strftime("%Y%m%d"))):
             return d, warnings
-        if not _is_weekday(today) or time.time() >= deadline:
+        if time.time() >= deadline:
             break
         time.sleep(60)
-    dates = _find_dates("forward_stats_")
+    dates = [x for x in _find_dates("forward_stats_") if _dash(x) <= d]
     if not dates:
         return None, warnings
     latest = dates[-1]
-    if _is_weekday(today):
+    if is_trade_today:
         warnings.append("今日 %s 的 forward_stats 未落盘（管道可能失败），以下为 %s 的数据" % (d, _dash(latest)))
     return _dash(latest), warnings
 
@@ -273,9 +312,11 @@ def build_body(fs, ex, sh, mark, date_str, warnings, missing):
     # ① 43f G2 主臂
     if fs:
         lines.append("**① 43f G2 纸面主臂** · 持有 %s 日 open→open" % (fs.get("hold") or "—"))
-        lines.append("回填 %s / 待回填 %s / 累计 %s（主库 %s）" % (
-            fs.get("filled", "—"), fs.get("pending", "—"), fs.get("total", "—"),
-            fs.get("main_last") or "—"))
+        lines.append("回填 %s / 待回填 %s / 累计 %s" % (
+            fs.get("filled", "—"), fs.get("pending", "—"), fs.get("total", "—")))
+        lines.append("数据：候选截止 %s · 增量库 %s · 主库 %s" % (
+            fs.get("cand_last") or fs.get("inc_last") or "—",
+            fs.get("inc_last") or "—", fs.get("main_last") or "—"))
         r = fs.get("rows", {}).get("all")
         if r:
             lines.append("- 全部：收益 %s · 基准 %s · 超额 %s · 胜率 %s%% · 超额胜率 %s%% · t %s" % (
@@ -293,7 +334,7 @@ def build_body(fs, ex, sh, mark, date_str, warnings, missing):
         lines.append("**② 21f 影子臂（B21 k1500）** · 持有 15 日 · 数据截止 %s" % (sh.get("asof") or "—"))
         fwd, bf = sh.get("forward"), sh.get("backfill")
         if fwd == 0:
-            lines.append("forward 0 / backfill %s（**尚无前向样本**，当前全部为回测等价回填）" % (bf,))
+            lines.append("forward 0 / backfill %s（**尚无前向样本**：数据链 T-1，脚本按设计只记 backfill，非统计遗漏）" % (bf,))
         else:
             lines.append("forward %s / backfill %s" % (fwd, bf))
         a = sh.get("all")
@@ -405,6 +446,14 @@ def main():
         return 4
     if fs.get("filled") is None or not fs.get("rows"):
         missing.append("forward_stats 字段解析失败（格式可能已变）")
+
+    # 候选断更检测：统计只反映 CSV 里的存量，候选停更时必须显式说清楚
+    fs["cand_last"] = csv_max_date(os.path.join(REAL, "paper_forward_live.csv"))
+    latest_trade = latest_trade_date(date_str)
+    lag = count_sessions(fs["cand_last"], latest_trade)
+    if lag > 0:
+        warnings.append("纸面前向候选停在 %s，最近交易日 %s，滞后 %d 个交易日（统计不含最近 %d 日）"
+                        % (fs["cand_last"], latest_trade, lag, lag))
 
     ex_path, ex_date, ex_fb = _pick(REAL, "paper_forward_exit_", date_str)
     ex = parse_exit(_read(ex_path)) if ex_path else None

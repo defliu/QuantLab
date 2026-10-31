@@ -78,6 +78,18 @@ def main():
     latest, warns = R.select_date("", 0)
     ok("select_date.latest", latest is not None and len(latest) == 10, str(latest))
 
+    ok("calendar.latest", R.latest_trade_date("2026-10-30") == "2026-10-30",
+       R.latest_trade_date("2026-10-30"))
+    ok("calendar.sessions", R.count_sessions("2026-10-23", "2026-10-30") == 5,
+       str(R.count_sessions("2026-10-23", "2026-10-30")))
+    ok("csv.max_date", R.csv_max_date(os.path.join(R.REAL, "paper_forward_live.csv")) == "2026-10-23",
+       R.csv_max_date(os.path.join(R.REAL, "paper_forward_live.csv")))
+    stale_body = R.build_body(fs, ex, sh, mark, d,
+                              ["纸面前向候选停在 2026-10-23，最近交易日 2026-10-30，滞后 5 个交易日"],
+                              [])
+    ok("body.stale_warning", "滞后 5 个交易日" in stale_body)
+    ok("body.cand_cutoff", "候选截止 2026-10-23" in stale_body)
+
     # 不存在的日期 → 无报告，退出 4，且不推送
     r = subprocess.run([sys.executable, os.path.join(HERE, "p16_paper_forward_report.py"),
                         "--date", "20990101", "--no-send"],
