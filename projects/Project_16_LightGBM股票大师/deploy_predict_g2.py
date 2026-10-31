@@ -68,14 +68,27 @@ def _append_live_dedup(rows):
     """幂等追加 paper_forward_live.csv：读现有 → concat → 按 (date, code) 去重 → 原子写回。
 
     修复 T-20260831（审计）指出的 8/28 重复追加 4 次：定时任务重入/重跑不再产生重复行。
+
+    2026-11-01 审计 P2：显式写 source 列，不靠读侧 `or "forward"` 兜底。
+    默认 forward（本脚本在信号日当天盘后落盘 = 真前向）；补跑/重算请显式传 source="backfill"。
     """
     new = pd.DataFrame(rows)
+    if "source" not in new.columns:
+        new["source"] = "forward"
+    fwd_dates = set()
     if os.path.exists(LIVE_LOG):
         old = pd.read_csv(LIVE_LOG, encoding="utf-8-sig")
+        if "source" not in old.columns:
+            old["source"] = "forward"
+        # 已有 forward 日期先记下来：去重 keep="last" 会让新来的 backfill 覆盖同 (date,code) 的 forward 行
+        fwd_dates = set(old.loc[old["source"] == "forward", "date"].astype(str))
         df = pd.concat([old, new], ignore_index=True)
     else:
         df = new
     df = df.drop_duplicates(subset=["date", "code"], keep="last")
+    # forward 是「当日盘后真实入表」的不可追溯属性：重跑不得把已记 forward 的行降级为 backfill
+    if fwd_dates:
+        df.loc[df["date"].astype(str).isin(fwd_dates), "source"] = "forward"
     tmp = LIVE_LOG + ".tmp"
     df.to_csv(tmp, index=False, encoding="utf-8-sig")
     os.replace(tmp, LIVE_LOG)

@@ -194,6 +194,9 @@ def main():
     # 统计观察期内候选的前向收益（真实 CSV schema：date,code,total_new,prob,entry,exit,ret,hold,rank）
     df = pd.read_csv(LIVE_CSV)
     df["date"] = pd.to_datetime(df["date"])
+    # 2026-11-01 审计 P2：排除事后重算的 backfill 行（不当 OOS 证据）
+    if "source" in df.columns:
+        df = df[df["source"] != "backfill"]
     t0 = pd.Timestamp(promoted_at[:10])
     after = df[df["date"] > t0]
     if "ret" not in after.columns:

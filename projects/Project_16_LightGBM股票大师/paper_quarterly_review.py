@@ -65,6 +65,11 @@ def _arm_rows(key):
         return pd.DataFrame(columns=["quarter", "date", "code", "ret", "bench", "excess"])
     if df is None or df.empty:
         return pd.DataFrame(columns=["quarter", "date", "code", "ret", "bench", "excess"])
+    # 2026-11-01 审计 P2：排除事后重算的 backfill 行（不当 OOS 证据）
+    if "source" in df.columns:
+        df = df[df["source"] != "backfill"]
+        if df.empty:
+            return pd.DataFrame(columns=["quarter", "date", "code", "ret", "bench", "excess"])
     rows = []
     for _, r in df.iterrows():
         if "rank" in df.columns and pd.notna(r.get("rank")) and int(r["rank"]) > rank_n:

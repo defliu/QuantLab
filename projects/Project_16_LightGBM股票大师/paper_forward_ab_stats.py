@@ -72,6 +72,9 @@ def main():
             print(f"{name:<14} 无文件")
             continue
         df = pd.read_csv(path, encoding="utf-8-sig")
+        # 2026-11-01 审计 P2：排除事后重算的 backfill 行（不当 OOS 证据）
+        if "source" in df.columns:
+            df = df[df["source"] != "backfill"]
         ret_map = load_open(hold)
         rets = []
         for _, r in df.iterrows():
