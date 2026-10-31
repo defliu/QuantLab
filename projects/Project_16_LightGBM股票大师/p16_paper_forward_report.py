@@ -235,13 +235,19 @@ def count_sessions(after, upto):
 
 
 def csv_max_date(path, col="date"):
-    """读 CSV 的日期列最大值（YYYY-MM-DD）；文件缺失/无数据返回空串。"""
+    """读 CSV 的日期列最大值（YYYY-MM-DD）；文件缺失/无数据返回空串。
+
+    默认排除 source=backfill 行：backfill 是事后重算，不能用来声称「候选已跟上」。
+    """
     import csv
     if not os.path.exists(path):
         return ""
     try:
         with io.open(path, "r", encoding="utf-8-sig", newline="") as f:
-            vals = [r.get(col, "").strip() for r in csv.DictReader(f)]
+            rows = list(csv.DictReader(f))
+        if rows and "source" in rows[0]:
+            rows = [r for r in rows if (r.get("source") or "forward") != "backfill"]
+        vals = [r.get(col, "").strip() for r in rows]
         vals = [v for v in vals if re.match(r"^\d{4}-\d{2}-\d{2}$", v)]
         return max(vals) if vals else ""
     except Exception:

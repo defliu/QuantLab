@@ -77,6 +77,12 @@ def main():
     # 2026-10-31：写入侧去重曾失效（10-23 出现 4 组重复，10-31 09:10 追加），
     # 统计侧兜底按 (date, code) 去重，防「候选累计 / 待回填」被重复行虚增。
     df = df.drop_duplicates(subset=["date", "code"], keep="last").reset_index(drop=True)
+    # 2026-10-31 口径断代：source=backfill 是事后重算（如 10-26~10-30 增量库断链期补跑），
+    # 不进 OOS 统计；forward（逐日实时记录）才是前向证据。
+    n_backfill = 0
+    if "source" in df.columns:
+        n_backfill = int((df["source"] == "backfill").sum())
+        df = df[df["source"] != "backfill"].reset_index(drop=True)
     # 2026-10-19：若台账含 ret_net（扣费净收益），统计改用净收益；毛收益保留为 ret_gross。
     if "ret_net" in df.columns:
         df["ret_gross"] = df["ret"]
@@ -132,7 +138,8 @@ def main():
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     md = [f"# g2 前向纸面验证统计 · {now}", "",
           f"> 数据源：主库最新 {main_last} | 增量最新 {inc_last} | 持有期 {args.hold or 'live'} 日 open→open",
-          f"> 口径：基准=同窗口全市场等权（与回测 market_daily 横截面等权同源，逐笔配对）", "",
+          f"> 口径：基准=同窗口全市场等权（与回测 market_daily 横截面等权同源，逐笔配对）",
+          f"> 样本口径：仅 source=forward（逐日实时记录）；已排除 backfill {n_backfill} 笔（事后重算，不作 OOS）", "",
           f"**已回填 {len(res)} 笔 / 待回填 {len(pending)} 笔 / 候选累计 {len(df)} 笔**", "",
           "| 维度 | 样本 | 绝对收益 | 基准 | 超额 | 胜率 | 超额胜率 | t值 |",
           "|---|---|---|---|---|---|---|---|"]

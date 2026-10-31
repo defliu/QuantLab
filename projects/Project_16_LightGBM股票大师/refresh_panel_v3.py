@@ -42,7 +42,9 @@ def build_merged():
     main_last = main.groupby("ts_code", sort=False).tail(1).set_index("ts_code")
     if not os.path.exists(INCR):
         print("  !! 无增量库，仅用主库")
-        return None
+        merged = main.set_index(["ts_code", "trade_date"]).sort_index()
+        merged.to_parquet(MERGED)
+        return MERGED
     incr = pd.read_parquet(INCR).reset_index()
     incr["trade_date"] = pd.to_datetime(incr["trade_date"])
     incr["ts_code"] = incr["ts_code"].astype(str)
@@ -65,8 +67,13 @@ def build_merged():
     main_max = main["trade_date"].max()
     incr = incr[incr["trade_date"] > main_max].copy()
     if len(incr) == 0:
+        # 增量库缺席/无新日期：仍落一份「仅主库」的合并视图，供 21f 影子臂等消费方使用
         print("  !! 增量无主库之后的新交易日，仅用主库")
-        return None
+        merged = main.set_index(["ts_code", "trade_date"]).sort_index()
+        merged.to_parquet(MERGED)
+        print("  合并日线 %d 行 | 最新 %s（仅主库）" % (
+            len(merged), merged.index.get_level_values("trade_date").max().date()))
+        return MERGED
     pre = incr["pre_close"].astype(float).replace(0, np.nan)
     incr["pct_chg"] = (incr["close"] / pre - 1.0) * 100.0
     for c in SLOW:

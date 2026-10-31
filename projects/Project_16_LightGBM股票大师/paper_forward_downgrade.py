@@ -162,6 +162,11 @@ def _eval_arm(key, hold, rank_n, check_only=False):
         return (0, None, None, None, None, None, False, False)
     if df is None or df.empty:
         return (0, None, None, None, None, None, False, False)
+    # 2026-10-31：source=backfill 是事后重算，不进降级闸评估（只看逐日实时记录的 forward 样本）
+    if "source" in df.columns:
+        df = df[df["source"] != "backfill"]
+        if df.empty:
+            return (0, None, None, None, None, None, False, False)
     for _, r in df.iterrows():
         if "rank" in df.columns and pd.notna(r.get("rank")) and int(r["rank"]) > rank_n:
             continue  # 实盘 TOP_N 口径（rank<=rank_n）

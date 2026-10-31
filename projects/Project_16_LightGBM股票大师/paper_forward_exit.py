@@ -226,6 +226,9 @@ def run(rules, top, hold):
 
     live = pd.read_csv(LIVE_LOG, encoding="utf-8-sig")
     live = live.drop_duplicates(subset=["date", "code"], keep="last").reset_index(drop=True)
+    # 2026-10-31：排除事后重算的 backfill 行（不当 OOS 证据）
+    if "source" in live.columns:
+        live = live[live["source"] != "backfill"].reset_index(drop=True)
     if "rank" not in live.columns:
         live["rank"] = np.nan
     if top == 3:
