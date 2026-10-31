@@ -56,7 +56,17 @@ def build_merged():
     incr = incr.rename(columns={"volume": "vol", "preClose": "pre_close"})
     incr["close"] = incr["close"].astype(float)
     incr["vol"] = incr["vol"].astype(float)
-    incr["amount"] = incr["amount"].astype(float)
+    # 2026-10-31 修复：主库 amount 是千元、增量库是元（差 1000 倍），统一到千元（训练口径）。
+    # 旧实现直接 concat → 面板 amount_ma5 在增量日跳变 log(1000)≈6.9，
+    # 训练数据被污染（10-19~10-29 中位 16.9~18.6 vs 历史 11.8），
+    # 且与 G2 服务端口径不一致。
+    incr["amount"] = incr["amount"].astype(float) / 1000.0
+    # 主库覆盖的日期以主库为准（真实估值/换手），增量只补主库之后的新交易日
+    main_max = main["trade_date"].max()
+    incr = incr[incr["trade_date"] > main_max].copy()
+    if len(incr) == 0:
+        print("  !! 增量无主库之后的新交易日，仅用主库")
+        return None
     pre = incr["pre_close"].astype(float).replace(0, np.nan)
     incr["pct_chg"] = (incr["close"] / pre - 1.0) * 100.0
     for c in SLOW:

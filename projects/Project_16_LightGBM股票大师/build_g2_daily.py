@@ -2,15 +2,17 @@
 """g2 盘后链路（步骤①）—— 为最新交易日构建 g2 模型的 43 特征快照。
 
 独立于 V1.1：不碰 run_scheduled.ps1 / deploy_predict.py / feature_panel_v3.parquet / lgb_model_v3.txt。
-数据分层（与 merge_live_features 一致）：
-  主库 D:/astock（周更权威，只读）+ data_live/incremental_daily.parquet（每日增量）
+数据分层（2026-10-31 修订）：
+  主库 D:/astock（Tushare 每日 17:40 追加，权威）为主；data_live/incremental_daily.parquet
+  仅补主库之后的新交易日（xtdata 断链期可完全缺席）。amount 统一到千元（训练面板口径）。
   → 重算 19 个量价特征（真实最新日）
   基础面板 feature_panel_v3_enh.parquet asof → 14 个财务/事件/行业特征（慢变量近似）
   D:/astock 周更因子（moneyflow / lhb / northbound / research / board）→ 10 个 g2 新因子（最新可用≤目标日，前向填充，诚实标注滞后）
 
 输出：data_live/g2_latest_features.parquet（43 特征，目标日，与 features_v3_g2_strong_real 同序）
 
-用法：python build_g2_daily.py --date 2026-08-25   （缺省取增量库最新日）
+用法：python build_g2_daily.py --date 2026-08-25   （缺省取主库/增量库较新日）
+      python build_g2_daily.py --date 20261030 --out %TEMP%/g2tmp/snap.parquet   （验证用，不写生产）
 """
 import argparse
 import json
@@ -114,6 +116,8 @@ def main():
                     help="对指定 ts_code 列表（逗号分隔）实时采集当日主力净额覆盖周更值；缺省仅周更")
     ap.add_argument("--realtime-f2-file", default=None,
                     help="从文件（每行一个 ts_code）读取实时采集 F2 的股票池")
+    ap.add_argument("--out", default=None,
+                    help="输出快照路径（默认 data_live/g2_latest_features.parquet；验证时指到临时目录）")
     args = ap.parse_args()
     os.makedirs(LIVE, exist_ok=True)
     feat_cols = json.load(open(G2_META, encoding="utf-8"))["feature_cols"]
@@ -125,20 +129,55 @@ def main():
 
     print("[1/6] 构造合并行情（主库 + 增量） ...")
     # float_share（流通股本，万股）用于 F6 估值反推（2026-09-03 补字段），不在 RAW_COLS
-    main_df = pd.read_parquet(DC.MAIN_DAILY, columns=RAW_COLS + ["float_share"]).reset_index()
+    main_df = pd.read_parquet(DC.MAIN_DAILY, columns=RAW_COLS + ["float_share", "pre_close"]).reset_index()
     main_df["trade_date"] = pd.to_datetime(main_df["trade_date"])
     main_df["ts_code"] = main_df["ts_code"].astype(str)
-    incr = pd.read_parquet(INCR)
-    incr["trade_date"] = pd.to_datetime(incr["trade_date"])
-    incr["ts_code"] = incr["ts_code"].astype(str)
-    # 增量库列名为 xtdata 风格 volume；RAW_COLS 用 vol。不 rename 会导致最新日 vol 全 NaN
-    # → vol_ratio_5_20/vol_ratio_5_20 等量价特征 train-serving skew（2026-09-02 修复，对齐 refresh_panel_v3）
-    if "volume" in incr.columns and "vol" not in incr.columns:
-        incr = incr.rename(columns={"volume": "vol"})
-    target = pd.Timestamp(args.date) if args.date else incr["trade_date"].max()
-    print(f"    主库到 {main_df['trade_date'].max().date()} | 增量到 {incr['trade_date'].max().date()} | 目标 {target.date()}")
-    main_last = main_df.sort_values(["ts_code", "trade_date"]).groupby("ts_code").tail(1).set_index("ts_code")
-    incr_full = incr.copy()
+    # 训练宇宙对齐（2026-10-31 修复）：build_features_v2 建面板时按
+    # universe_all_a.csv enabled ∩ is_st==0 ∩ 非 688 ∩ 非 4/8 开头（北交所）筛选，
+    # 而服务端此前用主库全量（含 688/北交所）→ 模型给训练中从未出现过的股票打分。
+    # 旧口径下 amount_ma5 失效掩盖了这一点；修复单位后北交所票会直接排到第一，必须同口径。
+    uni = pd.read_csv(DC.UNIVERSE)
+    uni_codes = set(uni[uni["enabled"] == True]["code"].astype(str))
+    uni_codes = set(c for c in uni_codes if not c.startswith("688") and not c.startswith(("4", "8")))
+    main_df = main_df[main_df["ts_code"].isin(uni_codes)]
+    main_df = main_df[main_df["is_st"] == 0]
+    main_max = main_df["trade_date"].max()
+    # 增量库可能不存在（xtdata 断链期），也可能与主库日期重叠
+    if os.path.exists(INCR):
+        incr = pd.read_parquet(INCR)
+        incr["trade_date"] = pd.to_datetime(incr["trade_date"])
+        incr["ts_code"] = incr["ts_code"].astype(str)
+        # 增量库列名为 xtdata 风格 volume；RAW_COLS 用 vol。不 rename 会导致最新日 vol 全 NaN
+        # → vol_ratio_5_20/vol_ratio_5_20 等量价特征 train-serving skew（2026-09-02 修复，对齐 refresh_panel_v3）
+        if "volume" in incr.columns and "vol" not in incr.columns:
+            incr = incr.rename(columns={"volume": "vol"})
+        if "preClose" in incr.columns and "pre_close" not in incr.columns:
+            incr = incr.rename(columns={"preClose": "pre_close"})
+        # 单位统一到「千元」（训练面板口径，2026-10-31 修复）：
+        # 主库 stock_daily.amount 是千元（Tushare），增量库是元（xtdata），差 1000 倍。
+        # 训练面板 feature_panel_v3 的 amount_ma5 中位 ≈11.8 = log1p(千元)，
+        # 模型 1212 个 amount_ma5 分裂阈值全部落在 8.75~14.30（千元区间）；
+        # 而旧实现直接喂元口径（≈18.3）→ 该特征恒在阈值右侧，等于失效。
+        if "amount" in incr.columns:
+            incr["amount"] = incr["amount"].astype(float) / 1000.0
+        incr = incr[incr["ts_code"].isin(uni_codes)]
+    else:
+        incr = pd.DataFrame(columns=["trade_date", "ts_code"])
+    incr_max = incr["trade_date"].max() if len(incr) else None
+    # 目标日取主库/增量库较新者（2026-10-31 修复）：原实现只取增量库最大日，
+    # 增量库断链时 target 被钉死在旧日期，主库已更新的交易日全部被 <=target 截掉，
+    # 导致 10-26~10-30 候选缺失、夜间把 10-23 候选贴成次日文件名。
+    if args.date:
+        target = pd.Timestamp(args.date)
+    else:
+        target = max(main_max, incr_max) if incr_max is not None else main_max
+    print("    主库到 %s | 增量到 %s | 目标 %s" % (
+        main_max.date(), incr_max.date() if incr_max is not None else "N/A", target.date()))
+    # 慢变量基准必须 asof 目标日：主库已推进时直接取全表最后一行会把未来值带进历史回填
+    main_asof = main_df[main_df["trade_date"] <= target]
+    main_last = main_asof.sort_values(["ts_code", "trade_date"]).groupby("ts_code").tail(1).set_index("ts_code")
+    # 主库覆盖的日期以主库为准（真实估值/换手），增量只补主库之后的新交易日
+    incr_full = incr[incr["trade_date"] > main_max].copy() if len(incr) else incr.copy()
     # F6 估值补字段（2026-09-03 修复）：增量库仅 OHLCV，逐日用主库每股慢变量 × 当日真实 close
     # 反推当日估值，替代「主库最后值前向填充」（后者让增量日估值滞后 11 天，pe_ttm/pb/circ_mv 全用 8/21 旧值）。
     # 口径已在主库 daily 交叉验证（d0→d1 反推 vs 官方，pe/pb/dv/mv 中位误差 0.00%）：
@@ -154,7 +193,7 @@ def main():
         bvps = incr_full["ts_code"].map(ml["close"] / ml["pb"].replace(0, np.nan))
         dps = incr_full["ts_code"].map(ml["dv_ttm"] * ml["close"])
         fs = incr_full["ts_code"].map(ml["float_share"])
-        incr_full["pct_chg"] = (incr_full["close"] / incr_full["preClose"] - 1.0).replace([np.inf, -np.inf], np.nan)
+        incr_full["pct_chg"] = (incr_full["close"] / incr_full["pre_close"] - 1.0).replace([np.inf, -np.inf], np.nan)
         incr_full["turnover_rate"] = incr_full["vol"] / fs
         incr_full["circ_mv"] = fs * incr_full["close"]
         incr_full["pe_ttm"] = incr_full["close"] / eps_ttm
@@ -164,10 +203,15 @@ def main():
         # volume_ratio 口径难精确复现（主库≈多日均量加权），保持主库最后值前向填充（滞后影响小）
         incr_full["volume_ratio"] = incr_full["ts_code"].map(ml["volume_ratio"])
     fill_cols = ["pct_chg", "turnover_rate", "volume_ratio", "pe_ttm", "pb", "dv_ttm", "circ_mv", "is_st"]
-    for c in fill_cols:
-        if c not in incr_full.columns and c in main_last.columns:
-            incr_full[c] = incr_full["ts_code"].map(main_last[c])
-    merged = pd.concat([main_df, incr_full[[c for c in ["ts_code", "trade_date"] + RAW_COLS if c in incr_full.columns]]], ignore_index=True)
+    if len(incr_full) and "ts_code" in incr_full.columns:
+        for c in fill_cols:
+            if c not in incr_full.columns and c in main_last.columns:
+                incr_full[c] = incr_full["ts_code"].map(main_last[c])
+    parts = [main_df]
+    if len(incr_full):
+        parts.append(incr_full[[c for c in ["ts_code", "trade_date", "pre_close"] + RAW_COLS
+                                if c in incr_full.columns]])
+    merged = pd.concat(parts, ignore_index=True)
     for c in RAW_COLS:
         if c not in merged.columns:
             merged[c] = np.nan
@@ -266,11 +310,15 @@ def main():
     comp["股票代码"] = comp["股票代码"].astype(str)
     comp["指数代码"] = comp["指数代码"].astype(str)
     stk2ind = comp.set_index("股票代码")["指数代码"].to_dict()
-    # 当日行业涨幅：用增量库当日成分股行情自算（成交额加权），与回测 ind_pct_ths 同属同花顺 881 分类
-    incr_day = incr[incr["trade_date"] == target].copy()
-    ind_pct_daily = RT.compute_industry_pct_daily(incr_day, comp)
+    # 当日行业涨幅：用「目标日合并行情」自算（成交额加权），与回测 ind_pct_ths 同属同花顺 881 分类
+    # 2026-10-31 修复：原先取增量库当日行，增量库断链时为空 → 静默回退周更 ths_daily；
+    # 现改用 merged（主库覆盖的日期以主库为准），并显式传 preClose（compute_industry_pct_daily
+    # 内部按 close/preClose 重算 pct_chg，主库 pct_chg 是百分数、不能直接当小数用）。
+    day_df = merged[merged["trade_date"] == target].copy()
+    day_df["preClose"] = day_df["pre_close"].astype(float)
+    ind_pct_daily = RT.compute_industry_pct_daily(day_df, comp)
     if ind_pct_daily:
-        print(f"    F5 当日行业涨幅自算成功：覆盖 {len(ind_pct_daily)} 个 881 板块（增量库 {target.date()}）")
+        print("    F5 当日行业涨幅自算成功：覆盖 %d 个 881 板块（合并行情 %s）" % (len(ind_pct_daily), target.date()))
     else:
         print("    !! F5 当日自算为空，回退 ths_daily 周更")
         td = pd.read_parquet(os.path.join(ASTOCK, "board", "ths_daily.parquet")).reset_index()
@@ -323,12 +371,14 @@ def main():
     latest["trade_date"] = target
     out = latest[["ts_code", "trade_date"] + feat_cols]
     out = out.replace([np.inf, -np.inf], np.nan)
-    out.to_parquet(OUT, index=False)
-    print(f"    快照: {OUT}  ({len(out):,} 行, {len(feat_cols)} 特征)")
+    out_path = args.out or OUT
+    out.to_parquet(out_path, index=False)
+    print("    快照: %s  (%d 行, %d 特征)" % (out_path, len(out), len(feat_cols)))
 
     print("[6/6] 说明")
-    print("    - 量价特征为最新真实日（增量库）；财务/事件/行业特征为基础面板 asof 近似")
-    print("    - F5 板块涨幅：增量库自算当日行业涨幅（成交额加权，881 板块，与回测同分类）")
+    print("    - 量价特征为最新真实日（主库，增量库仅补主库之后的新交易日）")
+    print("    - amount 统一为千元口径（与训练面板 amount_ma5 一致）")
+    print("    - F5 板块涨幅：合并行情自算当日行业涨幅（成交额加权，881 板块，与回测同分类）")
     print("    - F2 主力净额：Tushare moneyflow 每日快照主源（19:30 刷新至 T+1，零 skew 训练同口径）；未刷新/缺失时 --realtime-f2 指定新浪当日兜底")
     print("    - 其余 g2 新因子（lhb/北向/研报/行业资金流）为 D:/astock 周更最新可用值（诚实标注滞后）")
     print("    - 主数据 D:/astock 未修改；V1.1 资产未触碰")

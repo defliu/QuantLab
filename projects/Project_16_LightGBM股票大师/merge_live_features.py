@@ -110,13 +110,23 @@ def main():
     main_df = main_df.reset_index()
     main_df["trade_date"] = pd.to_datetime(main_df["trade_date"])
     main_df["ts_code"] = main_df["ts_code"].astype(str)
-    incr = pd.read_parquet(INCR)
-    incr["trade_date"] = pd.to_datetime(incr["trade_date"])
-    incr["ts_code"] = incr["ts_code"].astype(str)
-    print(f"    主库 {len(main_df):,} 行到 {main_df['trade_date'].max().date()} | 增量 {len(incr):,} 行 {incr['trade_date'].min().date()}~{incr['trade_date'].max().date()}")
+    if os.path.exists(INCR):
+        incr = pd.read_parquet(INCR)
+        incr["trade_date"] = pd.to_datetime(incr["trade_date"])
+        incr["ts_code"] = incr["ts_code"].astype(str)
+    else:
+        incr = pd.DataFrame(columns=["trade_date", "ts_code"])
+    main_max = main_df["trade_date"].max()
+    # 2026-10-31 修复：主库 amount 是千元、增量库是元（差 1000 倍），统一到千元（训练口径）；
+    # 且主库覆盖的日期以主库为准，增量只补主库之后的新交易日（否则增量行会覆盖主库真实估值）
+    if "amount" in incr.columns:
+        incr["amount"] = incr["amount"].astype(float) / 1000.0
+    incr = incr[incr["trade_date"] > main_max].copy()
+    print(f"    主库 {len(main_df):,} 行到 {main_max.date()} | 增量 {len(incr):,} 行（仅主库之后）")
 
-    # 主库每只最后一日快照（用于填充增量缺失的衍生字段）
-    main_last = main_df.sort_values(["ts_code", "trade_date"]).groupby("ts_code").tail(1).set_index("ts_code")
+    # 主库每只最后一日快照（asof 目标日，用于填充增量缺失的衍生字段）
+    main_asof = main_df[main_df["trade_date"] <= target]
+    main_last = main_asof.sort_values(["ts_code", "trade_date"]).groupby("ts_code").tail(1).set_index("ts_code")
     # 构造增量行：真实 OHLCV + 主库最后值填充其他字段
     incr_full = incr.copy()
     fill_cols = ["pct_chg", "turnover_rate", "volume_ratio", "pe_ttm", "pb", "dv_ttm",
