@@ -227,6 +227,16 @@ def latest_trade_date(on_or_before):
     return ds[-1] if ds else ""
 
 
+def prev_trade_date(d):
+    """严格早于 d 的最近交易日；无则返回空串。
+
+    17:05 日报的合理预期是「上一交易日」的候选：T 日候选由 20:05 g2_candidates_night
+    生成（16:55 时主库还没有 T 日收盘价），拿 T 日当基准会天天误报滞后 1 天。
+    """
+    ds = [x for x in _trade_dates() if x < d]
+    return ds[-1] if ds else ""
+
+
 def count_sessions(after, upto):
     """(after, upto] 之间的交易日数；任一端为空返回 0。"""
     if not after or not upto:
@@ -455,11 +465,11 @@ def main():
 
     # 候选断更检测：统计只反映 CSV 里的存量，候选停更时必须显式说清楚
     fs["cand_last"] = csv_max_date(os.path.join(REAL, "paper_forward_live.csv"))
-    latest_trade = latest_trade_date(date_str)
-    lag = count_sessions(fs["cand_last"], latest_trade)
+    expected = prev_trade_date(date_str) or date_str
+    lag = count_sessions(fs["cand_last"], expected)
     if lag > 0:
-        warnings.append("纸面前向候选停在 %s，最近交易日 %s，滞后 %d 个交易日（统计不含最近 %d 日）"
-                        % (fs["cand_last"], latest_trade, lag, lag))
+        warnings.append("纸面前向候选停在 %s，应到 %s（上一交易日），滞后 %d 个交易日"
+                        % (fs["cand_last"], expected, lag))
 
     ex_path, ex_date, ex_fb = _pick(REAL, "paper_forward_exit_", date_str)
     ex = parse_exit(_read(ex_path)) if ex_path else None

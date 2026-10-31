@@ -80,6 +80,8 @@ def main():
 
     ok("calendar.latest", R.latest_trade_date("2026-10-30") == "2026-10-30",
        R.latest_trade_date("2026-10-30"))
+    ok("calendar.prev", R.prev_trade_date("2026-10-30") == "2026-10-29",
+       R.prev_trade_date("2026-10-30"))
     ok("calendar.sessions", R.count_sessions("2026-10-23", "2026-10-30") == 5,
        str(R.count_sessions("2026-10-23", "2026-10-30")))
     ok("csv.max_date", R.csv_max_date(os.path.join(R.REAL, "paper_forward_live.csv")) == "2026-10-23",
