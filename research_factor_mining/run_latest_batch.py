@@ -14,7 +14,20 @@ CAND = os.path.join(HERE, "candidates")
 IC = os.path.join(HERE, "ic_screen")
 
 
+def _safe_stdout():
+    """报告里含 ✅/✗ 等非 GBK 字符，管道下默认 GBK 会抛 UnicodeEncodeError。
+
+    2026-09-19 起本脚本每周六 rc=1（Traceback 落在 run_latest_batch.py:37
+    print(line.rstrip()[:200])），ps1 据此推「S1/S2 周末批失败」假告警。
+    """
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except AttributeError:          # py<3.7
+        pass
+
+
 def main():
+    _safe_stdout()
     yaml_files = sorted(glob.glob(os.path.join(CAND, "batch_*.yaml")),
                         key=os.path.getmtime)
     if not yaml_files:
