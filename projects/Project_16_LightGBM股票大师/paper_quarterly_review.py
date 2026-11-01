@@ -70,6 +70,11 @@ def _arm_rows(key):
         df = df[df["source"] != "backfill"]
         if df.empty:
             return pd.DataFrame(columns=["quarter", "date", "code", "ret", "bench", "excess"])
+    # 2026-11-01：排除 amount 单位缺陷期的候选（caliber=contaminated_selection）
+    if "caliber" in df.columns:
+        df = df[df["caliber"] != "contaminated_selection"]
+        if df.empty:
+            return pd.DataFrame(columns=["quarter", "date", "code", "ret", "bench", "excess"])
     rows = []
     for _, r in df.iterrows():
         if "rank" in df.columns and pd.notna(r.get("rank")) and int(r["rank"]) > rank_n:

@@ -83,6 +83,14 @@ def main():
     if "source" in df.columns:
         n_backfill = int((df["source"] == "backfill").sum())
         df = df[df["source"] != "backfill"].reset_index(drop=True)
+    # 2026-11-01 口径打标：caliber=contaminated_selection 的候选生成受 amount 单位缺陷污染
+    # （增量库元 vs 主库千元，amount_ma5 被放大 log(1000)≈6.9；43f 模型该特征 1212 个分裂阈值
+    # 全落 8.75~14.30 ⇒ 元口径值 18.34 恒落同一侧，特征彻底失效）。收益数值本身有效，但
+    # **选出来的票不是模型本意**，不得进策略层 OOS 统计。详见 results/paper_forward_caliber_report.md。
+    n_contaminated = 0
+    if "caliber" in df.columns:
+        n_contaminated = int((df["caliber"] == "contaminated_selection").sum())
+        df = df[df["caliber"] != "contaminated_selection"].reset_index(drop=True)
     # 2026-10-19：若台账含 ret_net（扣费净收益），统计改用净收益；毛收益保留为 ret_gross。
     if "ret_net" in df.columns:
         df["ret_gross"] = df["ret"]
@@ -139,7 +147,8 @@ def main():
     md = [f"# g2 前向纸面验证统计 · {now}", "",
           f"> 数据源：主库最新 {main_last} | 增量最新 {inc_last} | 持有期 {args.hold or 'live'} 日 open→open",
           f"> 口径：基准=同窗口全市场等权（与回测 market_daily 横截面等权同源，逐笔配对）",
-          f"> 样本口径：仅 source=forward（逐日实时记录）；已排除 backfill {n_backfill} 笔（事后重算，不作 OOS）", "",
+          f"> 样本口径：仅 source=forward（逐日实时记录）；已排除 backfill {n_backfill} 笔（事后重算，不作 OOS）",
+          f"> 另排除 caliber=contaminated_selection {n_contaminated} 笔（amount 单位缺陷期，候选非模型本意）", "",
           f"**已回填 {len(res)} 笔 / 待回填 {len(pending)} 笔 / 候选累计 {len(df)} 笔**", "",
           "| 维度 | 样本 | 绝对收益 | 基准 | 超额 | 胜率 | 超额胜率 | t值 |",
           "|---|---|---|---|---|---|---|---|"]

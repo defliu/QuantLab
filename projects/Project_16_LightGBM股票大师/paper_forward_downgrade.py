@@ -167,6 +167,13 @@ def _eval_arm(key, hold, rank_n, check_only=False):
         df = df[df["source"] != "backfill"]
         if df.empty:
             return (0, None, None, None, None, None, False, False)
+    # 2026-11-01：caliber=contaminated_selection 的候选受 amount 单位缺陷污染（增量库元 vs
+    # 主库千元，43f 模型 amount_ma5 1212 个分裂阈值全落 8.75~14.30 ⇒ 元口径值恒落同一侧，
+    # 特征失效），选出的票不是模型本意，不进降级闸评估。详见 results/paper_forward_caliber_report.md。
+    if "caliber" in df.columns:
+        df = df[df["caliber"] != "contaminated_selection"]
+        if df.empty:
+            return (0, None, None, None, None, None, False, False)
     for _, r in df.iterrows():
         if "rank" in df.columns and pd.notna(r.get("rank")) and int(r["rank"]) > rank_n:
             continue  # 实盘 TOP_N 口径（rank<=rank_n）

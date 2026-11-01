@@ -44,8 +44,14 @@ def _append_live_dedup(log_csv, rows):
     """幂等追加 paper_forward_live.csv：读现有 → concat → 按 (date, code) 去重 → 原子写回。
 
     修复审计 T-20260831 指出的重复追加（8/28 重复 4 次）：定时任务重入/重跑不再产生重复行。
+    2026-11-01：自动打 caliber 标签（历史批次由 tag_paper_forward_caliber.py 回填）。
     """
     new = pd.DataFrame(rows)
+    # 2026-11-01 口径打标：候选生成口径。2026-11-01 起 amount 单位缺陷已修（commit a9cc881），
+    # 故新记录一律 forward；历史批次（8-28~10-31）由 tag_paper_forward_caliber.py 标
+    # contaminated_selection。不在这里硬编码日期，统一走同一个判据函数。
+    if "caliber" not in new.columns:
+        new["caliber"] = "forward"
     if os.path.exists(log_csv):
         old = pd.read_csv(log_csv, encoding="utf-8-sig")
         df = pd.concat([old, new], ignore_index=True)

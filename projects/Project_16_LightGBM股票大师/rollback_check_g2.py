@@ -197,6 +197,9 @@ def main():
     # 2026-11-01 审计 P2：排除事后重算的 backfill 行（不当 OOS 证据）
     if "source" in df.columns:
         df = df[df["source"] != "backfill"]
+    # 2026-11-01：排除 amount 单位缺陷期的候选（caliber=contaminated_selection）
+    if "caliber" in df.columns:
+        df = df[df["caliber"] != "contaminated_selection"]
     t0 = pd.Timestamp(promoted_at[:10])
     after = df[df["date"] > t0]
     if "ret" not in after.columns:

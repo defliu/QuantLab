@@ -81,7 +81,7 @@ GAP_VOL_RATIO = 3.3
 PICK_COLS = ["date", "source", "rank", "code", "prob", "tier_t0", "tier_open",
              "deploy_t0", "deploy_open", "entered", "skip_reason",
              "entry_date", "entry_open", "ret5", "ret10", "ret15",
-             "mfe15", "mae15"]
+             "mfe15", "mae15", "caliber"]
 DAY_COLS = ["date", "n_universe", "n_qualified", "top_prob", "tier_t0", "tier_open"]
 
 
@@ -611,6 +611,13 @@ def main():
         fwd_dates = set(picks_all.loc[picks_all["source"] == "forward", "date"]) | set(
             str(d) for d in forward_dates)
         picks_all.loc[picks_all["date"].isin(fwd_dates), "source"] = "forward"
+        # 2026-11-01 口径打标：caliber 是「当日候选生成口径」的不可追溯属性，一旦定标不重算。
+        # 新增行默认 forward（amount 单位缺陷已于 commit a9cc881 / 2026-10-31 修复）；
+        # 历史批次（8-28~10-31）由 tag_paper_forward_caliber.py 回填 contaminated_selection。
+        if "caliber" not in picks_all.columns:
+            picks_all["caliber"] = "forward"
+        else:
+            picks_all["caliber"] = picks_all["caliber"].fillna("forward")
         picks_all = _recompute_returns(picks_all, px, cal)
         picks_all = picks_all.sort_values(["date", "rank"])
     days_all = pd.concat([old_days, pd.DataFrame(new_days)], ignore_index=True) if len(old_days) else pd.DataFrame(new_days)

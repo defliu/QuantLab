@@ -229,6 +229,10 @@ def run(rules, top, hold):
     # 2026-10-31：排除事后重算的 backfill 行（不当 OOS 证据）
     if "source" in live.columns:
         live = live[live["source"] != "backfill"].reset_index(drop=True)
+    # 2026-11-01：排除 amount 单位缺陷期的候选（caliber=contaminated_selection），
+    # 那些票不是模型本意（43f 模型 amount_ma5 特征在元口径下 100% 失效）。
+    if "caliber" in live.columns:
+        live = live[live["caliber"] != "contaminated_selection"].reset_index(drop=True)
     if "rank" not in live.columns:
         live["rank"] = np.nan
     if top == 3:
