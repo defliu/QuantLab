@@ -7,6 +7,7 @@ SPEC：specs/V13口径对齐方案B落地_SPEC_20260930.md §3.2（T-20260929-00
   old臂 = <T>_selection_full.csv 中 total>=58 按 total 降序 Top5（旧链 09:45 重排产物）
   new臂 = D=max(final_list日期 < T) 的 <D>_final_list.csv 中 redline_pass 按 total 降序 Top5
           （跨节假日自动配对，如 09-30 final_list → 10-09 执行日）
+          D 必须是 T 的上一交易日；20:20 链断档时判 NOFILE（信号过期），**不复用旧信号**。
 两臂均不施加 position_filter（PF 是执行层正交件，live 两链都保留 lite，信号对比保持纯度）。
 
 收益口径：entry=执行日 T 开盘；exit=第 HOLD_DAYS(=5) 个交易日开盘；另记 ret_1d。
@@ -58,12 +59,37 @@ def _ts(d):
     return pd.Timestamp(d).strftime("%Y-%m-%d")
 
 
-def _sentinel(T, arm, kind, signal_date=""):
+def _sentinel(T, arm, kind, signal_date="", note=None):
+    if note is None:
+        note = "红线0过(空仓日)" if kind == EMPTY else "臂产物文件缺失"
     return {"exec_date": _ts(T), "arm": arm, "signal_date": signal_date, "ts_code": kind,
             "rank": 0, "total": np.nan, "model_prob": np.nan,
             "fillable": False, "entry": np.nan, "exit": np.nan,
-            "ret": np.nan, "ret_1d": np.nan,
-            "note": "红线0过(空仓日)" if kind == EMPTY else "臂产物文件缺失"}
+            "ret": np.nan, "ret_1d": np.nan, "note": note}
+
+
+_TRADING_DAYS = None
+
+
+def _trading_days():
+    """合并面板的交易日列表（缓存一次，供 prev_trading_day 用）。"""
+    global _TRADING_DAYS
+    if _TRADING_DAYS is None:
+        try:
+            daily, _, _ = PFWD.load_open_panel()
+            _TRADING_DAYS = sorted(set(pd.to_datetime(
+                daily.index.get_level_values(0)).normalize()))
+        except Exception as e:
+            print("    [WARN] 交易日历读取失败（new臂新鲜度闸将放行）: %s" % e)
+            _TRADING_DAYS = []
+    return _TRADING_DAYS
+
+
+def _prev_trading_day(T):
+    """T 的上一交易日；日历不可用或 T 之前无交易日时返回 None。"""
+    T = pd.Timestamp(T).normalize()
+    days = [d for d in _trading_days() if d < T]
+    return days[-1] if days else None
 
 
 def append_dedup(rows):
@@ -124,28 +150,94 @@ def record(T):
         rows.append(_sentinel(T, "new", NOFILE))
     else:
         D = max(fl_dates)
-        fl = pd.read_csv(os.path.join(SELECT_DIR, "%s_final_list.csv" % D.strftime("%Y%m%d")),
-                         encoding="utf-8-sig", dtype={"ts_code": str})
-        if "redline_pass" not in fl.columns:
-            print("    [WARN] new臂 final_list 无 redline_pass 列")
-            rows.append(_sentinel(T, "new", NOFILE, signal_date=_ts(D)))
+        # 新鲜度闸（2026-11-01 立）：final_list 是「D 日 20:20 产物服务 D 的下一交易日」，
+        # D 必须是 T 的上一交易日。20:20 链断档时旧实现会无限复用最后一期产物——
+        # 2026-10-24~10-29 无 final_list，补录 10-26~10-30 时同 3 只票被记成 5 个独立信号，
+        # 虚增 new 臂样本且收益完全重复。宁缺勿假：判 NOFILE（note 写明过期），不复用。
+        prev_T = _prev_trading_day(T)
+        if prev_T is not None and D < prev_T:
+            print("    [SKIP] new臂 final_list 过期：最新 %s < 上一交易日 %s（20:20 链断档），不复用旧信号"
+                  % (D.date(), prev_T.date()))
+            rows.append(_sentinel(T, "new", NOFILE, signal_date=_ts(D),
+                                  note="信号过期(final_list %s < 上一交易日 %s)" % (D.date(), prev_T.date())))
         else:
-            fl = fl[fl["redline_pass"].astype(str).str.lower() == "true"]
-            fl = fl.sort_values("total", ascending=False).head(TOP_N)
-            if len(fl) == 0:
-                print("    new臂红线 %.0f 过滤后 0 只（空仓日，信号日 %s）" % (REDLINE, D.date()))
-                rows.append(_sentinel(T, "new", EMPTY, signal_date=_ts(D)))
-            else:
-                for rk, (_, s) in enumerate(fl.iterrows(), start=1):
-                    rows.append({"exec_date": _ts(T), "arm": "new", "signal_date": _ts(D),
-                                 "ts_code": s["ts_code"], "rank": rk, "total": float(s["total"]),
-                                 "model_prob": float(s["model_prob"]) if "model_prob" in fl.columns else np.nan,
-                                 "fillable": True, "entry": np.nan, "exit": np.nan,
-                                 "ret": np.nan, "ret_1d": np.nan, "note": ""})
+            _record_new_arm(T, D, rows)
     append_dedup(rows)
     n_old = sum(1 for r in rows if r["arm"] == "old" and r["ts_code"] not in (EMPTY, NOFILE))
     n_new = sum(1 for r in rows if r["arm"] == "new" and r["ts_code"] not in (EMPTY, NOFILE))
     print("    记录完成：old臂 %d 只 | new臂 %d 只 → %s" % (n_old, n_new, os.path.basename(LOG_CSV)))
+
+
+def _record_new_arm(T, D, rows):
+    """new 臂：读 <D>_final_list.csv，红线过滤后 Top5 写入 rows（D 的新鲜度由调用方把关）。"""
+    fl = pd.read_csv(os.path.join(SELECT_DIR, "%s_final_list.csv" % D.strftime("%Y%m%d")),
+                     encoding="utf-8-sig", dtype={"ts_code": str})
+    if "redline_pass" not in fl.columns:
+        print("    [WARN] new臂 final_list 无 redline_pass 列")
+        rows.append(_sentinel(T, "new", NOFILE, signal_date=_ts(D)))
+        return
+    fl = fl[fl["redline_pass"].astype(str).str.lower() == "true"]
+    fl = fl.sort_values("total", ascending=False).head(TOP_N)
+    if len(fl) == 0:
+        print("    new臂红线 %.0f 过滤后 0 只（空仓日，信号日 %s）" % (REDLINE, D.date()))
+        rows.append(_sentinel(T, "new", EMPTY, signal_date=_ts(D)))
+        return
+    for rk, (_, s) in enumerate(fl.iterrows(), start=1):
+        rows.append({"exec_date": _ts(T), "arm": "new", "signal_date": _ts(D),
+                     "ts_code": s["ts_code"], "rank": rk, "total": float(s["total"]),
+                     "model_prob": float(s["model_prob"]) if "model_prob" in fl.columns else np.nan,
+                     "fillable": True, "entry": np.nan, "exit": np.nan,
+                     "ret": np.nan, "ret_1d": np.nan, "note": ""})
+
+
+def _latest_panel_date():
+    """合并口径的最新交易日（主库 ∪ 增量，增量优先；任一缺席不阻断）。
+
+    2026-11-01 修：原实现只看 data_live/incremental_daily.parquet。xtdata_update 自
+    10-26 起连不上行情服务 → 增量库冻结在 10-23，而主库 D:/astock 由
+    Quant_Astock_DailyTushare_1740（工作日 17:40）每日补到当日 ⇒ 每晚都打
+    「增量库最新日 2026-10-23 < 今日」并跳过 record，双臂自 10-26 起 0 条新记录、
+    每晚还因同一单源误判 exit 2。这不是信号问题，是取数口径问题。
+    与 build_g2_daily.py 2026-10-31 的同款修复（target=max(主库, 增量)）保持一致。
+
+    返回 (T, main_last, inc_last)，T 为 None 表示两边都读不到。
+    """
+    main_last, inc_last = None, None
+    try:
+        idx = DC.read_main_daily(columns=["close"]).index
+        main_last = pd.Timestamp(sorted(set(idx.get_level_values(0)))[-1]).normalize()
+    except Exception as e:
+        print("    [WARN] 主库最新交易日读取失败: %s" % e)
+    if os.path.isfile(INCR):
+        try:
+            inc = pd.read_parquet(INCR, columns=["trade_date"])
+            inc_last = pd.to_datetime(inc["trade_date"]).max().normalize()
+        except Exception as e:
+            print("    [WARN] 增量库最新交易日读取失败: %s" % e)
+    cands = [d for d in (main_last, inc_last) if d is not None]
+    if not cands:
+        return None, main_last, inc_last
+    return max(cands), main_last, inc_last
+
+
+def catchup_record(T):
+    """补录：合并面板中晚于 log 最新执行日、且不晚于 T 的每个交易日逐日 record。
+
+    幂等（append_dedup 按 (exec_date, arm, ts_code) 去重 keep last），可反复跑。
+    用途：增量库冻结期间漏记的执行日，在产品齐备后补回，避免样本白白缺口。
+    """
+    if not os.path.exists(LOG_CSV):
+        return
+    last = pd.to_datetime(pd.read_csv(LOG_CSV, encoding="utf-8-sig",
+                                      usecols=["exec_date"])["exec_date"]).max().normalize()
+    daily, _, _ = PFWD.load_open_panel()
+    days = [d for d in sorted(set(daily.index.get_level_values(0))) if last < d <= T]
+    if not days:
+        print("    补录：无缺口（log 最新执行日 %s）" % last.date())
+        return
+    print("[1b] 补录 %d 个执行日：%s → %s" % (len(days), days[0].date(), days[-1].date()))
+    for d in days:
+        record(d)
 
 
 def backfill(hold):
@@ -261,11 +353,17 @@ def report(hold):
           "> 生成：%s | SPEC：specs/V13口径对齐方案B落地_SPEC_20260930.md §3.2" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
           "> 口径：old臂=执行日T 09:45重排名单(total≥58 Top5) vs new臂=T-1晚 final_list(redline Top5)；",
           "> 两臂统一执行日 T 开盘入场、第 %d 个交易日开盘退出；均不施加 position_filter。" % hold, "",
+          "> **跟踪口径（2026-11-01 拍板「跑新臂」）**：new臂（T-1 晚 final_list）= 待验证的候选主臂；",
+          "> old臂（09:45 重排）= 现役生产口径，保留作配对对照（生产 V1.3 换仓读 `_selection_full.csv`）。", "",
           "## 注记（诚实偏差）",
           "- old臂实盘实际 09:45 入场，纸面统一 T 开盘（口径可比前提）",
           "- 一字涨停无法用 open 面板判定（诚实降级，可能高估两臂成交率）",
           "- 停牌/无量行 fillable=False 已剔除统计",
           "- new臂 F6 在 daily_basic 缺失时回退面板口径（见 final_list.meta.json f6_source）",
+          "- **口径污染窗口（2026-10-23 ~ 2026-10-31）**：增量库冻结（10-23 后无增量）、`amount` 元/千元混用、",
+          "  训练宇宙未筛、final_list 的 F3 结构性钉在 4.0（面板缺 ex_days_since/fc_pchange/dv_year_sum）、",
+          "  F5 全 neutral_5.0——均已 2026-10-31 修复并重建面板。**该窗口内的 new臂收益不可用于定罪设计**，",
+          "  只作历史记录；干净前向窗口自 2026-11-03 起算。",
           ""]
 
     md.append("## 单臂统计（5日 open→open）")
@@ -343,12 +441,19 @@ def report(hold):
     with open(REPORT_MD, "w", encoding="utf-8") as f:
         f.write("\n".join(md))
     print("    报告: %s" % REPORT_MD)
-    # 停更复检（report 单独跑时也守纪律）
+    # 停更复检（report 单独跑时也守纪律）——2026-11-01 改合并口径，原只读增量库
+    # 自 10-26 起必误报 stale（增量冻结在 10-23，主库其实是当日的）。
     stale = False
-    if os.path.isfile(INCR):
-        inc = pd.read_parquet(INCR)
-        inc_max = pd.to_datetime(inc["trade_date"]).max()
-        gap = (pd.Timestamp.today().normalize() - inc_max).days
+    T, main_last, inc_last = _latest_panel_date()
+    if T is None:
+        print("    停更复检：主库与增量库均不可读 → 判 stale")
+        stale = True
+    else:
+        gap = (pd.Timestamp.today().normalize() - T).days
+        print("    停更复检：合并面板最新 %s（主库 %s / 增量 %s），距今 %d 天" % (
+            T.date(),
+            main_last.date() if main_last is not None else "-",
+            inc_last.date() if inc_last is not None else "-", gap))
         if gap > 5:
             stale = True
     return stale
@@ -358,24 +463,30 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--hold", type=int, default=HOLD_DAYS)
     ap.add_argument("--no-record", action="store_true", help="只 backfill + report（不记录今日）")
+    ap.add_argument("--catchup", action="store_true",
+                    help="补录 log 最新执行日之后、合并面板已覆盖的全部交易日（幂等）")
     args = ap.parse_args()
 
     if not os.path.isdir(RESULTS):
         os.makedirs(RESULTS)
 
     if not args.no_record:
-        if not os.path.isfile(INCR):
-            print("!! FAIL-LOUD: incremental_daily.parquet 不存在（16:30 链未跑）")
+        T, main_last, inc_last = _latest_panel_date()
+        if T is None:
+            print("!! FAIL-LOUD: 主库与增量库均不可读，无法判定执行日")
             sys.exit(1)
-        inc = pd.read_parquet(INCR)
-        T = pd.to_datetime(inc["trade_date"]).max()
+        print("    数据源: 主库最新 %s | 增量最新 %s | 记录基准 %s" % (
+            main_last.date() if main_last is not None else "-",
+            inc_last.date() if inc_last is not None else "-", T.date()))
         today = pd.Timestamp.today().normalize()
         if T < today:
-            print("[SKIP] 记录：增量库最新日 %s < 今日 %s（非交易日或 16:30 链未跑），仅 backfill+report"
+            print("[SKIP] 记录：合并面板最新日 %s < 今日 %s（非交易日或数据链未跑），仅 backfill+report"
                   % (T.date(), today.date()))
         else:
             print("[1/3] 记录执行日 %s 双臂选股..." % T.date())
             record(T)
+        if args.catchup:
+            catchup_record(T)
 
     print("[2/3] 回填收益（entry/exit/ret/ret_1d）...")
     stale = backfill(args.hold)
