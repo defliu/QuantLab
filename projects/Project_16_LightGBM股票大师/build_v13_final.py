@@ -6,14 +6,19 @@ SPEC：specs/V13口径对齐方案B落地_SPEC_20260930.md（T-20260929-006）�
   池 = 模型 prob Top10（非 combo）→ scorecard_real 真实评分卡 → 红线 58 → total 降序 Top5。
 真实数据 asof = 信号日当日收盘后（无前视）：
   F2 main_net   : 新浪（主，与回测 fund_flow_real 同源家族）→ Tushare moneyflow 兜底（19:30 已刷）
-  F5 industry_pct: incremental_daily 真实 pct_chg × stock_basic.industry 等权均值（同 build_panel_v3_sc）
+  F5 industry_pct: 行情源真实 pct_chg × stock_basic.industry 等权均值（同 build_panel_v3_sc）
+                   行情源 = 主库 D:/astock/daily（17:40 Tushare 日刷）优先 → incremental_daily 兜底
   F6 est        : daily_basic（Tushare 日刷 20:05）→ 缺失回退面板 pe_ttm/turn_ma5（scorecard_real 内置）
-  volume_ratio  : incr 真实 volume / 主库前5日 vol 均值（回测用主库预计算列，此处现算，诚实偏差见 SPEC §2）
+  volume_ratio  : 信号日真实 vol / 主库前5日 vol 均值（回测用主库预计算列，此处现算，诚实偏差见 SPEC §2）
+
+2026-10-31 数据源修正（T-20261031-003 同源）：incremental_daily 自 10-23 断流（xtdata 连不上行情服务），
+旧实现把「增量库最新日」当闸 → 每晚 [SKIP] 且 exit=0，纸面链静默停摆 5 个交易日。现改为主库优先、
+增量库兜底，两库均无当日则 fail-loud（不再静默 SKIP 成假绿）。
 
 PAPER 阶段红线：不接 rebalance、不下单、不改任何生产文件（只新增 <T>_final_list.csv/.meta.json）。
 
 用法：
-  python build_v13_final.py                 # 信号日 = 增量库最新日（非交易日自动 [SKIP]）
+  python build_v13_final.py                 # 信号日 = 行情最新日（主库/增量库取较新；非交易日自动 [SKIP]）
   python build_v13_final.py --date 2026-09-30   # 研究模式：显式指定信号日
   python build_v13_final.py --dry-run       # 只打印不落盘
 """
@@ -36,6 +41,7 @@ from g2_realtime import fetch_main_net_sina
 PROJ = DC.PROJECT_DIR
 SELECT_DIR = os.path.join(DC.DATA_DIR, "selections")
 INCR = os.path.join(DC.LIVE_DIR, "incremental_daily.parquet")
+MAIN_DAILY = os.path.join(DC.ASTOCK_DIR, "daily", "stock_daily.parquet")
 SNAP = os.path.join(DC.LIVE_DIR, "latest_features.parquet")
 MONEYFLOW = os.path.join(DC.ASTOCK_DIR, "moneyflow", "moneyflow.parquet")
 STOCK_BASIC = os.path.join(DC.BASIC_DIR, "stock_basic.parquet")
@@ -62,19 +68,82 @@ def fail(msg):
     sys.exit(1)
 
 
-def load_incr():
-    if not os.path.isfile(INCR):
-        fail("incremental_daily.parquet 不存在（16:30 链未跑）")
-    inc = pd.read_parquet(INCR)
-    inc["trade_date"] = pd.to_datetime(inc["trade_date"])
-    inc["ts_code"] = inc["ts_code"].astype(str)
-    return inc
+def load_market_day(target):
+    """信号日全天行情（ts_code / close / pre_close / vol），主库优先、增量库兜底。
+
+    2026-10-31 修（T-20261031-003 同源）：增量库 incremental_daily 自 10-23 起断流
+    （xtdata 连不上行情服务），旧实现以「增量库最新日 < 今日」为闸 → 每晚 [SKIP] 且 exit=0，
+    纸面链静默停摆 5 个交易日。主库 D:/astock/daily 由 Quant_Astock_DailyTushare_1740
+    （工作日 17:40）每日补到当日，与 build_g2_daily 的 max(主库, 增量) 口径一致。
+
+    返回 (day_df, source)；day_df 列：ts_code(str) / close / pre_close / vol。
+    **单位**：主库 vol 与增量库 volume 均为「手」（000001.SZ 2026-10-23 实测 1448805.6 vs
+    1448806）；仅 amount 不同（主库千元 / 增量库元，差 1000 倍，本函数不取 amount）。
+    两库均未覆盖 → fail-loud（20:20 时主库应已含当日）。
+    """
+    main_err = ""
+    try:
+        if os.path.isfile(MAIN_DAILY):
+            m = pd.read_parquet(MAIN_DAILY, columns=["close", "pre_close", "vol"])
+            if not isinstance(m.index, pd.MultiIndex):
+                m = m.set_index(["trade_date", "ts_code"])
+            m.index.names = ["trade_date", "ts_code"]
+            m = m[m.index.get_level_values("trade_date") == target]
+            if len(m):
+                d = m.reset_index()
+                d["ts_code"] = d["ts_code"].astype(str)
+                return d[["ts_code", "close", "pre_close", "vol"]], "main"
+            main_err = "主库无 %s" % target.date()
+    except Exception as e:
+        main_err = "主库读取失败: %s" % e
+    if os.path.isfile(INCR):
+        inc = pd.read_parquet(INCR)
+        inc["trade_date"] = pd.to_datetime(inc["trade_date"])
+        inc = inc[inc["trade_date"] == target]
+        if len(inc):
+            inc = inc[inc["suspendFlag"].fillna(0) == 0]
+            d = pd.DataFrame({
+                "ts_code": inc["ts_code"].astype(str).values,
+                "close": inc["close"].values,
+                "pre_close": inc["preClose"].values,
+                "vol": inc["volume"].values,   # 增量库 volume 单位=手，与主库 vol 同量纲
+            })
+            print("    [WARN] 行情走增量库兜底（%s）" % (main_err or "主库缺该日"))
+            return d, "incr"
+    fail("主库与增量库均无信号日 %s 行情（%s）—— 数据链断裂，不落盘" %
+         (target.date(), main_err or "增量库无该日"))
 
 
-def compute_volume_ratio_real(pool_codes, target, inc):
-    """今日真实量比 = incr 今日 volume / 主库（+周增量）前5个交易日 vol 均值。
+def latest_market_date():
+    """最近可用行情日（主库 / 增量库取较新），返回 (Timestamp, source)。"""
+    cands = []
+    try:
+        if os.path.isfile(MAIN_DAILY):
+            idx = pd.read_parquet(MAIN_DAILY, columns=["close"]).index
+            if isinstance(idx, pd.MultiIndex):
+                cands.append(("main", pd.Timestamp(idx.get_level_values("trade_date").max())))
+            else:
+                d = pd.read_parquet(MAIN_DAILY, columns=["trade_date"])
+                cands.append(("main", pd.Timestamp(d["trade_date"].max())))
+    except Exception as e:
+        print("    [WARN] 主库最新日读取失败: %s" % e)
+    try:
+        if os.path.isfile(INCR):
+            d = pd.read_parquet(INCR, columns=["trade_date"])
+            cands.append(("incr", pd.Timestamp(d["trade_date"].max())))
+    except Exception as e:
+        print("    [WARN] 增量库最新日读取失败: %s" % e)
+    if not cands:
+        fail("主库与增量库均不可读（D:/astock/daily + incremental_daily）")
+    src, d = max(cands, key=lambda x: x[1])
+    return d, src
 
-    量比为比率，分子分母同单位（手）则量纲无关；回测用主库预计算列，此处现算（诚实偏差）。
+
+def compute_volume_ratio_real(pool_codes, target, day):
+    """今日真实量比 = 信号日 vol / 主库（+周增量）前5个交易日 vol 均值。
+
+    day 由 load_market_day() 提供（主库 vol / 增量库 volume 均为「手」，同量纲）；
+    回测用主库预计算列，此处现算（诚实偏差见 SPEC §2）。
     """
     daily = DC.read_main_daily(columns=["vol"])
     dates_all = sorted(set(daily.index.get_level_values(0)))
@@ -91,7 +160,7 @@ def compute_volume_ratio_real(pool_codes, target, inc):
             out[code] = np.nan
             continue
         out[code] = float(s.mean())
-    today_vol = inc[inc["trade_date"] == target].set_index("ts_code")["volume"]
+    today_vol = day.set_index("ts_code")["vol"]
     vr = {}
     for code in pool_codes:
         ma = out.get(code)
@@ -100,7 +169,7 @@ def compute_volume_ratio_real(pool_codes, target, inc):
     return vr
 
 
-def fetch_main_net(pool_codes, target, inc):
+def fetch_main_net(pool_codes, target):
     """F2 主力净额（元）：新浪主源（回测同源家族）→ Tushare moneyflow 兜底 → NaN 中性 5 分。"""
     src, vals = {}, {}
     try:
@@ -142,9 +211,10 @@ def fetch_main_net(pool_codes, target, inc):
     return vals, src
 
 
-def compute_industry_pct(pool_codes, target, inc):
-    """F5 行业当日涨幅：incr 真实 pct_chg（close/preClose-1）× stock_basic.industry 等权均值。
+def compute_industry_pct(pool_codes, target, day, src_tag):
+    """F5 行业当日涨幅：信号日真实涨跌幅（close/pre_close-1）× stock_basic.industry 等权均值。
 
+    day/src_tag 由 load_market_day() 提供（主库优先、增量兜底，2026-10-31 修）；
     公式与 build_panel_v3_sc（回测面板 industry_pct 来源）一致。
     """
     if not os.path.isfile(STOCK_BASIC):
@@ -156,20 +226,20 @@ def compute_industry_pct(pool_codes, target, inc):
         print("    [WARN] stock_basic 无 industry 列，F5 全走中性 5 分")
         return {c: np.nan for c in pool_codes}, {c: "" for c in pool_codes}
     ind_map = basic.set_index("ts_code")["industry"].to_dict()
-    day = inc[inc["trade_date"] == target].copy()
-    day["pct"] = np.where(day["preClose"] > 0, day["close"] / day["preClose"] - 1.0, np.nan)
+    day = day.copy()
+    day["pct"] = np.where(day["pre_close"] > 0, day["close"] / day["pre_close"] - 1.0, np.nan)
     day = day.dropna(subset=["pct"])
     day["industry"] = day["ts_code"].map(ind_map)
     day = day.dropna(subset=["industry"])
     if len(day) < 100:
-        fail("F5 行业涨幅基数异常（有效行 %d < 100）—— 增量库可能不新鲜" % len(day))
+        fail("F5 行业涨幅基数异常（有效行 %d < 100）—— 行情源 %s 可能不新鲜" % (len(day), src_tag))
     ind_mean = day.groupby("industry")["pct"].mean()
     vals, src = {}, {}
     for code in pool_codes:
         ind = ind_map.get(code)
         if ind is not None and ind in ind_mean.index:
             vals[code] = float(ind_mean[ind]) * 100.0  # score_f5 阈值是百分数口径（>3 / >1.5）
-            src[code] = "incr_eqw"
+            src[code] = "%s_eqw" % src_tag
         else:
             vals[code] = np.nan
             src[code] = ""
@@ -231,23 +301,23 @@ def crosscheck_proxy(pool_out, target):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--date", default=None, help="信号日 YYYY-MM-DD（默认增量库最新日）")
+    ap.add_argument("--date", default=None, help="信号日 YYYY-MM-DD（默认行情最新日：主库/增量库取较新）")
     ap.add_argument("--top", type=int, default=TOP_N)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
-    inc = load_incr()
-    inc_max = inc["trade_date"].max()
+    mkt_max, mkt_src = latest_market_date()
     if args.date:
         target = pd.Timestamp(args.date)
     else:
-        target = inc_max
+        target = mkt_max
         today = pd.Timestamp(datetime.date.today())
-        if inc_max < today:
-            print("[SKIP] 增量库最新日 %s < 今日 %s（非交易日或 16:30 链未跑）" % (inc_max.date(), today.date()))
+        if mkt_max < today:
+            print("[SKIP] 行情最新日 %s（%s）< 今日 %s（非交易日或 17:40 主库链未跑）" % (
+                mkt_max.date(), mkt_src, today.date()))
             return 0
-    if target != inc_max:
-        print("[SKIP] 指定日 %s 非增量库最新日 %s（研究模式请直接用最新日）" % (target.date(), inc_max.date()))
+    if target != mkt_max:
+        print("[SKIP] 指定日 %s 非行情最新日 %s（研究模式请直接用最新日）" % (target.date(), mkt_max.date()))
         return 0
 
     print("[1/6] 加载快照 + 模型（与 16:30 deploy_predict 同源）...")
@@ -270,9 +340,11 @@ def main():
     pool_codes = list(pool["ts_code"])
 
     print("[3/6] 真实数据接入（asof 信号日，无前视）...")
-    vr = compute_volume_ratio_real(pool_codes, target, inc)
-    mn, mn_src = fetch_main_net(pool_codes, target, inc)
-    ip, ip_src = compute_industry_pct(pool_codes, target, inc)
+    mkt_day, mkt_day_src = load_market_day(target)
+    print("    行情源 %s | %d 只 | 信号日 %s" % (mkt_day_src, len(mkt_day), target.date()))
+    vr = compute_volume_ratio_real(pool_codes, target, mkt_day)
+    mn, mn_src = fetch_main_net(pool_codes, target)
+    ip, ip_src = compute_industry_pct(pool_codes, target, mkt_day, mkt_day_src)
     pool["volume_ratio"] = pool["ts_code"].map(vr)
     pool["main_net"] = pool["ts_code"].map(mn)
     pool["industry_pct"] = pool["ts_code"].map(ip)
@@ -352,12 +424,13 @@ def main():
             "model": {"path": model_path, "sha256_16": sha256_of(model_path)},
             "snapshot": {"path": SNAP, "sha256_16": sha256_of(SNAP)},
             "data_max_date": {
-                "incremental": str(inc_max.date()),
+                "market": str(mkt_max.date()),
+                "market_source": mkt_src,
                 "daily_basic": str(db_max.date()) if db_max is not None else None,
                 "moneyflow": None,
             },
             "f2_source_counts": {k: sum(1 for v in mn_src.values() if v == k) for k in ("sina", "tushare_mf", "")},
-            "f5_source": "incr_eqw(stock_basic.industry)",
+            "f5_source": "%s_eqw(stock_basic.industry)" % mkt_day_src,
             "f6_source": f6_src,
             "paper_phase": True,
         }

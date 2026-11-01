@@ -22,6 +22,7 @@ KEYS_PATH = "D:/QuantLab/config/data_source_keys.json"
 CACHE_DIR = "D:/QuantLab/projects/Project_16_LightGBM股票大师/data/tushare_cache"
 SW_L1_PATH = "D:/astock/index/sw_l1_daily.parquet"
 INCR_DAILY_PATH = "D:/QuantLab/projects/Project_16_LightGBM股票大师/data_live/incremental_daily.parquet"
+MAIN_DAILY_PATH = "D:/astock/daily/stock_daily.parquet"
 
 _token = None
 _pro = None
@@ -186,27 +187,52 @@ def _load_sw_membership():
 
 def sw_l1_pct_map(codes, asof):
     """本地自算候选的申万一级行业信号日涨幅（对齐回测 scorecard_real 口径，T-20261024 A 方案）：
-    sw_l1_daily 成分（静态）+ incremental_daily（信号日 asof 当天个股 close/preClose）等权自算。
+    sw_l1_daily 成分（静态）+ 信号日 asof 当天个股 close/preClose 等权自算。
+    数据源（2026-10-31 修）：主库 D:/astock/daily 优先、增量库兜底（增量库自 10-23 断流）。
     asof=信号日（候选 CSV trade_date），不再忽略——精确取信号日全天数据，非增量库最新日。
-    新鲜度：信号日距今日历 lag<=4（覆盖周末+节假日容错）；增量库未覆盖信号日 → 返回 {}
+    新鲜度：信号日距今日历 lag<=4（覆盖周末+节假日容差）；两库均未覆盖信号日 → 返回 {}
     （review_full 侧回退中性 5.0，与回测 score_f5(nan) 行为一致）。
     返回 {ts_code: {"sw_l1": 行业名, "pct": float, "asof": YYYYMMDD}}；成分缺失/不新鲜/失败返回 {}。"""
     try:
         mem = _load_sw_membership()
         if not mem:
             return {}
-        inc = pd.read_parquet(INCR_DAILY_PATH)
-        inc = inc[inc["suspendFlag"].fillna(0) == 0]
         asof_ts = pd.Timestamp(str(asof))
         today = _today()
         lag = (today - asof_ts).days
         if lag < 0 or lag > 4:
             print("    [tushare_source] 行业自算信号日 %s 距今 lag=%d 超界(0~4)，跳过" % (asof, lag))
             return {}
-        if not len(inc[inc["trade_date"] == asof_ts]):
-            print("    [tushare_source] 增量库未覆盖信号日 %s（最新 %s），行业自算跳过"
-                  % (asof, pd.Timestamp(inc["trade_date"].max()).date()))
-            return {}
+        # 2026-10-31 修：增量库自 10-23 起断流（xtdata 连不上），改「主库优先、增量兜底」——
+        # 主库 D:/astock/daily/stock_daily 由 Quant_Astock_DailyTushare_1740 每日 17:40 补到当日，
+        # 与 build_g2_daily 的 max(主库,增量) 口径一致。增量库只覆盖主库缺的日期时才用。
+        day = None
+        src = ""
+        try:
+            main = pd.read_parquet(MAIN_DAILY_PATH)
+            sub = main[main.index.get_level_values("trade_date") == asof_ts]
+            if len(sub):
+                sub = sub.reset_index()
+                day = pd.DataFrame({
+                    "ts_code": sub["ts_code"].astype(str),
+                    "pct": (sub["close"] / sub["pre_close"] - 1.0) * 100.0,
+                }).set_index("ts_code")["pct"]
+                src = "main"
+        except Exception as e:
+            print("    [tushare_source] 主库读取失败（回退增量库）: %s" % e)
+        if day is None:
+            inc = pd.read_parquet(INCR_DAILY_PATH)
+            inc = inc[inc["suspendFlag"].fillna(0) == 0]
+            sub = inc[inc["trade_date"] == asof_ts]
+            if not len(sub):
+                print("    [tushare_source] 主库与增量库均未覆盖信号日 %s（增量最新 %s），行业自算跳过"
+                      % (asof, pd.Timestamp(inc["trade_date"].max()).date()))
+                return {}
+            day = sub.copy()
+            day["pct"] = (day["close"] / day["preClose"] - 1.0) * 100.0
+            day = day.set_index("ts_code")["pct"]
+            src = "incr"
+        print("    [tushare_source] 行业自算数据源=%s（信号日 %s）" % (src, asof))
         # 候选 -> 申万一级行业
         cand_ind = {}
         for code in codes:
@@ -215,11 +241,6 @@ def sw_l1_pct_map(codes, asof):
                 cand_ind[c] = mem[c]
         if not cand_ind:
             return {}
-        # 信号日个股 pct
-        day = inc[inc["trade_date"] == asof_ts]
-        day = day.copy()
-        day["pct"] = (day["close"] / day["preClose"] - 1.0) * 100.0
-        day = day.set_index("ts_code")["pct"]
         out = {}
         for code, (idx_code, ind_name) in cand_ind.items():
             # 该行业成分在信号日的涨跌幅（等权平均，近似申万一级行业指数涨幅）
